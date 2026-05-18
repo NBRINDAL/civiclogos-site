@@ -87,10 +87,10 @@ export const healthcareIssueRoom = {
   whyItMatters:
     "Healthcare is an ideal first room because it affects nearly everyone and cannot be reduced to one factual answer. It is personal, economic, institutional, moral, and political at the same time, and it forces Civic Logos to hold patients, families, providers, insurers, employers, governments, taxpayers, and future generations in one reasoning object.",
   currentSynthesis:
-    "Healthcare reform appears to require balancing cost, access, quality, freedom, innovation, human dignity, public health, provider stability, administrative complexity, patient choice, and political feasibility at the same time. The main proposals differ less in their stated goals than in how they allocate responsibility among government, employers, insurers, providers, and individuals. The largest unresolved questions remain transition cost, administrative savings, rural access, provider reimbursement, pharmaceutical pricing, medical debt, patient choice, and long-term economic delta.",
+    "Healthcare reform appears to require balancing cost, access, quality, freedom, innovation, human dignity, public health, provider stability, administrative complexity, patient choice, and political feasibility at the same time. The main topic families differ less in their stated goals than in how they allocate responsibility among government, employers, insurers, providers, and individuals. The largest unresolved questions remain transition cost, administrative savings, rural access, provider reimbursement, pharmaceutical pricing, medical debt, patient choice, and long-term economic delta.",
   narrative: [
     "Healthcare is one of the clearest examples of why public reasoning needs structure. Ordinary healthcare debates often collapse into slogans: healthcare is a human right, markets will fix it, insurance companies are the problem, government is inefficient, prevention will save money, or transparency will solve it. Each claim may contain truth, but none is sufficient alone.",
-    "The first job of the room is not to declare a winner. It is to map the issue clearly enough that proposals, claims, assumptions, stakeholders, incentives, and strongest objections can be held together in one living synthesis instead of dissolving into familiar political reflexes.",
+    "The first job of the room is not to declare a winner. It is to map the issue clearly enough that topic cards, claims, assumptions, stakeholders, incentives, and strongest objections can be held together in one living synthesis instead of dissolving into familiar political reflexes.",
   ],
   workingConclusions: [
     "The central disagreement is not simply whether healthcare should be public or private, but which structure produces the most human benefit with the least waste and distortion.",
@@ -142,7 +142,7 @@ export const healthcareIssueRoom = {
     "The purpose of this room is not to declare the correct healthcare answer. It is to map the claims, assumptions, stakeholders, incentives, evidence, costs, risks, and strongest objections clearly enough that healthcare becomes more legible through structured ideas, AI review, public debate, scorecards, and a living synthesis map.",
   roomComponents: [
     "Current living synthesis",
-    "Major proposals",
+    "Major topics",
     "Economic delta models",
     "Stakeholders",
     "Evidence library",
@@ -152,25 +152,25 @@ export const healthcareIssueRoom = {
   ],
   topProposals: [
     {
-      title: "Proposal 001: Administrative Simplification and AI-Assisted Triage",
+      title: "Administrative Simplification and AI-Assisted Triage",
       summary:
-        "A seed proposal focused on reducing administrative overhead, standardizing claims flows, and using AI-guided intake to improve access and redirect savings toward care.",
-      label: "Top proposal",
-      metric: "Best first demonstration of the idea-card process",
+        "A seed topic focused on reducing administrative overhead, standardizing claims flows, and using AI-guided intake to improve access and redirect savings toward care.",
+      label: "Topic in focus",
+      metric: "Best first demonstration of the topic-card process",
       href: "/healthcare/proposal-001",
     },
     {
       title: "Public Option Model",
       summary:
         "Adds a public insurance option while preserving private insurance, aiming for competitive pressure without full system replacement.",
-      label: "Core proposal",
+      label: "Core topic",
       metric: "Moderate implementation disruption",
     },
     {
       title: "Single-Payer Model",
       summary:
         "Consolidates coverage and financing under a public framework, with potential administrative savings and major transition demands.",
-      label: "Core proposal",
+      label: "Core topic",
       metric: "High upside, high transition burden",
     },
   ] satisfies ProposalSummary[],
@@ -348,21 +348,21 @@ export const governanceIssueRoom = {
       title: "Subsidiarity-First Governance Model",
       summary:
         "Pushes authority downward wherever possible while preserving a limited central layer for rights protection and coordination.",
-      label: "Top proposal",
+      label: "Topic in focus",
       metric: "Strong legitimacy case, uneven capacity risk",
     },
     {
       title: "Technocratic Administrative State Model",
       summary:
         "Relies on professional expertise, institutional continuity, and procedural governance to manage complexity at scale.",
-      label: "Core proposal",
+      label: "Core topic",
       metric: "High capacity, trust deficit risk",
     },
     {
       title: "Radical Civic Transparency Model",
       summary:
         "Prioritizes open records, public process visibility, and traceable decision flows as the primary anti-corruption mechanism.",
-      label: "Core proposal",
+      label: "Core topic",
       metric: "High sunlight, slower throughput",
     },
   ],
@@ -538,21 +538,21 @@ export const housingIssueRoom = {
       title: "Abundance and Zoning Reform Model",
       summary:
         "Expands by-right construction capacity, legalizes more density, and treats scarcity as a policy choice that must be reversed.",
-      label: "Top proposal",
+      label: "Topic in focus",
       metric: "Strong supply logic, contested local politics",
     },
     {
       title: "Public and Social Housing Expansion",
       summary:
         "Uses direct public or nonprofit production to increase affordability where market delivery is too slow or too exclusionary.",
-      label: "Core proposal",
+      label: "Core topic",
       metric: "High equity case, heavy delivery challenge",
     },
     {
       title: "Transit-Oriented Growth Model",
       summary:
         "Concentrates new housing around transit and infrastructure corridors to reduce car dependence and unlock regional capacity.",
-      label: "Core proposal",
+      label: "Core topic",
       metric: "Strong systems logic, long rollout",
     },
   ],
@@ -776,21 +776,21 @@ export const aiLaborIssueRoom = {
       title: "Aligned Augmentation Model",
       summary:
         "Treats AI as a tool for amplifying human capability while keeping humans inside judgment, accountability, and mission-critical loops.",
-      label: "Top proposal",
+      label: "Topic in focus",
       metric: "Strong upside case, governance-dependent",
     },
     {
       title: "Strong Public-Governance and Safety Model",
       summary:
         "Places frontier AI behind tighter institutional oversight, safety testing, and public-interest constraints before broad deployment.",
-      label: "Core proposal",
+      label: "Core topic",
       metric: "Lower downside ambition, slower innovation",
     },
     {
       title: "Accelerationist Competitive Model",
       summary:
         "Assumes rapid deployment and open competition produce the largest total benefit, and that society should adapt around fast capability growth.",
-      label: "Core proposal",
+      label: "Core topic",
       metric: "High upside, high systemic risk",
     },
   ],
@@ -968,21 +968,21 @@ export const institutionalTrustIssueRoom = {
       title: "Radical Disclosure and Conflict Mapping Model",
       summary:
         "Requires visible institutional incentives, affiliations, funding, and correction history as first-order public objects.",
-      label: "Top proposal",
+      label: "Topic in focus",
       metric: "Strong transparency logic",
     },
     {
       title: "Independent Public Audit Layer",
       summary:
         "Creates a standing review process for major institutional claims, corrections, and contested public narratives.",
-      label: "Core proposal",
+      label: "Core topic",
       metric: "High accountability potential, expensive to run",
     },
     {
       title: "Domain-Specific Trust and Reputation Model",
       summary:
         "Prevents institutions from laundering trust earned in one domain into another where conflicts of interest differ.",
-      label: "Core proposal",
+      label: "Core topic",
       metric: "Very aligned with Civic Logos architecture",
     },
   ],
@@ -1144,7 +1144,7 @@ export const roomDirectory: readonly RoomDirectoryItem[] = [
     title: healthcareIssueRoom.title,
     domain: "Health and public systems",
     summary:
-      "The first full room, useful as a prototype for proposals, objections, evidence, and economic-delta thinking.",
+      "The first full room, useful as a prototype for topics, objections, evidence, and economic-delta thinking.",
     complexity: "High, but still relatively intuitive",
     stage: "Most developed",
     href: "/healthcare",
@@ -1194,13 +1194,13 @@ export const roomDirectory: readonly RoomDirectoryItem[] = [
 export const proposal001 = {
   id: "proposal-001",
   title: "Administrative Simplification and AI-Assisted Triage",
-  subtitle: "An initial healthcare reform proposal submitted for public reasoning",
+  subtitle: "An initial healthcare reform topic card submitted for public reasoning",
   draftNote:
-    "This idea card is intentionally unfinished. It is meant to demonstrate how a proposal becomes inspectable, criticizable, and revisable in public before the evidence picture is complete.",
+    "This topic card is intentionally unfinished. It is meant to demonstrate how one room topic becomes inspectable, criticizable, and revisable in public before the evidence picture is complete.",
   thesis:
     "The United States can reduce healthcare cost and access friction by standardizing administrative flows, using AI-assisted intake and triage for low-risk routing, and reinvesting verified savings into primary and preventive care.",
   currentRead:
-    "The proposal feels strongest as a first prototype because it targets real friction without requiring the room to settle the entire healthcare ideology war in one move. It feels weakest wherever advocates implicitly assume that administrative savings will be large, durable, and easy to redirect. The card is useful right now because both of those things can be made explicit.",
+    "This topic card feels strongest as a first prototype because it targets real friction without requiring the room to settle the entire healthcare ideology war in one move. It feels weakest wherever advocates implicitly assume that administrative savings will be large, durable, and easy to redirect. The card is useful right now because both of those things can be made explicit.",
   problemStatement:
     "Healthcare spending remains high while patients, providers, and employers still face coverage gaps, billing complexity, administrative delay, and inconsistent access. Even before major financing debates are settled, a large amount of waste appears to come from fragmented claims systems, repetitive intake work, prior-authorization friction, and poor routing of low-complexity cases.",
   proposedSolution:
@@ -1273,9 +1273,9 @@ export const proposal001 = {
     ],
   },
   strongestSupport:
-    "This proposal is a credible first test because it targets a widely acknowledged source of waste without requiring the platform to pretend that one financing ideology has already won the healthcare debate.",
+    "This topic is a credible first test because it targets a widely acknowledged source of waste without requiring the platform to pretend that one financing ideology has already won the healthcare debate.",
   strongestObjection:
-    "The proposal risks mistaking administrative optimization for system reform; if pricing power, reimbursement dynamics, and uneven provider capacity remain intact, the savings may disappoint while the implementation burden still lands.",
+    "The topic risks mistaking administrative optimization for system reform; if pricing power, reimbursement dynamics, and uneven provider capacity remain intact, the savings may disappoint while the implementation burden still lands.",
   whatWouldStrengthen: [
     "A visible pilot design with a bounded scope, success criteria, and transition-cost assumptions.",
     "Better evidence about where intake automation meaningfully helps and where human escalation must remain primary.",
@@ -1287,7 +1287,7 @@ export const proposal001 = {
     "How much of any realized savings should be redirected to primary and preventive care?",
     "What evidence would distinguish real structural savings from shifted accounting burden?",
   ],
-  maturity: "Seed proposal",
+  maturity: "Seed topic",
   scorecard: [
     { label: "Novelty", value: 58 },
     { label: "Coherence", value: 78 },
@@ -1307,7 +1307,7 @@ export const proposal001 = {
       role: "Steelman",
       confidence: "Moderate",
       summary:
-        "The strongest case is that the proposal attacks real waste, improves access friction, and gives the healthcare room a measurable first demonstration without forcing premature ideological closure.",
+        "The strongest case is that the topic attacks real waste, improves access friction, and gives the healthcare room a measurable first demonstration without forcing premature ideological closure.",
     },
     {
       role: "Critic",
@@ -1325,11 +1325,11 @@ export const proposal001 = {
   debatePrompts: [
     {
       title: "Support",
-      description: "Add the best argument for why this proposal might work better than existing structures.",
+      description: "Add the best argument for why this topic might work better than existing structures.",
     },
     {
       title: "Objection",
-      description: "Surface the strongest reason this proposal could fail or misfire.",
+      description: "Surface the strongest reason this topic could fail or misfire.",
     },
     {
       title: "Evidence",
@@ -1341,7 +1341,7 @@ export const proposal001 = {
     },
     {
       title: "Nuance",
-      description: "Improve the proposal by exposing a missing condition or tradeoff without fully rejecting it.",
+      description: "Improve the topic by exposing a missing condition or tradeoff without fully rejecting it.",
     },
     {
       title: "Implementation concern",
@@ -1352,7 +1352,7 @@ export const proposal001 = {
       description: "Question whether projected savings, costs, or incentives are being handled honestly.",
     },
     {
-      title: "Alternate proposal",
+      title: "Alternate topic",
       description: "Offer a structurally different route that solves the same problem better.",
     },
     {
@@ -1364,7 +1364,7 @@ export const proposal001 = {
     {
       version: "v0.1",
       date: "May 2026",
-      note: "Initial seed proposal created to demonstrate the full Idea Card anatomy inside the healthcare room.",
+      note: "Initial seed topic card created to demonstrate the full Idea Card anatomy inside the healthcare room.",
     },
     {
       version: "v0.2",

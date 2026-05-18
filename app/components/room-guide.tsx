@@ -20,7 +20,7 @@ type ChatMessage =
 
 const starterPrompts = [
   "What is the current synthesis?",
-  "Which proposal is most developed right now?",
+  "Which topic is most developed right now?",
   "What are the strongest objections?",
   "What evidence is carrying the most weight?",
   "Who is most affected by these choices?",
@@ -31,20 +31,20 @@ function buildDefaultAnswer(): RoomAnswer {
   return {
     title: "Ask the room, not a blank chatbot",
     intro:
-      "This early guide reads from the current healthcare room. It can summarize where the room leans, surface objections, point to proposal families, and show where the uncertainty still lives.",
+      "This early guide reads from the current healthcare room. It can summarize where the room leans, surface objections, point to topic families, and show where the uncertainty still lives.",
     bullets: [
       "Ask for the current synthesis if you want the room-level view.",
-      "Ask about Proposal 001 if you want the most developed seed idea.",
+      "Ask about the administrative simplification topic if you want the most developed seed card.",
       "Ask about objections, evidence, stakeholders, or what could move the synthesis.",
     ],
     sources: [
       "Current living synthesis",
-      "Proposal field",
+      "Topic field",
       "Evidence library",
       "Objection library",
     ],
     ctaHref: "/healthcare/proposal-001",
-    ctaLabel: "Read Proposal 001",
+    ctaLabel: "Open topic card",
   };
 }
 
@@ -58,17 +58,17 @@ function buildAnswer(question: string): RoomAnswer {
     normalized.includes("administrative")
   ) {
     return {
-      title: "Most developed proposal in the room",
+      title: "Most developed topic in the room",
       intro:
-        "Proposal 001 is currently the clearest demonstration object because it narrows the healthcare debate to one testable reform path instead of trying to solve everything at once.",
+        "Administrative simplification and AI-assisted triage is currently the clearest demonstration object because it narrows the healthcare debate to one testable reform path instead of trying to solve everything at once.",
       bullets: [
         proposal001.currentRead,
         proposal001.strongestSupport,
         `Main open question: ${proposal001.openQuestions[0]}`,
       ],
-      sources: ["Proposal 001 current read", "Strongest support", "Open questions"],
+      sources: ["Topic card current read", "Strongest support", "Open questions"],
       ctaHref: "/healthcare/proposal-001",
-      ctaLabel: "Open the full idea card",
+      ctaLabel: "Open the full topic card",
     };
   }
 
@@ -101,7 +101,7 @@ function buildAnswer(question: string): RoomAnswer {
       intro:
         "The room is already surfacing a few recurring pressure points that any serious healthcare synthesis will have to survive.",
       bullets: healthcareIssueRoom.objectionLibrary,
-      sources: ["Objection library", "Proposal 001 risk surface"],
+      sources: ["Objection library", "Topic card risk surface"],
     };
   }
 
@@ -190,15 +190,15 @@ function buildAnswer(question: string): RoomAnswer {
   return {
     title: "Best current read",
     intro:
-      "The room can already answer in a few grounded ways: it can summarize the current synthesis, compare proposal families, surface objections, and point to what evidence would actually change the room.",
+      "The room can already answer in a few grounded ways: it can summarize the current synthesis, compare topic families, surface objections, and point to what evidence would actually change the room.",
     bullets: [
-      "Try asking about the current synthesis, Proposal 001, objections, evidence, stakeholders, or what could move the room.",
-      `The most developed proposal right now is ${proposal001.title}.`,
+      "Try asking about the current synthesis, administrative simplification, objections, evidence, stakeholders, or what could move the room.",
+      `The most developed topic card right now is ${proposal001.title}.`,
       `The room is still openly uncertain about transition cost, rural access, and long-run household impact.`,
     ],
-    sources: ["Current synthesis", "Proposal field", "Open questions"],
+    sources: ["Current synthesis", "Topic field", "Open questions"],
     ctaHref: "/healthcare/proposal-001",
-    ctaLabel: "Jump into Proposal 001",
+    ctaLabel: "Open topic card",
   };
 }
 
@@ -238,7 +238,7 @@ export default function RoomGuide() {
           <p>
             This is an early guide grounded in the room&apos;s current public
             structure. It can summarize the healthcare synthesis, point to the
-            most developed proposal, surface objections, and show what evidence
+            most developed topic card, surface objections, and show what evidence
             could actually change the room.
           </p>
         </div>
@@ -301,7 +301,7 @@ export default function RoomGuide() {
       >
         <label className={styles.composerLabel} htmlFor="room-question">
           Ask about the current synthesis, evidence, objections, stakeholders, or
-          Proposal 001
+          the administrative simplification topic
         </label>
         <div className={styles.composerRow}>
           <input

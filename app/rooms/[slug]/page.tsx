@@ -108,8 +108,8 @@ export default async function IssueRoomPage({
               <Link className={styles.primaryAction} href="/rooms">
                 Back to room library
               </Link>
-              <a className={styles.secondaryAction} href="#proposal-field">
-                See the proposal field
+              <a className={styles.secondaryAction} href="#topic-field">
+                See room topics
               </a>
             </div>
           </div>
@@ -127,7 +127,7 @@ export default async function IssueRoomPage({
             <div className={styles.heroStats}>
               <div>
                 <strong>{room.topProposals.length}</strong>
-                <span>anchor proposals</span>
+                <span>anchor topics</span>
               </div>
               <div>
                 <strong>{room.stakeholders.length}</strong>
@@ -219,35 +219,35 @@ export default async function IssueRoomPage({
           </section>
         ) : null}
 
-        <section className={styles.section} id="proposal-field">
+        <section className={styles.section} id="topic-field">
           <div className={styles.sectionHeading}>
-            <span className={styles.eyebrow}>Proposal field</span>
-            <h2>The room already has competing directions, even before full idea cards exist.</h2>
+            <span className={styles.eyebrow}>Topic field</span>
+            <h2>The room already has competing directions, even before full topic cards exist.</h2>
             <p>
-              These proposal tracks are seeded from the paper’s domain logic so
+              These topic tracks are seeded from the paper’s domain logic so
               the room can start with meaningful structure instead of a blank slate.
             </p>
           </div>
 
           <div className={styles.trackGrid}>
             <ProposalTrack
-              title="Most developed"
-              intro="These are the proposal families that currently anchor the room."
+              title="Topics in focus"
+              intro="These are the topic families that currently anchor the room."
               items={room.topProposals}
             />
             <ProposalTrack
-              title="Most novel"
+              title="Less familiar directions"
               intro="These widen the search space and make room for less familiar institutional designs."
               items={room.novelProposals}
             />
             <ProposalTrack
-              title="Highest leverage"
+              title="Highest leverage topics"
               intro="These are currently framed as having the largest possible economic or structural spillovers."
               items={room.economicDeltaLeaders}
             />
             <ProposalTrack
-              title="Most contested"
-              intro="These are the proposals where rhetoric is most likely to outrun the actual tradeoffs."
+              title="Most contested topics"
+              intro="These are the topics where rhetoric is most likely to outrun the actual tradeoffs."
               items={room.mostDebated}
             />
           </div>
@@ -352,7 +352,7 @@ export default async function IssueRoomPage({
             <h2>This room exists to make a hard public question structurally legible.</h2>
             <p>
               {room.roomPurpose ??
-                "The right follow-on is not more generic commentary. It is to pick one anchor proposal in this room and turn it into a full inspectable idea card the way Proposal 001 works in healthcare."}
+                "The right follow-on is not more generic commentary. It is to pick one anchor topic in this room and turn it into a full inspectable topic card without letting it dominate the room."}
             </p>
           </div>
 

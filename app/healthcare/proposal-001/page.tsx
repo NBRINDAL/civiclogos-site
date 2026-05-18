@@ -13,7 +13,7 @@ export default function Proposal001Page() {
             <span className={styles.brandMark}>CL</span>
             <span className={styles.brandText}>
               <strong>Civic Logos</strong>
-              <span>Proposal 001</span>
+              <span>Healthcare topic card</span>
             </span>
           </Link>
 
@@ -26,7 +26,7 @@ export default function Proposal001Page() {
 
         <div className={styles.hero}>
           <div className={styles.heroCopy}>
-            <span className={styles.eyebrow}>Working card</span>
+            <span className={styles.eyebrow}>Working topic card</span>
             <h1>{proposal001.title}</h1>
             <p className={styles.subtitle}>{proposal001.subtitle}</p>
             <p className={styles.thesis}>{proposal001.thesis}</p>
@@ -59,7 +59,7 @@ export default function Proposal001Page() {
         <section className={styles.gridSection}>
           <article className={styles.panel}>
             <span className={styles.eyebrow}>Current read</span>
-            <h2>Why this proposal is useful even before it is complete</h2>
+            <h2>Why this topic card is useful even before it is complete</h2>
             <p>{proposal001.currentRead}</p>
 
             <div className={styles.copyBlock}>
@@ -119,7 +119,7 @@ export default function Proposal001Page() {
 
           <article className={styles.panel}>
             <span className={styles.eyebrow}>What it depends on</span>
-            <h2>The proposal is only as credible as its assumptions.</h2>
+            <h2>The topic card is only as credible as its assumptions.</h2>
             <ul className={styles.bulletList}>
               {proposal001.assumptions.map((item) => (
                 <li key={item}>{item}</li>
@@ -142,7 +142,7 @@ export default function Proposal001Page() {
         <section className={styles.gridSection}>
           <article className={styles.panel}>
             <span className={styles.eyebrow}>Stress test</span>
-            <h2>Where the proposal could fail or disappoint</h2>
+            <h2>Where the topic could fail or disappoint</h2>
             <ul className={styles.bulletList}>
               {proposal001.risks.map((item) => (
                 <li key={item}>{item}</li>

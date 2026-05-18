@@ -60,7 +60,6 @@ export default function Home() {
             <Link href="/rooms">Room library</Link>
             <Link href="/healthcare">Healthcare room</Link>
             <a href="#manifesto">Manifesto</a>
-            <Link href="/healthcare/proposal-001">Proposal 001</Link>
             <a href="#contact">Early access</a>
           </div>
         </nav>
@@ -72,7 +71,7 @@ export default function Home() {
             <p className={styles.lead}>
               Civic Logos is a public reasoning platform for living ideas,
               designed to help humans and AI structure, debate, refine, and
-              update important proposals in the open.
+              update important public questions and ideas in the open.
             </p>
             <p className={styles.supporting}>
               Instead of burying arguments inside feeds, it gives each idea a

@@ -73,7 +73,7 @@ export default function HealthcareIssueRoomPage() {
 
           <nav className={styles.nav}>
             <Link href="/">Home</Link>
-            <Link href="/healthcare/proposal-001">Proposal 001</Link>
+            <Link href="/rooms">All rooms</Link>
             <a href="#working-materials">Working materials</a>
           </nav>
         </div>
@@ -86,11 +86,11 @@ export default function HealthcareIssueRoomPage() {
             <p className={styles.summary}>{healthcareIssueRoom.currentSynthesis}</p>
 
             <div className={styles.heroActions}>
-              <Link className={styles.primaryAction} href="/healthcare/proposal-001">
-                Read Proposal 001
-              </Link>
-              <a className={styles.secondaryAction} href="#proposal-field">
-                See the proposal field
+              <a className={styles.primaryAction} href="#topic-field">
+                Scan room topics
+              </a>
+              <a className={styles.secondaryAction} href="#working-materials">
+                See working materials
               </a>
             </div>
           </div>
@@ -112,7 +112,7 @@ export default function HealthcareIssueRoomPage() {
               </div>
               <div>
                 <strong>10</strong>
-                <span>proposal families in view</span>
+                <span>topic families in view</span>
               </div>
               <div>
                 <strong>9</strong>
@@ -184,7 +184,7 @@ export default function HealthcareIssueRoomPage() {
           {healthcareIssueRoom.initialScorecard ? (
             <article className={styles.panel}>
               <span className={styles.eyebrow}>Initial scorecard</span>
-              <h2>This room starts high-stakes before any proposal wins.</h2>
+              <h2>This room starts high-stakes before any one topic wins.</h2>
               <div className={styles.scorecardList}>
                 {healthcareIssueRoom.initialScorecard.map((item) => (
                   <div className={styles.scorecardItem} key={item.metric}>
@@ -199,10 +199,10 @@ export default function HealthcareIssueRoomPage() {
 
         <RoomGuide />
 
-        <section className={styles.section} id="proposal-field">
+        <section className={styles.section} id="topic-field">
           <div className={styles.sectionHeading}>
-            <span className={styles.eyebrow}>Proposal field</span>
-            <h2>The point is to compare families of thought in one place before declaring winners.</h2>
+            <span className={styles.eyebrow}>Topic field</span>
+            <h2>The point is to compare live healthcare topics in one place before declaring winners.</h2>
             <p>
               This draft is intentionally selective. It is trying to create a
               legible field of comparison, not an encyclopedic healthcare atlas
@@ -212,23 +212,23 @@ export default function HealthcareIssueRoomPage() {
 
           <div className={styles.trackGrid}>
             <ProposalTrack
-              title="Most developed"
-              intro="These are the proposal families that currently anchor the room."
+              title="Topics in focus"
+              intro="These are the healthcare topics currently doing the most structural work in the room."
               items={healthcareIssueRoom.topProposals}
             />
             <ProposalTrack
-              title="Most novel"
+              title="Less familiar directions"
               intro="These are included because they widen the search space and pressure stale assumptions."
               items={healthcareIssueRoom.novelProposals}
             />
             <ProposalTrack
-              title="Highest leverage"
-              intro="These are the proposals currently framed as having the largest possible economic-delta implications."
+              title="Highest leverage topics"
+              intro="These are the topics currently framed as having the largest possible economic-delta implications."
               items={healthcareIssueRoom.economicDeltaLeaders}
             />
             <ProposalTrack
-              title="Most contested"
-              intro="These are the proposals where the rhetoric is usually cleaner than the actual tradeoffs."
+              title="Most contested topics"
+              intro="These are the topics where the rhetoric is usually cleaner than the actual tradeoffs."
               items={healthcareIssueRoom.mostDebated}
             />
           </div>
@@ -343,7 +343,7 @@ export default function HealthcareIssueRoomPage() {
           </div>
 
           <Link className={styles.primaryAction} href="/healthcare/proposal-001">
-            Open Proposal 001
+            Open one topic card
           </Link>
         </section>
       </main>
