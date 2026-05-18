@@ -645,99 +645,99 @@ export const housingIssueRoom = {
 } satisfies IssueRoomData;
 
 export const aiLaborIssueRoom = {
-  title: "AI, Labor, and Human Purpose",
+  title: "AI and Civilizational Impact",
   question:
-    "How should society respond as AI changes work, productivity, ownership, wages, education, and human purpose?",
+    "Is AI likely to be good or bad overall for civilization, and what determines the answer?",
   draftNote:
-    "This room is seeded as a high-complexity room because it touches economics, education, meaning, ownership, and political order all at once.",
+    "This room is intentionally broad. It is meant to hold the full dispute about AI's long-run civilizational effects before the argument gets reduced to one narrow frame like jobs, alignment, or product hype.",
   whyItMatters:
-    "The paper names automation, employment, human replacement, wages, reskilling, ownership of AI systems, universal basic income, and human purpose as one of the core domains Civic Logos should eventually handle.",
+    "The paper treats AI as one of the defining domains of the century because it touches work, knowledge, surveillance, war, education, ownership, governance, inequality, and human purpose at the same time.",
   currentSynthesis:
-    "AI is likely to change labor markets unevenly rather than in one clean wave. Some work will be augmented, some displaced, some compressed, and some newly created. The hardest unresolved questions concern ownership of gains, wage bargaining, retraining realism, status loss, educational redesign, and what societies do when human economic usefulness becomes less tightly coupled to survival.",
+    "AI is unlikely to be simply good or simply bad. Its overall effect will depend on capability growth, who controls the systems, how gains are distributed, what safety constraints hold, how institutions adapt, and whether AI amplifies human judgment or corrodes it. The largest unresolved questions concern concentration of power, labor displacement, epistemic manipulation, military escalation, surveillance, scientific acceleration, and what forms of governance can keep the upside while containing the downside.",
   narrative: [
-    "A serious AI-and-labor room cannot be just a jobs forecast page. It has to hold productivity, bargaining power, ownership, dignity, education, inequality, and political stability in the same public object.",
-    "This room matters because the future of work is really a dispute about what the gains of intelligence automation are for and who gets to define human usefulness afterward.",
+    "A serious AI room cannot just be a jobs room, a doom room, or a product room. It has to hold labor, warfare, safety, surveillance, knowledge, power concentration, scientific acceleration, and human meaning in one public object.",
+    "The question is not whether AI will be impressive. The question is whether the institutions, incentives, and social structures around it make that impressiveness net beneficial or net destructive over time.",
   ],
   workingConclusions: [
-    "The largest impacts will likely come through task decomposition, bargaining shifts, and ownership concentration before they show up as one headline unemployment number.",
-    "Productivity gains alone do not guarantee broad public benefit; distribution and institutional design matter.",
-    "The deepest debate is not just how many jobs survive, but what social contract replaces work-centric legitimacy if enough work changes.",
+    "AI's impact will likely arrive through many channels at once: labor, information quality, military capability, institutional power, and scientific leverage.",
+    "The upside could be extraordinary, but it will not distribute itself automatically or safely.",
+    "The deepest dispute is not whether AI is powerful, but whether human institutions can govern power at that scale before concentration and misuse harden.",
   ],
   whatCouldMoveTheRoom: [
-    "Better evidence on where AI complements workers versus where it displaces them outright.",
-    "More honest modeling of who owns the productivity gains under current corporate structures.",
-    "Stronger links between education reform, reskilling capacity, and actual labor-market transitions.",
+    "Better evidence on where AI creates genuine public benefit versus where it mainly concentrates leverage.",
+    "Sharper comparisons between open, corporate, and state-controlled AI futures.",
+    "More serious synthesis on labor, safety, military, surveillance, and educational effects in one shared frame.",
   ],
   roomComponents: healthcareIssueRoom.roomComponents,
   topProposals: [
     {
-      title: "Augmentation-First Transition Model",
+      title: "Aligned Augmentation Model",
       summary:
-        "Prioritizes using AI to expand human productivity while redesigning jobs before displacement accelerates.",
+        "Treats AI as a tool for amplifying human capability while keeping humans inside judgment, accountability, and mission-critical loops.",
       label: "Top proposal",
-      metric: "Most politically portable near-term path",
+      metric: "Strong upside case, governance-dependent",
     },
     {
-      title: "Universal Basic Income or Social Dividend Model",
+      title: "Strong Public-Governance and Safety Model",
       summary:
-        "Treats AI productivity gains as grounds for a broader decoupling of income from traditional employment.",
+        "Places frontier AI behind tighter institutional oversight, safety testing, and public-interest constraints before broad deployment.",
       label: "Core proposal",
-      metric: "High social-protection upside, heavy fiscal dispute",
+      metric: "Lower downside ambition, slower innovation",
     },
     {
-      title: "Worker Ownership of AI Gains Model",
+      title: "Accelerationist Competitive Model",
       summary:
-        "Attempts to tie automation gains to labor equity, profit-sharing, or broader capital ownership.",
+        "Assumes rapid deployment and open competition produce the largest total benefit, and that society should adapt around fast capability growth.",
       label: "Core proposal",
-      metric: "Distribution-first framework",
+      metric: "High upside, high systemic risk",
     },
   ],
   novelProposals: [
     {
-      title: "Human Contribution Guarantee Model",
+      title: "AI Commons Infrastructure Model",
       summary:
-        "Explores whether societies should preserve meaningful roles for humans even when pure efficiency argues otherwise.",
+        "Argues core AI capacity should become a partially public or commons-like layer rather than remain purely corporate or state concentrated.",
       label: "Most novel",
-      metric: "Meaning and dignity centered",
+      metric: "Institutional redesign at the infrastructure layer",
     },
     {
-      title: "Public Compute and Civic AI Infrastructure Model",
+      title: "Human Dignity and Role Preservation Model",
       summary:
-        "Argues that ownership of AI infrastructure itself may shape whether productivity gains stay broadly distributed.",
+        "Explores whether societies should intentionally preserve meaningful human roles even when pure optimization argues for deeper automation.",
       label: "Most novel",
-      metric: "Institutional design with high leverage",
+      metric: "Meaning-centered rather than efficiency-centered",
     },
   ],
   economicDeltaLeaders: [
     {
-      title: "AI-Augmented Professional Workflows",
+      title: "AI-Augmented Scientific and Professional Workflows",
       summary:
-        "Focuses on productivity growth inside medicine, law, government, and logistics before full labor displacement arrives.",
+        "Focuses on large productivity and discovery gains in medicine, research, law, logistics, and government.",
       label: "Highest economic-delta",
-      metric: "Large upside, uneven wage effects",
+      metric: "Massive upside if the benefits remain broad",
     },
     {
       title: "Automation Dividend Redistribution",
       summary:
-        "Attempts to link broad welfare gains to concentrated productivity gains from capital-intensive AI systems.",
+        "Attempts to link broad welfare gains to concentrated productivity gains so the AI upside does not collapse into narrow ownership.",
       label: "Highest economic-delta",
-      metric: "Big upside if distribution works",
+      metric: "Distribution is the whole test",
     },
   ],
   mostDebated: [
     {
-      title: "Rapid Full Automation Scenario",
+      title: "Existential-Risk and Loss-of-Control Scenario",
       summary:
-        "Claims labor displacement will come faster than institutions can adapt, while critics see a more gradual hybrid transition.",
+        "Claims advanced AI could create catastrophic control or alignment failures, while critics see these fears as overstated or too speculative to dominate governance.",
       label: "Most debated",
-      metric: "Pace-of-change dispute",
+      metric: "Catastrophic risk dispute",
     },
     {
-      title: "Reskilling Will Absorb the Shock",
+      title: "AI Will Mostly Be Net Positive",
       summary:
-        "Holds that new roles will naturally appear if people retrain, while critics see a deeper structural break in labor demand.",
+        "Argues that despite dislocation and misuse risks, the total long-run effect of AI on health, knowledge, productivity, and quality of life will be strongly positive.",
       label: "Most debated",
-      metric: "Optimism versus structural pessimism",
+      metric: "Optimism versus systemic caution",
     },
   ],
   stakeholders: [
@@ -746,9 +746,11 @@ export const aiLaborIssueRoom = {
     "Employers and AI firms",
     "Investors and capital owners",
     "Governments and tax systems",
-    "Unions and labor advocates",
+    "Researchers and scientists",
+    "Military and security institutions",
+    "Civil-liberties advocates",
     "Caregivers and families",
-    "Future cohorts entering work",
+    "Future generations",
   ],
   perspectives: [
     {
@@ -764,55 +766,55 @@ export const aiLaborIssueRoom = {
       relation: "Raises innovation and growth pressure.",
     },
     {
-      title: "Labor economist perspective",
+      title: "Safety perspective",
       thesis:
-        "The key variable is not whether tasks change, but who captures the gains when they do.",
-      relation: "Pushes the room toward distribution and ownership.",
+        "A civilization does not get to enjoy AI upside if it loses control of the systems or creates irreversible concentration and misuse first.",
+      relation: "Raises catastrophic and governance constraints.",
     },
     {
-      title: "Education perspective",
+      title: "Civic-humanist perspective",
       thesis:
-        "If work is changing faster than training institutions, then education reform is not peripheral; it is central to adaptation.",
-      relation: "Expands the room beyond jobs data alone.",
+        "Even highly beneficial AI could still be socially damaging if it weakens human agency, responsibility, and the structures that give life meaning.",
+      relation: "Expands the room beyond capability and GDP alone.",
     },
   ],
   evidenceLibrary: [
     {
       title: "Task exposure and occupational vulnerability studies",
       status: "Strong evidence",
-      note: "Useful for identifying where labor displacement may appear first.",
+      note: "Useful for identifying where labor displacement or task compression may appear first.",
     },
     {
-      title: "Firm-level productivity case studies",
+      title: "Frontier capability and benchmark progression",
       status: "Useful but incomplete",
-      note: "Important for seeing real gains, though still early and highly uneven.",
+      note: "Important for understanding how quickly systems are improving, though benchmark gains do not map cleanly to civilizational benefit.",
     },
     {
-      title: "Wage polarization and bargaining data",
+      title: "Firm-level productivity and scientific-use case studies",
       status: "Strong evidence",
-      note: "Necessary for distinguishing productivity growth from broad-based benefit.",
+      note: "Necessary for tracking whether real-world upside is material or mostly hype.",
     },
     {
-      title: "Historical automation analogies",
+      title: "Safety, misuse, and deception incidents",
       status: "Contested evidence",
-      note: "Helpful for pattern recognition, but potentially misleading if AI changes the substitution boundary itself.",
+      note: "Central to the downside case, but still early and difficult to extrapolate from cleanly.",
     },
   ],
   objectionLibrary: [
-    "Productivity gains may concentrate in capital owners long before workers experience broad benefits.",
-    "Reskilling narratives can become moral theater if the number of high-quality replacement roles is too small.",
-    "Policies designed for short-term wage protection may fail if AI changes the social meaning of work itself.",
-    "AI augmentation can still degrade autonomy and bargaining power even when jobs are not eliminated.",
+    "Productivity gains may concentrate in a small number of firms, states, or capital owners long before broad public benefit appears.",
+    "A civilization can be made more efficient while becoming less free, less stable, or less humanly meaningful.",
+    "Safety and alignment language can be used sincerely, but also as a political tool for incumbent control.",
+    "Even if AI is net positive overall, transition shocks in labor, politics, and information quality may still be severe enough to destabilize society.",
   ],
   openQuestions: [
-    "Which work domains are genuinely resilient because humans remain indispensable, and which only feel safe for now?",
-    "How should AI productivity gains be owned, taxed, or redistributed?",
-    "What replaces work as a source of dignity and legitimacy if enough labor is automated?",
-    "How should education systems adapt if task change outpaces institutional curriculum cycles?",
+    "What would count as strong evidence that AI is net positive overall rather than merely lucrative or impressive?",
+    "Which risks are most likely to dominate first: labor displacement, surveillance, military escalation, epistemic corruption, or loss-of-control failure?",
+    "How should AI gains be governed if present ownership structures are too concentrated?",
+    "What human roles, rights, and institutions should remain protected even in a world of extraordinary machine capability?",
   ],
   claimMap: [
     {
-      claim: "AI will affect bargaining power before it produces one clear unemployment shock.",
+      claim: "AI's overall effect will depend more on governance and ownership than on raw capability alone.",
       status: "Active claim atom",
     },
     {
@@ -820,15 +822,15 @@ export const aiLaborIssueRoom = {
       status: "Active claim atom",
     },
     {
-      claim: "Historical automation analogies are sufficient guidance for AI-era labor transitions.",
+      claim: "AI is likely to be net positive overall if institutions adapt well enough.",
       status: "Contested claim atom",
     },
     {
-      claim: "Universal basic income may become more plausible as AI productivity concentrates.",
+      claim: "AI could accelerate science and public problem-solving faster than it destabilizes social order.",
       status: "Nuance-bearing claim atom",
     },
     {
-      claim: "Reskilling at scale can absorb most AI displacement in time.",
+      claim: "AI risk is overstated relative to the upside and should not meaningfully slow deployment.",
       status: "High-priority objection",
     },
   ],
@@ -1068,9 +1070,9 @@ export const roomDirectory: readonly RoomDirectoryItem[] = [
   {
     slug: "ai-labor",
     title: aiLaborIssueRoom.title,
-    domain: "Automation and human future",
+    domain: "Artificial intelligence and civilizational risk",
     summary:
-      "A room about jobs, wages, bargaining power, ownership, education, social dividends, and human purpose under AI.",
+      "A room about whether AI is net good or net bad overall, with labor, safety, power, surveillance, science, and human purpose all inside the same frame.",
     complexity: "Extreme",
     stage: "Seeded draft",
     href: "/rooms/ai-labor",
