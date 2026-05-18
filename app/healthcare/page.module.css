@@ -9,9 +9,9 @@
   inset: 0;
   z-index: -1;
   background:
-    radial-gradient(circle at top left, rgba(181, 94, 51, 0.18), transparent 32%),
-    radial-gradient(circle at top right, rgba(91, 110, 69, 0.18), transparent 28%),
-    linear-gradient(180deg, rgba(255, 250, 243, 0.95), rgba(245, 239, 227, 0.92));
+    radial-gradient(circle at top left, rgba(181, 94, 51, 0.14), transparent 32%),
+    radial-gradient(circle at top right, rgba(91, 110, 69, 0.16), transparent 28%),
+    linear-gradient(180deg, rgba(255, 250, 243, 0.95), rgba(245, 239, 227, 0.93));
 }
 
 .header,
@@ -23,7 +23,7 @@
 .header {
   display: grid;
   gap: 30px;
-  padding: 16px 0 40px;
+  padding: 16px 0 38px;
 }
 
 .headerBar {
@@ -77,15 +77,17 @@
 
 .hero {
   display: grid;
-  grid-template-columns: minmax(0, 1.5fr) minmax(320px, 0.8fr);
+  grid-template-columns: minmax(0, 1.55fr) minmax(320px, 0.75fr);
   gap: 22px;
 }
 
 .heroCopy,
 .heroPanel,
+.storyCard,
+.storyAside,
+.focusCard,
+.trackCard,
 .panel,
-.proposalCard,
-.structureCard,
 .ctaPanel,
 .perspectiveCard {
   backdrop-filter: blur(12px);
@@ -93,48 +95,60 @@
 
 .heroCopy,
 .heroPanel,
+.storyCard,
+.storyAside,
+.focusCard,
+.trackCard,
 .panel,
 .ctaPanel {
-  padding: 30px;
+  padding: 32px;
   border: 1px solid rgba(18, 33, 39, 0.12);
   border-radius: 30px;
-  background: rgba(255, 251, 245, 0.76);
+  background: rgba(255, 251, 245, 0.78);
   box-shadow: 0 20px 44px rgba(18, 33, 39, 0.08);
 }
 
 .heroCopy h1,
 .sectionHeading h2,
+.focusCard h2,
+.trackCard h3,
 .panel h2,
-.ctaPanel h2 {
+.ctaPanel h2,
+.structureItem h3 {
   font-family: var(--font-serif), serif;
   font-weight: 600;
   letter-spacing: -0.03em;
-  line-height: 1;
+  line-height: 1.02;
   text-wrap: balance;
 }
 
 .heroCopy h1 {
   margin-top: 16px;
-  font-size: clamp(2.9rem, 6vw, 5.2rem);
+  font-size: clamp(2.9rem, 6vw, 5.1rem);
 }
 
 .question {
   margin-top: 16px;
   color: var(--foreground);
-  font-size: clamp(1.15rem, 2vw, 1.45rem);
+  font-size: clamp(1.14rem, 2vw, 1.42rem);
   font-weight: 700;
-  line-height: 1.5;
+  line-height: 1.55;
 }
 
 .summary,
 .heroPanel p,
 .sectionHeading p,
-.proposalCard p,
-.panel p,
+.storyCard p,
+.storyAside p,
+.trackHeader p,
+.trackItem p,
+.claimItem p,
+.evidenceItem p,
 .perspectiveCard p,
-.ctaPanel p {
+.ctaPanel p,
+.structureItem p {
   color: var(--muted);
-  line-height: 1.72;
+  line-height: 1.74;
 }
 
 .summary {
@@ -143,8 +157,8 @@
 
 .eyebrow,
 .panelLabel,
-.cardTag,
-.metric,
+.trackLabel,
+.trackMeta span,
 .claimItem span,
 .evidenceItem span,
 .perspectiveCard span {
@@ -152,7 +166,7 @@
   align-items: center;
   gap: 8px;
   color: var(--signal);
-  font-size: 0.84rem;
+  font-size: 0.82rem;
   font-weight: 700;
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -228,43 +242,75 @@
 
 .main {
   display: grid;
-  gap: 26px;
+  gap: 28px;
   padding-bottom: 72px;
 }
 
 .section,
-.twoColumnSection {
+.storySection,
+.materialsSection {
+  display: grid;
+  gap: 20px;
+}
+
+.sectionHeading {
+  max-width: 860px;
+}
+
+.sectionHeading h2,
+.focusCard h2,
+.panel h2,
+.ctaPanel h2 {
+  margin-top: 14px;
+  font-size: clamp(2rem, 4vw, 3.15rem);
+}
+
+.storyGrid,
+.focusSection,
+.materialsGrid,
+.trackGrid {
   display: grid;
   gap: 18px;
 }
 
-.sectionHeading {
-  max-width: 820px;
+.storyGrid {
+  grid-template-columns: minmax(0, 1.4fr) minmax(280px, 0.7fr);
 }
 
-.sectionHeading h2,
-.panel h2,
-.ctaPanel h2 {
-  margin-top: 14px;
-  font-size: clamp(2rem, 4vw, 3.25rem);
-}
-
-.structureGrid,
-.proposalGrid,
-.perspectiveList,
-.claimList,
-.evidenceList,
-.tagList {
+.storyCard {
   display: grid;
-  gap: 16px;
+  gap: 18px;
 }
 
-.structureGrid {
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+.focusSection {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
-.structureCard,
-.proposalCard,
+.trackGrid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.trackCard {
+  display: grid;
+  gap: 20px;
+}
+
+.trackHeader {
+  display: grid;
+  gap: 12px;
+}
+
+.trackHeader p {
+  max-width: 34rem;
+}
+
+.trackList {
+  display: grid;
+  gap: 12px;
+}
+
+.trackItem,
+.structureItem,
 .perspectiveCard {
   padding: 22px;
   border: 1px solid rgba(18, 33, 39, 0.12);
@@ -273,41 +319,67 @@
   box-shadow: 0 18px 36px rgba(18, 33, 39, 0.06);
 }
 
-.structureCard h3,
-.proposalCard h3,
-.evidenceItem h3,
-.perspectiveCard h3 {
-  font-size: 1.1rem;
-  line-height: 1.3;
-}
-
-.structureCard p,
-.proposalCard p,
-.evidenceItem p,
-.perspectiveCard p {
-  margin-top: 10px;
-  color: var(--muted);
-  line-height: 1.7;
-}
-
-.cardTag,
-.metric,
-.claimItem span,
-.evidenceItem span,
-.perspectiveCard span {
-  font-size: 0.76rem;
-}
-
-.proposalCard h3 {
+.trackItem h3 {
   margin-top: 14px;
+  font-size: 1.3rem;
 }
 
-.metric {
-  margin-top: 18px;
+.trackMeta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.trackMeta strong {
   color: var(--accent-dark);
+  font-size: 0.95rem;
+  line-height: 1.4;
 }
 
-.twoColumnSection {
+.structureList,
+.claimList,
+.evidenceList,
+.perspectiveList,
+.bulletList,
+.stackGroup {
+  display: grid;
+  gap: 16px;
+}
+
+.structureList {
+  counter-reset: structure;
+}
+
+.structureItem {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 18px;
+  align-items: start;
+}
+
+.structureItem span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 16px;
+  background: rgba(91, 110, 69, 0.1);
+  color: var(--signal);
+  font-weight: 700;
+}
+
+.structureItem h3 {
+  font-size: 1.28rem;
+}
+
+.structureItem p {
+  margin-top: 10px;
+}
+
+.materialsGrid {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
@@ -332,38 +404,22 @@
   margin-top: 8px;
 }
 
-.perspectiveList {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+.perspectiveCard h3,
+.stackGroup h3 {
+  font-size: 1.12rem;
 }
 
 .perspectiveCard span {
   margin-top: 16px;
 }
 
-.tagList {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-}
-
-.tag {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 12px 14px;
-  border: 1px solid rgba(91, 110, 69, 0.22);
-  border-radius: 999px;
-  background: rgba(91, 110, 69, 0.08);
-  color: var(--foreground);
-  text-align: center;
-  font-size: 0.92rem;
-  font-weight: 700;
-}
-
 .bulletList {
-  display: grid;
-  gap: 14px;
   padding-left: 20px;
-  color: var(--foreground);
-  line-height: 1.7;
+  line-height: 1.72;
+}
+
+.stackGroup {
+  margin-top: 4px;
 }
 
 .ctaPanel {
@@ -376,7 +432,7 @@
 @media (hover: hover) and (pointer: fine) {
   .primaryAction:hover,
   .secondaryAction:hover,
-  .proposalCard[href]:hover {
+  .trackItem[href]:hover {
     transform: translateY(-2px);
   }
 
@@ -392,11 +448,11 @@
 
 @media (max-width: 1100px) {
   .hero,
-  .twoColumnSection,
-  .ctaPanel,
-  .structureGrid,
-  .perspectiveList,
-  .tagList {
+  .storyGrid,
+  .focusSection,
+  .trackGrid,
+  .materialsGrid,
+  .ctaPanel {
     grid-template-columns: 1fr;
   }
 
@@ -417,17 +473,23 @@
 
   .heroCopy,
   .heroPanel,
+  .storyCard,
+  .storyAside,
+  .focusCard,
+  .trackCard,
   .panel,
-  .proposalCard,
-  .structureCard,
   .ctaPanel,
+  .trackItem,
+  .structureItem,
   .perspectiveCard {
     padding: 22px;
     border-radius: 24px;
   }
 
   .claimItem,
-  .evidenceItem {
+  .evidenceItem,
+  .structureItem {
+    grid-template-columns: 1fr;
     flex-direction: column;
   }
 }
@@ -435,7 +497,7 @@
 @media (prefers-reduced-motion: reduce) {
   .primaryAction,
   .secondaryAction,
-  .proposalCard[href] {
+  .trackItem[href] {
     transition: none;
   }
 }

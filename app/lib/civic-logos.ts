@@ -34,10 +34,26 @@ export const issueRoomQuestion =
 export const healthcareIssueRoom = {
   title: "Healthcare Reform",
   question: issueRoomQuestion,
+  draftNote:
+    "This room is an early working draft. The goal is not to look complete yet, but to make the first public synthesis legible enough that people can improve it.",
   whyItMatters:
     "Healthcare is a strong first issue because it touches cost, access, innovation, insurance, public spending, personal suffering, institutional interests, and economic-delta analysis.",
   currentSynthesis:
     "Healthcare reform requires balancing cost, access, quality, administrative complexity, innovation, provider stability, patient choice, public health, and implementation feasibility. The main proposals differ less in their stated goals than in how they allocate responsibility among government, employers, insurers, providers, and individuals. The largest unresolved questions remain transition cost, administrative savings, rural access, provider reimbursement, pharmaceutical pricing, patient choice, and long-term economic delta.",
+  narrative: [
+    "The first job of the healthcare room is not to declare a winner. It is to show the public what a serious Civic Logos issue room looks like when one question is forced into visible structure instead of dissolving into feeds, tribes, and disconnected hot takes.",
+    "That means keeping the current synthesis, major proposal families, evidence, objections, stakeholder tradeoffs, and open questions visible at the same time. Even in an unfinished state, the room should let someone understand what is being argued, where the disagreement really lives, and what would have to change for the synthesis to move.",
+  ],
+  workingConclusions: [
+    "The hardest healthcare disagreements are usually not about values alone, but about where cost, administrative burden, innovation incentives, and access bottlenecks actually sit inside the system.",
+    "A first useful prototype should narrow the field enough to compare models honestly without pretending the uncertainty is gone.",
+    "Economic delta matters, but only if the assumptions, transition costs, and distribution of pain are made visible rather than buried in a slogan.",
+  ],
+  whatCouldMoveTheRoom: [
+    "A credible pilot or case study showing administrative savings that survive implementation reality.",
+    "Better evidence on rural access and provider stability under competing reform models.",
+    "Clearer household-level impact modeling, especially for debt, delay of care, and insurance churn.",
+  ],
   roomComponents: [
     "Current living synthesis",
     "Major proposals",
@@ -220,8 +236,12 @@ export const proposal001 = {
   id: "proposal-001",
   title: "Administrative Simplification and AI-Assisted Triage",
   subtitle: "An initial healthcare reform proposal submitted for public reasoning",
+  draftNote:
+    "This idea card is intentionally unfinished. It is meant to demonstrate how a proposal becomes inspectable, criticizable, and revisable in public before the evidence picture is complete.",
   thesis:
     "The United States can reduce healthcare cost and access friction by standardizing administrative flows, using AI-assisted intake and triage for low-risk routing, and reinvesting verified savings into primary and preventive care.",
+  currentRead:
+    "The proposal feels strongest as a first prototype because it targets real friction without requiring the room to settle the entire healthcare ideology war in one move. It feels weakest wherever advocates implicitly assume that administrative savings will be large, durable, and easy to redirect. The card is useful right now because both of those things can be made explicit.",
   problemStatement:
     "Healthcare spending remains high while patients, providers, and employers still face coverage gaps, billing complexity, administrative delay, and inconsistent access. Even before major financing debates are settled, a large amount of waste appears to come from fragmented claims systems, repetitive intake work, prior-authorization friction, and poor routing of low-complexity cases.",
   proposedSolution:
@@ -297,6 +317,11 @@ export const proposal001 = {
     "This proposal is a credible first test because it targets a widely acknowledged source of waste without requiring the platform to pretend that one financing ideology has already won the healthcare debate.",
   strongestObjection:
     "The proposal risks mistaking administrative optimization for system reform; if pricing power, reimbursement dynamics, and uneven provider capacity remain intact, the savings may disappoint while the implementation burden still lands.",
+  whatWouldStrengthen: [
+    "A visible pilot design with a bounded scope, success criteria, and transition-cost assumptions.",
+    "Better evidence about where intake automation meaningfully helps and where human escalation must remain primary.",
+    "A clearer account of how verified savings would be measured and redirected rather than absorbed elsewhere in the system.",
+  ],
   openQuestions: [
     "What is the smallest pilot that could test administrative simplification credibly?",
     "How should patient-safety thresholds be set for AI-assisted triage and escalation?",
