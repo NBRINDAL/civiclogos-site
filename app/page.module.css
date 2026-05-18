@@ -386,9 +386,9 @@
 
 .contactCard {
   display: grid;
-  grid-template-columns: minmax(0, 1.35fr) auto;
+  grid-template-columns: minmax(0, 1.05fr) minmax(380px, 0.95fr);
   gap: 18px;
-  align-items: center;
+  align-items: start;
   padding: 32px;
   border: 1px solid rgba(18, 33, 39, 0.14);
   border-radius: 32px;
@@ -400,6 +400,10 @@
 .contactActions {
   justify-content: flex-end;
   margin-top: 0;
+}
+
+.contactFormWrap {
+  width: 100%;
 }
 
 .reveal {

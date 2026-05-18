@@ -40,3 +40,19 @@ The current site includes:
 - early-access contact calls to action
 
 The next likely upgrade is wiring a real email signup provider such as Buttondown, Formspree, or ConvertKit.
+
+## Contact form delivery
+
+The live contact form posts to `/api/contact` and sends email through SMTP.
+
+Set these environment variables in Vercel before relying on the form in production:
+
+- `SMTP_HOST`
+- `SMTP_PORT`
+- `SMTP_SECURE`
+- `SMTP_USER`
+- `SMTP_PASS`
+- `CONTACT_TO`
+- `CONTACT_FROM`
+
+For Microsoft 365 from GoDaddy, the default SMTP host is typically `smtp.office365.com`.

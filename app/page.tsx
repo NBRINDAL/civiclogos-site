@@ -1,3 +1,4 @@
+import { ContactForm } from "./components/contact-form";
 import styles from "./page.module.css";
 
 const distinctions = [
@@ -227,21 +228,15 @@ export default function Home() {
                 healthcare prototype direction, and a search for early readers,
                 testers, researchers, designers, and domain experts.
               </p>
+              <p>
+                If you want to follow the project, contribute perspective, or
+                help pressure-test the first issue room, send a note here and
+                it will go straight to the Civic Logos inbox.
+              </p>
             </div>
 
-            <div className={styles.contactActions}>
-              <a
-                className={styles.primaryAction}
-                href="mailto:hello@civiclogos.com?subject=Civic%20Logos%20early%20access"
-              >
-                Request early access
-              </a>
-              <a
-                className={styles.secondaryAction}
-                href="mailto:hello@civiclogos.com?subject=Civic%20Logos%20-%20I%20can%20help"
-              >
-                Offer expertise
-              </a>
+            <div className={styles.contactFormWrap}>
+              <ContactForm />
             </div>
           </div>
         </section>
