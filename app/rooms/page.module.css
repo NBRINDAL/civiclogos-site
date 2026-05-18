@@ -1,0 +1,289 @@
+.page {
+  position: relative;
+  min-height: 100vh;
+  padding: 24px;
+}
+
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background:
+    radial-gradient(circle at top left, rgba(181, 94, 51, 0.14), transparent 32%),
+    radial-gradient(circle at top right, rgba(91, 110, 69, 0.16), transparent 28%),
+    linear-gradient(180deg, rgba(255, 250, 243, 0.95), rgba(245, 239, 227, 0.93));
+}
+
+.header,
+.main {
+  width: min(1180px, 100%);
+  margin: 0 auto;
+}
+
+.header {
+  display: grid;
+  gap: 30px;
+  padding: 16px 0 38px;
+}
+
+.headerBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.brandMark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 18px;
+  background: linear-gradient(145deg, rgba(18, 33, 39, 0.96), rgba(47, 74, 63, 0.92));
+  color: #fff6ea;
+  font-family: var(--font-serif), serif;
+  font-size: 1.2rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+
+.brandText {
+  display: grid;
+  gap: 4px;
+}
+
+.brandText strong {
+  font-size: 1rem;
+}
+
+.brandText span:last-child {
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+
+.nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px;
+  color: var(--muted);
+}
+
+.hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1.55fr) minmax(320px, 0.75fr);
+  gap: 22px;
+}
+
+.heroCopy,
+.heroPanel,
+.roomCard {
+  padding: 32px;
+  border: 1px solid rgba(18, 33, 39, 0.12);
+  border-radius: 30px;
+  background: rgba(255, 251, 245, 0.78);
+  box-shadow: 0 20px 44px rgba(18, 33, 39, 0.08);
+  backdrop-filter: blur(12px);
+}
+
+.eyebrow,
+.panelLabel,
+.roomMeta span,
+.roomFooter span {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--signal);
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.eyebrow::before,
+.panelLabel::before {
+  content: "";
+  width: 28px;
+  height: 1px;
+  background: currentColor;
+}
+
+.heroCopy h1,
+.sectionIntro h2,
+.roomCard h3 {
+  font-family: var(--font-serif), serif;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  line-height: 1.02;
+  text-wrap: balance;
+}
+
+.heroCopy h1 {
+  margin-top: 16px;
+  font-size: clamp(2.8rem, 6vw, 5rem);
+}
+
+.lead,
+.supporting,
+.heroPanel p,
+.sectionIntro p,
+.roomCard p {
+  color: var(--muted);
+  line-height: 1.74;
+}
+
+.lead {
+  margin-top: 18px;
+  font-size: 1.1rem;
+}
+
+.supporting {
+  margin-top: 16px;
+}
+
+.heroPanel {
+  display: grid;
+  gap: 18px;
+  background: linear-gradient(180deg, rgba(229, 235, 220, 0.82), rgba(255, 250, 243, 0.84));
+}
+
+.heroStats {
+  display: grid;
+  gap: 12px;
+}
+
+.heroStats div {
+  display: grid;
+  gap: 4px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(18, 33, 39, 0.1);
+}
+
+.heroStats strong {
+  font-family: var(--font-serif), serif;
+  font-size: 2rem;
+}
+
+.heroStats span {
+  color: var(--muted);
+}
+
+.main {
+  display: grid;
+  gap: 28px;
+  padding-bottom: 72px;
+}
+
+.section {
+  display: grid;
+  gap: 20px;
+}
+
+.sectionIntro {
+  max-width: 860px;
+}
+
+.sectionIntro h2 {
+  margin-top: 14px;
+  font-size: clamp(2rem, 4vw, 3.15rem);
+}
+
+.roomGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.roomCard {
+  display: grid;
+  gap: 16px;
+}
+
+.roomMeta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.roomMeta strong {
+  color: var(--accent-dark);
+  font-size: 0.95rem;
+  line-height: 1.4;
+}
+
+.roomCard h3 {
+  font-size: 1.85rem;
+}
+
+.roomFooter {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin-top: 6px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(18, 33, 39, 0.1);
+}
+
+.roomLink {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  padding: 0 18px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  background: var(--foreground);
+  color: #fff7ee;
+  font-weight: 700;
+  transition:
+    transform 180ms ease,
+    background 180ms ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .roomLink:hover {
+    transform: translateY(-1px);
+    background: #24363c;
+  }
+}
+
+@media (max-width: 1100px) {
+  .hero,
+  .roomGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 720px) {
+  .page {
+    padding: 16px;
+  }
+
+  .headerBar {
+    flex-direction: column;
+    align-items: start;
+  }
+
+  .heroCopy,
+  .heroPanel,
+  .roomCard {
+    padding: 22px;
+    border-radius: 24px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .roomLink {
+    transition: none;
+  }
+}

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { ContactForm } from "./components/contact-form";
-import { issueRoomQuestion } from "./lib/civic-logos";
+import { issueRoomQuestion, roomDirectory } from "./lib/civic-logos";
 import styles from "./page.module.css";
 
 const distinctions = [
@@ -36,21 +36,9 @@ const manifestoPoints = [
 
 const releaseItems = [
   'Homepage, manifesto, and a clear public explanation of "ideas, not posts."',
-  "Healthcare as the first issue room, chosen because it is personal, political, expensive, and institutionally complex.",
+  "Healthcare as the first fully developed issue room, with governance, housing, AI/labor, and institutional trust now seeded behind it.",
   "Structured idea cards built around thesis, mechanism, benefits, risks, assumptions, and economic delta.",
   "A simple early-access path for supporters, advisors, testers, and domain experts.",
-];
-
-const ideaCardFields = [
-  "Thesis",
-  "Mechanism",
-  "Benefits",
-  "Risks",
-  "Assumptions",
-  "Economic delta",
-  "Strongest support",
-  "Strongest objection",
-  "Public scorecard",
 ];
 
 export default function Home() {
@@ -69,6 +57,7 @@ export default function Home() {
           </a>
 
           <div className={styles.navLinks}>
+            <Link href="/rooms">Room library</Link>
             <Link href="/healthcare">Healthcare room</Link>
             <a href="#manifesto">Manifesto</a>
             <Link href="/healthcare/proposal-001">Proposal 001</Link>
@@ -95,9 +84,9 @@ export default function Home() {
               <Link className={styles.primaryAction} href="/healthcare">
                 Explore healthcare room
               </Link>
-              <a className={styles.secondaryAction} href="#manifesto">
-                Read the manifesto
-              </a>
+              <Link className={styles.secondaryAction} href="/rooms">
+                Browse room library
+              </Link>
             </div>
           </div>
 
@@ -107,8 +96,8 @@ export default function Home() {
             <ul className={styles.panelList}>
               <li>Public homepage and concise founding manifesto.</li>
               <li>Clear explanation of why ideas should outlast posts.</li>
-              <li>Healthcare preview as the first structured issue room.</li>
-              <li>Proposal 001 as the first complete idea-card demonstration.</li>
+              <li>Healthcare as the first full structured issue room.</li>
+              <li>A seeded room library for harder domains like governance, housing, AI/labor, and institutional trust.</li>
             </ul>
           </aside>
         </div>
@@ -206,21 +195,21 @@ export default function Home() {
                 <Link className={styles.primaryAction} href="/healthcare">
                   Enter the room
                 </Link>
-                <Link className={styles.secondaryAction} href="/healthcare/proposal-001">
-                  See Proposal 001
+                <Link className={styles.secondaryAction} href="/rooms">
+                  Explore all rooms
                 </Link>
               </div>
             </article>
 
             <article className={styles.releaseCard}>
-              <h3>Healthcare issue room preview</h3>
+              <h3>Room library now in view</h3>
               <p>
-                The first issue room asks: {issueRoomQuestion}
+                The first issue room still asks: {issueRoomQuestion}
               </p>
               <div className={styles.tagGrid}>
-                {ideaCardFields.map((field) => (
-                  <span className={styles.tag} key={field}>
-                    {field}
+                {roomDirectory.map((room) => (
+                  <span className={styles.tag} key={room.slug}>
+                    {room.title}
                   </span>
                 ))}
               </div>

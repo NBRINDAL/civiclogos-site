@@ -28,6 +28,38 @@ export type DebatePrompt = {
   description: string;
 };
 
+export type IssueRoomData = {
+  title: string;
+  question: string;
+  draftNote: string;
+  whyItMatters: string;
+  currentSynthesis: string;
+  narrative: readonly string[];
+  workingConclusions: readonly string[];
+  whatCouldMoveTheRoom: readonly string[];
+  roomComponents: readonly string[];
+  topProposals: readonly ProposalSummary[];
+  novelProposals: readonly ProposalSummary[];
+  economicDeltaLeaders: readonly ProposalSummary[];
+  mostDebated: readonly ProposalSummary[];
+  stakeholders: readonly string[];
+  perspectives: readonly PerspectiveSummary[];
+  evidenceLibrary: readonly EvidenceSummary[];
+  objectionLibrary: readonly string[];
+  openQuestions: readonly string[];
+  claimMap: readonly ClaimAtom[];
+};
+
+export type RoomDirectoryItem = {
+  slug: string;
+  title: string;
+  domain: string;
+  summary: string;
+  complexity: string;
+  stage: string;
+  href: string;
+};
+
 export const issueRoomQuestion =
   "What healthcare system best balances cost, access, quality, freedom, innovation, and public health?";
 
@@ -231,6 +263,829 @@ export const healthcareIssueRoom = {
     },
   ] satisfies ClaimAtom[],
 } as const;
+
+export const governanceIssueRoom = {
+  title: "Governance and Legitimacy",
+  question:
+    "What structures of governance best preserve legitimacy, competence, liberty, accountability, and public trust in a high-complexity society?",
+  draftNote:
+    "This room is seeded as a heavier institutional room. It is intentionally broader, slower, and more constitutional in character than the healthcare room.",
+  whyItMatters:
+    "The paper treats governance as one of the core civilizational domains because questions of legitimacy, law, authority, civil liberties, incentives, and institutional design ultimately shape every other room.",
+  currentSynthesis:
+    "Governance breakdown rarely comes from one failure alone. It usually emerges when legitimacy, competence, accountability, transparency, and local responsiveness drift apart. The strongest unresolved disputes concern centralization versus subsidiarity, expert authority versus democratic control, administrative capacity versus freedom, and how to preserve trust when institutions are both necessary and distrusted.",
+  narrative: [
+    "A governance room should not collapse into campaign slogans, constitutional nostalgia, or anti-government theater. Its job is to map how authority is structured, where legitimacy is earned or lost, and what institutional designs actually survive contact with complexity.",
+    "This room needs to hold law, public administration, civil liberties, corruption risk, and democratic process in one visible frame. If it works, it becomes the place where questions of institutional design can be examined before they harden into factional loyalty.",
+  ],
+  workingConclusions: [
+    "Healthy governance depends on legitimacy and competence together; either one without the other decays.",
+    "Administrative systems need enough capacity to act, but enough transparency and constraint to remain publicly accountable.",
+    "The deepest disagreements are about where authority should sit and how correction happens when institutions fail.",
+  ],
+  whatCouldMoveTheRoom: [
+    "Concrete comparisons between governance models under real institutional stress, not just abstract constitutional preference.",
+    "Better mapping of failure modes in bureaucracies, courts, legislatures, and local governments.",
+    "Visible tradeoff analysis on centralization, local control, civil liberties, and emergency powers.",
+  ],
+  roomComponents: healthcareIssueRoom.roomComponents,
+  topProposals: [
+    {
+      title: "Subsidiarity-First Governance Model",
+      summary:
+        "Pushes authority downward wherever possible while preserving a limited central layer for rights protection and coordination.",
+      label: "Top proposal",
+      metric: "Strong legitimacy case, uneven capacity risk",
+    },
+    {
+      title: "Technocratic Administrative State Model",
+      summary:
+        "Relies on professional expertise, institutional continuity, and procedural governance to manage complexity at scale.",
+      label: "Core proposal",
+      metric: "High capacity, trust deficit risk",
+    },
+    {
+      title: "Radical Civic Transparency Model",
+      summary:
+        "Prioritizes open records, public process visibility, and traceable decision flows as the primary anti-corruption mechanism.",
+      label: "Core proposal",
+      metric: "High sunlight, slower throughput",
+    },
+  ],
+  novelProposals: [
+    {
+      title: "Metric-Governed Public Review Model",
+      summary:
+        "Uses explicit public metrics and review layers to discipline institutional claims before formal action is taken.",
+      label: "Most novel",
+      metric: "Closer to Civic Logos-native governance",
+    },
+    {
+      title: "Sortition and Citizen Panel Hybrid",
+      summary:
+        "Combines expert process with rotating citizen review bodies to reduce capture and restore legitimacy.",
+      label: "Most novel",
+      metric: "Legitimacy experiment with scale questions",
+    },
+  ],
+  economicDeltaLeaders: [
+    {
+      title: "Administrative Simplification for Government Services",
+      summary:
+        "Focuses on reducing procedural waste, permitting delay, and bureaucratic duplication without collapsing legal safeguards.",
+      label: "Highest economic-delta",
+      metric: "Potentially large productivity upside",
+    },
+    {
+      title: "Local Autonomy and Fiscal Accountability Model",
+      summary:
+        "Claims budget clarity and tighter local feedback loops can improve public trust and spending efficiency.",
+      label: "Highest economic-delta",
+      metric: "Sharper incentives, uneven outcomes",
+    },
+  ],
+  mostDebated: [
+    {
+      title: "Strong Executive Coordination Model",
+      summary:
+        "Argues modern states need faster executive coherence, while critics see concentrated abuse risk.",
+      label: "Most debated",
+      metric: "Capacity versus liberty flashpoint",
+    },
+    {
+      title: "Direct Digital Democracy Layer",
+      summary:
+        "Promises more public input, but raises concerns about manipulation, volatility, and performative governance.",
+      label: "Most debated",
+      metric: "High participation, high instability risk",
+    },
+  ],
+  stakeholders: [
+    "Citizens and local communities",
+    "Courts and legal institutions",
+    "Legislatures and executives",
+    "Civil servants and regulators",
+    "Journalists and watchdogs",
+    "Political parties and campaigns",
+    "Whistleblowers and dissenters",
+    "Future generations",
+  ],
+  perspectives: [
+    {
+      title: "Civil-liberties perspective",
+      thesis:
+        "Institutional capacity matters, but unconstrained emergency powers and opaque administrative systems corrode legitimacy over time.",
+      relation: "Raises liberty and anti-abuse constraints.",
+    },
+    {
+      title: "Administrative competence perspective",
+      thesis:
+        "A state that cannot execute, coordinate, or maintain public systems loses legitimacy regardless of formal democratic theory.",
+      relation: "Raises capacity and implementation realism.",
+    },
+    {
+      title: "Localist perspective",
+      thesis:
+        "Many failures of trust come from decisions being made too far from the communities that live with the consequences.",
+      relation: "Raises subsidiarity and local knowledge.",
+    },
+    {
+      title: "Anti-corruption perspective",
+      thesis:
+        "Governance quality depends less on slogans than on visible incentives, auditability, and conflict-of-interest controls.",
+      relation: "Pushes the room toward disclosure and process design.",
+    },
+  ],
+  evidenceLibrary: [
+    {
+      title: "Institutional trust trend data",
+      status: "Strong evidence",
+      note: "Useful for tracking legitimacy decay, though it does not identify a single cause by itself.",
+    },
+    {
+      title: "Comparative constitutional and administrative history",
+      status: "Contested evidence",
+      note: "Important, but difficult to translate cleanly across cultures and time periods.",
+    },
+    {
+      title: "Corruption and transparency indices",
+      status: "Useful but incomplete",
+      note: "Helpful directional signals, but often too blunt to resolve institutional design questions alone.",
+    },
+    {
+      title: "Case studies of emergency governance",
+      status: "Strong evidence",
+      note: "Relevant for testing the tradeoff between speed, legitimacy, and abuse risk.",
+    },
+  ],
+  objectionLibrary: [
+    "Calls for stronger governance capacity often underestimate abuse risk once power centralizes.",
+    "Calls for radical decentralization can romanticize local knowledge while ignoring local capture and uneven competence.",
+    "Transparency alone does not fix corruption if incentives remain intact.",
+    "Digital participation layers can become new surfaces for manipulation rather than a cure for legitimacy loss.",
+  ],
+  openQuestions: [
+    "What governance structures best combine competence with visible public correction?",
+    "How much central coordination is necessary before local autonomy becomes fragile or fictitious?",
+    "Which trust metrics actually predict institutional resilience rather than temporary popularity?",
+    "How should emergency powers be bounded in a system that still needs to act under pressure?",
+  ],
+  claimMap: [
+    {
+      claim: "Legitimacy depends on both competence and accountability rather than on procedure alone.",
+      status: "Active claim atom",
+    },
+    {
+      claim: "Institutional opacity increases corruption and trust decay.",
+      status: "Active claim atom",
+    },
+    {
+      claim: "More local control usually improves legitimacy.",
+      status: "Contested claim atom",
+    },
+    {
+      claim: "Administrative simplification can increase state competence without increasing coercive power.",
+      status: "Nuance-bearing claim atom",
+    },
+    {
+      claim: "Emergency authority tends to outlive the emergency that justified it.",
+      status: "High-priority objection",
+    },
+  ],
+} satisfies IssueRoomData;
+
+export const housingIssueRoom = {
+  title: "Housing and Land Use",
+  question:
+    "What housing system best balances affordability, stability, neighborhood character, property rights, density, local control, and long-term abundance?",
+  draftNote:
+    "This room is seeded because housing is one of the clearest examples of a problem that restarts from slogans every few years without building public memory.",
+  whyItMatters:
+    "The paper explicitly names housing as a major domain because affordability, zoning, land use, construction, infrastructure, local politics, and family stability all converge here.",
+  currentSynthesis:
+    "Housing scarcity is not caused by one variable. Price pressure reflects land constraints, zoning, permitting delay, financing conditions, infrastructure limits, investor behavior, labor shortages, household formation, and local political incentives. The core unresolved disputes concern how much scarcity is artificial, how much density is necessary, what protections existing residents deserve, and how to increase supply without destroying place-level trust.",
+  narrative: [
+    "A housing room should preserve the fact that affordability, growth, displacement, aesthetics, local democracy, construction economics, and homelessness are entangled rather than separable.",
+    "The room becomes useful when it forces competing housing models to reveal who benefits, who pays, what gets built, and what tradeoffs are being hidden behind moral language.",
+  ],
+  workingConclusions: [
+    "Supply matters, but the room should not reduce the entire issue to one slogan about supply.",
+    "Permitting, zoning, infrastructure, financing, and political incentives all shape whether supply can actually arrive.",
+    "The most serious disagreements are about pace, place, rights, and who absorbs the transitional pain of change.",
+  ],
+  whatCouldMoveTheRoom: [
+    "Better evidence on where new supply lowers pressure and where it mainly redistributes it.",
+    "Comparative case studies on zoning reform, modular construction, and infrastructure-led housing growth.",
+    "Sharper stakeholder mapping around tenants, small owners, developers, municipalities, and unhoused populations.",
+  ],
+  roomComponents: healthcareIssueRoom.roomComponents,
+  topProposals: [
+    {
+      title: "Abundance and Zoning Reform Model",
+      summary:
+        "Expands by-right construction capacity, legalizes more density, and treats scarcity as a policy choice that must be reversed.",
+      label: "Top proposal",
+      metric: "Strong supply logic, contested local politics",
+    },
+    {
+      title: "Public and Social Housing Expansion",
+      summary:
+        "Uses direct public or nonprofit production to increase affordability where market delivery is too slow or too exclusionary.",
+      label: "Core proposal",
+      metric: "High equity case, heavy delivery challenge",
+    },
+    {
+      title: "Transit-Oriented Growth Model",
+      summary:
+        "Concentrates new housing around transit and infrastructure corridors to reduce car dependence and unlock regional capacity.",
+      label: "Core proposal",
+      metric: "Strong systems logic, long rollout",
+    },
+  ],
+  novelProposals: [
+    {
+      title: "Incremental Neighborhood Fabric Model",
+      summary:
+        "Legalizes small-scale missing-middle growth without treating every neighborhood as a tower district.",
+      label: "Most novel",
+      metric: "Political bridge strategy",
+    },
+    {
+      title: "Land Value Recapture Model",
+      summary:
+        "Links upzoning and infrastructure gains to public reinvestment rather than pure private windfall.",
+      label: "Most novel",
+      metric: "High incentive-design complexity",
+    },
+  ],
+  economicDeltaLeaders: [
+    {
+      title: "Permitting Compression Model",
+      summary:
+        "Targets delay, carrying cost, and administrative uncertainty as hidden drivers of housing price escalation.",
+      label: "Highest economic-delta",
+      metric: "Process reform with broad spillovers",
+    },
+    {
+      title: "Large-Scale Modular and Factory-Built Housing",
+      summary:
+        "Claims large productivity gains in construction if code, financing, and local approval systems can adapt.",
+      label: "Highest economic-delta",
+      metric: "Potential cost compression, execution risk",
+    },
+  ],
+  mostDebated: [
+    {
+      title: "Investor Restriction and Speculation Control",
+      summary:
+        "Argues capital behavior is a major driver of unaffordability, while critics say supply and regulation matter more.",
+      label: "Most debated",
+      metric: "Ownership versus scarcity dispute",
+    },
+    {
+      title: "Local Veto Preservation",
+      summary:
+        "Defends neighborhood control as democratic self-governance, while critics see it as scarcity protection.",
+      label: "Most debated",
+      metric: "Democracy versus abundance flashpoint",
+    },
+  ],
+  stakeholders: [
+    "Renters and first-time buyers",
+    "Longtime homeowners",
+    "Developers and builders",
+    "Cities and planning boards",
+    "Transit agencies and utilities",
+    "Unhoused residents",
+    "Neighborhood groups",
+    "Employers and regional economies",
+  ],
+  perspectives: [
+    {
+      title: "Tenant perspective",
+      thesis:
+        "Affordability and housing security matter more than preserving exclusionary local patterns that lock new households out.",
+      relation: "Raises access and cost urgency.",
+    },
+    {
+      title: "Homeowner perspective",
+      thesis:
+        "Neighborhood change should not be framed as costless when residents carry place attachment, savings risk, and infrastructure concerns.",
+      relation: "Raises stability and local legitimacy.",
+    },
+    {
+      title: "Builder perspective",
+      thesis:
+        "Many projects fail long before construction because financing, entitlement delay, and inconsistent rules make delivery too risky.",
+      relation: "Raises implementation realism.",
+    },
+    {
+      title: "Municipal perspective",
+      thesis:
+        "Housing growth without infrastructure, schools, and services can create a political backlash that then freezes future supply.",
+      relation: "Raises sequencing and capacity constraints.",
+    },
+  ],
+  evidenceLibrary: [
+    {
+      title: "Rent burden and household formation data",
+      status: "Strong evidence",
+      note: "Core for seeing how affordability pressure distorts family formation and economic mobility.",
+    },
+    {
+      title: "Zoning and permitting case studies",
+      status: "Strong evidence",
+      note: "Important for testing how much supply delay is policy-generated.",
+    },
+    {
+      title: "Construction productivity data",
+      status: "Useful but incomplete",
+      note: "Helpful for comparing delivery models, though local variance remains large.",
+    },
+    {
+      title: "Displacement and neighborhood change evidence",
+      status: "Contested evidence",
+      note: "Central to the moral stakes of the room, but often used selectively by both sides.",
+    },
+  ],
+  objectionLibrary: [
+    "Pure supply narratives can ignore displacement, financing asymmetry, and the politics of where new housing actually lands.",
+    "Public housing expansion can be administratively slow, politically fragile, or poorly maintained without institutional competence.",
+    "Local control arguments often protect exclusionary scarcity, but full override models can trigger legitimacy collapse.",
+    "Housing reform that ignores infrastructure can simply relocate congestion and resentment rather than solve scarcity.",
+  ],
+  openQuestions: [
+    "Which housing bottlenecks are most binding in high-cost regions: land use, finance, labor, or politics?",
+    "How much supply needs to arrive before households actually feel price relief?",
+    "What anti-displacement protections can coexist with genuine abundance?",
+    "How should local democratic control be weighed against regional affordability needs?",
+  ],
+  claimMap: [
+    {
+      claim: "Artificial scarcity from zoning and permitting is a major driver of housing cost.",
+      status: "Active claim atom",
+    },
+    {
+      claim: "More supply will eventually lower overall housing pressure.",
+      status: "Active claim atom",
+    },
+    {
+      claim: "Local veto power is necessary for democratic legitimacy.",
+      status: "Contested claim atom",
+    },
+    {
+      claim: "Transit-oriented growth creates higher long-run regional efficiency.",
+      status: "Nuance-bearing claim atom",
+    },
+    {
+      claim: "New market-rate housing reliably protects existing low-income residents from displacement.",
+      status: "High-priority objection",
+    },
+  ],
+} satisfies IssueRoomData;
+
+export const aiLaborIssueRoom = {
+  title: "AI, Labor, and Human Purpose",
+  question:
+    "How should society respond as AI changes work, productivity, ownership, wages, education, and human purpose?",
+  draftNote:
+    "This room is seeded as a high-complexity room because it touches economics, education, meaning, ownership, and political order all at once.",
+  whyItMatters:
+    "The paper names automation, employment, human replacement, wages, reskilling, ownership of AI systems, universal basic income, and human purpose as one of the core domains Civic Logos should eventually handle.",
+  currentSynthesis:
+    "AI is likely to change labor markets unevenly rather than in one clean wave. Some work will be augmented, some displaced, some compressed, and some newly created. The hardest unresolved questions concern ownership of gains, wage bargaining, retraining realism, status loss, educational redesign, and what societies do when human economic usefulness becomes less tightly coupled to survival.",
+  narrative: [
+    "A serious AI-and-labor room cannot be just a jobs forecast page. It has to hold productivity, bargaining power, ownership, dignity, education, inequality, and political stability in the same public object.",
+    "This room matters because the future of work is really a dispute about what the gains of intelligence automation are for and who gets to define human usefulness afterward.",
+  ],
+  workingConclusions: [
+    "The largest impacts will likely come through task decomposition, bargaining shifts, and ownership concentration before they show up as one headline unemployment number.",
+    "Productivity gains alone do not guarantee broad public benefit; distribution and institutional design matter.",
+    "The deepest debate is not just how many jobs survive, but what social contract replaces work-centric legitimacy if enough work changes.",
+  ],
+  whatCouldMoveTheRoom: [
+    "Better evidence on where AI complements workers versus where it displaces them outright.",
+    "More honest modeling of who owns the productivity gains under current corporate structures.",
+    "Stronger links between education reform, reskilling capacity, and actual labor-market transitions.",
+  ],
+  roomComponents: healthcareIssueRoom.roomComponents,
+  topProposals: [
+    {
+      title: "Augmentation-First Transition Model",
+      summary:
+        "Prioritizes using AI to expand human productivity while redesigning jobs before displacement accelerates.",
+      label: "Top proposal",
+      metric: "Most politically portable near-term path",
+    },
+    {
+      title: "Universal Basic Income or Social Dividend Model",
+      summary:
+        "Treats AI productivity gains as grounds for a broader decoupling of income from traditional employment.",
+      label: "Core proposal",
+      metric: "High social-protection upside, heavy fiscal dispute",
+    },
+    {
+      title: "Worker Ownership of AI Gains Model",
+      summary:
+        "Attempts to tie automation gains to labor equity, profit-sharing, or broader capital ownership.",
+      label: "Core proposal",
+      metric: "Distribution-first framework",
+    },
+  ],
+  novelProposals: [
+    {
+      title: "Human Contribution Guarantee Model",
+      summary:
+        "Explores whether societies should preserve meaningful roles for humans even when pure efficiency argues otherwise.",
+      label: "Most novel",
+      metric: "Meaning and dignity centered",
+    },
+    {
+      title: "Public Compute and Civic AI Infrastructure Model",
+      summary:
+        "Argues that ownership of AI infrastructure itself may shape whether productivity gains stay broadly distributed.",
+      label: "Most novel",
+      metric: "Institutional design with high leverage",
+    },
+  ],
+  economicDeltaLeaders: [
+    {
+      title: "AI-Augmented Professional Workflows",
+      summary:
+        "Focuses on productivity growth inside medicine, law, government, and logistics before full labor displacement arrives.",
+      label: "Highest economic-delta",
+      metric: "Large upside, uneven wage effects",
+    },
+    {
+      title: "Automation Dividend Redistribution",
+      summary:
+        "Attempts to link broad welfare gains to concentrated productivity gains from capital-intensive AI systems.",
+      label: "Highest economic-delta",
+      metric: "Big upside if distribution works",
+    },
+  ],
+  mostDebated: [
+    {
+      title: "Rapid Full Automation Scenario",
+      summary:
+        "Claims labor displacement will come faster than institutions can adapt, while critics see a more gradual hybrid transition.",
+      label: "Most debated",
+      metric: "Pace-of-change dispute",
+    },
+    {
+      title: "Reskilling Will Absorb the Shock",
+      summary:
+        "Holds that new roles will naturally appear if people retrain, while critics see a deeper structural break in labor demand.",
+      label: "Most debated",
+      metric: "Optimism versus structural pessimism",
+    },
+  ],
+  stakeholders: [
+    "Workers across income bands",
+    "Students and training systems",
+    "Employers and AI firms",
+    "Investors and capital owners",
+    "Governments and tax systems",
+    "Unions and labor advocates",
+    "Caregivers and families",
+    "Future cohorts entering work",
+  ],
+  perspectives: [
+    {
+      title: "Worker perspective",
+      thesis:
+        "People fear not only losing income, but losing leverage, identity, and a credible place in the social order.",
+      relation: "Raises bargaining power and dignity.",
+    },
+    {
+      title: "Builder perspective",
+      thesis:
+        "AI can unlock enormous productivity gains, but hostile or panicked policy could slow beneficial adoption.",
+      relation: "Raises innovation and growth pressure.",
+    },
+    {
+      title: "Labor economist perspective",
+      thesis:
+        "The key variable is not whether tasks change, but who captures the gains when they do.",
+      relation: "Pushes the room toward distribution and ownership.",
+    },
+    {
+      title: "Education perspective",
+      thesis:
+        "If work is changing faster than training institutions, then education reform is not peripheral; it is central to adaptation.",
+      relation: "Expands the room beyond jobs data alone.",
+    },
+  ],
+  evidenceLibrary: [
+    {
+      title: "Task exposure and occupational vulnerability studies",
+      status: "Strong evidence",
+      note: "Useful for identifying where labor displacement may appear first.",
+    },
+    {
+      title: "Firm-level productivity case studies",
+      status: "Useful but incomplete",
+      note: "Important for seeing real gains, though still early and highly uneven.",
+    },
+    {
+      title: "Wage polarization and bargaining data",
+      status: "Strong evidence",
+      note: "Necessary for distinguishing productivity growth from broad-based benefit.",
+    },
+    {
+      title: "Historical automation analogies",
+      status: "Contested evidence",
+      note: "Helpful for pattern recognition, but potentially misleading if AI changes the substitution boundary itself.",
+    },
+  ],
+  objectionLibrary: [
+    "Productivity gains may concentrate in capital owners long before workers experience broad benefits.",
+    "Reskilling narratives can become moral theater if the number of high-quality replacement roles is too small.",
+    "Policies designed for short-term wage protection may fail if AI changes the social meaning of work itself.",
+    "AI augmentation can still degrade autonomy and bargaining power even when jobs are not eliminated.",
+  ],
+  openQuestions: [
+    "Which work domains are genuinely resilient because humans remain indispensable, and which only feel safe for now?",
+    "How should AI productivity gains be owned, taxed, or redistributed?",
+    "What replaces work as a source of dignity and legitimacy if enough labor is automated?",
+    "How should education systems adapt if task change outpaces institutional curriculum cycles?",
+  ],
+  claimMap: [
+    {
+      claim: "AI will affect bargaining power before it produces one clear unemployment shock.",
+      status: "Active claim atom",
+    },
+    {
+      claim: "Productivity gains will not be broadly shared without institutional intervention.",
+      status: "Active claim atom",
+    },
+    {
+      claim: "Historical automation analogies are sufficient guidance for AI-era labor transitions.",
+      status: "Contested claim atom",
+    },
+    {
+      claim: "Universal basic income may become more plausible as AI productivity concentrates.",
+      status: "Nuance-bearing claim atom",
+    },
+    {
+      claim: "Reskilling at scale can absorb most AI displacement in time.",
+      status: "High-priority objection",
+    },
+  ],
+} satisfies IssueRoomData;
+
+export const institutionalTrustIssueRoom = {
+  title: "Institutional Trust and Corruption",
+  question:
+    "How should a society diagnose and reduce corruption, capture, propaganda, and trust decay across major institutions without collapsing into paranoia or nihilism?",
+  draftNote:
+    "This room is seeded as a trust room rather than a scandal room. The point is to study incentive structure, legitimacy decay, and repair mechanisms, not to become a feed of accusations.",
+  whyItMatters:
+    "The paper returns repeatedly to institutional capture, disclosure, reputation laundering, astroturfing, and the need for labeled institutional speech. This room sits close to the heart of the Civic Logos thesis.",
+  currentSynthesis:
+    "Trust decays when institutions become opaque, self-protective, misaligned, or obviously insulated from consequences. But distrust can also be manufactured, monetized, and inflated beyond reality. The unresolved challenge is how to distinguish legitimate institutional criticism from corrosive blanket cynicism while still forcing powerful actors into transparency and review.",
+  narrative: [
+    "This room should help the public reason about corruption and trust decay without becoming a conspiracy arena. That means forcing accusations, incentives, evidence, and institutional responses into structured objects rather than outrage cycles.",
+    "It also needs to examine how trust can be rebuilt: through disclosure, auditability, conflict-of-interest controls, correction rituals, and visible institutional memory.",
+  ],
+  workingConclusions: [
+    "Trust usually breaks through repeated misalignment, opacity, and non-correction rather than through one dramatic event alone.",
+    "Anti-corruption design must address incentives and information flows, not just individual bad actors.",
+    "A room like this only works if it can hold skepticism without rewarding paranoia.",
+  ],
+  whatCouldMoveTheRoom: [
+    "Better institutional disclosure models that are legible to ordinary readers rather than only specialists.",
+    "Comparative evidence on what anti-corruption mechanisms actually improve trust over time.",
+    "Stronger distinctions between institutional error, capture, propaganda, and ordinary disagreement.",
+  ],
+  roomComponents: healthcareIssueRoom.roomComponents,
+  topProposals: [
+    {
+      title: "Radical Disclosure and Conflict Mapping Model",
+      summary:
+        "Requires visible institutional incentives, affiliations, funding, and correction history as first-order public objects.",
+      label: "Top proposal",
+      metric: "Strong transparency logic",
+    },
+    {
+      title: "Independent Public Audit Layer",
+      summary:
+        "Creates a standing review process for major institutional claims, corrections, and contested public narratives.",
+      label: "Core proposal",
+      metric: "High accountability potential, expensive to run",
+    },
+    {
+      title: "Domain-Specific Trust and Reputation Model",
+      summary:
+        "Prevents institutions from laundering trust earned in one domain into another where conflicts of interest differ.",
+      label: "Core proposal",
+      metric: "Very aligned with Civic Logos architecture",
+    },
+  ],
+  novelProposals: [
+    {
+      title: "Public Correction Ledger Model",
+      summary:
+        "Treats corrections, reversals, and admissions as durable institutional memory instead of PR cleanup.",
+      label: "Most novel",
+      metric: "Memory-first accountability",
+    },
+    {
+      title: "Astroturf Detection and Labeling Layer",
+      summary:
+        "Surfaces coordinated influence, manufactured consensus, and hidden institutional speech as a structural moderation problem.",
+      label: "Most novel",
+      metric: "High relevance, difficult implementation",
+    },
+  ],
+  economicDeltaLeaders: [
+    {
+      title: "Procurement and Contract Transparency Model",
+      summary:
+        "Targets waste, favoritism, and public distrust through visible spending pathways and auditability.",
+      label: "Highest economic-delta",
+      metric: "Clear fiscal upside if adopted",
+    },
+    {
+      title: "Public Review Stake for Institutional Claims",
+      summary:
+        "Forces high-impact institutional claims to pay for structured examination without buying favorable outcomes.",
+      label: "Highest economic-delta",
+      metric: "Trust and revenue architecture overlap",
+    },
+  ],
+  mostDebated: [
+    {
+      title: "Everything Is Capture Model",
+      summary:
+        "Claims most institutions are already irredeemably compromised, while critics see this as politically intoxicating but socially destructive.",
+      label: "Most debated",
+      metric: "Truth-seeking versus nihilism fault line",
+    },
+    {
+      title: "Trust the Credentialed Class Model",
+      summary:
+        "Argues legitimacy should track expertise and institutional continuity, while critics see unaccountable insulation.",
+      label: "Most debated",
+      metric: "Expertise versus public distrust fault line",
+    },
+  ],
+  stakeholders: [
+    "Citizens and readers",
+    "Journalists and researchers",
+    "Government agencies",
+    "Corporations and lobbying groups",
+    "Universities and nonprofits",
+    "Whistleblowers and insiders",
+    "Courts and oversight bodies",
+    "Communities under institutional pressure",
+  ],
+  perspectives: [
+    {
+      title: "Institutional reform perspective",
+      thesis:
+        "Most institutions need repair and exposure, not total delegitimation.",
+      relation: "Keeps the room in a reform frame.",
+    },
+    {
+      title: "Populist distrust perspective",
+      thesis:
+        "Institutions repeatedly protect themselves first, so high skepticism is a rational baseline rather than a pathology.",
+      relation: "Raises legitimacy and accountability pressure.",
+    },
+    {
+      title: "Professional expertise perspective",
+      thesis:
+        "Blanket distrust destroys the capacity of institutions that societies still need to function under stress.",
+      relation: "Raises competence and anti-nihilism concerns.",
+    },
+    {
+      title: "Whistleblower perspective",
+      thesis:
+        "Trust repair is impossible if insiders cannot surface real corruption safely and credibly.",
+      relation: "Raises anonymity, verification, and retaliation design.",
+    },
+  ],
+  evidenceLibrary: [
+    {
+      title: "Institutional trust trend surveys",
+      status: "Strong evidence",
+      note: "Useful for mapping decay, though not sufficient for causal explanation.",
+    },
+    {
+      title: "Conflict-of-interest and funding disclosures",
+      status: "Strong evidence",
+      note: "Core to identifying where speech, incentives, and authority misalign.",
+    },
+    {
+      title: "Whistleblower case studies",
+      status: "Useful but sensitive",
+      note: "Important for understanding retaliation and truth-surfacing failure modes.",
+    },
+    {
+      title: "Propaganda and coordinated influence analyses",
+      status: "Contested evidence",
+      note: "Highly relevant, but also vulnerable to misuse and over-interpretation.",
+    },
+  ],
+  objectionLibrary: [
+    "Trust repair efforts can become aesthetics of accountability without changing incentives.",
+    "Strong anti-corruption language is often used selectively against opponents while ignoring allied capture.",
+    "Too much ambient suspicion can destroy the very institutions that need reform rather than replacement.",
+    "Disclosure is necessary but insufficient if the public lacks a structure for interpreting disclosed conflicts.",
+  ],
+  openQuestions: [
+    "What distinctions best separate corruption, ordinary error, ideological bias, and institutional inertia?",
+    "Which transparency measures genuinely improve trust instead of merely increasing information overload?",
+    "How should whistleblower claims be handled when the evidence is partial but the stakes are high?",
+    "What role should domain-specific reputation play in preventing institutional trust laundering?",
+  ],
+  claimMap: [
+    {
+      claim: "Trust decays when institutions fail to correct publicly visible errors.",
+      status: "Active claim atom",
+    },
+    {
+      claim: "Institutional speech should always be labeled with interests and affiliations.",
+      status: "Active claim atom",
+    },
+    {
+      claim: "Low public trust usually reflects institutional failure rather than manufactured distrust.",
+      status: "Contested claim atom",
+    },
+    {
+      claim: "Domain-specific reputation reduces institutional laundering across unrelated issues.",
+      status: "Nuance-bearing claim atom",
+    },
+    {
+      claim: "High skepticism is the safest default posture toward institutions.",
+      status: "High-priority objection",
+    },
+  ],
+} satisfies IssueRoomData;
+
+export const issueRooms = {
+  healthcare: healthcareIssueRoom,
+  governance: governanceIssueRoom,
+  housing: housingIssueRoom,
+  "ai-labor": aiLaborIssueRoom,
+  "institutional-trust": institutionalTrustIssueRoom,
+} as const;
+
+export type IssueRoomSlug = keyof typeof issueRooms;
+
+export const roomDirectory: readonly RoomDirectoryItem[] = [
+  {
+    slug: "healthcare",
+    title: healthcareIssueRoom.title,
+    domain: "Health and public systems",
+    summary:
+      "The first full room, useful as a prototype for proposals, objections, evidence, and economic-delta thinking.",
+    complexity: "High, but still relatively intuitive",
+    stage: "Most developed",
+    href: "/healthcare",
+  },
+  {
+    slug: "governance",
+    title: governanceIssueRoom.title,
+    domain: "Political order and institutions",
+    summary:
+      "A heavier room about legitimacy, competence, public trust, authority, civil liberties, and institutional design.",
+    complexity: "Very high",
+    stage: "Seeded draft",
+    href: "/rooms/governance",
+  },
+  {
+    slug: "housing",
+    title: housingIssueRoom.title,
+    domain: "Built environment and local politics",
+    summary:
+      "A room about affordability, land use, density, property rights, neighborhood stability, and long-run abundance.",
+    complexity: "Very high",
+    stage: "Seeded draft",
+    href: "/rooms/housing",
+  },
+  {
+    slug: "ai-labor",
+    title: aiLaborIssueRoom.title,
+    domain: "Automation and human future",
+    summary:
+      "A room about jobs, wages, bargaining power, ownership, education, social dividends, and human purpose under AI.",
+    complexity: "Extreme",
+    stage: "Seeded draft",
+    href: "/rooms/ai-labor",
+  },
+  {
+    slug: "institutional-trust",
+    title: institutionalTrustIssueRoom.title,
+    domain: "Trust, corruption, and disclosure",
+    summary:
+      "A room for institutional capture, legitimacy decay, transparency, propaganda, whistleblowing, and repair mechanisms.",
+    complexity: "Extreme",
+    stage: "Seeded draft",
+    href: "/rooms/institutional-trust",
+  },
+] as const;
 
 export const proposal001 = {
   id: "proposal-001",

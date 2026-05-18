@@ -1,0 +1,109 @@
+import Link from "next/link";
+import { roomDirectory } from "../lib/civic-logos";
+import styles from "./page.module.css";
+
+export default function RoomsPage() {
+  return (
+    <div className={styles.page}>
+      <div className={styles.backdrop} aria-hidden="true" />
+
+      <header className={styles.header}>
+        <div className={styles.headerBar}>
+          <Link className={styles.brand} href="/">
+            <span className={styles.brandMark}>CL</span>
+            <span className={styles.brandText}>
+              <strong>Civic Logos</strong>
+              <span>Issue room library</span>
+            </span>
+          </Link>
+
+          <nav className={styles.nav}>
+            <Link href="/">Home</Link>
+            <Link href="/healthcare">Healthcare room</Link>
+            <a href="#room-grid">Room grid</a>
+          </nav>
+        </div>
+
+        <div className={styles.hero}>
+          <div className={styles.heroCopy}>
+            <span className={styles.eyebrow}>Room library</span>
+            <h1>One room proves the mechanism. Several rooms prove the system.</h1>
+            <p className={styles.lead}>
+              Healthcare was a good first prototype, but the paper clearly
+              points toward a wider civilizational room set: governance,
+              housing, education, institutional trust, economics, AI, energy,
+              and more.
+            </p>
+            <p className={styles.supporting}>
+              This library is the first step away from a single-topic demo and
+              toward a real public reasoning network. Some rooms are more
+              developed than others, but all of them are seeded from the
+              structure in the paper.
+            </p>
+          </div>
+
+          <aside className={styles.heroPanel}>
+            <span className={styles.panelLabel}>Current room set</span>
+            <div className={styles.heroStats}>
+              <div>
+                <strong>{roomDirectory.length}</strong>
+                <span>rooms in view</span>
+              </div>
+              <div>
+                <strong>1</strong>
+                <span>fully developed prototype</span>
+              </div>
+              <div>
+                <strong>4</strong>
+                <span>heavier seeded drafts</span>
+              </div>
+            </div>
+          </aside>
+        </div>
+      </header>
+
+      <main className={styles.main}>
+        <section className={styles.section}>
+          <div className={styles.sectionIntro}>
+            <span className={styles.eyebrow}>Why expand now</span>
+            <h2>The product gets more credible when it can hold different kinds of complexity.</h2>
+            <p>
+              Healthcare is institutionally rich, but it is still a familiar
+              policy room. A stronger proof of Civic Logos is that the same
+              structure can also hold governance, housing, labor automation, and
+              institutional trust without collapsing into generic commentary.
+            </p>
+          </div>
+        </section>
+
+        <section className={styles.section} id="room-grid">
+          <div className={styles.sectionIntro}>
+            <span className={styles.eyebrow}>Room grid</span>
+            <h2>Each room should eventually become a living workspace, not a content category.</h2>
+          </div>
+
+          <div className={styles.roomGrid}>
+            {roomDirectory.map((room) => (
+              <article className={styles.roomCard} key={room.slug}>
+                <div className={styles.roomMeta}>
+                  <span>{room.domain}</span>
+                  <strong>{room.complexity}</strong>
+                </div>
+
+                <h3>{room.title}</h3>
+                <p>{room.summary}</p>
+
+                <div className={styles.roomFooter}>
+                  <span>{room.stage}</span>
+                  <Link className={styles.roomLink} href={room.href}>
+                    Open room
+                  </Link>
+                </div>
+              </article>
+            ))}
+          </div>
+        </section>
+      </main>
+    </div>
+  );
+}

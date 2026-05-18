@@ -36,7 +36,8 @@ The current site includes:
 - mission-led homepage copy
 - concise manifesto section
 - core distinctions for the platform
-- first-release healthcare issue room preview
+- healthcare issue room with Proposal 001
+- seeded room library for governance, housing, AI/labor, and institutional trust
 - early-access contact calls to action
 
 The next likely upgrade is wiring a real email signup provider such as Buttondown, Formspree, or ConvertKit.
