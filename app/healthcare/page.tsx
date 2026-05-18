@@ -1,4 +1,5 @@
 import Link from "next/link";
+import RoomGuide from "../components/room-guide";
 import {
   healthcareIssueRoom,
   issueRoomQuestion,
@@ -157,6 +158,8 @@ export default function HealthcareIssueRoomPage() {
             </ul>
           </article>
         </section>
+
+        <RoomGuide />
 
         <section className={styles.section} id="proposal-field">
           <div className={styles.sectionHeading}>

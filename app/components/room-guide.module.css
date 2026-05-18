@@ -1,0 +1,228 @@
+.shell {
+  display: grid;
+  gap: 20px;
+  padding: 32px;
+  border: 1px solid rgba(18, 33, 39, 0.12);
+  border-radius: 30px;
+  background: rgba(255, 251, 245, 0.8);
+  box-shadow: 0 20px 44px rgba(18, 33, 39, 0.08);
+  backdrop-filter: blur(12px);
+}
+
+.header {
+  max-width: 860px;
+}
+
+.eyebrow,
+.messageLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--signal);
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.eyebrow::before {
+  content: "";
+  width: 28px;
+  height: 1px;
+  background: currentColor;
+}
+
+.header h2,
+.answerCard h3 {
+  font-family: var(--font-serif), serif;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  line-height: 1.04;
+  text-wrap: balance;
+}
+
+.header h2 {
+  margin-top: 14px;
+  font-size: clamp(2rem, 4vw, 3rem);
+}
+
+.header p,
+.answerIntro,
+.answerList,
+.answerFooter p,
+.userMessage p,
+.composerLabel {
+  color: var(--muted);
+  line-height: 1.74;
+}
+
+.header p {
+  margin-top: 14px;
+}
+
+.promptRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.promptChip {
+  min-height: 42px;
+  padding: 0 14px;
+  border: 1px solid rgba(91, 110, 69, 0.22);
+  border-radius: 999px;
+  background: rgba(91, 110, 69, 0.08);
+  color: var(--foreground);
+  cursor: pointer;
+  transition:
+    transform 180ms ease,
+    border-color 180ms ease,
+    background 180ms ease;
+}
+
+.messageList {
+  display: grid;
+  gap: 14px;
+}
+
+.userMessage,
+.answerCard {
+  padding: 22px;
+  border: 1px solid rgba(18, 33, 39, 0.12);
+  border-radius: 24px;
+  background: rgba(255, 251, 245, 0.84);
+  box-shadow: 0 16px 34px rgba(18, 33, 39, 0.06);
+}
+
+.userMessage {
+  justify-self: end;
+  width: min(100%, 680px);
+  background: rgba(229, 235, 220, 0.72);
+}
+
+.answerCard {
+  width: min(100%, 860px);
+}
+
+.answerCard h3 {
+  margin-top: 12px;
+  font-size: 1.75rem;
+}
+
+.answerIntro {
+  margin-top: 14px;
+}
+
+.answerList {
+  display: grid;
+  gap: 12px;
+  margin-top: 18px;
+  padding-left: 20px;
+}
+
+.answerFooter {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(18, 33, 39, 0.1);
+}
+
+.answerLink,
+.submitButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  padding: 0 18px;
+  border-radius: 999px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.answerLink {
+  border: 1px solid rgba(18, 33, 39, 0.14);
+  background: rgba(255, 251, 245, 0.94);
+}
+
+.composer {
+  display: grid;
+  gap: 12px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(18, 33, 39, 0.1);
+}
+
+.composerRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 12px;
+}
+
+.input {
+  min-height: 54px;
+  padding: 0 18px;
+  border: 1px solid rgba(18, 33, 39, 0.14);
+  border-radius: 18px;
+  background: rgba(255, 251, 245, 0.98);
+  color: var(--foreground);
+}
+
+.input:focus,
+.submitButton:focus,
+.promptChip:focus,
+.answerLink:focus {
+  outline: 2px solid rgba(181, 94, 51, 0.35);
+  outline-offset: 2px;
+}
+
+.submitButton {
+  border: 1px solid transparent;
+  background: var(--foreground);
+  color: #fff7ee;
+  cursor: pointer;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .promptChip:hover,
+  .answerLink:hover,
+  .submitButton:hover {
+    transform: translateY(-1px);
+  }
+
+  .promptChip:hover {
+    border-color: rgba(91, 110, 69, 0.34);
+    background: rgba(91, 110, 69, 0.14);
+  }
+
+  .submitButton:hover {
+    background: #24363c;
+  }
+}
+
+@media (max-width: 720px) {
+  .shell,
+  .userMessage,
+  .answerCard {
+    padding: 22px;
+    border-radius: 24px;
+  }
+
+  .composerRow {
+    grid-template-columns: 1fr;
+  }
+
+  .answerFooter {
+    align-items: start;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .promptChip,
+  .answerLink,
+  .submitButton {
+    transition: none;
+  }
+}
