@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import {
   issueRooms,
+  type IssueRoomData,
   type IssueRoomSlug,
 } from "../../lib/civic-logos";
 import styles from "../../healthcare/page.module.css";
@@ -69,7 +70,7 @@ export default async function IssueRoomPage({
 }) {
   const { slug } = await params;
   const roomSlug = slug as IssueRoomSlug;
-  const room = issueRooms[roomSlug];
+  const room = issueRooms[roomSlug] as IssueRoomData | undefined;
 
   if (!room || roomSlug === "healthcare") {
     notFound();
@@ -116,6 +117,12 @@ export default async function IssueRoomPage({
           <aside className={styles.heroPanel}>
             <span className={styles.panelLabel}>Room note</span>
             <p>{room.draftNote}</p>
+            {room.deeperQuestion ? (
+              <div className={styles.heroQuote}>
+                <span>Deeper question</span>
+                <p>{room.deeperQuestion}</p>
+              </div>
+            ) : null}
 
             <div className={styles.heroStats}>
               <div>
@@ -177,6 +184,40 @@ export default async function IssueRoomPage({
             </ul>
           </article>
         </section>
+
+        {room.majorFrames || room.initialScorecard ? (
+          <section className={styles.twoColumnSection}>
+            {room.majorFrames ? (
+              <article className={styles.panel}>
+                <span className={styles.eyebrow}>Major frames</span>
+                <h2>The room works only if competing frames stay visible at the same time.</h2>
+                <div className={styles.frameList}>
+                  {room.majorFrames.map((frame) => (
+                    <article className={styles.frameItem} key={frame.title}>
+                      <h3>{frame.title}</h3>
+                      <p>{frame.body}</p>
+                    </article>
+                  ))}
+                </div>
+              </article>
+            ) : null}
+
+            {room.initialScorecard ? (
+              <article className={styles.panel}>
+                <span className={styles.eyebrow}>Initial scorecard</span>
+                <h2>This room is high-stakes before any final answer exists.</h2>
+                <div className={styles.scorecardList}>
+                  {room.initialScorecard.map((item) => (
+                    <div className={styles.scorecardItem} key={item.metric}>
+                      <span>{item.metric}</span>
+                      <strong>{item.rating}</strong>
+                    </div>
+                  ))}
+                </div>
+              </article>
+            ) : null}
+          </section>
+        ) : null}
 
         <section className={styles.section} id="proposal-field">
           <div className={styles.sectionHeading}>
@@ -307,12 +348,11 @@ export default async function IssueRoomPage({
 
         <section className={styles.ctaPanel}>
           <div>
-            <span className={styles.eyebrow}>Next step</span>
-            <h2>This room now has enough structure to support its first real idea cards.</h2>
+            <span className={styles.eyebrow}>Room purpose</span>
+            <h2>This room exists to make a hard public question structurally legible.</h2>
             <p>
-              The right follow-on is not more generic commentary. It is to pick
-              one anchor proposal in this room and turn it into a full inspectable
-              idea card the way Proposal 001 works in healthcare.
+              {room.roomPurpose ??
+                "The right follow-on is not more generic commentary. It is to pick one anchor proposal in this room and turn it into a full inspectable idea card the way Proposal 001 works in healthcare."}
             </p>
           </div>
 

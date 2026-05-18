@@ -219,6 +219,27 @@
   background: linear-gradient(180deg, rgba(229, 235, 220, 0.82), rgba(255, 250, 243, 0.84));
 }
 
+.heroQuote {
+  display: grid;
+  gap: 10px;
+  padding: 16px 0;
+  border-top: 1px solid rgba(18, 33, 39, 0.1);
+  border-bottom: 1px solid rgba(18, 33, 39, 0.1);
+}
+
+.heroQuote span,
+.scorecardItem span {
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+
+.heroQuote p {
+  color: var(--foreground);
+  font-family: var(--font-serif), serif;
+  font-size: 1.08rem;
+  line-height: 1.6;
+}
+
 .heroStats {
   display: grid;
   gap: 12px;
@@ -248,7 +269,8 @@
 
 .section,
 .storySection,
-.materialsSection {
+.materialsSection,
+.twoColumnSection {
   display: grid;
   gap: 20px;
 }
@@ -383,6 +405,44 @@
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
+.frameList,
+.scorecardList {
+  display: grid;
+  gap: 14px;
+}
+
+.frameItem,
+.scorecardItem {
+  padding: 18px 0;
+  border-top: 1px solid rgba(18, 33, 39, 0.1);
+}
+
+.frameItem:first-child,
+.scorecardItem:first-child {
+  padding-top: 0;
+  border-top: 0;
+}
+
+.frameItem h3 {
+  font-size: 1.12rem;
+}
+
+.frameItem p {
+  margin-top: 10px;
+}
+
+.scorecardItem {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.scorecardItem strong {
+  color: var(--accent-dark);
+  font-size: 1rem;
+}
+
 .claimItem,
 .evidenceItem {
   display: flex;
@@ -450,6 +510,7 @@
   .hero,
   .storyGrid,
   .focusSection,
+  .twoColumnSection,
   .trackGrid,
   .materialsGrid,
   .ctaPanel {
@@ -488,7 +549,8 @@
 
   .claimItem,
   .evidenceItem,
-  .structureItem {
+  .structureItem,
+  .scorecardItem {
     grid-template-columns: 1fr;
     flex-direction: column;
   }

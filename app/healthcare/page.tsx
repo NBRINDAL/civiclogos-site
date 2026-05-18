@@ -98,6 +98,12 @@ export default function HealthcareIssueRoomPage() {
           <aside className={styles.heroPanel}>
             <span className={styles.panelLabel}>Room note</span>
             <p>{healthcareIssueRoom.draftNote}</p>
+            {healthcareIssueRoom.deeperQuestion ? (
+              <div className={styles.heroQuote}>
+                <span>Deeper question</span>
+                <p>{healthcareIssueRoom.deeperQuestion}</p>
+              </div>
+            ) : null}
 
             <div className={styles.heroStats}>
               <div>
@@ -157,6 +163,38 @@ export default function HealthcareIssueRoomPage() {
               ))}
             </ul>
           </article>
+        </section>
+
+        <section className={styles.twoColumnSection}>
+          {healthcareIssueRoom.majorFrames ? (
+            <article className={styles.panel}>
+              <span className={styles.eyebrow}>Major frames</span>
+              <h2>The room is not one argument. It is a collision of serious frames.</h2>
+              <div className={styles.frameList}>
+                {healthcareIssueRoom.majorFrames.map((frame) => (
+                  <article className={styles.frameItem} key={frame.title}>
+                    <h3>{frame.title}</h3>
+                    <p>{frame.body}</p>
+                  </article>
+                ))}
+              </div>
+            </article>
+          ) : null}
+
+          {healthcareIssueRoom.initialScorecard ? (
+            <article className={styles.panel}>
+              <span className={styles.eyebrow}>Initial scorecard</span>
+              <h2>This room starts high-stakes before any proposal wins.</h2>
+              <div className={styles.scorecardList}>
+                {healthcareIssueRoom.initialScorecard.map((item) => (
+                  <div className={styles.scorecardItem} key={item.metric}>
+                    <span>{item.metric}</span>
+                    <strong>{item.rating}</strong>
+                  </div>
+                ))}
+              </div>
+            </article>
+          ) : null}
         </section>
 
         <RoomGuide />
@@ -297,12 +335,10 @@ export default function HealthcareIssueRoomPage() {
 
         <section className={styles.ctaPanel}>
           <div>
-            <span className={styles.eyebrow}>First complete card</span>
-            <h2>Proposal 001 is the first attempt to show the process at full resolution.</h2>
+            <span className={styles.eyebrow}>Room purpose</span>
+            <h2>This room exists to make healthcare reasoning clearer before it becomes final power.</h2>
             <p>
-              It is still rough by design. The goal is to make one idea object
-              clear enough that better evidence, stronger objections, and later
-              revisions have somewhere durable to land.
+              {healthcareIssueRoom.roomPurpose}
             </p>
           </div>
 

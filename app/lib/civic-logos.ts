@@ -28,15 +28,29 @@ export type DebatePrompt = {
   description: string;
 };
 
+export type FrameSummary = {
+  title: string;
+  body: string;
+};
+
+export type ScorecardMetric = {
+  metric: string;
+  rating: string;
+};
+
 export type IssueRoomData = {
   title: string;
   question: string;
+  deeperQuestion?: string;
   draftNote: string;
   whyItMatters: string;
   currentSynthesis: string;
   narrative: readonly string[];
   workingConclusions: readonly string[];
   whatCouldMoveTheRoom: readonly string[];
+  majorFrames?: readonly FrameSummary[];
+  initialScorecard?: readonly ScorecardMetric[];
+  roomPurpose?: string;
   roomComponents: readonly string[];
   topProposals: readonly ProposalSummary[];
   novelProposals: readonly ProposalSummary[];
@@ -61,31 +75,71 @@ export type RoomDirectoryItem = {
 };
 
 export const issueRoomQuestion =
-  "What healthcare system best balances cost, access, quality, freedom, innovation, and public health?";
+  "What healthcare system best balances cost, access, quality, freedom, innovation, human dignity, public health, and long-term economic sustainability?";
 
 export const healthcareIssueRoom = {
   title: "Healthcare Reform",
   question: issueRoomQuestion,
+  deeperQuestion:
+    "Which structure produces the most human benefit with the least waste, coercion, corruption, delay, and economic distortion?",
   draftNote:
     "This room is an early working draft. The goal is not to look complete yet, but to make the first public synthesis legible enough that people can improve it.",
   whyItMatters:
-    "Healthcare is a strong first issue because it touches cost, access, innovation, insurance, public spending, personal suffering, institutional interests, and economic-delta analysis.",
+    "Healthcare is an ideal first room because it affects nearly everyone and cannot be reduced to one factual answer. It is personal, economic, institutional, moral, and political at the same time, and it forces Civic Logos to hold patients, families, providers, insurers, employers, governments, taxpayers, and future generations in one reasoning object.",
   currentSynthesis:
-    "Healthcare reform requires balancing cost, access, quality, administrative complexity, innovation, provider stability, patient choice, public health, and implementation feasibility. The main proposals differ less in their stated goals than in how they allocate responsibility among government, employers, insurers, providers, and individuals. The largest unresolved questions remain transition cost, administrative savings, rural access, provider reimbursement, pharmaceutical pricing, patient choice, and long-term economic delta.",
+    "Healthcare reform appears to require balancing cost, access, quality, freedom, innovation, human dignity, public health, provider stability, administrative complexity, patient choice, and political feasibility at the same time. The main proposals differ less in their stated goals than in how they allocate responsibility among government, employers, insurers, providers, and individuals. The largest unresolved questions remain transition cost, administrative savings, rural access, provider reimbursement, pharmaceutical pricing, medical debt, patient choice, and long-term economic delta.",
   narrative: [
-    "The first job of the healthcare room is not to declare a winner. It is to show the public what a serious Civic Logos issue room looks like when one question is forced into visible structure instead of dissolving into feeds, tribes, and disconnected hot takes.",
-    "That means keeping the current synthesis, major proposal families, evidence, objections, stakeholder tradeoffs, and open questions visible at the same time. Even in an unfinished state, the room should let someone understand what is being argued, where the disagreement really lives, and what would have to change for the synthesis to move.",
+    "Healthcare is one of the clearest examples of why public reasoning needs structure. Ordinary healthcare debates often collapse into slogans: healthcare is a human right, markets will fix it, insurance companies are the problem, government is inefficient, prevention will save money, or transparency will solve it. Each claim may contain truth, but none is sufficient alone.",
+    "The first job of the room is not to declare a winner. It is to map the issue clearly enough that proposals, claims, assumptions, stakeholders, incentives, and strongest objections can be held together in one living synthesis instead of dissolving into familiar political reflexes.",
   ],
   workingConclusions: [
-    "The hardest healthcare disagreements are usually not about values alone, but about where cost, administrative burden, innovation incentives, and access bottlenecks actually sit inside the system.",
-    "A first useful prototype should narrow the field enough to compare models honestly without pretending the uncertainty is gone.",
-    "Economic delta matters, but only if the assumptions, transition costs, and distribution of pain are made visible rather than buried in a slogan.",
+    "The central disagreement is not simply whether healthcare should be public or private, but which structure produces the most human benefit with the least waste and distortion.",
+    "Healthcare costs are not only medical costs; they also include administrative, billing, insurance, legal, regulatory, and institutional complexity.",
+    "Economic delta matters, but only if transition costs, distributional effects, rural access, provider stability, and medical-debt effects are made visible rather than buried in slogans.",
   ],
   whatCouldMoveTheRoom: [
-    "A credible pilot or case study showing administrative savings that survive implementation reality.",
-    "Better evidence on rural access and provider stability under competing reform models.",
-    "Clearer household-level impact modeling, especially for debt, delay of care, and insurance churn.",
+    "A credible pilot or case study showing which healthcare costs are truly removable without weakening care quality or provider resilience.",
+    "Better evidence on rural hospitals, provider reimbursement, and how different reform models affect edge-case access.",
+    "Sharper modeling of administrative cost removal, medical debt reduction, pharmaceutical funding, and household-level burden shifts.",
   ],
+  majorFrames: [
+    {
+      title: "Human Right Frame",
+      body: "Healthcare should be guaranteed because illness, injury, disability, childbirth, aging, and emergencies are not ordinary consumer choices. This frame emphasizes human dignity and universal access.",
+    },
+    {
+      title: "Market Reform Frame",
+      body: "Healthcare costs are inflated because patients and employers often cannot see prices, compare value, or exert normal market pressure. This frame emphasizes transparency, competition, and consumer choice.",
+    },
+    {
+      title: "Public Infrastructure Frame",
+      body: "Healthcare should be treated like essential public infrastructure because medical insecurity weakens the economy, family stability, workforce productivity, and social trust.",
+    },
+    {
+      title: "Employer-Burden Frame",
+      body: "Employer-based insurance may distort wages, burden small businesses, and reduce labor mobility. This frame asks whether healthcare should be separated from employment.",
+    },
+    {
+      title: "Institutional Capture Frame",
+      body: "Healthcare may be expensive partly because powerful institutions benefit from complexity, opacity, billing fragmentation, regulatory barriers, and payment systems ordinary people cannot challenge.",
+    },
+    {
+      title: "Innovation Frame",
+      body: "Any reform must preserve or improve medical innovation, pharmaceutical development, technology, specialized care, and provider quality while still reducing waste.",
+    },
+  ] satisfies FrameSummary[],
+  initialScorecard: [
+    { metric: "Civic Importance", rating: "Extreme" },
+    { metric: "Human Impact", rating: "Extreme" },
+    { metric: "Economic Delta Potential", rating: "Extreme" },
+    { metric: "Institutional Complexity", rating: "Extreme" },
+    { metric: "Evidence Burden", rating: "High" },
+    { metric: "Review Burden", rating: "High" },
+    { metric: "Public Debate Value", rating: "High" },
+    { metric: "Implementation Difficulty", rating: "High" },
+  ] satisfies ScorecardMetric[],
+  roomPurpose:
+    "The purpose of this room is not to declare the correct healthcare answer. It is to map the claims, assumptions, stakeholders, incentives, evidence, costs, risks, and strongest objections clearly enough that healthcare becomes more legible through structured ideas, AI review, public debate, scorecards, and a living synthesis map.",
   roomComponents: [
     "Current living synthesis",
     "Major proposals",
@@ -262,7 +316,7 @@ export const healthcareIssueRoom = {
       status: "Nuance-bearing claim atom",
     },
   ] satisfies ClaimAtom[],
-} as const;
+} satisfies IssueRoomData;
 
 export const governanceIssueRoom = {
   title: "Governance and Legitimacy",
@@ -647,27 +701,75 @@ export const housingIssueRoom = {
 export const aiLaborIssueRoom = {
   title: "AI and Civilizational Impact",
   question:
-    "Is AI likely to be good or bad overall for civilization, and what determines the answer?",
+    "Will artificial intelligence produce more good than harm for humanity, the Earth, and global civilization as a whole?",
+  deeperQuestion:
+    "Who controls AI, what incentives guide it, what human capacities does it strengthen or weaken, and does it move civilization toward greater truth, freedom, sustainability, and intelligence, or toward manipulation, dependency, and centralized power?",
   draftNote:
     "This room is intentionally broad. It is meant to hold the full dispute about AI's long-run civilizational effects before the argument gets reduced to one narrow frame like jobs, alignment, or product hype.",
   whyItMatters:
-    "The paper treats AI as one of the defining domains of the century because it touches work, knowledge, surveillance, war, education, ownership, governance, inequality, and human purpose at the same time.",
+    "Artificial intelligence is not only a technology issue. It is a civilizational issue. AI may reshape labor, education, medicine, science, design, governance, war, media, creativity, economics, public reasoning, and the relationship between humans and knowledge.",
   currentSynthesis:
-    "AI is unlikely to be simply good or simply bad. Its overall effect will depend on capability growth, who controls the systems, how gains are distributed, what safety constraints hold, how institutions adapt, and whether AI amplifies human judgment or corrodes it. The largest unresolved questions concern concentration of power, labor displacement, epistemic manipulation, military escalation, surveillance, scientific acceleration, and what forms of governance can keep the upside while containing the downside.",
+    "AI appears to be a force multiplier rather than a simple good or bad object. Its overall effect will depend on ownership, incentives, governance, alignment, access, use, and the degree to which it strengthens or weakens human intelligence. The largest unresolved questions concern concentration of power, labor displacement, propaganda, surveillance, military automation, scientific acceleration, dependency, and what forms of governance can keep the upside while containing the downside.",
   narrative: [
-    "A serious AI room cannot just be a jobs room, a doom room, or a product room. It has to hold labor, warfare, safety, surveillance, knowledge, power concentration, scientific acceleration, and human meaning in one public object.",
-    "The question is not whether AI will be impressive. The question is whether the institutions, incentives, and social structures around it make that impressiveness net beneficial or net destructive over time.",
+    "AI has extraordinary upside and extraordinary downside. It can help cure disease, accelerate scientific discovery, improve education, reduce administrative waste, expand creativity, and help people reason through complex problems. It can also intensify surveillance, propaganda, unemployment, institutional capture, dependency, inequality, military automation, and loss of human agency.",
+    "AI is also uniquely relevant to Civic Logos because AI is both the subject of the issue and part of the method used to examine the issue. This room asks whether AI can help humans reason about whether AI is good or bad overall.",
   ],
   workingConclusions: [
-    "AI's impact will likely arrive through many channels at once: labor, information quality, military capability, institutional power, and scientific leverage.",
+    "AI is a force multiplier rather than a simple good or bad object.",
     "The upside could be extraordinary, but it will not distribute itself automatically or safely.",
-    "The deepest dispute is not whether AI is powerful, but whether human institutions can govern power at that scale before concentration and misuse harden.",
+    "The central question is not whether AI is powerful, but whether ownership, incentives, governance, alignment, and use make it net beneficial rather than net harmful.",
   ],
   whatCouldMoveTheRoom: [
-    "Better evidence on where AI creates genuine public benefit versus where it mainly concentrates leverage.",
+    "Better evidence on whether AI improves public reasoning more than it improves propaganda and manipulation.",
     "Sharper comparisons between open, corporate, and state-controlled AI futures.",
-    "More serious synthesis on labor, safety, military, surveillance, and educational effects in one shared frame.",
+    "More serious synthesis on labor, surveillance, military use, education, governance, and scientific acceleration in one shared frame.",
   ],
+  majorFrames: [
+    {
+      title: "Acceleration / Progress Frame",
+      body: "AI is a tool for discovery, productivity, medicine, science, education, engineering, and problem-solving. This frame emphasizes accelerated human progress.",
+    },
+    {
+      title: "Labor Displacement Frame",
+      body: "AI may replace or devalue human labor faster than society can adapt. This frame asks who benefits from productivity gains and what happens to displaced workers.",
+    },
+    {
+      title: "Institutional Capture Frame",
+      body: "AI may concentrate power in governments, corporations, militaries, intelligence agencies, and data-rich institutions. This frame asks whether AI strengthens freedom or invisible control.",
+    },
+    {
+      title: "Human Flourishing Frame",
+      body: "AI could free people from repetitive work, expand learning, improve medicine, support creativity, and help individuals better understand themselves and the world.",
+    },
+    {
+      title: "Dependency / Dehumanization Frame",
+      body: "AI may weaken human judgment, memory, creativity, social bonds, responsibility, and direct experience. This frame asks whether AI makes humans more capable or more dependent.",
+    },
+    {
+      title: "Truth / Propaganda Frame",
+      body: "AI can clarify information, but it can also flood the world with synthetic persuasion, deepfakes, spam, fake consensus, and personalized manipulation.",
+    },
+    {
+      title: "Civilization Upgrade Frame",
+      body: "AI could become a reasoning layer that helps civilization coordinate, solve problems, and think more clearly in public. This is the frame where Civic Logos itself belongs.",
+    },
+    {
+      title: "Existential Risk Frame",
+      body: "Advanced AI could become uncontrollable, misaligned, weaponized, or systemically destabilizing. This frame examines catastrophic failure and loss of human control.",
+    },
+  ] satisfies FrameSummary[],
+  initialScorecard: [
+    { metric: "Civic Importance", rating: "Extreme" },
+    { metric: "Economic Delta Potential", rating: "Extreme" },
+    { metric: "Human Benefit Potential", rating: "Extreme" },
+    { metric: "Harm Potential", rating: "Extreme" },
+    { metric: "Institutional Capture Risk", rating: "Extreme" },
+    { metric: "Uncertainty", rating: "High" },
+    { metric: "Review Burden", rating: "Extreme" },
+    { metric: "Public Debate Value", rating: "Extreme" },
+  ] satisfies ScorecardMetric[],
+  roomPurpose:
+    "The purpose of this room is to evaluate AI not merely by what it can do, but by what it does to human beings, institutions, truth, labor, freedom, and the Earth. AI is not automatically good or bad. It becomes good or bad through ownership, incentives, governance, alignment, use, and the degree to which it strengthens or weakens human intelligence.",
   roomComponents: healthcareIssueRoom.roomComponents,
   topProposals: [
     {
@@ -1032,7 +1134,7 @@ export const issueRooms = {
   housing: housingIssueRoom,
   "ai-labor": aiLaborIssueRoom,
   "institutional-trust": institutionalTrustIssueRoom,
-} as const;
+} satisfies Record<string, IssueRoomData>;
 
 export type IssueRoomSlug = keyof typeof issueRooms;
 
