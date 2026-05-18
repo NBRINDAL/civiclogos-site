@@ -1,0 +1,507 @@
+.page {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 24px;
+  isolation: isolate;
+}
+
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background:
+    radial-gradient(circle at top left, rgba(181, 94, 51, 0.18), transparent 34%),
+    radial-gradient(circle at top right, rgba(91, 110, 69, 0.2), transparent 30%),
+    linear-gradient(180deg, rgba(255, 250, 243, 0.88), rgba(245, 239, 227, 0.92));
+}
+
+.hero,
+.main {
+  width: min(1180px, 100%);
+}
+
+.hero {
+  display: grid;
+  gap: 40px;
+  padding: 28px 0 48px;
+}
+
+.nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.brandMark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 18px;
+  background:
+    linear-gradient(145deg, rgba(18, 33, 39, 0.96), rgba(47, 74, 63, 0.92));
+  color: #fff6ea;
+  font-family: var(--font-serif), serif;
+  font-size: 1.2rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+
+.brandText {
+  display: grid;
+  gap: 4px;
+}
+
+.brandText strong {
+  font-size: 1rem;
+  letter-spacing: 0.02em;
+}
+
+.brandText span:last-child {
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+
+.navLinks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  color: var(--muted);
+}
+
+.navLinks a {
+  position: relative;
+  padding-bottom: 4px;
+}
+
+.navLinks a::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: 1px;
+  transform: scaleX(0);
+  transform-origin: left;
+  background: currentColor;
+  transition: transform 180ms ease;
+}
+
+.heroGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.6fr) minmax(320px, 0.95fr);
+  gap: 28px;
+  align-items: stretch;
+}
+
+.heroCopy,
+.heroPanel,
+.splitCard,
+.distinctionCard,
+.releaseCard,
+.contactCard,
+.quoteBand,
+.manifestoItem {
+  backdrop-filter: blur(14px);
+}
+
+.heroCopy {
+  padding: 56px;
+  border: 1px solid var(--border);
+  border-radius: 32px;
+  background:
+    linear-gradient(180deg, rgba(255, 251, 245, 0.92), rgba(255, 247, 239, 0.8));
+  box-shadow: 0 28px 64px rgba(31, 31, 31, 0.08);
+}
+
+.kicker,
+.cardLabel,
+.panelEyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--signal);
+  font-size: 0.86rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.kicker::before,
+.cardLabel::before,
+.panelEyebrow::before {
+  content: "";
+  width: 32px;
+  height: 1px;
+  background: currentColor;
+}
+
+.heroCopy h1,
+.sectionIntro h2,
+.splitCard h2,
+.heroPanel h2,
+.contactCopy h2 {
+  font-family: var(--font-serif), serif;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  text-wrap: balance;
+}
+
+.heroCopy h1 {
+  max-width: 12ch;
+  margin-top: 22px;
+  font-size: clamp(3.6rem, 8vw, 6.8rem);
+  line-height: 0.95;
+}
+
+.lead,
+.supporting,
+.splitCard p,
+.sectionIntro p,
+.distinctionCard p,
+.releaseCard p,
+.contactCopy p {
+  max-width: 64ch;
+  color: var(--muted);
+  line-height: 1.75;
+}
+
+.lead {
+  margin-top: 22px;
+  font-size: 1.15rem;
+}
+
+.supporting {
+  margin-top: 18px;
+  font-size: 1rem;
+}
+
+.heroActions,
+.contactActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-top: 34px;
+}
+
+.primaryAction,
+.secondaryAction {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 52px;
+  padding: 0 24px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  font-weight: 700;
+  transition:
+    transform 180ms ease,
+    background 180ms ease,
+    border-color 180ms ease,
+    color 180ms ease;
+}
+
+.primaryAction {
+  background: var(--foreground);
+  color: #fff7ee;
+  box-shadow: 0 12px 28px rgba(18, 33, 39, 0.18);
+}
+
+.secondaryAction {
+  border-color: var(--border);
+  background: rgba(255, 251, 245, 0.56);
+}
+
+.heroPanel {
+  display: grid;
+  gap: 18px;
+  padding: 32px;
+  border: 1px solid rgba(91, 110, 69, 0.24);
+  border-radius: 32px;
+  background:
+    linear-gradient(180deg, rgba(91, 110, 69, 0.16), rgba(255, 250, 243, 0.84));
+  box-shadow: 0 24px 56px rgba(46, 58, 35, 0.1);
+}
+
+.heroPanel h2 {
+  font-size: clamp(2rem, 4vw, 2.8rem);
+  line-height: 1.02;
+}
+
+.panelList,
+.releaseList {
+  display: grid;
+  gap: 14px;
+  padding-left: 20px;
+  color: var(--foreground);
+  line-height: 1.65;
+}
+
+.main {
+  display: grid;
+  gap: 28px;
+  padding-bottom: 72px;
+}
+
+.section,
+.splitSection {
+  display: grid;
+  gap: 22px;
+}
+
+.quoteBand {
+  padding: 28px 32px;
+  border: 1px solid rgba(181, 94, 51, 0.18);
+  border-radius: 28px;
+  background: rgba(255, 249, 240, 0.7);
+  box-shadow: 0 20px 42px rgba(181, 94, 51, 0.08);
+}
+
+.quoteBand p {
+  font-family: var(--font-serif), serif;
+  font-size: clamp(1.45rem, 3vw, 2.2rem);
+  font-style: italic;
+  line-height: 1.35;
+  text-wrap: balance;
+}
+
+.splitSection {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.splitCard,
+.distinctionCard,
+.releaseCard {
+  padding: 28px;
+  border: 1px solid var(--border);
+  border-radius: 28px;
+  background: rgba(255, 251, 245, 0.72);
+  box-shadow: 0 20px 44px rgba(18, 33, 39, 0.06);
+}
+
+.splitCard h2,
+.sectionIntro h2,
+.contactCopy h2 {
+  margin: 14px 0 14px;
+  font-size: clamp(2rem, 3.6vw, 3.2rem);
+  line-height: 1.02;
+}
+
+.sectionIntro {
+  display: grid;
+  gap: 8px;
+  max-width: 760px;
+}
+
+.manifestoGrid,
+.distinctionGrid,
+.tagGrid {
+  display: grid;
+  gap: 16px;
+}
+
+.manifestoGrid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.manifestoItem {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 14px;
+  align-items: start;
+  padding: 24px;
+  border: 1px solid rgba(18, 33, 39, 0.12);
+  border-radius: 24px;
+  background: rgba(255, 251, 245, 0.72);
+}
+
+.manifestoIndex {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  height: 44px;
+  border-radius: 999px;
+  background: rgba(181, 94, 51, 0.12);
+  color: var(--accent-dark);
+  font-weight: 800;
+}
+
+.manifestoItem p {
+  color: var(--foreground);
+  line-height: 1.7;
+}
+
+.distinctionGrid {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
+.distinctionCard {
+  display: grid;
+  align-content: start;
+  gap: 16px;
+  min-height: 238px;
+}
+
+.distinctionCard h3,
+.releaseCard h3 {
+  font-size: 1.2rem;
+  line-height: 1.3;
+}
+
+.releaseLayout {
+  display: grid;
+  grid-template-columns: 1.05fr 0.95fr;
+  gap: 18px;
+}
+
+.tagGrid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin-top: 20px;
+}
+
+.tag {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 14px;
+  border: 1px solid rgba(91, 110, 69, 0.22);
+  border-radius: 999px;
+  background: rgba(91, 110, 69, 0.08);
+  color: var(--foreground);
+  text-align: center;
+  font-size: 0.92rem;
+  font-weight: 700;
+}
+
+.contactCard {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) auto;
+  gap: 18px;
+  align-items: center;
+  padding: 32px;
+  border: 1px solid rgba(18, 33, 39, 0.14);
+  border-radius: 32px;
+  background:
+    linear-gradient(135deg, rgba(255, 250, 243, 0.9), rgba(229, 235, 220, 0.72));
+  box-shadow: 0 24px 54px rgba(18, 33, 39, 0.08);
+}
+
+.contactActions {
+  justify-content: flex-end;
+  margin-top: 0;
+}
+
+.reveal {
+  animation: rise 720ms ease both;
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(22px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .navLinks a:hover::after {
+    transform: scaleX(1);
+  }
+
+  .primaryAction:hover,
+  .secondaryAction:hover {
+    transform: translateY(-2px);
+  }
+
+  .primaryAction:hover {
+    background: #24363c;
+  }
+
+  .secondaryAction:hover {
+    border-color: rgba(18, 33, 39, 0.28);
+    background: rgba(255, 251, 245, 0.92);
+  }
+}
+
+@media (max-width: 1100px) {
+  .heroGrid,
+  .releaseLayout,
+  .contactCard,
+  .splitSection,
+  .manifestoGrid,
+  .distinctionGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .tagGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .distinctionCard {
+    min-height: auto;
+  }
+
+  .contactActions {
+    justify-content: flex-start;
+  }
+}
+
+@media (max-width: 720px) {
+  .page {
+    padding: 16px;
+  }
+
+  .nav {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .navLinks {
+    gap: 14px;
+  }
+
+  .heroCopy,
+  .heroPanel,
+  .splitCard,
+  .distinctionCard,
+  .releaseCard,
+  .quoteBand,
+  .manifestoItem,
+  .contactCard {
+    padding: 22px;
+    border-radius: 24px;
+  }
+
+  .heroCopy h1 {
+    font-size: clamp(3rem, 16vw, 4.3rem);
+  }
+
+  .tagGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal,
+  .navLinks a::after,
+  .primaryAction,
+  .secondaryAction {
+    animation: none;
+    transition: none;
+  }
+}
