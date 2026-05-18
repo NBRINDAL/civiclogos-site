@@ -1,4 +1,6 @@
+import Link from "next/link";
 import { ContactForm } from "./components/contact-form";
+import { issueRoomQuestion } from "./lib/civic-logos";
 import styles from "./page.module.css";
 
 const distinctions = [
@@ -67,8 +69,9 @@ export default function Home() {
           </a>
 
           <div className={styles.navLinks}>
+            <Link href="/healthcare">Healthcare room</Link>
             <a href="#manifesto">Manifesto</a>
-            <a href="#release">First release</a>
+            <Link href="/healthcare/proposal-001">Proposal 001</Link>
             <a href="#contact">Early access</a>
           </div>
         </nav>
@@ -89,11 +92,11 @@ export default function Home() {
             </p>
 
             <div className={styles.heroActions}>
-              <a className={styles.primaryAction} href="#manifesto">
+              <Link className={styles.primaryAction} href="/healthcare">
+                Explore healthcare room
+              </Link>
+              <a className={styles.secondaryAction} href="#manifesto">
                 Read the manifesto
-              </a>
-              <a className={styles.secondaryAction} href="#release">
-                See Phase 1
               </a>
             </div>
           </div>
@@ -105,7 +108,7 @@ export default function Home() {
               <li>Public homepage and concise founding manifesto.</li>
               <li>Clear explanation of why ideas should outlast posts.</li>
               <li>Healthcare preview as the first structured issue room.</li>
-              <li>Simple path for early supporters, testers, and advisors.</li>
+              <li>Proposal 001 as the first complete idea-card demonstration.</li>
             </ul>
           </aside>
         </div>
@@ -199,13 +202,20 @@ export default function Home() {
                   <li key={item}>{item}</li>
                 ))}
               </ul>
+              <div className={styles.releaseActions}>
+                <Link className={styles.primaryAction} href="/healthcare">
+                  Enter the room
+                </Link>
+                <Link className={styles.secondaryAction} href="/healthcare/proposal-001">
+                  See Proposal 001
+                </Link>
+              </div>
             </article>
 
             <article className={styles.releaseCard}>
               <h3>Healthcare issue room preview</h3>
               <p>
-                The first issue room asks: what system best balances cost,
-                access, quality, freedom, innovation, and public health?
+                The first issue room asks: {issueRoomQuestion}
               </p>
               <div className={styles.tagGrid}>
                 {ideaCardFields.map((field) => (

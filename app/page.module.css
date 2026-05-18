@@ -365,6 +365,13 @@
   gap: 18px;
 }
 
+.releaseActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-top: 24px;
+}
+
 .tagGrid {
   grid-template-columns: repeat(3, minmax(0, 1fr));
   margin-top: 20px;
