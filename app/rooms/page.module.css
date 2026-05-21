@@ -83,7 +83,8 @@
 
 .heroCopy,
 .heroPanel,
-.roomCard {
+.roomCard,
+.cardIndexItem {
   padding: 32px;
   border: 1px solid rgba(18, 33, 39, 0.12);
   border-radius: 30px;
@@ -200,7 +201,18 @@
   gap: 18px;
 }
 
+.cardIndexGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
 .roomCard {
+  display: grid;
+  gap: 16px;
+}
+
+.cardIndexItem {
   display: grid;
   gap: 16px;
 }
@@ -237,7 +249,29 @@
   gap: 12px;
 }
 
+.cardIndexMeta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
 .roomMeta strong {
+  color: var(--accent-dark);
+  font-size: 0.95rem;
+  line-height: 1.4;
+}
+
+.cardIndexMeta span {
+  color: var(--signal);
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.cardIndexMeta strong {
   color: var(--accent-dark);
   font-size: 0.95rem;
   line-height: 1.4;
@@ -245,6 +279,15 @@
 
 .roomCard h3 {
   font-size: 1.85rem;
+}
+
+.cardIndexItem h3 {
+  font-size: 1.6rem;
+  font-family: var(--font-serif), serif;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  line-height: 1.06;
+  text-wrap: balance;
 }
 
 .roomFooter {
@@ -264,6 +307,31 @@
   gap: 10px;
 }
 
+.cardIndexFooter {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin-top: 6px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(18, 33, 39, 0.1);
+}
+
+.cardIndexFooter span {
+  color: var(--signal);
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.cardIndexActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
 .roomLink {
   display: inline-flex;
   align-items: center;
@@ -278,6 +346,33 @@
   transition:
     transform 180ms ease,
     background 180ms ease;
+}
+
+.cardIndexPrimary,
+.cardIndexSecondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  padding: 0 18px;
+  border-radius: 999px;
+  font-weight: 700;
+  transition:
+    transform 180ms ease,
+    border-color 180ms ease,
+    background 180ms ease;
+}
+
+.cardIndexPrimary {
+  border: 1px solid transparent;
+  background: var(--foreground);
+  color: #fff7ee;
+}
+
+.cardIndexSecondary {
+  border: 1px solid rgba(18, 33, 39, 0.14);
+  background: rgba(255, 251, 245, 0.88);
+  color: var(--foreground);
 }
 
 .roomSubLink {
@@ -303,6 +398,20 @@
     background: #24363c;
   }
 
+  .cardIndexPrimary:hover,
+  .cardIndexSecondary:hover {
+    transform: translateY(-1px);
+  }
+
+  .cardIndexPrimary:hover {
+    background: #24363c;
+  }
+
+  .cardIndexSecondary:hover {
+    border-color: rgba(18, 33, 39, 0.28);
+    background: rgba(255, 251, 245, 1);
+  }
+
   .roomSubLink:hover {
     transform: translateY(-1px);
     border-color: rgba(18, 33, 39, 0.28);
@@ -312,7 +421,8 @@
 
 @media (max-width: 1100px) {
   .hero,
-  .roomGrid {
+  .roomGrid,
+  .cardIndexGrid {
     grid-template-columns: 1fr;
   }
 }
@@ -329,7 +439,8 @@
 
   .heroCopy,
   .heroPanel,
-  .roomCard {
+  .roomCard,
+  .cardIndexItem {
     padding: 22px;
     border-radius: 24px;
   }
@@ -337,7 +448,9 @@
 
 @media (prefers-reduced-motion: reduce) {
   .roomLink,
-  .roomSubLink {
+  .roomSubLink,
+  .cardIndexPrimary,
+  .cardIndexSecondary {
     transition: none;
   }
 }

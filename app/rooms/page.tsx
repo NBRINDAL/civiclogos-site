@@ -8,6 +8,18 @@ import {
 import styles from "./page.module.css";
 
 export default function RoomsPage() {
+  const liveCardIndex = roomDirectory.flatMap((room) => {
+    const roomData = issueRooms[room.slug as IssueRoomSlug];
+    const inspectableTopics = getInspectableTopics(roomData);
+
+    return inspectableTopics.map((card) => ({
+      ...card,
+      roomHref: room.href,
+      roomTitle: room.title,
+      roomStage: room.stage,
+    }));
+  });
+
   const totalInspectableCards = roomDirectory.reduce((total, room) => {
     const roomData = issueRooms[room.slug as IssueRoomSlug];
     return total + getInspectableTopics(roomData).length;
@@ -31,6 +43,7 @@ export default function RoomsPage() {
             <Link href="/">Home</Link>
             <Link href="/healthcare">Healthcare room</Link>
             <a href="#room-grid">Room grid</a>
+            <a href="#card-index">Card index</a>
           </nav>
         </div>
 
@@ -139,6 +152,46 @@ export default function RoomsPage() {
                 </article>
               );
             })}
+          </div>
+        </section>
+
+        <section className={styles.section} id="card-index">
+          <div className={styles.sectionIntro}>
+            <span className={styles.eyebrow}>Live card index</span>
+            <h2>The room layer explains the system. The card layer shows the work.</h2>
+            <p>
+              These are the inspectable topic cards currently live across Civic
+              Logos. This index makes the site navigable at the object level,
+              so readers can jump straight into the strongest seeded lines of
+              reasoning without scanning every room first.
+            </p>
+          </div>
+
+          <div className={styles.cardIndexGrid}>
+            {liveCardIndex.map((card) => (
+              <article className={styles.cardIndexItem} key={card.href}>
+                <div className={styles.cardIndexMeta}>
+                  <span>{card.roomTitle}</span>
+                  <strong>{card.metric}</strong>
+                </div>
+
+                <h3>{card.title}</h3>
+                <p>{card.summary}</p>
+
+                <div className={styles.cardIndexFooter}>
+                  <span>{card.roomStage}</span>
+
+                  <div className={styles.cardIndexActions}>
+                    <Link className={styles.cardIndexPrimary} href={card.href!}>
+                      Open card
+                    </Link>
+                    <Link className={styles.cardIndexSecondary} href={card.roomHref}>
+                      Open room
+                    </Link>
+                  </div>
+                </div>
+              </article>
+            ))}
           </div>
         </section>
       </main>
