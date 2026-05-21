@@ -2,7 +2,11 @@
 
 import { useMemo, useState, useTransition } from "react";
 import type { IssueRoomSlug } from "../lib/civic-logos";
-import type { DebateLane } from "../lib/reasoning-types";
+import {
+  getDebateLaneLabel,
+  normalizeReviewTargetKind,
+  type DebateLane,
+} from "../lib/reasoning-types";
 import { topicAiDraftEventName, type TopicAiDraftDetail } from "../lib/topic-ai-draft";
 import type {
   TopicChatMessage,
@@ -92,6 +96,26 @@ function getPromotionLabel(state: TopicChatPromotionState) {
   return "Exploratory only";
 }
 
+function getPromotionAttachmentLabel(promotion: TopicChatPromotion) {
+  const normalizedKind = promotion.assignmentKind
+    ? normalizeReviewTargetKind(promotion.assignmentKind)
+    : null;
+
+  if (!normalizedKind || normalizedKind === "unclear") {
+    return promotion.assignmentLabel ?? "None yet";
+  }
+
+  const kindLabel = normalizedKind === "claim"
+    ? "synthesis"
+    : normalizedKind.replaceAll("-", " ");
+
+  if (!promotion.assignmentLabel) {
+    return kindLabel;
+  }
+
+  return `${kindLabel} - ${promotion.assignmentLabel}`;
+}
+
 function getContributionRecordHref(promotion: TopicChatPromotion) {
   if (!promotion.contributionId) {
     return "#contribution-record";
@@ -109,6 +133,14 @@ function getContributionRecordHref(promotion: TopicChatPromotion) {
     searchParams.set("recordView", "changed-card");
   } else {
     searchParams.set("recordView", "ai-assisted");
+  }
+
+  const normalizedKind = promotion.assignmentKind
+    ? normalizeReviewTargetKind(promotion.assignmentKind)
+    : null;
+
+  if (normalizedKind && normalizedKind !== "unclear") {
+    searchParams.set("attachment", normalizedKind);
   }
 
   return `?${searchParams.toString()}#contribution-${promotion.contributionId}`;
@@ -131,8 +163,21 @@ function getReviewQueueHref(
   return `/review/contributions?${searchParams.toString()}`;
 }
 
-function getRecordViewHref(filter: "needs-review" | "ai-assisted") {
-  return `?recordView=${encodeURIComponent(filter)}#contribution-record`;
+function getRecordViewHref(
+  filter: "needs-review" | "ai-assisted",
+  attachment?: TopicChatPromotion["assignmentKind"],
+) {
+  const searchParams = new URLSearchParams({
+    recordView: filter,
+  });
+
+  const normalizedKind = attachment ? normalizeReviewTargetKind(attachment) : null;
+
+  if (normalizedKind && normalizedKind !== "unclear") {
+    searchParams.set("attachment", normalizedKind);
+  }
+
+  return `?${searchParams.toString()}#contribution-record`;
 }
 
 function buildTranscript(messages: TopicChatMessage[]): TranscriptItem[] {
@@ -319,7 +364,10 @@ export default function TopicAiPanel({
               the live record without waiting on human review.
             </p>
             {sessionImpact.autoRecordedCount ? (
-              <a className={styles.promotionLink} href={getRecordViewHref("ai-assisted")}>
+              <a
+                className={styles.promotionLink}
+                href={getRecordViewHref("ai-assisted")}
+              >
                 Open AI-assisted ledger
               </a>
             ) : null}
@@ -332,7 +380,10 @@ export default function TopicAiPanel({
               depend on a human decision.
             </p>
             {sessionImpact.sentToReviewCount ? (
-              <a className={styles.promotionLink} href={getRecordViewHref("needs-review")}>
+              <a
+                className={styles.promotionLink}
+                href={getRecordViewHref("needs-review")}
+              >
                 Open needs-review ledger
               </a>
             ) : null}
@@ -355,6 +406,9 @@ export default function TopicAiPanel({
                 <p className={styles.issueItem} key={`impact-${message.id}`}>
                   <strong>{getProviderLabel(message.provider ?? "openai")}:</strong>{" "}
                   {message.promotion?.note}
+                  {message.promotion?.assignmentKind || message.promotion?.assignmentLabel
+                    ? ` Attached to ${getPromotionAttachmentLabel(message.promotion)}.`
+                    : ""}
                 </p>
               ))}
             </div>
@@ -407,17 +461,19 @@ export default function TopicAiPanel({
                       <dl className={styles.promotionMeta}>
                         <div>
                           <dt>Attachment target</dt>
-                          <dd>
-                            {item.message.promotion.assignmentKind ?? "unclear"}
-                            {item.message.promotion.assignmentLabel
-                              ? ` · ${item.message.promotion.assignmentLabel}`
-                              : ""}
-                          </dd>
+                          <dd>{getPromotionAttachmentLabel(item.message.promotion)}</dd>
                         </div>
                         {item.message.promotion.lane ? (
                           <div>
                             <dt>Suggested lane</dt>
-                            <dd>{item.message.promotion.lane}</dd>
+                            <dd>{getDebateLaneLabel(item.message.promotion.lane)}</dd>
+                          </div>
+                        ) : null}
+                        {item.message.promotion.changedSynthesis !== undefined &&
+                        item.message.promotion.changedSynthesis !== null ? (
+                          <div>
+                            <dt>Changed card</dt>
+                            <dd>{item.message.promotion.changedSynthesis ? "Yes" : "No"}</dd>
                           </div>
                         ) : null}
                       </dl>
