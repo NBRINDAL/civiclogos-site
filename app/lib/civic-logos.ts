@@ -1215,6 +1215,29 @@ export const issueRooms = {
 
 export type IssueRoomSlug = keyof typeof issueRooms;
 
+export function getInspectableTopics(room: IssueRoomData): ProposalSummary[] {
+  const seen = new Set<string>();
+  const inspectableTopics: ProposalSummary[] = [];
+
+  for (const list of [
+    room.topProposals,
+    room.novelProposals,
+    room.economicDeltaLeaders,
+    room.mostDebated,
+  ]) {
+    for (const item of list) {
+      if (!item.href || seen.has(item.href)) {
+        continue;
+      }
+
+      seen.add(item.href);
+      inspectableTopics.push(item);
+    }
+  }
+
+  return inspectableTopics;
+}
+
 export const roomDirectory: readonly RoomDirectoryItem[] = [
   {
     slug: "healthcare",

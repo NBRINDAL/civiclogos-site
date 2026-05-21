@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import {
+  getInspectableTopics,
   issueRooms,
   type IssueRoomData,
   type IssueRoomSlug,
@@ -76,6 +77,8 @@ export default async function IssueRoomPage({
     notFound();
   }
 
+  const inspectableTopics = getInspectableTopics(room);
+
   return (
     <div className={styles.page}>
       <div className={styles.backdrop} aria-hidden="true" />
@@ -148,6 +151,9 @@ export default async function IssueRoomPage({
           <a href="#current-read">Current read</a>
           <a href="#major-frames">Frames</a>
           <a href="#topic-field">Topics</a>
+          {inspectableTopics.length ? (
+            <a href="#inspectable-cards">Inspect cards</a>
+          ) : null}
           <a href="#room-structure">Structure</a>
           <a href="#working-materials">Materials</a>
         </nav>
@@ -279,6 +285,33 @@ export default async function IssueRoomPage({
             />
           </div>
         </section>
+
+        {inspectableTopics.length ? (
+          <section className={styles.section} id="inspectable-cards">
+            <div className={styles.sectionHeading}>
+              <span className={styles.eyebrow}>Inspectable cards</span>
+              <h2>The room gets more real once some topics open into full objects.</h2>
+              <p>
+                These are the detailed topic cards currently attached to this
+                room. The room map keeps the field wide; the cards make one line
+                of reasoning easier to test in public.
+              </p>
+            </div>
+
+            <div className={styles.trackGrid}>
+              {inspectableTopics.map((item) => (
+                <Link className={styles.trackItem} href={item.href!} key={item.href}>
+                  <div className={styles.trackMeta}>
+                    <span>{item.label}</span>
+                    <strong>{item.metric}</strong>
+                  </div>
+                  <h3>{item.title}</h3>
+                  <p>{item.summary}</p>
+                </Link>
+              ))}
+            </div>
+          </section>
+        ) : null}
 
         <section className={styles.section} id="room-structure">
           <div className={styles.sectionHeading}>

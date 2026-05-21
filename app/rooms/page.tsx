@@ -1,8 +1,18 @@
 import Link from "next/link";
-import { roomDirectory } from "../lib/civic-logos";
+import {
+  getInspectableTopics,
+  issueRooms,
+  roomDirectory,
+  type IssueRoomSlug,
+} from "../lib/civic-logos";
 import styles from "./page.module.css";
 
 export default function RoomsPage() {
+  const totalInspectableCards = roomDirectory.reduce((total, room) => {
+    const roomData = issueRooms[room.slug as IssueRoomSlug];
+    return total + getInspectableTopics(roomData).length;
+  }, 0);
+
   return (
     <div className={styles.page}>
       <div className={styles.backdrop} aria-hidden="true" />
@@ -50,11 +60,11 @@ export default function RoomsPage() {
                 <span>rooms in view</span>
               </div>
               <div>
-                <strong>1</strong>
-                <span>fully developed prototype</span>
+                <strong>{totalInspectableCards}</strong>
+                <span>live topic cards</span>
               </div>
               <div>
-                <strong>4</strong>
+                <strong>{roomDirectory.length - 1}</strong>
                 <span>heavier seeded drafts</span>
               </div>
             </div>
@@ -94,7 +104,14 @@ export default function RoomsPage() {
                 <p>{room.summary}</p>
 
                 <div className={styles.roomFooter}>
-                  <span>{room.stage}</span>
+                  <span>
+                    {room.stage} ·{" "}
+                    {getInspectableTopics(issueRooms[room.slug as IssueRoomSlug]).length}{" "}
+                    live topic
+                    {getInspectableTopics(issueRooms[room.slug as IssueRoomSlug]).length === 1
+                      ? " card"
+                      : " cards"}
+                  </span>
                   <Link className={styles.roomLink} href={room.href}>
                     Open room
                   </Link>

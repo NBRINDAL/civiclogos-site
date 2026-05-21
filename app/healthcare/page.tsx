@@ -1,6 +1,7 @@
 import Link from "next/link";
 import RoomGuide from "../components/room-guide";
 import {
+  getInspectableTopics,
   healthcareIssueRoom,
   issueRoomQuestion,
 } from "../lib/civic-logos";
@@ -57,6 +58,8 @@ function ProposalTrack({
 }
 
 export default function HealthcareIssueRoomPage() {
+  const inspectableTopics = getInspectableTopics(healthcareIssueRoom);
+
   return (
     <div className={styles.page}>
       <div className={styles.backdrop} aria-hidden="true" />
@@ -130,6 +133,7 @@ export default function HealthcareIssueRoomPage() {
           <a href="#major-frames">Frames</a>
           <a href="#ask-room">Ask room</a>
           <a href="#topic-field">Topics</a>
+          {inspectableTopics.length ? <a href="#inspectable-cards">Inspect cards</a> : null}
           <a href="#room-structure">Structure</a>
           <a href="#working-materials">Materials</a>
         </nav>
@@ -261,6 +265,33 @@ export default function HealthcareIssueRoomPage() {
             />
           </div>
         </section>
+
+        {inspectableTopics.length ? (
+          <section className={styles.section} id="inspectable-cards">
+            <div className={styles.sectionHeading}>
+              <span className={styles.eyebrow}>Inspectable cards</span>
+              <h2>The room should make its most developed objects easy to open and pressure directly.</h2>
+              <p>
+                These are the detailed topic cards currently attached to the
+                healthcare room. The map holds the whole dispute, but the cards
+                are where one line of reasoning becomes fully inspectable.
+              </p>
+            </div>
+
+            <div className={styles.trackGrid}>
+              {inspectableTopics.map((item) => (
+                <Link className={styles.trackItem} href={item.href!} key={item.href}>
+                  <div className={styles.trackMeta}>
+                    <span>{item.label}</span>
+                    <strong>{item.metric}</strong>
+                  </div>
+                  <h3>{item.title}</h3>
+                  <p>{item.summary}</p>
+                </Link>
+              ))}
+            </div>
+          </section>
+        ) : null}
 
         <section className={styles.section} id="room-structure">
           <div className={styles.sectionHeading}>
