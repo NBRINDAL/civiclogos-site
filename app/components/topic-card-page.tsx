@@ -1,3 +1,4 @@
+import { cookies } from "next/headers";
 import Link from "next/link";
 import TopicContributionLoop from "./topic-contribution-loop";
 import TopicAiPanel from "./topic-ai-panel";
@@ -8,6 +9,13 @@ import {
   listPublicContributions,
 } from "../lib/contribution-store";
 import { debateLaneLabels, debateLaneOptions } from "../lib/reasoning-types";
+import {
+  getTopicChatSessionCookieName,
+} from "../lib/topic-chat-session";
+import {
+  getTopicChatStoreMetadata,
+  listTopicChatMessages,
+} from "../lib/topic-chat-store";
 import styles from "../healthcare/proposal-001/page.module.css";
 
 type TopicCardLink = {
@@ -51,13 +59,25 @@ export default async function TopicCardPage({
   roomCards,
   currentTopicIndex,
 }: TopicCardPageProps) {
-  const [liveContributions, contributionStoreMetadata] = await Promise.all([
+  const cookieStore = await cookies();
+  const topicChatSessionId =
+    cookieStore.get(getTopicChatSessionCookieName())?.value?.trim() ?? "";
+  const [liveContributions, contributionStoreMetadata, topicChatMessages, topicChatStoreMetadata] = await Promise.all([
     listPublicContributions({
       roomSlug,
       topicId: card.id,
       limit: 12,
     }),
     getContributionStoreMetadata(),
+    topicChatSessionId
+      ? listTopicChatMessages({
+          sessionId: topicChatSessionId,
+          roomSlug,
+          topicId: card.id,
+          limit: 24,
+        })
+      : Promise.resolve([]),
+    getTopicChatStoreMetadata(),
   ]);
   const contributorObjectionThatChangedCard = liveContributions.find(
     (item) => item.lane === "objection" && item.review?.changedSynthesis === true,
@@ -830,7 +850,14 @@ export default async function TopicCardPage({
           </article>
         </section>
 
-        <TopicAiPanel roomSlug={roomSlug} topicId={card.id} topicTitle={card.title} />
+        <TopicAiPanel
+          initialMessages={topicChatMessages}
+          initialStoreMode={topicChatStoreMetadata.mode}
+          initialStoreNote={topicChatStoreMetadata.note}
+          roomSlug={roomSlug}
+          topicId={card.id}
+          topicTitle={card.title}
+        />
 
         <TopicContributionLoop
           debatePrompts={card.debatePrompts}

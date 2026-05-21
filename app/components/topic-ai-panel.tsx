@@ -1,12 +1,20 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useMemo, useState, useTransition } from "react";
 import type { IssueRoomSlug } from "../lib/civic-logos";
 import type { DebateLane } from "../lib/reasoning-types";
 import { topicAiDraftEventName, type TopicAiDraftDetail } from "../lib/topic-ai-draft";
+import type {
+  TopicChatMessage,
+  TopicChatPromotionState,
+  TopicChatStoreMetadata,
+} from "../lib/topic-chat-types";
 import styles from "./topic-ai-panel.module.css";
 
 type TopicAiPanelProps = {
+  initialMessages: TopicChatMessage[];
+  initialStoreMode: TopicChatStoreMetadata["mode"];
+  initialStoreNote: string;
   roomSlug: IssueRoomSlug;
   topicId: string;
   topicTitle: string;
@@ -16,7 +24,7 @@ type TopicAiAnswer = {
   provider: "openai" | "anthropic";
   model: string;
   generatedAt: string;
-  promptCategory: "topic-question";
+  promptCategory: "topic-chat";
   response: string;
 };
 
@@ -31,10 +39,17 @@ type TopicAiResponse = {
   disclaimer: string;
   answers: TopicAiAnswer[];
   issues: TopicAiIssue[];
+  messages: TopicChatMessage[];
+  store: TopicChatStoreMetadata;
   error?: string;
 };
 
 type ProviderRequest = "openai" | "anthropic" | "all";
+
+type TranscriptItem = {
+  message: TopicChatMessage;
+  sourceQuestion?: string;
+};
 
 const quickChallengePrompts = [
   "Which assumption is carrying the most hidden risk in this card right now?",
@@ -43,6 +58,15 @@ const quickChallengePrompts = [
   "How could the economic-delta case fail in implementation even if the mechanism sounds plausible?",
   "What change would most materially improve this card without pretending the room is settled?",
 ] as const;
+
+const draftLaneOptions: Array<{
+  lane: DebateLane;
+  label: string;
+}> = [
+  { lane: "objection", label: "Draft as objection" },
+  { lane: "evidence", label: "Draft as evidence" },
+  { lane: "nuance", label: "Draft as nuance" },
+];
 
 function formatTimestamp(value: string) {
   return new Intl.DateTimeFormat("en-US", {
@@ -55,26 +79,56 @@ function getProviderLabel(provider: TopicAiAnswer["provider"] | TopicAiIssue["pr
   return provider === "openai" ? "GPT assisted reader" : "Claude assisted reader";
 }
 
-const draftLaneOptions: Array<{
-  lane: DebateLane;
-  label: string;
-}> = [
-  { lane: "objection", label: "Draft as objection" },
-  { lane: "evidence", label: "Draft as evidence" },
-  { lane: "nuance", label: "Draft as nuance" },
-];
+function getPromotionLabel(state: TopicChatPromotionState) {
+  if (state === "auto-recorded") {
+    return "Auto-recorded";
+  }
+
+  if (state === "sent-to-review") {
+    return "Sent to review";
+  }
+
+  return "Exploratory only";
+}
+
+function buildTranscript(messages: TopicChatMessage[]): TranscriptItem[] {
+  let lastUserQuestion = "";
+
+  return messages.map((message) => {
+    if (message.role === "user") {
+      lastUserQuestion = message.body;
+      return { message };
+    }
+
+    return {
+      message,
+      sourceQuestion: lastUserQuestion || undefined,
+    };
+  });
+}
 
 export default function TopicAiPanel({
+  initialMessages,
+  initialStoreMode,
+  initialStoreNote,
   roomSlug,
   topicId,
   topicTitle,
 }: TopicAiPanelProps) {
   const [question, setQuestion] = useState("");
-  const [result, setResult] = useState<TopicAiResponse | null>(null);
+  const [messages, setMessages] = useState<TopicChatMessage[]>(initialMessages);
+  const [issues, setIssues] = useState<TopicAiIssue[]>([]);
+  const [disclaimer, setDisclaimer] = useState(
+    "These assisted readers stay visible as readers. The room only changes when Civic Logos records an obvious update or sends a proposal to human review.",
+  );
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [activeProvider, setActiveProvider] = useState<ProviderRequest | null>(null);
-  const [lastAskedQuestion, setLastAskedQuestion] = useState("");
+  const [storeMode, setStoreMode] = useState<TopicChatStoreMetadata["mode"]>(
+    initialStoreMode,
+  );
+  const [storeNote, setStoreNote] = useState(initialStoreNote);
   const [isPending, startTransition] = useTransition();
+  const transcript = useMemo(() => buildTranscript(messages), [messages]);
 
   function submitQuestion(provider: ProviderRequest, nextQuestion?: string) {
     const prompt = nextQuestion ?? question;
@@ -90,7 +144,6 @@ export default function TopicAiPanel({
     setErrorMessage(null);
     setActiveProvider(provider);
     setQuestion(trimmedQuestion);
-    setLastAskedQuestion(trimmedQuestion);
 
     startTransition(async () => {
       try {
@@ -111,16 +164,20 @@ export default function TopicAiPanel({
           error?: string;
         };
 
-        if (!response.ok && !payload.answers?.length) {
+        if (!response.ok) {
           throw new Error(
             payload.error ??
               "The assisted readers could not answer from this topic card right now.",
           );
         }
 
-        setResult(payload);
+        setMessages(payload.messages);
+        setIssues(payload.issues);
+        setDisclaimer(payload.disclaimer);
+        setStoreMode(payload.store.mode);
+        setStoreNote(payload.store.note);
+        setQuestion("");
       } catch (error) {
-        setResult(null);
         setErrorMessage(
           error instanceof Error
             ? error.message
@@ -134,20 +191,24 @@ export default function TopicAiPanel({
     submitQuestion("all", prompt);
   }
 
-  function sendToContributionDraft(answer: TopicAiAnswer, suggestedLane?: DebateLane) {
-    if (!lastAskedQuestion) {
+  function sendToContributionDraft(
+    message: TopicChatMessage,
+    sourceQuestion: string | undefined,
+    suggestedLane?: DebateLane,
+  ) {
+    if (message.role !== "assistant" || !message.provider || !message.model || !sourceQuestion) {
       return;
     }
 
     const detail: TopicAiDraftDetail = {
       roomSlug,
       topicId,
-      provider: answer.provider,
-      providerLabel: getProviderLabel(answer.provider),
-      model: answer.model,
-      generatedAt: answer.generatedAt,
-      question: lastAskedQuestion,
-      response: answer.response,
+      provider: message.provider,
+      providerLabel: getProviderLabel(message.provider),
+      model: message.model,
+      generatedAt: message.createdAt,
+      question: sourceQuestion,
+      response: message.body,
       suggestedLane,
     };
 
@@ -162,14 +223,126 @@ export default function TopicAiPanel({
     <section className={styles.panel}>
       <div className={styles.header}>
         <div>
-          <span className={styles.eyebrow}>Ask this topic</span>
-          <h2>Use the live readers to pressure-test the current card.</h2>
+          <span className={styles.eyebrow}>Chat this topic</span>
+          <h2>Use the live readers to explore the card, then let Civic Logos decide whether the result stays exploratory, goes to review, or updates the record.</h2>
         </div>
         <p className={styles.metaNote}>
           Ask about the thesis, assumptions, objection, evidence, transition cost,
           or economic-delta read. The models are assisted readers of{" "}
           <strong>{topicTitle}</strong>, not the authority that changes the public record.
         </p>
+      </div>
+
+      <div className={styles.storeMeta}>
+        <span className={styles.storeBadge}>{storeMode} transcript</span>
+        <p>{storeNote}</p>
+      </div>
+
+      <div className={styles.transcriptBlock}>
+        <div className={styles.transcriptHeader}>
+          <div>
+            <span className={styles.quickPromptLabel}>Scoped topic transcript</span>
+            <p className={styles.disclaimer}>{disclaimer}</p>
+          </div>
+        </div>
+
+        {transcript.length ? (
+          <div className={styles.transcriptList}>
+            {transcript.map((item) => (
+              <article
+                className={`${styles.transcriptItem} ${
+                  item.message.role === "user"
+                    ? styles.userMessage
+                    : styles.assistantMessage
+                }`}
+                key={item.message.id}
+              >
+                <div className={styles.transcriptMeta}>
+                  <div>
+                    <strong>
+                      {item.message.role === "user"
+                        ? "Visitor"
+                        : getProviderLabel(item.message.provider ?? "openai")}
+                    </strong>
+                    {item.message.role === "assistant" && item.message.model ? (
+                      <span>{item.message.model}</span>
+                    ) : null}
+                  </div>
+                  <span>{formatTimestamp(item.message.createdAt)}</span>
+                </div>
+
+                <p className={styles.transcriptBody}>{item.message.body}</p>
+
+                {item.message.role === "assistant" && item.message.promotion ? (
+                  <div className={styles.promotionBlock}>
+                    <span
+                      className={`${styles.promotionBadge} ${
+                        item.message.promotion.state === "auto-recorded"
+                          ? styles.promotionRecorded
+                          : item.message.promotion.state === "sent-to-review"
+                            ? styles.promotionReview
+                            : styles.promotionExploratory
+                      }`}
+                    >
+                      {getPromotionLabel(item.message.promotion.state)}
+                    </span>
+                    <p>{item.message.promotion.note}</p>
+                    {item.message.promotion.assignmentKind ||
+                    item.message.promotion.assignmentLabel ? (
+                      <dl className={styles.promotionMeta}>
+                        <div>
+                          <dt>Attachment target</dt>
+                          <dd>
+                            {item.message.promotion.assignmentKind ?? "unclear"}
+                            {item.message.promotion.assignmentLabel
+                              ? ` · ${item.message.promotion.assignmentLabel}`
+                              : ""}
+                          </dd>
+                        </div>
+                        {item.message.promotion.lane ? (
+                          <div>
+                            <dt>Suggested lane</dt>
+                            <dd>{item.message.promotion.lane}</dd>
+                          </div>
+                        ) : null}
+                      </dl>
+                    ) : null}
+                  </div>
+                ) : null}
+
+                {item.message.role === "assistant" ? (
+                  <div className={styles.answerActions}>
+                    {draftLaneOptions.map((option) => (
+                      <button
+                        className={styles.answerAction}
+                        key={`${item.message.id}-${option.lane}`}
+                        onClick={() =>
+                          sendToContributionDraft(
+                            item.message,
+                            item.sourceQuestion,
+                            option.lane,
+                          )
+                        }
+                        type="button"
+                      >
+                        {option.label}
+                      </button>
+                    ))}
+                  </div>
+                ) : null}
+              </article>
+            ))}
+          </div>
+        ) : (
+          <div className={styles.emptyState}>
+            <p>
+              No scoped topic chat is stored for this session yet. Start with a
+              real pressure test, and Civic Logos will keep the conversation
+              attached to this topic while deciding whether any update belongs in
+              the public record.
+            </p>
+          </div>
+        )}
       </div>
 
       <label className={styles.field}>
@@ -233,58 +406,13 @@ export default function TopicAiPanel({
         </div>
       ) : null}
 
-      {result ? (
-        <div className={styles.resultBlock}>
-          <p className={styles.disclaimer}>{result.disclaimer}</p>
-
-          {result.answers.length ? (
-            <div className={styles.answerGrid}>
-              {result.answers.map((item) => (
-                <article className={styles.answerCard} key={`${item.provider}-${item.generatedAt}`}>
-                  <div className={styles.answerHeader}>
-                    <div>
-                      <strong>{getProviderLabel(item.provider)}</strong>
-                      <span>{item.model}</span>
-                    </div>
-                    <span>{formatTimestamp(item.generatedAt)}</span>
-                  </div>
-                  <p className={styles.answerBody}>{item.response}</p>
-                  <dl className={styles.answerMeta}>
-                    <div>
-                      <dt>Prompt class</dt>
-                      <dd>{item.promptCategory}</dd>
-                    </div>
-                    <div>
-                      <dt>Status</dt>
-                      <dd>Assisted reader output</dd>
-                    </div>
-                  </dl>
-                  <div className={styles.answerActions}>
-                    {draftLaneOptions.map((option) => (
-                      <button
-                        className={styles.answerAction}
-                        key={option.lane}
-                        onClick={() => sendToContributionDraft(item, option.lane)}
-                        type="button"
-                      >
-                        {option.label}
-                      </button>
-                    ))}
-                  </div>
-                </article>
-              ))}
-            </div>
-          ) : null}
-
-          {result.issues.length ? (
-            <div className={styles.issueList}>
-              {result.issues.map((item) => (
-                <p className={styles.issueItem} key={`${item.provider}-${item.model ?? "issue"}`}>
-                  <strong>{getProviderLabel(item.provider)}:</strong> {item.message}
-                </p>
-              ))}
-            </div>
-          ) : null}
+      {issues.length ? (
+        <div className={styles.issueList}>
+          {issues.map((item) => (
+            <p className={styles.issueItem} key={`${item.provider}-${item.model ?? "issue"}`}>
+              <strong>{getProviderLabel(item.provider)}:</strong> {item.message}
+            </p>
+          ))}
         </div>
       ) : null}
     </section>

@@ -9,6 +9,7 @@ import {
   type IssueRoomSlug,
 } from "./civic-logos";
 import { listPublicContributions } from "./contribution-store";
+import type { TopicChatMessage, TopicChatPromotion } from "./topic-chat-types";
 
 type TopicQuestionProvider = AiProviderName | "all";
 
@@ -33,8 +34,9 @@ export type TopicAiAnswer = {
   provider: AiProviderName;
   model: string;
   generatedAt: string;
-  promptCategory: "topic-question";
+  promptCategory: "topic-chat";
   response: string;
+  promotion?: TopicChatPromotion;
 };
 
 export type TopicAiIssue = {
@@ -50,11 +52,18 @@ export type TopicAiResult = {
   disclaimer: string;
 };
 
+export type TopicCardReaderContext = {
+  card: NonNullable<ReturnType<typeof getRoomTopicCard>>;
+  context: string;
+};
+
 type TopicQuestionInput = {
   roomSlug: IssueRoomSlug;
   topicId: string;
   question: string;
   provider: TopicQuestionProvider;
+  history?: TopicChatMessage[];
+  preparedContext?: TopicCardReaderContext | null;
 };
 
 function extractOpenAiText(response: OpenAIResponse) {
@@ -83,7 +92,10 @@ function extractAnthropicText(response: AnthropicResponse) {
   );
 }
 
-async function buildTopicContext(roomSlug: IssueRoomSlug, topicId: string) {
+export async function getTopicCardReaderContext(
+  roomSlug: IssueRoomSlug,
+  topicId: string,
+): Promise<TopicCardReaderContext | null> {
   const card = getRoomTopicCard(roomSlug, topicId);
 
   if (!card) {
@@ -163,7 +175,30 @@ async function buildTopicContext(roomSlug: IssueRoomSlug, topicId: string) {
   };
 }
 
-function buildReaderPrompt(question: string, context: string) {
+function buildHistoryBlock(history: TopicChatMessage[] | undefined) {
+  const recentMessages = history?.slice(-8) ?? [];
+
+  if (!recentMessages.length) {
+    return "No prior topic chat is stored for this session yet.";
+  }
+
+  return recentMessages
+    .map((item) => {
+      if (item.role === "user") {
+        return `Visitor: ${item.body}`;
+      }
+
+      const providerLabel = item.provider === "openai" ? "GPT reader" : "Claude reader";
+      return `${providerLabel}: ${item.body}`;
+    })
+    .join("\n");
+}
+
+function buildReaderPrompt(
+  question: string,
+  context: string,
+  history: TopicChatMessage[] | undefined,
+) {
   return [
     "Answer the visitor's question only from the Civic Logos topic card context below.",
     "You are an assisted reader, not the final judge.",
@@ -171,6 +206,9 @@ function buildReaderPrompt(question: string, context: string) {
     "Be calm, serious, and direct.",
     "If the question cannot be answered confidently from the current card, say what assumption, objection, evidence, or measurement gap is still open.",
     "Prefer 2-4 short paragraphs or a short bullet list when helpful.",
+    "",
+    "Recent scoped topic chat in this session:",
+    buildHistoryBlock(history),
     "",
     "Visitor question:",
     question,
@@ -180,7 +218,11 @@ function buildReaderPrompt(question: string, context: string) {
   ].join("\n");
 }
 
-async function askOpenAi(question: string, context: string): Promise<TopicAiAnswer | TopicAiIssue> {
+async function askOpenAi(
+  question: string,
+  context: string,
+  history: TopicChatMessage[] | undefined,
+): Promise<TopicAiAnswer | TopicAiIssue> {
   const config = getOpenAIProviderConfig();
   const apiKey = process.env.OPENAI_API_KEY;
 
@@ -211,7 +253,7 @@ async function askOpenAi(question: string, context: string): Promise<TopicAiAnsw
             content: [
               {
                 type: "input_text",
-                text: buildReaderPrompt(question, context),
+                text: buildReaderPrompt(question, context, history),
               },
             ],
           },
@@ -244,7 +286,7 @@ async function askOpenAi(question: string, context: string): Promise<TopicAiAnsw
       provider: "openai",
       model: config.model,
       generatedAt: new Date().toISOString(),
-      promptCategory: "topic-question",
+      promptCategory: "topic-chat",
       response: outputText,
     };
   } catch (error) {
@@ -257,7 +299,11 @@ async function askOpenAi(question: string, context: string): Promise<TopicAiAnsw
   }
 }
 
-async function askAnthropic(question: string, context: string): Promise<TopicAiAnswer | TopicAiIssue> {
+async function askAnthropic(
+  question: string,
+  context: string,
+  history: TopicChatMessage[] | undefined,
+): Promise<TopicAiAnswer | TopicAiIssue> {
   const config = getAnthropicProviderConfig();
   const apiKey = process.env.ANTHROPIC_API_KEY;
 
@@ -288,7 +334,7 @@ async function askAnthropic(question: string, context: string): Promise<TopicAiA
             content: [
               {
                 type: "text",
-                text: buildReaderPrompt(question, context),
+                text: buildReaderPrompt(question, context, history),
               },
             ],
           },
@@ -321,7 +367,7 @@ async function askAnthropic(question: string, context: string): Promise<TopicAiA
       provider: "anthropic",
       model: config.model,
       generatedAt: new Date().toISOString(),
-      promptCategory: "topic-question",
+      promptCategory: "topic-chat",
       response: outputText,
     };
   } catch (error) {
@@ -343,9 +389,10 @@ function isAnswer(
 export async function askTopicCard(
   input: TopicQuestionInput,
 ): Promise<TopicAiResult | null> {
-  const context = await buildTopicContext(input.roomSlug, input.topicId);
+  const preparedContext =
+    input.preparedContext ?? (await getTopicCardReaderContext(input.roomSlug, input.topicId));
 
-  if (!context) {
+  if (!preparedContext) {
     return null;
   }
 
@@ -357,8 +404,8 @@ export async function askTopicCard(
   const results = await Promise.all(
     requestedProviders.map((provider) =>
       provider === "openai"
-        ? askOpenAi(input.question, context.context)
-        : askAnthropic(input.question, context.context),
+        ? askOpenAi(input.question, preparedContext.context, input.history)
+        : askAnthropic(input.question, preparedContext.context, input.history),
     ),
   );
 
@@ -377,6 +424,6 @@ export async function askTopicCard(
     answers,
     issues,
     disclaimer:
-      "These are assisted-reader responses generated from the current topic card and visible contribution record. They do not change the public record unless a maintainer turns them into a reviewed update.",
+      "These are assisted-reader responses generated from the current topic card, visible contribution record, and your scoped topic chat in this session. They only change the public record when Civic Logos records a narrow obvious update or sends a proposal into review.",
   };
 }
