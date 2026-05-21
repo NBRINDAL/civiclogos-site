@@ -1,4 +1,5 @@
 import Link from "next/link";
+import LiveCardBrowser from "../components/live-card-browser";
 import {
   getInspectableTopics,
   getLiveCardIndex,
@@ -8,7 +9,21 @@ import {
 } from "../lib/civic-logos";
 import styles from "./page.module.css";
 
-export default function RoomsPage() {
+export default async function RoomsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{
+    room?: string | string[];
+    q?: string | string[];
+  }>;
+}) {
+  const resolvedSearchParams = await searchParams;
+  const initialRoom = Array.isArray(resolvedSearchParams.room)
+    ? resolvedSearchParams.room[0]
+    : resolvedSearchParams.room;
+  const initialQuery = Array.isArray(resolvedSearchParams.q)
+    ? resolvedSearchParams.q[0]
+    : resolvedSearchParams.q;
   const liveCardIndex = getLiveCardIndex();
   const totalInspectableCards = roomDirectory.reduce((total, room) => {
     const roomData = issueRooms[room.slug as IssueRoomSlug];
@@ -157,32 +172,11 @@ export default function RoomsPage() {
             </p>
           </div>
 
-          <div className={styles.cardIndexGrid}>
-            {liveCardIndex.map((card) => (
-              <article className={styles.cardIndexItem} key={card.href}>
-                <div className={styles.cardIndexMeta}>
-                  <span>{card.roomTitle}</span>
-                  <strong>{card.metric}</strong>
-                </div>
-
-                <h3>{card.title}</h3>
-                <p>{card.summary}</p>
-
-                <div className={styles.cardIndexFooter}>
-                  <span>{card.roomStage}</span>
-
-                  <div className={styles.cardIndexActions}>
-                    <Link className={styles.cardIndexPrimary} href={card.href!}>
-                      Open card
-                    </Link>
-                    <Link className={styles.cardIndexSecondary} href={card.roomHref}>
-                      Open room
-                    </Link>
-                  </div>
-                </div>
-              </article>
-            ))}
-          </div>
+          <LiveCardBrowser
+            cards={liveCardIndex}
+            initialQuery={initialQuery}
+            initialRoom={initialRoom}
+          />
         </section>
       </main>
     </div>
