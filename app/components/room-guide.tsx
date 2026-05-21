@@ -206,7 +206,11 @@ function createId() {
   return `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 }
 
-export default function RoomGuide() {
+export default function RoomGuide({ sectionId }: { sectionId?: string }) {
+  return <RoomGuideContent sectionId={sectionId} />;
+}
+
+export function RoomGuideContent({ sectionId }: { sectionId?: string }) {
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState<ChatMessage[]>([
     { id: createId(), role: "assistant", answer: buildDefaultAnswer() },
@@ -228,7 +232,7 @@ export default function RoomGuide() {
   }
 
   return (
-    <section className={styles.shell} aria-labelledby="ask-room-title">
+    <section className={styles.shell} id={sectionId} aria-labelledby="ask-room-title">
       <div className={styles.header}>
         <div>
           <span className={styles.eyebrow}>Ask this room</span>

@@ -124,6 +124,15 @@ export default function HealthcareIssueRoomPage() {
       </header>
 
       <main className={styles.main}>
+        <nav className={styles.sectionRail} aria-label="Healthcare room map">
+          <a href="#current-read">Current read</a>
+          <a href="#major-frames">Frames</a>
+          <a href="#ask-room">Ask room</a>
+          <a href="#topic-field">Topics</a>
+          <a href="#room-structure">Structure</a>
+          <a href="#working-materials">Materials</a>
+        </nav>
+
         <section className={styles.storySection}>
           <div className={styles.sectionHeading}>
             <span className={styles.eyebrow}>Why this room exists</span>
@@ -143,7 +152,7 @@ export default function HealthcareIssueRoomPage() {
           </div>
         </section>
 
-        <section className={styles.focusSection}>
+        <section className={styles.focusSection} id="current-read">
           <article className={styles.focusCard}>
             <span className={styles.eyebrow}>Current read</span>
             <h2>Where the room currently leans</h2>
@@ -165,7 +174,7 @@ export default function HealthcareIssueRoomPage() {
           </article>
         </section>
 
-        <section className={styles.twoColumnSection}>
+        <section className={styles.twoColumnSection} id="major-frames">
           {healthcareIssueRoom.majorFrames ? (
             <article className={styles.panel}>
               <span className={styles.eyebrow}>Major frames</span>
@@ -197,7 +206,7 @@ export default function HealthcareIssueRoomPage() {
           ) : null}
         </section>
 
-        <RoomGuide />
+        <RoomGuide sectionId="ask-room" />
 
         <section className={styles.section} id="topic-field">
           <div className={styles.sectionHeading}>
@@ -234,7 +243,7 @@ export default function HealthcareIssueRoomPage() {
           </div>
         </section>
 
-        <section className={styles.section}>
+        <section className={styles.section} id="room-structure">
           <div className={styles.sectionHeading}>
             <span className={styles.eyebrow}>Room structure</span>
             <h2>The room should keep the reasoning object stable while the content evolves.</h2>

@@ -143,6 +143,14 @@ export default async function IssueRoomPage({
       </header>
 
       <main className={styles.main}>
+        <nav className={styles.sectionRail} aria-label={`${room.title} room map`}>
+          <a href="#current-read">Current read</a>
+          <a href="#major-frames">Frames</a>
+          <a href="#topic-field">Topics</a>
+          <a href="#room-structure">Structure</a>
+          <a href="#working-materials">Materials</a>
+        </nav>
+
         <section className={styles.storySection}>
           <div className={styles.sectionHeading}>
             <span className={styles.eyebrow}>Why this room exists</span>
@@ -163,7 +171,7 @@ export default async function IssueRoomPage({
           </div>
         </section>
 
-        <section className={styles.focusSection}>
+        <section className={styles.focusSection} id="current-read">
           <article className={styles.focusCard}>
             <span className={styles.eyebrow}>Current read</span>
             <h2>Where the room currently leans</h2>
@@ -186,7 +194,7 @@ export default async function IssueRoomPage({
         </section>
 
         {room.majorFrames || room.initialScorecard ? (
-          <section className={styles.twoColumnSection}>
+          <section className={styles.twoColumnSection} id="major-frames">
             {room.majorFrames ? (
               <article className={styles.panel}>
                 <span className={styles.eyebrow}>Major frames</span>
@@ -253,7 +261,7 @@ export default async function IssueRoomPage({
           </div>
         </section>
 
-        <section className={styles.section}>
+        <section className={styles.section} id="room-structure">
           <div className={styles.sectionHeading}>
             <span className={styles.eyebrow}>Room structure</span>
             <h2>The room should stay stable enough that later chat, critique, and revision have something to work on.</h2>
