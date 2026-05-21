@@ -134,7 +134,7 @@ async function askOpenAi(entry: HomeIntakeRecord): Promise<HomeIntakeBriefAnswer
         store: false,
         max_output_tokens: 900,
         instructions:
-          "You are an assisted reader inside Civic Logos. Help develop a new public issue candidate from multiple perspectives without pretending to settle the issue or replace human review.",
+          "You are an AI assistant inside Civic Logos. Help develop a new public issue candidate from multiple perspectives without pretending to settle the issue or replace human review.",
         input: [
           {
             role: "user",
@@ -210,7 +210,7 @@ async function askAnthropic(entry: HomeIntakeRecord): Promise<HomeIntakeBriefAns
         model: config.model,
         max_tokens: 900,
         system:
-          "You are an assisted reader inside Civic Logos. Help develop a new public issue candidate from multiple perspectives without pretending to settle the issue or replace human review.",
+          "You are an AI assistant inside Civic Logos. Help develop a new public issue candidate from multiple perspectives without pretending to settle the issue or replace human review.",
         messages: [
           {
             role: "user",
@@ -293,6 +293,6 @@ export async function buildHomeIntakeBrief(
     answers,
     issues,
     disclaimer:
-      "These are assisted-reader development passes on a room candidate. They help surface perspectives, evidence questions, and civic pressure points, but they do not settle the issue or replace human review.",
+      "These are AI development passes on a room candidate. They help surface perspectives, evidence questions, and civic pressure points, but they do not settle the issue or replace human review.",
   };
 }

@@ -621,7 +621,7 @@ export default async function ContributionReviewPage({
 
                   {hasAiReviewSuggestion && !item.review ? (
                     <p className={styles.prefillNote}>
-                      The placement fields above were prefilled from the assisted-reader
+                      The placement fields above were prefilled from the AI
                       suggestion. Keep, revise, or clear them before saving the human
                       review decision.
                     </p>

@@ -170,7 +170,7 @@ function buildPromotionPrompt(args: {
   context: string;
 }) {
   return [
-    "Decide whether this assisted-reader answer should become part of the Civic Logos topic record.",
+    "Decide whether this AI answer should become part of the Civic Logos topic record.",
     "Most chat exchanges should remain exploratory and return decision=none.",
     "Use decision=obvious only when the answer contains a narrow, inspectable, directly grounded update that can safely be recorded without waiting on a human.",
     "Use decision=review when the answer suggests a useful record change, but it still depends on interpretive judgment, contested framing, or a human deciding whether the change should move the card.",
@@ -180,7 +180,7 @@ function buildPromotionPrompt(args: {
     "Visitor question:",
     args.question,
     "",
-    "Assisted-reader answer:",
+    "AI answer:",
     args.answer,
     "",
     "Current topic context:",

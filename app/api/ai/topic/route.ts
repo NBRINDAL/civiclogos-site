@@ -77,7 +77,7 @@ async function promoteAnswerToRecord(args: {
       usedPromotionSlot: args.promotionAlreadyUsed,
       promotion: {
         state: "not-added",
-        note: "This assisted-reader answer remained exploratory and was not added to the public record.",
+        note: "This AI answer remained exploratory and was not added to the public record.",
       } satisfies TopicChatPromotion,
     };
   }
@@ -97,7 +97,7 @@ async function promoteAnswerToRecord(args: {
       usedPromotionSlot: true,
       promotion: {
         state: "not-added",
-        note: "Parallel-reader mode kept this answer as a comparative reader after another useful update was already captured from the same turn.",
+        note: "Parallel-AI mode kept this answer comparative after another useful update was already captured from the same turn.",
       } satisfies TopicChatPromotion,
     };
   }
@@ -120,7 +120,7 @@ async function promoteAnswerToRecord(args: {
     draftSource: {
       provider: args.answer.provider,
       providerLabel:
-        args.answer.provider === "openai" ? "GPT assisted reader" : "Claude assisted reader",
+        args.answer.provider === "openai" ? "GPT AI" : "Claude AI",
       model: args.answer.model,
       question: args.question,
       generatedAt: args.answer.generatedAt,
@@ -186,9 +186,9 @@ async function promoteAnswerToRecord(args: {
       state: "sent-to-review",
       note:
         args.providerRequest === "all"
-          ? "Parallel-reader mode treated this as useful enough for the review queue, but not safe enough to auto-record."
+          ? "Parallel-AI mode treated this as useful enough for the review queue, but not safe enough to auto-record."
           : proposal.reviewerNote ||
-            "This assisted-reader answer was turned into a draft update and sent to the human review queue.",
+            "This AI answer was turned into a draft update and sent to the human review queue.",
       contributionId: contribution.id,
       contributionStatus: contribution.status,
       lane: proposal.lane,
@@ -223,14 +223,14 @@ export async function POST(request: NextRequest) {
 
   if (!question || question.length < 8) {
     return NextResponse.json(
-      { error: "Ask a fuller question so the topic readers have something real to respond to." },
+      { error: "Ask a fuller question so the topic AIs have something real to respond to." },
       { status: 400 },
     );
   }
 
   if (question.length > 2500) {
     return NextResponse.json(
-      { error: "Keep the question under 2,500 characters for this first reader pass." },
+      { error: "Keep the question under 2,500 characters for this first AI pass." },
       { status: 400 },
     );
   }

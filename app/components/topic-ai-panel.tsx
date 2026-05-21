@@ -77,7 +77,7 @@ function formatTimestamp(value: string) {
 }
 
 function getProviderLabel(provider: TopicAiAnswer["provider"] | TopicAiIssue["provider"]) {
-  return provider === "openai" ? "GPT assisted reader" : "Claude assisted reader";
+  return provider === "openai" ? "GPT AI" : "Claude AI";
 }
 
 function getPromotionLabel(state: TopicChatPromotionState) {
@@ -178,7 +178,7 @@ export default function TopicAiPanel({
   const [messages, setMessages] = useState<TopicChatMessage[]>(initialMessages);
   const [issues, setIssues] = useState<TopicAiIssue[]>([]);
   const [disclaimer, setDisclaimer] = useState(
-    "These assisted readers stay visible as readers. The room only changes when Civic Logos records an obvious update or sends a proposal to human review.",
+    "These AIs stay visible as separate AIs. The room only changes when Civic Logos records an obvious update or sends a proposal to human review.",
   );
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [activeProvider, setActiveProvider] = useState<ProviderRequest | null>(null);
@@ -196,7 +196,7 @@ export default function TopicAiPanel({
 
     if (trimmedQuestion.length < 8) {
       setErrorMessage(
-        "Ask a fuller question so the topic readers have something real to respond to.",
+        "Ask a fuller question so the topic AIs have something real to respond to.",
       );
       return;
     }
@@ -227,7 +227,7 @@ export default function TopicAiPanel({
         if (!response.ok) {
           throw new Error(
             payload.error ??
-              "The assisted readers could not answer from this topic card right now.",
+              "The AIs could not answer from this topic card right now.",
           );
         }
 
@@ -241,7 +241,7 @@ export default function TopicAiPanel({
         setErrorMessage(
           error instanceof Error
             ? error.message
-            : "The assisted readers could not answer from this topic card right now.",
+            : "The AIs could not answer from this topic card right now.",
         );
       }
     });
@@ -284,11 +284,11 @@ export default function TopicAiPanel({
       <div className={styles.header}>
         <div>
           <span className={styles.eyebrow}>Chat this topic</span>
-          <h2>Use the live readers to explore the card, then let Civic Logos decide whether the result stays exploratory, goes to review, or updates the record.</h2>
+          <h2>Use the live AIs to explore the card, then let Civic Logos decide whether the result stays exploratory, goes to review, or updates the record.</h2>
         </div>
         <p className={styles.metaNote}>
           Ask about the thesis, assumptions, objection, evidence, transition cost,
-          or economic-delta read. The models are assisted readers of{" "}
+          or economic-delta read. The models are AIs attached to{" "}
           <strong>{topicTitle}</strong>, not the authority that changes the public record.
         </p>
       </div>
@@ -311,7 +311,7 @@ export default function TopicAiPanel({
             <span className={styles.sessionImpactLabel}>Auto-recorded</span>
             <strong>{sessionImpact.autoRecordedCount}</strong>
             <p>
-              Narrow reader turns Civic Logos treated as obvious enough to enter
+              Narrow AI turns Civic Logos treated as obvious enough to enter
               the live record without waiting on human review.
             </p>
           </article>
@@ -319,7 +319,7 @@ export default function TopicAiPanel({
             <span className={styles.sessionImpactLabel}>Sent to review</span>
             <strong>{sessionImpact.sentToReviewCount}</strong>
             <p>
-              Assisted-reader turns that became proposed record changes and now
+              AI turns that became proposed record changes and now
               depend on a human decision.
             </p>
           </article>
@@ -327,7 +327,7 @@ export default function TopicAiPanel({
             <span className={styles.sessionImpactLabel}>Exploratory only</span>
             <strong>{sessionImpact.exploratoryCount}</strong>
             <p>
-              Reader turns that stayed chat-only because they were not yet
+              AI turns that stayed chat-only because they were not yet
               specific or grounded enough for the public record.
             </p>
           </article>
@@ -335,7 +335,7 @@ export default function TopicAiPanel({
 
         {sessionImpact.promotedMessages.length ? (
           <div className={styles.sessionImpactTrace}>
-            <span className={styles.quickPromptLabel}>Reader session impact</span>
+            <span className={styles.quickPromptLabel}>AI session impact</span>
             <div className={styles.issueList}>
               {sessionImpact.promotedMessages.slice(-3).reverse().map((message) => (
                 <p className={styles.issueItem} key={`impact-${message.id}`}>
@@ -520,7 +520,7 @@ export default function TopicAiPanel({
           onClick={() => submitQuestion("all")}
           type="button"
         >
-          {isPending && activeProvider === "all" ? "Asking both readers…" : "Ask both readers"}
+          {isPending && activeProvider === "all" ? "Asking both AIs…" : "Ask both AIs"}
         </button>
       </div>
 

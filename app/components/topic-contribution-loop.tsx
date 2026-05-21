@@ -159,11 +159,11 @@ function formatAttachmentPoint(
 }
 
 function getAiReaderLabel(provider: AiProvider) {
-  return provider === "openai" ? "Structurer read" : "Critic read";
+  return provider === "openai" ? "Structurer AI" : "Critic AI";
 }
 
 function getAiReaderProviderLabel(provider: AiProvider) {
-  return provider === "openai" ? "OpenAI assisted reader" : "Claude assisted reader";
+  return provider === "openai" ? "OpenAI model" : "Claude model";
 }
 
 function getCompletedReader(
@@ -363,7 +363,7 @@ export default function TopicContributionLoop({
           ? `${trimmedQuestion.slice(0, 107).trimEnd()}...`
           : trimmedQuestion;
       const nextBody = [
-        "Question raised through the assisted-reader layer:",
+        "Question raised through the AI layer:",
         trimmedQuestion,
         "",
         `Working note from ${detail.providerLabel} (${detail.model}):`,
@@ -580,14 +580,14 @@ export default function TopicContributionLoop({
 
             {draftState ? (
               <div className={styles.draftState}>
-                <strong>Draft loaded from the assisted-reader layer</strong>
+                <strong>Draft loaded from the AI layer</strong>
                 <p>
                   {draftState.providerLabel} ({draftState.model}) helped draft this
                   contribution from the question:
                 </p>
                 <p className={styles.draftQuestion}>{draftState.question}</p>
                 <p>
-                  Assisted-reader output was generated on{" "}
+                  AI output was generated on{" "}
                   <strong>{formatTimestamp(draftState.generatedAt)}</strong>.
                 </p>
                 {draftState.suggestedLane ? (

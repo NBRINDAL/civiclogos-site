@@ -221,7 +221,7 @@ function buildHistoryBlock(history: TopicChatMessage[] | undefined) {
         return `Visitor: ${item.body}`;
       }
 
-      const providerLabel = item.provider === "openai" ? "GPT reader" : "Claude reader";
+      const providerLabel = item.provider === "openai" ? "GPT AI" : "Claude AI";
       return `${providerLabel}: ${item.body}`;
     })
     .join("\n");
@@ -234,7 +234,7 @@ function buildReaderPrompt(
 ) {
   return [
     "Answer the visitor's question only from the Civic Logos topic card context below.",
-    "You are an assisted reader, not the final judge.",
+    "You are an AI assistant, not the final judge.",
     "Do not claim the public record has changed.",
     "Be calm, serious, and direct.",
     "If the question cannot be answered confidently from the current card, say what assumption, objection, evidence, or measurement gap is still open.",
@@ -279,7 +279,7 @@ async function askOpenAi(
         store: false,
         max_output_tokens: 700,
         instructions:
-          "You are an assisted reader inside Civic Logos. Help the reader think through a live topic card. You do not declare final truth, do not change the record, and do not pretend that a provider model is the authority over the room.",
+          "You are an AI assistant inside Civic Logos. Help the user think through a live topic card. You do not declare final truth, do not change the record, and do not pretend that a provider model is the authority over the room.",
         input: [
           {
             role: "user",
@@ -360,7 +360,7 @@ async function askAnthropic(
         model: config.model,
         max_tokens: 700,
         system:
-          "You are an assisted reader inside Civic Logos. Help the reader think through a live topic card. You do not declare final truth, do not change the record, and do not pretend that the model is the authority over the room.",
+          "You are an AI assistant inside Civic Logos. Help the user think through a live topic card. You do not declare final truth, do not change the record, and do not pretend that the model is the authority over the room.",
         messages: [
           {
             role: "user",
@@ -457,6 +457,6 @@ export async function askTopicCard(
     answers,
     issues,
     disclaimer:
-      "These are assisted-reader responses generated from the current topic card, visible contribution record, and your scoped topic chat in this session. They only change the public record when Civic Logos records a narrow obvious update or sends a proposal into review.",
+      "These are AI responses generated from the current topic card, visible contribution record, and your scoped topic chat in this session. They only change the public record when Civic Logos records a narrow obvious update or sends a proposal into review.",
   };
 }

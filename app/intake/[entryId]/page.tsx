@@ -313,8 +313,8 @@ export default async function IntakeEntryPage({
 
         <section className={styles.section}>
           <div className={styles.sectionHeading}>
-            <span className={styles.eyebrow}>Routing readers</span>
-            <h2>The intake engine is stronger when both models stay visible as readers.</h2>
+            <span className={styles.eyebrow}>Routing AIs</span>
+            <h2>The intake engine is stronger when both models stay visible as separate AIs.</h2>
             <p className={styles.summary}>
               These model outputs explain how Civic Logos tried to place the issue in the current map.
               They do not replace the issue-development pass above.

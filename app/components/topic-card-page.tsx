@@ -220,7 +220,7 @@ export default async function TopicCardPage({
               </div>
               <div>
                 <span>AI roles</span>
-                <strong>{card.aiPanels.length} active readers</strong>
+                <strong>{card.aiPanels.length} active AI roles</strong>
               </div>
             </div>
           </aside>
@@ -668,7 +668,7 @@ export default async function TopicCardPage({
 
         <section className={styles.panel}>
           <span className={styles.eyebrow}>AI review</span>
-          <h2>The AI layer should stay visible as a reader, not pretend to be the final judge.</h2>
+          <h2>The AI layer should stay visible as AI analysis, not pretend to be the final judge.</h2>
           <div className={styles.aiGrid}>
             {card.aiPanels.map((item) => (
               <article className={styles.aiCard} key={item.role}>
@@ -970,7 +970,7 @@ export default async function TopicCardPage({
                   <p>
                     {assistedRecordContributions.length} visible contribution
                     {assistedRecordContributions.length === 1 ? "" : "s"} on
-                    this card began in the GPT/Claude topic reader layer, with{" "}
+                    this card began in the GPT/Claude topic AI layer, with{" "}
                     {assistedPendingContributions.length} still waiting on a full
                     human decision and {assistedChangedContributions.length} already
                     marked as changing the card.
@@ -1023,7 +1023,7 @@ export default async function TopicCardPage({
               ) : (
                 <p>
                   No visible contribution on this card has yet come through the
-                  live GPT/Claude topic-reader path. When that happens, the card
+                  live GPT/Claude topic-AI path. When that happens, the card
                   should show the chat-to-record trace here instead of burying it
                   inside the transcript alone.
                 </p>

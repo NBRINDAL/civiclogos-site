@@ -1554,10 +1554,10 @@ export const topic001: TopicCardData = {
       summary:
         "Converted a broad reform instinct into a testable object: problem, mechanism, assumptions, savings hypothesis, and risk surface are now explicit.",
       provenance: {
-        sourceLabel: "Prototype seeded reader note",
+        sourceLabel: "Prototype seeded AI note",
         generatedAt: "May 2026",
         promptCategory: "Role-framed seed read",
-        note: "This is a seeded reader summary used to frame the card. Live model interaction appears in the Ask This Topic panel below.",
+        note: "This is a seeded AI summary used to frame the card. Live model interaction appears in the Chat this topic panel below.",
       },
     },
     {
@@ -1566,10 +1566,10 @@ export const topic001: TopicCardData = {
       summary:
         "The strongest case is that the topic attacks real waste, improves access friction, and gives the healthcare room a measurable first demonstration without forcing premature ideological closure.",
       provenance: {
-        sourceLabel: "Prototype seeded reader note",
+        sourceLabel: "Prototype seeded AI note",
         generatedAt: "May 2026",
         promptCategory: "Role-framed seed read",
-        note: "This is a seeded reader summary used to frame the card. Live model interaction appears in the Ask This Topic panel below.",
+        note: "This is a seeded AI summary used to frame the card. Live model interaction appears in the Chat this topic panel below.",
       },
     },
     {
@@ -1578,10 +1578,10 @@ export const topic001: TopicCardData = {
       summary:
         "The strongest critique is that this may streamline bureaucracy without confronting deeper price formation, incentive distortion, and uneven care capacity.",
       provenance: {
-        sourceLabel: "Prototype seeded reader note",
+        sourceLabel: "Prototype seeded AI note",
         generatedAt: "May 2026",
         promptCategory: "Role-framed seed read",
-        note: "This is a seeded reader summary used to frame the card. Live model interaction appears in the Ask This Topic panel below.",
+        note: "This is a seeded AI summary used to frame the card. Live model interaction appears in the Chat this topic panel below.",
       },
     },
     {
@@ -1590,10 +1590,10 @@ export const topic001: TopicCardData = {
       summary:
         "Possible upside exists, but the core uncertainty remains whether savings are large enough and durable enough to justify transition and oversight cost.",
       provenance: {
-        sourceLabel: "Prototype seeded reader note",
+        sourceLabel: "Prototype seeded AI note",
         generatedAt: "May 2026",
         promptCategory: "Role-framed seed read",
-        note: "This is a seeded reader summary used to frame the card. Live model interaction appears in the Ask This Topic panel below.",
+        note: "This is a seeded AI summary used to frame the card. Live model interaction appears in the Chat this topic panel below.",
       },
     },
   ],
