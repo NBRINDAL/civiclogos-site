@@ -244,6 +244,14 @@ export const healthcareIssueRoom = {
   ] satisfies ProposalSummary[],
   novelProposals: [
     {
+      title: "Rural Healthcare Stabilization Model",
+      summary:
+        "Creates a dedicated rural-capacity layer so reform does not improve averages while letting fragile hospitals, emergency access, and provider pipelines collapse.",
+      label: "Most novel",
+      metric: "High access value, edge-case cost pressure",
+      href: "/healthcare/topic-003",
+    },
+    {
       title: "Decentralized Clinic Model",
       summary:
         "Expands local clinics, low-cost care sites, and lighter-weight service delivery to reduce dependency on high-cost hospital workflows.",
@@ -1740,6 +1748,195 @@ export const topic002: TopicCardData = {
       version: "v0.3",
       date: "May 2026",
       note: "The card was sharpened around portability, employer burden, and labor mobility so the structural choice is easier to compare against other healthcare directions.",
+    },
+  ],
+};
+
+export const topic003: TopicCardData = {
+  id: "topic-003",
+  title: "Rural Healthcare Stabilization Model",
+  subtitle:
+    "A third healthcare topic card for testing whether reform can preserve edge-case access instead of optimizing only for national averages",
+  draftNote:
+    "This topic card is intentionally unfinished because rural healthcare is where elegant reform language often breaks. It is meant to force a harder question into the room: what kind of healthcare system still works when distance is long, staffing is thin, emergency access is fragile, and local hospitals are one shock away from failure?",
+  thesis:
+    "Any serious healthcare reform should include a rural-capacity layer that explicitly protects emergency access, core provider presence, and financially fragile hospitals, even when that means using subsidy, different reimbursement rules, and lower-efficiency service models than a dense urban system would tolerate.",
+  currentRead:
+    "This topic card feels strong because it pressures one of the room's most important edge cases directly: national reform can look cleaner on paper than it does in sparsely populated regions. It feels weak wherever it risks becoming a blanket excuse for preserving every existing rural institution regardless of quality, density, or outcomes. The card is useful because it makes clear that healthcare access is not only a financing problem but also a geographic and infrastructural one.",
+  problemStatement:
+    "Rural hospitals, clinics, and provider pipelines often operate with lower patient volume, thinner staffing, longer transport times, and weaker margins than urban systems. Reforms aimed at cost savings, administrative simplification, or reimbursement changes may improve national averages while unintentionally destabilizing emergency access, maternity care, trauma response, primary care continuity, and specialist referral pathways in rural regions.",
+  proposedSolution:
+    "Create a rural-stabilization layer inside broader healthcare reform: define which services must remain geographically reachable, build targeted reimbursement floors or global budgets for essential rural capacity, support shared staffing and telehealth backstops, and evaluate reform models against edge-case access rather than treating rural decline as a secondary implementation detail.",
+  mechanism: [
+    "Define the minimum rural healthcare capacities a serious system should preserve, such as emergency stabilization, maternity pathways, primary care continuity, and transfer coordination.",
+    "Use targeted reimbursement floors, essential-service budgets, or access-based support rather than forcing fragile rural providers into the same efficiency expectations as dense urban systems.",
+    "Pair physical capacity with telehealth, shared specialist networks, transport coordination, and provider-pipeline support so rural care is stabilized as a system rather than as a single building.",
+    "Evaluate broader reforms against rural access metrics early, including closure risk, travel time, staffing resilience, and continuity of care for high-need populations.",
+  ],
+  benefits: [
+    "The room gets a concrete answer to one of its hardest recurring objections: reform should not quietly sacrifice edge-case access to improve average efficiency.",
+    "Rural patients and families gain stronger protection against the collapse of emergency, maternity, and basic primary-care access.",
+    "Healthcare reforms become easier to compare honestly because provider stability and geography are treated as first-order design variables.",
+    "The system can preserve strategic care capacity in places where pure market volume is too weak to sustain it.",
+  ],
+  risks: [
+    "A stabilization layer can become an expensive patch that preserves weak institutions without enough quality, accountability, or redesign pressure.",
+    "Different reimbursement rules may provoke fairness and political resistance if urban systems believe they are subsidizing permanent inefficiency.",
+    "Telehealth and transport coordination may be oversold as substitutes for real local capacity when they are only partial supports.",
+    "Targeted rural support can still fail if workforce pipelines, housing, and regional economics remain too weak to retain providers.",
+  ],
+  assumptions: [
+    "Rural healthcare fragility is not a side issue but a core test of whether a healthcare system actually serves the whole country.",
+    "Different reimbursement and support structures can preserve access without becoming pure institutional life support.",
+    "A system can distinguish between essential geographic capacity and the indefinite preservation of every existing rural provider configuration.",
+    "Edge-case access should meaningfully constrain healthcare reform even when it complicates national efficiency goals.",
+  ],
+  stakeholders: [
+    "Rural patients and families",
+    "Rural hospitals and clinics",
+    "Emergency transport systems",
+    "Doctors, nurses, and regional provider pipelines",
+    "State and federal health agencies",
+    "Urban referral hospitals and specialist hubs",
+    "Insurers and reimbursement systems",
+    "Taxpayers and regional economic planners",
+  ],
+  evidence: [
+    {
+      title: "Rural hospital closure and margin data",
+      status: "Strong evidence",
+      note: "Critical for seeing where access fragility is already present before new reforms add pressure.",
+    },
+    {
+      title: "Travel-time and emergency-outcome comparisons",
+      status: "Strong evidence",
+      note: "Useful for testing which losses of local capacity create unacceptable clinical or household risk.",
+    },
+    {
+      title: "Telehealth and shared-network support can fully replace local capacity",
+      status: "Needs verification",
+      note: "Often assumed, but highly dependent on broadband, staffing, transfer systems, and case mix.",
+    },
+    {
+      title: "Targeted rural reimbursement or global-budget support preserves meaningful access efficiently",
+      status: "Useful but uneven",
+      note: "Supports the idea of a separate rural-capacity layer, but implementation quality matters heavily.",
+    },
+  ] satisfies EvidenceSummary[],
+  economicDelta: {
+    summary:
+      "Estimated Economic Delta: Mixed but strategically important. A rural-stabilization layer may raise visible spending in the short term while preventing hidden costs from hospital closure, delayed care, regional decline, emergency transfer burdens, and household insecurity. Confidence remains moderate-to-low because the value case depends on how access, workforce, and subsidy design are measured rather than on a simple cost-cutting frame.",
+    metrics: [
+      "Direct cost pressure: likely positive because stabilization often requires explicit support",
+      "Hidden cost avoidance: potentially high if closures, delayed care, and transfer burdens fall",
+      "Political value: high because rural neglect can delegitimize national reform quickly",
+      "Efficiency profile: weaker on paper than dense urban systems, stronger on geographic resilience",
+      "Economic-delta confidence: low to moderate until closure-risk and access-value models improve",
+    ],
+  },
+  strongestSupport:
+    "This topic card forces the healthcare room to answer whether reform is real for the whole country or only for average-case metrics. It keeps provider stability, geography, and emergency access inside the public reasoning object instead of letting them surface only as late objections.",
+  strongestObjection:
+    "Rural stabilization can become a euphemism for subsidizing low-volume institutions indefinitely without enough redesign, accountability, or quality improvement. If that happens, the model may preserve fragility rather than solve it.",
+  whatWouldStrengthen: [
+    "A sharper definition of which rural capacities are non-negotiable and which provider forms are historically inherited rather than actually necessary.",
+    "Better modeling of closure costs, transfer burdens, travel-time risk, and regional economic spillovers from losing care infrastructure.",
+    "Examples of rural support mechanisms that improved resilience without simply freezing the status quo in place.",
+  ],
+  openQuestions: [
+    "What minimum local care capacities should every serious healthcare system guarantee in rural regions?",
+    "How should rural access be weighed against national cost efficiency when the two conflict directly?",
+    "What is the right mix of local capacity, telehealth, transport, and referral-network support?",
+    "How can the model distinguish between preserving essential access and preserving every existing institution?",
+  ],
+  maturity: "Seed topic",
+  scorecard: [
+    { label: "Novelty", value: 69 },
+    { label: "Coherence", value: 86 },
+    { label: "Feasibility", value: 61 },
+    { label: "Evidence quality", value: 64 },
+    { label: "Economic delta clarity", value: 49 },
+    { label: "Public value", value: 90 },
+  ],
+  aiPanels: [
+    {
+      role: "Structurer",
+      confidence: "Moderate",
+      summary:
+        "The topic card gives the healthcare room a serious edge-case object by making geography, emergency access, and provider fragility first-order rather than downstream concerns.",
+    },
+    {
+      role: "Steelman",
+      confidence: "Moderate",
+      summary:
+        "If a healthcare system cannot survive its rural cases, it is not yet a coherent national system. This card keeps the room honest about that.",
+    },
+    {
+      role: "Critic",
+      confidence: "Moderate",
+      summary:
+        "The card can too easily collapse into subsidy language without enough distinction between preserving access and preserving historically inherited institutional forms.",
+    },
+    {
+      role: "Institutionalist",
+      confidence: "Low",
+      summary:
+        "The strongest version of the idea likely requires a hybrid of explicit support, network coordination, and service redesign rather than simply paying more into the existing rural map.",
+    },
+  ],
+  debatePrompts: [
+    {
+      title: "Support",
+      description: "Add the strongest argument for why rural-capacity protection should constrain healthcare reform even when it raises visible cost.",
+    },
+    {
+      title: "Objection",
+      description: "Surface the strongest reason a rural-stabilization layer could become inefficient institutional preservation rather than real access design.",
+    },
+    {
+      title: "Evidence",
+      description: "Add closure, travel-time, workforce, or emergency-outcome evidence that strengthens or weakens the card.",
+    },
+    {
+      title: "Correction",
+      description: "Identify conceptual, fiscal, or service-design errors in the current card.",
+    },
+    {
+      title: "Nuance",
+      description: "Improve the topic by exposing a missing tradeoff between access, quality, cost, and geographic resilience.",
+    },
+    {
+      title: "Implementation concern",
+      description: "Identify how reimbursement systems, workforce shortages, or political incentives could make rural stabilization fail in practice.",
+    },
+    {
+      title: "Economic assumption challenge",
+      description: "Question whether the avoided closure and access harms are large enough to justify the explicit support this model would require.",
+    },
+    {
+      title: "Alternate topic",
+      description: "Offer a better way to preserve edge-case access without building a separate rural-capacity layer.",
+    },
+    {
+      title: "Stakeholder perspective",
+      description: "Add the view of a rural patient, hospital administrator, nurse, emergency transport worker, or state health official.",
+    },
+  ] satisfies DebatePrompt[],
+  revisionHistory: [
+    {
+      version: "v0.1",
+      date: "May 2026",
+      note: "Initial seed topic card created to turn rural access and provider fragility into a full inspectable healthcare object instead of a background caveat.",
+    },
+    {
+      version: "v0.2",
+      date: "May 2026",
+      note: "The card was sharpened around minimum geographic capacity, closure risk, and the distinction between preserving access versus preserving every existing institution.",
+    },
+    {
+      version: "v0.3",
+      date: "May 2026",
+      note: "Economic-delta framing was expanded to include hidden closure costs, emergency burdens, and regional resilience instead of relying on a narrow efficiency lens.",
     },
   ],
 };
@@ -3257,7 +3454,7 @@ export const institutionalTrustTopic002: TopicCardData = {
 };
 
 export const roomTopicCards = {
-  healthcare: [topic001, topic002],
+  healthcare: [topic001, topic002, topic003],
   governance: [governanceTopic001, governanceTopic002],
   housing: [housingTopic001, housingTopic002],
   "ai-labor": [aiTopic001, aiTopic002],
