@@ -34,8 +34,10 @@ type SubmissionState = {
 };
 
 type DraftState = {
+  provider: AiProvider;
   providerLabel: string;
   model: string;
+  generatedAt: string;
   question: string;
   suggestedLane: FormLane;
 } | null;
@@ -259,8 +261,10 @@ export default function TopicContributionLoop({
         body: nextBody,
       }));
       setDraftState({
+        provider: detail.provider,
         providerLabel: detail.providerLabel,
         model: detail.model,
+        generatedAt: detail.generatedAt,
         question: trimmedQuestion,
         suggestedLane: detail.suggestedLane ?? "",
       });
@@ -352,6 +356,15 @@ export default function TopicContributionLoop({
             name: formState.name,
             email: formState.email,
             expertise: formState.expertise,
+            draftSource: draftState
+              ? {
+                  provider: draftState.provider,
+                  providerLabel: draftState.providerLabel,
+                  model: draftState.model,
+                  question: draftState.question,
+                  generatedAt: draftState.generatedAt,
+                }
+              : undefined,
             website,
           }),
         });
@@ -446,6 +459,10 @@ export default function TopicContributionLoop({
                   contribution from the question:
                 </p>
                 <p className={styles.draftQuestion}>{draftState.question}</p>
+                <p>
+                  Assisted-reader output was generated on{" "}
+                  <strong>{formatTimestamp(draftState.generatedAt)}</strong>.
+                </p>
                 {draftState.suggestedLane ? (
                   <p>
                     Suggested lane:{" "}
@@ -659,6 +676,13 @@ export default function TopicContributionLoop({
                   </div>
 
                   <h3>{item.title}</h3>
+                  {item.draftSource ? (
+                    <p className={styles.assistedDraftNote}>
+                      Assisted draft source: {item.draftSource.providerLabel} (
+                      {item.draftSource.model}) on{" "}
+                      {formatTimestamp(item.draftSource.generatedAt)}.
+                    </p>
+                  ) : null}
                   <p className={styles.contributionBody}>{item.body}</p>
 
                   {item.evidenceSource?.url ? (

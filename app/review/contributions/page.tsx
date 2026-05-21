@@ -407,6 +407,16 @@ export default async function ContributionReviewPage({
                       timeStyle: "short",
                     })}
                   </p>
+                  {item.draftSource ? (
+                    <p>
+                      Assisted draft source: {item.draftSource.providerLabel} (
+                      {item.draftSource.model}) ·{" "}
+                      {new Date(item.draftSource.generatedAt).toLocaleString("en-US", {
+                        dateStyle: "medium",
+                        timeStyle: "short",
+                      })}
+                    </p>
+                  ) : null}
                   {item.author.name || item.author.email || item.author.expertise ? (
                     <p>
                       Contributor:{" "}
