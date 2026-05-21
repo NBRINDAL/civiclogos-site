@@ -13,6 +13,7 @@ import {
 import {
   debateLaneLabels,
   debateLaneOptions,
+  type DebateLane,
   type ReviewTargetKind,
 } from "../lib/reasoning-types";
 import {
@@ -79,12 +80,14 @@ function getContributionLedgerHref({
   attachment,
   reviewStatus,
   origin,
+  lane,
   contributionId,
 }: {
   recordView?: ContributionRecordView;
   attachment?: ContributionAttachmentFilter;
   reviewStatus?: ContributionStatusFilter;
   origin?: ContributionOriginFilter;
+  lane?: DebateLane;
   contributionId?: string;
 }) {
   const params = new URLSearchParams();
@@ -103,6 +106,10 @@ function getContributionLedgerHref({
 
   if (origin) {
     params.set("origin", origin);
+  }
+
+  if (lane) {
+    params.set("lane", lane);
   }
 
   const query = params.toString();
@@ -222,6 +229,7 @@ function getExactContributionLedgerHref(contribution: PublicContribution) {
     attachment: getContributionAttachmentFilter(contribution),
     reviewStatus: getContributionStatusFilter(contribution.status),
     origin: getContributionOrigin(contribution),
+    lane: contribution.lane,
     contributionId: contribution.id,
   });
 }
@@ -1211,6 +1219,12 @@ export default async function TopicCardPage({
                           ? `Latest open pressure: ${item.latestUnresolved.title}.`
                           : "No open pressure right now. This lane has only reviewed changes in the current visible record."}
                       </p>
+                      <Link
+                        className={styles.lanePressureLink}
+                        href={getContributionLedgerHref({ lane: item.lane })}
+                      >
+                        Open public lane slice
+                      </Link>
                       <Link
                         className={styles.lanePressureLink}
                         href={`/review/contributions?roomSlug=${encodeURIComponent(

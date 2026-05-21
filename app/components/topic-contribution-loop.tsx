@@ -10,6 +10,7 @@ import type {
   PublicContribution,
 } from "../lib/contribution-types";
 import {
+  debateLaneLabels,
   getDebateLaneLabel,
   normalizeDebateLane,
   normalizeReviewTargetKind,
@@ -79,6 +80,8 @@ type ContributionStatusFilter =
   | "accepted"
   | "incorporated"
   | "rejected";
+
+type ContributionLaneFilter = "all-lanes" | DebateLane;
 
 type ContributionAttachmentFilter =
   | "all-targets"
@@ -220,6 +223,22 @@ function normalizeContributionStatusFilter(
   return "all-statuses";
 }
 
+function normalizeContributionLaneFilter(
+  value: string | null | undefined,
+): ContributionLaneFilter {
+  if (!value) {
+    return "all-lanes";
+  }
+
+  const normalizedLane = normalizeDebateLane(value);
+
+  if (normalizedLane) {
+    return normalizedLane;
+  }
+
+  return "all-lanes";
+}
+
 function formatTimestamp(value: string) {
   return new Intl.DateTimeFormat("en-US", {
     dateStyle: "medium",
@@ -282,6 +301,14 @@ function getContributionOrigin(contribution: PublicContribution): ContributionOr
 
 function getContributionStatusFilter(status: ReviewStatus): ContributionStatusFilter {
   return status === "needs review" ? "needs-review" : status;
+}
+
+function getContributionLaneFilterLabel(filter: ContributionLaneFilter) {
+  if (filter === "all-lanes") {
+    return "All lanes";
+  }
+
+  return getDebateLaneLabel(filter);
 }
 
 function getAiReaderLabel(provider: AiProvider) {
@@ -422,6 +449,10 @@ export default function TopicContributionLoop({
     () => normalizeContributionStatusFilter(searchParams.get("reviewStatus")),
     [searchParams],
   );
+  const activeLaneFilter = useMemo(
+    () => normalizeContributionLaneFilter(searchParams.get("lane")),
+    [searchParams],
+  );
   const recordFilteredContributions = useMemo(
     () =>
       (() => {
@@ -515,7 +546,7 @@ export default function TopicContributionLoop({
     }),
     [attachmentFilteredContributions],
   );
-  const filteredContributions = useMemo(() => {
+  const originFilteredContributions = useMemo(() => {
     if (activeOriginFilter === "all-origins") {
       return attachmentFilteredContributions;
     }
@@ -524,11 +555,35 @@ export default function TopicContributionLoop({
       (item) => getContributionOrigin(item) === activeOriginFilter,
     );
   }, [activeOriginFilter, attachmentFilteredContributions]);
+  const laneFilterCounts = useMemo(
+    () => {
+      const counts = {
+        "all-lanes": originFilteredContributions.length,
+      } as Record<ContributionLaneFilter, number>;
+
+      for (const lane of Object.keys(debateLaneLabels) as DebateLane[]) {
+        counts[lane] = originFilteredContributions.filter((item) => item.lane === lane).length;
+      }
+
+      return counts;
+    },
+    [originFilteredContributions],
+  );
+  const filteredContributions = useMemo(() => {
+    if (activeLaneFilter === "all-lanes") {
+      return originFilteredContributions;
+    }
+
+    return originFilteredContributions.filter(
+      (item) => item.lane === activeLaneFilter,
+    );
+  }, [activeLaneFilter, originFilteredContributions]);
   const hasActiveLedgerFilters =
     activeFilter !== "all" ||
     activeStatusFilter !== "all-statuses" ||
     activeAttachmentFilter !== "all-targets" ||
-    activeOriginFilter !== "all-origins";
+    activeOriginFilter !== "all-origins" ||
+    activeLaneFilter !== "all-lanes";
   const activeLedgerSliceLabel = useMemo(() => {
     const labels = [];
 
@@ -548,12 +603,22 @@ export default function TopicContributionLoop({
       labels.push(contributionOriginFilterLabels[activeOriginFilter]);
     }
 
+    if (activeLaneFilter !== "all-lanes") {
+      labels.push(getContributionLaneFilterLabel(activeLaneFilter));
+    }
+
     if (!labels.length) {
       return "All visible contributions";
     }
 
     return labels.join(" · ");
-  }, [activeAttachmentFilter, activeFilter, activeOriginFilter, activeStatusFilter]);
+  }, [
+    activeAttachmentFilter,
+    activeFilter,
+    activeLaneFilter,
+    activeOriginFilter,
+    activeStatusFilter,
+  ]);
 
   function handleFilterPick(filter: ContributionFilter) {
     const nextSearchParams = new URLSearchParams(searchParams.toString());
@@ -579,6 +644,7 @@ export default function TopicContributionLoop({
     nextSearchParams.delete("reviewStatus");
     nextSearchParams.delete("attachment");
     nextSearchParams.delete("origin");
+    nextSearchParams.delete("lane");
 
     const nextQuery = nextSearchParams.toString();
     router.replace(
@@ -632,6 +698,24 @@ export default function TopicContributionLoop({
       nextSearchParams.delete("origin");
     } else {
       nextSearchParams.set("origin", filter);
+    }
+
+    const nextQuery = nextSearchParams.toString();
+    router.replace(
+      `${pathname}${nextQuery ? `?${nextQuery}` : ""}#contribution-record`,
+      {
+        scroll: false,
+      },
+    );
+  }
+
+  function handleLaneFilterPick(filter: ContributionLaneFilter) {
+    const nextSearchParams = new URLSearchParams(searchParams.toString());
+
+    if (filter === "all-lanes") {
+      nextSearchParams.delete("lane");
+    } else {
+      nextSearchParams.set("lane", filter);
     }
 
     const nextQuery = nextSearchParams.toString();
@@ -1209,9 +1293,30 @@ export default function TopicContributionLoop({
               )}
             </div>
           </div>
+          <div className={styles.filterSection}>
+            <span className={styles.sectionLabel}>Debate lane</span>
+            <div className={styles.filterList}>
+              {(["all-lanes", ...(Object.keys(debateLaneLabels) as DebateLane[])] as ContributionLaneFilter[]).map(
+                (filter) => (
+                  <button
+                    className={
+                      activeLaneFilter === filter
+                        ? styles.activeFilterChip
+                        : styles.filterChip
+                    }
+                    key={filter}
+                    onClick={() => handleLaneFilterPick(filter)}
+                    type="button"
+                  >
+                    {getContributionLaneFilterLabel(filter)} {laneFilterCounts[filter]}
+                  </button>
+                ),
+              )}
+            </div>
+          </div>
           <p className={styles.filterNote}>
-            Showing {filteredContributions.length} of {attachmentFilteredContributions.length} visible
-            contribution{attachmentFilteredContributions.length === 1 ? "" : "s"} in the current
+            Showing {filteredContributions.length} of {originFilteredContributions.length} visible
+            contribution{originFilteredContributions.length === 1 ? "" : "s"} in the current
             record scope.
           </p>
           <div className={styles.filterSummaryRow}>
