@@ -37,6 +37,7 @@ The current site includes:
 - concise manifesto section
 - core distinctions for the platform
 - healthcare issue room with an initial working topic card
+- AI and civilizational impact room with its first working topic card
 - seeded room library for governance, housing, AI/labor, and institutional trust
 - early-access contact calls to action
 

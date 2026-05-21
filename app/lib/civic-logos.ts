@@ -835,11 +835,12 @@ export const aiLaborIssueRoom = {
   roomComponents: healthcareIssueRoom.roomComponents,
   topProposals: [
     {
-      title: "Aligned Augmentation Model",
+      title: "AI as Public Reasoning Infrastructure",
       summary:
-        "Treats AI as a tool for amplifying human capability while keeping humans inside judgment, accountability, and mission-critical loops.",
+        "Treats AI as a public reasoning layer that helps map claims, objections, evidence, and revisions in the open rather than optimizing persuasion or opaque authority.",
       label: "Topic in focus",
-      metric: "Strong upside case, governance-dependent",
+      metric: "Most native Civic Logos test case",
+      href: "/rooms/ai-labor/topic-001",
     },
     {
       title: "Strong Public-Governance and Safety Model",
@@ -1451,6 +1452,195 @@ export const topic001 = {
       version: "v0.3",
       date: "May 2026",
       note: "Economic delta section marked explicitly low-confidence pending real cost and implementation assumptions.",
+    },
+  ],
+} as const;
+
+export const aiTopic001 = {
+  id: "topic-001",
+  title: "AI as Public Reasoning Infrastructure",
+  subtitle:
+    "A first AI room topic card for testing whether artificial intelligence can improve public reasoning instead of degrading it",
+  draftNote:
+    "This topic card is deliberately forward-looking and incomplete. It is meant to test whether AI can function as a civic reasoning layer rather than as a feed optimizer, persuasion engine, or hidden decision authority.",
+  thesis:
+    "AI should be built and governed as public reasoning infrastructure: a visible layer that helps people map claims, objections, evidence, incentives, and revisions in the open rather than optimizing attention, manipulation, or opaque authority.",
+  currentRead:
+    "This topic card feels strongest because it aims AI at one of the hardest public failures on the internet: reasoning that disappears into posts, feeds, and factional reaction. It feels weakest wherever it assumes a reasoning layer will remain transparent, uncaptured, and genuinely human-strengthening once institutions, platforms, and state actors start depending on it.",
+  problemStatement:
+    "Most public discourse systems are optimized for engagement, speed, and identity conflict rather than durable understanding. AI is increasingly used to summarize, rank, persuade, generate, and automate, but not to hold public questions, objections, revisions, and uncertainty in stable civic objects. Without a better structure, AI may scale noise, propaganda, dependence, and false consensus faster than it scales understanding.",
+  proposedSolution:
+    "Build AI-assisted issue rooms where claims, perspectives, evidence, objections, incentives, and revisions stay visible over time. Use AI to structure, compare, critique, summarize, and pressure-test the room, while humans retain perspective ownership, institutional accountability, and the power to challenge any provisional synthesis.",
+  mechanism: [
+    "Represent major public questions as stable room objects rather than transient posts or feed events.",
+    "Separate attributable perspectives from a revisable synthesis so disagreement remains visible instead of being flattened into one answer or one vote result.",
+    "Use AI roles to summarize, surface objections, compare proposals, detect duplication, expose assumptions, and point to missing evidence.",
+    "Keep revision history, source visibility, and institutional labeling public so AI outputs can be contested rather than silently absorbed as authority.",
+  ],
+  benefits: [
+    "Public reasoning becomes more durable, inspectable, and cumulative instead of dissolving into platform churn.",
+    "Institutions can be examined through visible objections, incentives, and revisions rather than pure reputation warfare.",
+    "AI upside is aimed at clarity, synthesis, and civic memory rather than only productivity or engagement.",
+    "High-complexity public issues may become easier to navigate without pretending that disagreement disappears.",
+  ],
+  risks: [
+    "A reasoning layer could become a polished legitimacy system for whoever controls the models, ranking logic, or synthesis rules.",
+    "People may outsource judgment to the AI layer and treat fluent summaries as truth rather than as structured provisional reads.",
+    "Powerful institutions could game public rooms by flooding them with formally valid but strategically distorting material.",
+    "The system could improve discourse presentation without actually improving public wisdom, courage, or institutional accountability.",
+  ],
+  assumptions: [
+    "Structured issue rooms can improve public reasoning enough to matter outside niche communities.",
+    "AI critique and synthesis can be made more helpful than manipulative at the room level.",
+    "Perspective ownership and synthesis governance can remain visibly contestable as the system scales.",
+    "Institutions and contributors will accept slower, more inspectable reasoning workflows when stakes are high.",
+  ],
+  stakeholders: [
+    "Citizens and readers",
+    "Researchers and journalists",
+    "Civic organizations and universities",
+    "Governments and public agencies",
+    "Platforms and AI labs",
+    "Moderators and synthesis stewards",
+    "Institutions subject to public review",
+    "Future contributors building on prior rooms",
+  ],
+  evidence: [
+    {
+      title: "Structured argument and deliberation systems can improve clarity",
+      status: "Strong evidence",
+      note: "Prior systems suggest that visible structure helps reasoning, even if they do not solve incentive design or broad adoption by themselves.",
+    },
+    {
+      title: "LLMs can summarize and compare large bodies of text quickly",
+      status: "Strong evidence",
+      note: "This supports the AI-assisted structuring case, though speed and fluency are not proof of civic reliability.",
+    },
+    {
+      title: "AI already amplifies spam, deepfakes, and synthetic persuasion",
+      status: "Strong evidence",
+      note: "This is the clearest reason the room must treat truth and manipulation as first-order tests rather than side concerns.",
+    },
+    {
+      title: "A public reasoning layer can resist institutional capture over time",
+      status: "Needs verification",
+      note: "This is central to the topic card and still largely hypothetical until real governance and usage evidence exists.",
+    },
+  ] satisfies EvidenceSummary[],
+  economicDelta: {
+    summary:
+      "Estimated Economic Delta: Unknown but potentially large if a public reasoning layer reduces duplicated debate, policy confusion, review overhead, and institutional mistrust. Main costs include moderation, synthesis governance, model operations, evaluation, safety, and long-run anti-capture architecture. Confidence remains low until a real room shows better decisions or lower coordination waste.",
+    metrics: [
+      "Possible institutional savings: positive if review and synthesis costs fall meaningfully",
+      "Implementation cost: moderate to high depending on governance and model architecture",
+      "Adoption cost: potentially high because contributor behavior must change",
+      "Public value: high if the system improves reasoning in contested domains",
+      "Capture risk cost: high if governance is weak or incentives drift",
+    ],
+  },
+  strongestSupport:
+    "This topic card points AI at one of the few use cases where transparency and cumulative public memory can compound value instead of simply scaling persuasion, speed, or private advantage.",
+  strongestObjection:
+    "A system that claims to improve public reasoning can become even more dangerous than an ordinary feed if people mistake structured AI synthesis for neutral truth while power quietly shapes the room underneath it.",
+  whatWouldStrengthen: [
+    "A working pilot showing that structured AI-assisted rooms produce better questions, cleaner objections, and less duplicated argument than ordinary discussion systems.",
+    "A visible governance model for who can shape synthesis, how it is challenged, and how institutional incentives are labeled.",
+    "Evidence that contributors actually return because their input changes the room rather than disappearing into a polished interface.",
+  ],
+  openQuestions: [
+    "Who should own and govern an AI public reasoning layer?",
+    "How should synthesis be challenged when the model's read diverges from high-quality minority perspectives?",
+    "What keeps structured rooms from becoming subtle legitimacy laundering for powerful institutions?",
+    "Which first domains best demonstrate genuine civic value rather than intellectual spectacle?",
+  ],
+  maturity: "Seed topic",
+  scorecard: [
+    { label: "Novelty", value: 87 },
+    { label: "Coherence", value: 79 },
+    { label: "Feasibility", value: 46 },
+    { label: "Evidence quality", value: 49 },
+    { label: "Economic delta clarity", value: 52 },
+    { label: "Public value", value: 91 },
+  ],
+  aiPanels: [
+    {
+      role: "Structurer",
+      confidence: "Moderate",
+      summary:
+        "The topic successfully turns a broad ambition into a specific civic object: room structure, perspective ownership, synthesis governance, and anti-manipulation pressure all stay visible.",
+    },
+    {
+      role: "Steelman",
+      confidence: "Moderate",
+      summary:
+        "If AI can improve public reasoning at the room level, it may become one of the highest-value AI use cases because it strengthens decision quality across many domains rather than inside one workflow alone.",
+    },
+    {
+      role: "Critic",
+      confidence: "Moderate",
+      summary:
+        "The topic may underestimate how quickly reasoning infrastructure becomes authority infrastructure once institutions rely on it and ordinary users stop challenging fluent outputs.",
+    },
+    {
+      role: "Civic theorist",
+      confidence: "Low",
+      summary:
+        "The design is philosophically aligned with Civic Logos, but it still needs real governance and contributor psychology to avoid becoming a well-structured ideal without durable adoption.",
+    },
+  ],
+  debatePrompts: [
+    {
+      title: "Support",
+      description: "Add the strongest argument for why AI-assisted rooms could improve public reasoning more than existing platforms do.",
+    },
+    {
+      title: "Objection",
+      description: "Surface the strongest reason this topic could fail, centralize power, or create false authority.",
+    },
+    {
+      title: "Evidence",
+      description: "Add studies, systems, or case examples that support or weaken the public reasoning infrastructure claim.",
+    },
+    {
+      title: "Correction",
+      description: "Identify conceptual, definitional, or historical errors in the current card.",
+    },
+    {
+      title: "Nuance",
+      description: "Improve the topic by exposing a missing condition or tradeoff without rejecting the whole direction.",
+    },
+    {
+      title: "Governance concern",
+      description: "Identify how synthesis, moderation, incentives, or ownership could quietly distort the room.",
+    },
+    {
+      title: "Economic assumption challenge",
+      description: "Question whether the coordination and review savings are real enough to justify the overhead.",
+    },
+    {
+      title: "Alternate topic",
+      description: "Offer a better route for making AI net beneficial to civilization than building a public reasoning layer.",
+    },
+    {
+      title: "Institutional perspective",
+      description: "Add the view of a government, newsroom, university, or civic body that would have to live inside this system.",
+    },
+  ] satisfies DebatePrompt[],
+  revisionHistory: [
+    {
+      version: "v0.1",
+      date: "May 2026",
+      note: "Initial seed topic card created to give the AI room its first concrete inspectable object rather than leaving the room entirely at the framing level.",
+    },
+    {
+      version: "v0.2",
+      date: "May 2026",
+      note: "Capture risk and false-authority concerns were raised to first-order visibility inside the core objection set.",
+    },
+    {
+      version: "v0.3",
+      date: "May 2026",
+      note: "Economic delta and contributor-return questions were made more explicit so the card does not hide behind philosophical appeal alone.",
     },
   ],
 } as const;

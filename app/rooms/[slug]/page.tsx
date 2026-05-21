@@ -249,7 +249,7 @@ export default async function IssueRoomPage({
         <section className={styles.section} id="topic-field">
           <div className={styles.sectionHeading}>
             <span className={styles.eyebrow}>Topic field</span>
-            <h2>The room already has competing directions, even before full topic cards exist.</h2>
+            <h2>The room already has competing directions, and some of them can now open into fuller topic cards.</h2>
             <p>
               These topic tracks are seeded from the paper’s domain logic so
               the room can start with meaningful structure instead of a blank slate.
