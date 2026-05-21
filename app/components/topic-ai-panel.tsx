@@ -34,6 +34,14 @@ type TopicAiResponse = {
 
 type ProviderRequest = "openai" | "anthropic" | "all";
 
+const quickChallengePrompts = [
+  "Which assumption is carrying the most hidden risk in this card right now?",
+  "Steelman the strongest objection to this card from the current public record.",
+  "What evidence gap most weakens the current read on this topic?",
+  "How could the economic-delta case fail in implementation even if the mechanism sounds plausible?",
+  "What change would most materially improve this card without pretending the room is settled?",
+] as const;
+
 function formatTimestamp(value: string) {
   return new Intl.DateTimeFormat("en-US", {
     dateStyle: "medium",
@@ -56,8 +64,9 @@ export default function TopicAiPanel({
   const [activeProvider, setActiveProvider] = useState<ProviderRequest | null>(null);
   const [isPending, startTransition] = useTransition();
 
-  function submitQuestion(provider: ProviderRequest) {
-    const trimmedQuestion = question.trim();
+  function submitQuestion(provider: ProviderRequest, nextQuestion?: string) {
+    const prompt = nextQuestion ?? question;
+    const trimmedQuestion = prompt.trim();
 
     if (trimmedQuestion.length < 8) {
       setErrorMessage(
@@ -68,6 +77,7 @@ export default function TopicAiPanel({
 
     setErrorMessage(null);
     setActiveProvider(provider);
+    setQuestion(trimmedQuestion);
 
     startTransition(async () => {
       try {
@@ -107,6 +117,10 @@ export default function TopicAiPanel({
     });
   }
 
+  function runQuickChallenge(prompt: string) {
+    submitQuestion("all", prompt);
+  }
+
   return (
     <section className={styles.panel}>
       <div className={styles.header}>
@@ -131,6 +145,23 @@ export default function TopicAiPanel({
           value={question}
         />
       </label>
+
+      <div className={styles.quickPromptBlock}>
+        <span className={styles.quickPromptLabel}>Quick challenge prompts</span>
+        <div className={styles.quickPromptList}>
+          {quickChallengePrompts.map((prompt) => (
+            <button
+              className={styles.quickPrompt}
+              disabled={isPending}
+              key={prompt}
+              onClick={() => runQuickChallenge(prompt)}
+              type="button"
+            >
+              {prompt}
+            </button>
+          ))}
+        </div>
+      </div>
 
       <div className={styles.actions}>
         <button
