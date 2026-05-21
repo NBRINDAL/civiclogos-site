@@ -43,6 +43,47 @@ export type StartHereItem = {
   body: string;
 };
 
+export type TopicCardData = {
+  id: string;
+  title: string;
+  subtitle: string;
+  draftNote: string;
+  thesis: string;
+  currentRead: string;
+  problemStatement: string;
+  proposedSolution: string;
+  mechanism: readonly string[];
+  benefits: readonly string[];
+  risks: readonly string[];
+  assumptions: readonly string[];
+  stakeholders: readonly string[];
+  evidence: readonly EvidenceSummary[];
+  economicDelta: {
+    summary: string;
+    metrics: readonly string[];
+  };
+  strongestSupport: string;
+  strongestObjection: string;
+  whatWouldStrengthen: readonly string[];
+  openQuestions: readonly string[];
+  maturity: string;
+  scorecard: readonly {
+    label: string;
+    value: number;
+  }[];
+  aiPanels: readonly {
+    role: string;
+    confidence: string;
+    summary: string;
+  }[];
+  debatePrompts: readonly DebatePrompt[];
+  revisionHistory: readonly {
+    version: string;
+    date: string;
+    note: string;
+  }[];
+};
+
 export type IssueRoomData = {
   title: string;
   question: string;
@@ -1292,7 +1333,7 @@ export const roomDirectory: readonly RoomDirectoryItem[] = [
   },
 ] as const;
 
-export const topic001 = {
+export const topic001: TopicCardData = {
   id: "topic-001",
   title: "Administrative Simplification and AI-Assisted Triage",
   subtitle: "An initial healthcare reform topic card submitted for public reasoning",
@@ -1478,9 +1519,9 @@ export const topic001 = {
       note: "Economic delta section marked explicitly low-confidence pending real cost and implementation assumptions.",
     },
   ],
-} as const;
+};
 
-export const aiTopic001 = {
+export const aiTopic001: TopicCardData = {
   id: "topic-001",
   title: "AI as Public Reasoning Infrastructure",
   subtitle:
@@ -1667,9 +1708,9 @@ export const aiTopic001 = {
       note: "Economic delta and contributor-return questions were made more explicit so the card does not hide behind philosophical appeal alone.",
     },
   ],
-} as const;
+};
 
-export const institutionalTrustTopic001 = {
+export const institutionalTrustTopic001: TopicCardData = {
   id: "topic-001",
   title: "Public Review Stake for Institutional Claims",
   subtitle:
@@ -1856,4 +1897,4 @@ export const institutionalTrustTopic001 = {
       note: "Adoption and reviewer-governance questions were made more explicit so the card does not rely on moral elegance alone.",
     },
   ],
-} as const;
+};
