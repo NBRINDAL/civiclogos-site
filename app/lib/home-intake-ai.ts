@@ -84,8 +84,6 @@ const intakeSchema = {
     suggested_first_questions: {
       type: "array",
       items: { type: "string" },
-      minItems: 2,
-      maxItems: 4,
     },
     why_not_existing_rooms: { type: "string" },
   },
