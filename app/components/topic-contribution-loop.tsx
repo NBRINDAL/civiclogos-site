@@ -13,6 +13,10 @@ import {
   type DebateLane,
   type ReviewStatus,
 } from "../lib/reasoning-types";
+import {
+  topicAiDraftEventName,
+  type TopicAiDraftDetail,
+} from "../lib/topic-ai-draft";
 import styles from "./topic-contribution-loop.module.css";
 
 type TopicContributionLoopProps = {
@@ -28,6 +32,12 @@ type SubmissionState = {
   kind: "idle" | "success" | "error";
   message?: string;
 };
+
+type DraftState = {
+  providerLabel: string;
+  model: string;
+  question: string;
+} | null;
 
 type ContributionResponse = {
   prototype: boolean;
@@ -146,6 +156,7 @@ export default function TopicContributionLoop({
   const [submissionState, setSubmissionState] = useState<SubmissionState>({
     kind: "idle",
   });
+  const [draftState, setDraftState] = useState<DraftState>(null);
   const [contributions, setContributions] = useState<PublicContribution[]>([]);
   const [prototypeNote, setPrototypeNote] = useState("");
   const [isLoading, setIsLoading] = useState(true);
@@ -215,6 +226,54 @@ export default function TopicContributionLoop({
 
     return () => {
       isCancelled = true;
+    };
+  }, [roomSlug, topicId]);
+
+  useEffect(() => {
+    function handleAiDraft(event: Event) {
+      const customEvent = event as CustomEvent<TopicAiDraftDetail>;
+      const detail = customEvent.detail;
+
+      if (!detail || detail.roomSlug !== roomSlug || detail.topicId !== topicId) {
+        return;
+      }
+
+      const trimmedQuestion = detail.question.trim();
+      const nextTitle =
+        trimmedQuestion.length > 110
+          ? `${trimmedQuestion.slice(0, 107).trimEnd()}...`
+          : trimmedQuestion;
+      const nextBody = [
+        "Question raised through the assisted-reader layer:",
+        trimmedQuestion,
+        "",
+        `Working note from ${detail.providerLabel} (${detail.model}):`,
+        detail.response,
+      ].join("\n");
+
+      setFormState((current) => ({
+        ...current,
+        lane: "",
+        title: nextTitle,
+        body: nextBody,
+      }));
+      setDraftState({
+        providerLabel: detail.providerLabel,
+        model: detail.model,
+        question: trimmedQuestion,
+      });
+      setSubmissionState({ kind: "idle" });
+
+      requestAnimationFrame(() => {
+        titleRef.current?.focus();
+        titleRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+      });
+    }
+
+    window.addEventListener(topicAiDraftEventName, handleAiDraft as EventListener);
+
+    return () => {
+      window.removeEventListener(topicAiDraftEventName, handleAiDraft as EventListener);
     };
   }, [roomSlug, topicId]);
 
@@ -307,6 +366,7 @@ export default function TopicContributionLoop({
 
         setContributions((current) => [payload.contribution!, ...current].slice(0, 8));
         resetContributionFields();
+        setDraftState(null);
         setSubmissionState({
           kind: "success",
           message: payload.message,
@@ -375,6 +435,21 @@ export default function TopicContributionLoop({
                 perspective before it tries to sort the record.
               </p>
             </div>
+
+            {draftState ? (
+              <div className={styles.draftState}>
+                <strong>Draft loaded from the assisted-reader layer</strong>
+                <p>
+                  {draftState.providerLabel} ({draftState.model}) helped draft this
+                  contribution from the question:
+                </p>
+                <p className={styles.draftQuestion}>{draftState.question}</p>
+                <p>
+                  Choose the lane deliberately, revise the text in your own voice,
+                  and submit it only if it improves the public record.
+                </p>
+              </div>
+            ) : null}
 
             <div className={styles.fieldGrid}>
               <label className={styles.field}>

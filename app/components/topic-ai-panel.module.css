@@ -131,6 +131,23 @@
     background 180ms ease;
 }
 
+.answerAction {
+  justify-self: start;
+  min-height: 42px;
+  padding: 0 16px;
+  border: 1px solid rgba(18, 33, 39, 0.14);
+  border-radius: 999px;
+  background: rgba(255, 251, 245, 0.92);
+  color: var(--foreground);
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 700;
+  transition:
+    transform 180ms ease,
+    border-color 180ms ease,
+    background 180ms ease;
+}
+
 .primaryAction {
   border: 1px solid transparent;
   background: var(--foreground);
@@ -243,7 +260,8 @@
 @media (hover: hover) and (pointer: fine) {
   .primaryAction:hover,
   .secondaryAction:hover,
-  .quickPrompt:hover {
+  .quickPrompt:hover,
+  .answerAction:hover {
     transform: translateY(-2px);
   }
 
@@ -252,7 +270,8 @@
   }
 
   .secondaryAction:hover,
-  .quickPrompt:hover {
+  .quickPrompt:hover,
+  .answerAction:hover {
     border-color: rgba(18, 33, 39, 0.26);
     background: rgba(255, 251, 245, 0.96);
   }
@@ -277,7 +296,8 @@
 
 @media (prefers-reduced-motion: reduce) {
   .primaryAction,
-  .secondaryAction {
+  .secondaryAction,
+  .answerAction {
     transition: none;
   }
 }

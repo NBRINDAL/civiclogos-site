@@ -222,6 +222,7 @@
 
 .successState,
 .errorState,
+.draftState,
 .aiIntake,
 .reviewNote {
   padding: 16px 18px;
@@ -252,6 +253,17 @@
   border: 1px solid rgba(181, 94, 51, 0.22);
   background: rgba(181, 94, 51, 0.1);
   color: var(--foreground);
+}
+
+.draftState {
+  border: 1px solid rgba(91, 110, 69, 0.18);
+  background: rgba(91, 110, 69, 0.08);
+  color: var(--foreground);
+}
+
+.draftQuestion {
+  color: var(--foreground);
+  font-style: italic;
 }
 
 .copyBlock {

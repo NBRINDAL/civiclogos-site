@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import type { IssueRoomSlug } from "../lib/civic-logos";
+import { topicAiDraftEventName, type TopicAiDraftDetail } from "../lib/topic-ai-draft";
 import styles from "./topic-ai-panel.module.css";
 
 type TopicAiPanelProps = {
@@ -62,6 +63,7 @@ export default function TopicAiPanel({
   const [result, setResult] = useState<TopicAiResponse | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [activeProvider, setActiveProvider] = useState<ProviderRequest | null>(null);
+  const [lastAskedQuestion, setLastAskedQuestion] = useState("");
   const [isPending, startTransition] = useTransition();
 
   function submitQuestion(provider: ProviderRequest, nextQuestion?: string) {
@@ -78,6 +80,7 @@ export default function TopicAiPanel({
     setErrorMessage(null);
     setActiveProvider(provider);
     setQuestion(trimmedQuestion);
+    setLastAskedQuestion(trimmedQuestion);
 
     startTransition(async () => {
       try {
@@ -119,6 +122,28 @@ export default function TopicAiPanel({
 
   function runQuickChallenge(prompt: string) {
     submitQuestion("all", prompt);
+  }
+
+  function sendToContributionDraft(answer: TopicAiAnswer) {
+    if (!lastAskedQuestion) {
+      return;
+    }
+
+    const detail: TopicAiDraftDetail = {
+      roomSlug,
+      topicId,
+      provider: answer.provider,
+      providerLabel: getProviderLabel(answer.provider),
+      model: answer.model,
+      question: lastAskedQuestion,
+      response: answer.response,
+    };
+
+    window.dispatchEvent(
+      new CustomEvent<TopicAiDraftDetail>(topicAiDraftEventName, {
+        detail,
+      }),
+    );
   }
 
   return (
@@ -222,6 +247,13 @@ export default function TopicAiPanel({
                       <dd>Assisted reader output</dd>
                     </div>
                   </dl>
+                  <button
+                    className={styles.answerAction}
+                    onClick={() => sendToContributionDraft(item)}
+                    type="button"
+                  >
+                    Use as contribution draft
+                  </button>
                 </article>
               ))}
             </div>
