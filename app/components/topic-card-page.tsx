@@ -1224,11 +1224,33 @@ export default async function TopicCardPage({
                           {item.unresolvedCount} open · {item.changedCount} changed card
                         </span>
                       </div>
-                      <p>
-                        {item.latestUnresolved
-                          ? `Latest open pressure: ${item.latestUnresolved.title}.`
-                          : "No open pressure right now. This lane has only reviewed changes in the current visible record."}
-                      </p>
+                      {item.latestUnresolved ? (
+                        <>
+                          <p>
+                            Latest open pressure:{" "}
+                            <Link
+                              className={styles.sourceLink}
+                              href={getExactContributionLedgerHref(item.latestUnresolved)}
+                            >
+                              {item.latestUnresolved.title}
+                            </Link>
+                            .
+                          </p>
+                          <p className={styles.metaParagraph}>
+                            Status: {item.latestUnresolved.status}. Current record target:{" "}
+                            {getContributionAttachmentSummary(item.latestUnresolved)}. Origin:{" "}
+                            {getContributionOriginLabel(
+                              getContributionOrigin(item.latestUnresolved),
+                            )}
+                            .
+                          </p>
+                        </>
+                      ) : (
+                        <p>
+                          No open pressure right now. This lane has only reviewed
+                          changes in the current visible record.
+                        </p>
+                      )}
                       {item.unresolvedCount ? (
                         <Link
                           className={styles.lanePressureLink}
