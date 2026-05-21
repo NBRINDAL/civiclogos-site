@@ -45,6 +45,10 @@ type ContributionRecordView =
   | "document-backed";
 
 type ContributionAttachmentFilter = Exclude<ReviewTargetKind, "unclear"> | "none-yet";
+type ContributionOriginFilter =
+  | "human-submitted"
+  | "ai-origin"
+  | "seed-example";
 
 type TopicCardPageProps = {
   roomSlug: IssueRoomSlug;
@@ -67,10 +71,12 @@ function getPublicContributionOutcomeNote(
 function getContributionLedgerHref({
   recordView,
   attachment,
+  origin,
   contributionId,
 }: {
   recordView?: ContributionRecordView;
   attachment?: ContributionAttachmentFilter;
+  origin?: ContributionOriginFilter;
   contributionId?: string;
 }) {
   const params = new URLSearchParams();
@@ -81,6 +87,10 @@ function getContributionLedgerHref({
 
   if (attachment) {
     params.set("attachment", attachment);
+  }
+
+  if (origin) {
+    params.set("origin", origin);
   }
 
   const query = params.toString();
@@ -116,6 +126,30 @@ function getContributionAttachmentLabel(filter: ContributionAttachmentFilter) {
     case "none-yet":
     default:
       return "None yet";
+  }
+}
+
+function getContributionOrigin(contribution: PublicContribution): ContributionOriginFilter {
+  if (contribution.isSeedExample) {
+    return "seed-example";
+  }
+
+  if (contribution.draftSource) {
+    return "ai-origin";
+  }
+
+  return "human-submitted";
+}
+
+function getContributionOriginLabel(origin: ContributionOriginFilter) {
+  switch (origin) {
+    case "ai-origin":
+      return "AI-origin";
+    case "seed-example":
+      return "Prototype example";
+    case "human-submitted":
+    default:
+      return "Public submission";
   }
 }
 
@@ -238,6 +272,15 @@ export default async function TopicCardPage({
   const changedCardContributions = liveContributions.filter(
     (item) => item.review?.changedSynthesis === true,
   );
+  const originCounts = (
+    ["human-submitted", "ai-origin", "seed-example"] as const
+  )
+    .map((origin) => ({
+      origin,
+      label: getContributionOriginLabel(origin),
+      count: liveContributions.filter((item) => getContributionOrigin(item) === origin).length,
+    }))
+    .filter((item) => item.count > 0);
   const reviewedContributions = [...liveContributions]
     .filter((item) => item.review?.reviewedAt)
     .sort((left, right) => {
@@ -1060,6 +1103,26 @@ export default async function TopicCardPage({
             </div>
 
             <div className={styles.copyBlock}>
+              <h3>Record origins</h3>
+              <p>
+                The visible record can now be inspected not just by review
+                state or attachment target, but also by where the contribution
+                came from.
+              </p>
+              <div className={styles.reviewPills}>
+                {originCounts.map((item) => (
+                  <Link
+                    className={styles.reviewPillLink}
+                    href={getContributionLedgerHref({ origin: item.origin })}
+                    key={`origin-${item.origin}`}
+                  >
+                    {item.label} {item.count}
+                  </Link>
+                ))}
+              </div>
+            </div>
+
+            <div className={styles.copyBlock}>
               <h3>Pressure by lane</h3>
               {lanePressure.length ? (
                 <div className={styles.lanePressureGrid}>
@@ -1229,11 +1292,12 @@ export default async function TopicCardPage({
                     {assistedRecordContributions.slice(0, 4).map((item) => (
                       <article className={styles.historyItem} key={`assisted-${item.id}`}>
                         <div>
-                          <strong>
-                            <Link
+                        <strong>
+                          <Link
                             className={styles.sourceLink}
                             href={getContributionLedgerHref({
                               recordView: "ai-assisted",
+                              origin: "ai-origin",
                               attachment: getContributionAttachmentFilter(item),
                               contributionId: item.id,
                             })}
@@ -1301,7 +1365,10 @@ export default async function TopicCardPage({
                   <div className={styles.roomActions}>
                     <Link
                     className={styles.roomActionSecondary}
-                    href={getContributionLedgerHref({ recordView: "ai-assisted" })}
+                    href={getContributionLedgerHref({
+                      recordView: "ai-assisted",
+                      origin: "ai-origin",
+                    })}
                   >
                     View AI-assisted contributions
                   </Link>
@@ -1329,6 +1396,7 @@ export default async function TopicCardPage({
                             className={styles.sourceLink}
                             href={getContributionLedgerHref({
                               recordView: getContributionRecordView(item),
+                              origin: getContributionOrigin(item),
                               attachment: getContributionAttachmentFilter(item),
                               contributionId: item.id,
                             })}
@@ -1361,6 +1429,7 @@ export default async function TopicCardPage({
                           className={styles.sourceLink}
                           href={getContributionLedgerHref({
                             recordView: getContributionRecordView(item),
+                            origin: getContributionOrigin(item),
                             attachment: getContributionAttachmentFilter(item),
                             contributionId: item.id,
                           })}
