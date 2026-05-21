@@ -125,6 +125,7 @@ export default function HealthcareIssueRoomPage() {
 
       <main className={styles.main}>
         <nav className={styles.sectionRail} aria-label="Healthcare room map">
+          <a href="#start-here">Start here</a>
           <a href="#current-read">Current read</a>
           <a href="#major-frames">Frames</a>
           <a href="#ask-room">Ask room</a>
@@ -151,6 +152,24 @@ export default function HealthcareIssueRoomPage() {
             </div>
           </div>
         </section>
+
+        {healthcareIssueRoom.startHere ? (
+          <section className={styles.section} id="start-here">
+            <div className={styles.sectionHeading}>
+              <span className={styles.eyebrow}>Start Here</span>
+              <h2>The room should suggest a few serious entry points instead of asking every reader to invent their own.</h2>
+            </div>
+
+            <div className={styles.startHereGrid}>
+              {healthcareIssueRoom.startHere.map((item) => (
+                <article className={styles.startHereCard} key={item.title}>
+                  <h3>{item.title}</h3>
+                  <p>{item.body}</p>
+                </article>
+              ))}
+            </div>
+          </section>
+        ) : null}
 
         <section className={styles.focusSection} id="current-read">
           <article className={styles.focusCard}>

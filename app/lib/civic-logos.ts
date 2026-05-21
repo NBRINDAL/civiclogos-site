@@ -38,6 +38,11 @@ export type ScorecardMetric = {
   rating: string;
 };
 
+export type StartHereItem = {
+  title: string;
+  body: string;
+};
+
 export type IssueRoomData = {
   title: string;
   question: string;
@@ -48,6 +53,7 @@ export type IssueRoomData = {
   narrative: readonly string[];
   workingConclusions: readonly string[];
   whatCouldMoveTheRoom: readonly string[];
+  startHere?: readonly StartHereItem[];
   majorFrames?: readonly FrameSummary[];
   initialScorecard?: readonly ScorecardMetric[];
   roomPurpose?: string;
@@ -102,6 +108,20 @@ export const healthcareIssueRoom = {
     "Better evidence on rural hospitals, provider reimbursement, and how different reform models affect edge-case access.",
     "Sharper modeling of administrative cost removal, medical debt reduction, pharmaceutical funding, and household-level burden shifts.",
   ],
+  startHere: [
+    {
+      title: "Start with administrative waste",
+      body: "Separate medical cost from billing, claims, insurance, legal, and regulatory complexity. If the room cannot see where waste actually lives, every reform argument blurs together.",
+    },
+    {
+      title: "Test the employment link",
+      body: "Ask whether tying healthcare to employment is a feature, a legacy compromise, or a structural distortion. This line of inquiry affects labor mobility, small businesses, and household security all at once.",
+    },
+    {
+      title: "Pressure the edge cases",
+      body: "Rural hospitals, chronic illness, emergency care, and medical debt are where clean theories often break. A serious room should check every model against those realities early.",
+    },
+  ] satisfies StartHereItem[],
   majorFrames: [
     {
       title: "Human Right Frame",
@@ -342,6 +362,20 @@ export const governanceIssueRoom = {
     "Better mapping of failure modes in bureaucracies, courts, legislatures, and local governments.",
     "Visible tradeoff analysis on centralization, local control, civil liberties, and emergency powers.",
   ],
+  startHere: [
+    {
+      title: "Map legitimacy versus competence",
+      body: "Start by treating legitimacy and competence as separate variables. Many governance fights become clearer once you ask which systems are trusted, which systems work, and where those two drift apart.",
+    },
+    {
+      title: "Stress-test emergency power",
+      body: "Use crisis governance as a hard test case. It forces the room to confront speed, centralization, abuse risk, and correction mechanisms all at once.",
+    },
+    {
+      title: "Compare where authority sits",
+      body: "Subsidiarity, technocracy, executive coordination, and public review all answer the same question differently: who should decide, and how can they be corrected when they fail?",
+    },
+  ] satisfies StartHereItem[],
   roomComponents: healthcareIssueRoom.roomComponents,
   topProposals: [
     {
@@ -532,6 +566,20 @@ export const housingIssueRoom = {
     "Comparative case studies on zoning reform, modular construction, and infrastructure-led housing growth.",
     "Sharper stakeholder mapping around tenants, small owners, developers, municipalities, and unhoused populations.",
   ],
+  startHere: [
+    {
+      title: "Separate scarcity from sentiment",
+      body: "Start by distinguishing hard physical constraints from policy-created scarcity. Zoning, permitting, infrastructure, and finance each shape prices differently, and the room should keep those drivers visible.",
+    },
+    {
+      title: "Follow who absorbs the change",
+      body: "Any housing model should show who benefits, who pays, and who bears the transitional pain. This is where supply arguments, displacement arguments, and local-democracy arguments stop talking past one another.",
+    },
+    {
+      title: "Use one region as a test case",
+      body: "Choose a high-cost region and trace what actually blocks abundance: land use, labor, infrastructure, approval delay, or capital structure. Specificity will do more work than abstract housing ideology.",
+    },
+  ] satisfies StartHereItem[],
   roomComponents: healthcareIssueRoom.roomComponents,
   topProposals: [
     {
@@ -724,6 +772,20 @@ export const aiLaborIssueRoom = {
     "Sharper comparisons between open, corporate, and state-controlled AI futures.",
     "More serious synthesis on labor, surveillance, military use, education, governance, and scientific acceleration in one shared frame.",
   ],
+  startHere: [
+    {
+      title: "Start with ownership and control",
+      body: "Before arguing about whether AI is good or bad overall, ask who owns the systems, who sets the incentives, and who gets the upside. That usually clarifies half the room immediately.",
+    },
+    {
+      title: "Split productivity from distribution",
+      body: "The room should keep separate the question of whether AI creates value from the question of who captures it. Civilizational benefit depends on both.",
+    },
+    {
+      title: "Use truth and agency as hard tests",
+      body: "A strong AI future should improve human reasoning, not just automate output. Propaganda, dependence, and loss of human agency are the right pressure points to test early.",
+    },
+  ] satisfies StartHereItem[],
   majorFrames: [
     {
       title: "Acceleration / Progress Frame",
@@ -962,6 +1024,20 @@ export const institutionalTrustIssueRoom = {
     "Comparative evidence on what anti-corruption mechanisms actually improve trust over time.",
     "Stronger distinctions between institutional error, capture, propaganda, and ordinary disagreement.",
   ],
+  startHere: [
+    {
+      title: "Start with misalignment, not scandal",
+      body: "The room works best when it treats trust decay as an incentive and correction problem, not just a gallery of bad events. That keeps the analysis structural instead of purely accusatory.",
+    },
+    {
+      title: "Label the interests behind the speech",
+      body: "One of the clearest Civic Logos ideas is that institutional speech should be visibly tied to incentives, funding, and affiliations. This is one of the first lines of inquiry the room should keep live.",
+    },
+    {
+      title: "Separate skepticism from nihilism",
+      body: "A healthy trust room should distinguish justified distrust from blanket collapse of trust. If it cannot, it will either become naive or conspiratorial.",
+    },
+  ] satisfies StartHereItem[],
   roomComponents: healthcareIssueRoom.roomComponents,
   topProposals: [
     {

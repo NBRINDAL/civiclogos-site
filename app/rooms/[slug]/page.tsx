@@ -144,6 +144,7 @@ export default async function IssueRoomPage({
 
       <main className={styles.main}>
         <nav className={styles.sectionRail} aria-label={`${room.title} room map`}>
+          <a href="#start-here">Start here</a>
           <a href="#current-read">Current read</a>
           <a href="#major-frames">Frames</a>
           <a href="#topic-field">Topics</a>
@@ -170,6 +171,24 @@ export default async function IssueRoomPage({
             </div>
           </div>
         </section>
+
+        {room.startHere ? (
+          <section className={styles.section} id="start-here">
+            <div className={styles.sectionHeading}>
+              <span className={styles.eyebrow}>Start Here</span>
+              <h2>The room gets stronger when it offers concrete first lines of inquiry.</h2>
+            </div>
+
+            <div className={styles.startHereGrid}>
+              {room.startHere.map((item) => (
+                <article className={styles.startHereCard} key={item.title}>
+                  <h3>{item.title}</h3>
+                  <p>{item.body}</p>
+                </article>
+              ))}
+            </div>
+          </section>
+        ) : null}
 
         <section className={styles.focusSection} id="current-read">
           <article className={styles.focusCard}>
