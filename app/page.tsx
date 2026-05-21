@@ -80,7 +80,17 @@ const releaseItems = [
   "A simple early-access path for supporters, advisors, testers, and domain experts.",
 ];
 
-export default function Home() {
+export default async function Home({
+  searchParams,
+}: {
+  searchParams: Promise<{
+    interest?: string | string[];
+  }>;
+}) {
+  const resolvedSearchParams = await searchParams;
+  const initialInterest = Array.isArray(resolvedSearchParams.interest)
+    ? resolvedSearchParams.interest[0]
+    : resolvedSearchParams.interest;
   const liveCardIndex = getLiveCardIndex();
 
   return (
@@ -361,7 +371,7 @@ export default function Home() {
             </div>
 
             <div className={styles.contactFormWrap}>
-              <ContactForm />
+              <ContactForm initialInterest={initialInterest} />
             </div>
           </div>
         </section>

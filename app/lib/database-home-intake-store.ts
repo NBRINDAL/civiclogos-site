@@ -15,9 +15,11 @@ import type {
   HomeIntakeStoreDocument,
   HomeIntakeStoreMetadata,
 } from "./home-intake-types";
+import type { IssueRoomSlug } from "./civic-logos";
 
 type ListHomeIntakeFilters = {
   routeKind?: HomeIntakeRouteKind;
+  roomSlug?: IssueRoomSlug;
   limit?: number;
 };
 
@@ -184,11 +186,12 @@ export function createDatabaseHomeIntakeStore(): DatabaseHomeIntakeStore {
         routing,
       };
 
-      if (routing.routeKind === "new-room-draft") {
+      if (routing.routeKind === "new-room-draft" || routing.routeKind === "room-topic-draft") {
         const recentCandidates = await sql<HomeIntakeRow[]>`
           select *
           from civiclogos_home_intakes
-          where routing ->> 'routeKind' = 'new-room-draft'
+          where routing ->> 'routeKind' = ${routing.routeKind}
+            and (${routing.roomSlug ?? null}::text is null or routing ->> 'roomSlug' = ${routing.roomSlug ?? null})
           order by updated_at desc
           limit 50
         `;
@@ -220,7 +223,7 @@ export function createDatabaseHomeIntakeStore(): DatabaseHomeIntakeStore {
       }
 
       const storedEntry =
-        routing.routeKind === "new-room-draft"
+        routing.routeKind === "new-room-draft" || routing.routeKind === "room-topic-draft"
           ? buildNewCandidateRecord(entry, prompt, timestamp)
           : entry;
 
@@ -269,6 +272,7 @@ export function createDatabaseHomeIntakeStore(): DatabaseHomeIntakeStore {
         select *
         from civiclogos_home_intakes
         where (${filters.routeKind ?? null}::text is null or routing ->> 'routeKind' = ${filters.routeKind ?? null})
+          and (${filters.roomSlug ?? null}::text is null or routing ->> 'roomSlug' = ${filters.roomSlug ?? null})
         order by created_at desc
         limit ${limit}
       `;

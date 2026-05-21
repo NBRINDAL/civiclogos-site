@@ -14,9 +14,11 @@ import type {
   HomeIntakeRouteKind,
   HomeIntakeStoreDocument,
 } from "./home-intake-types";
+import type { IssueRoomSlug } from "./civic-logos";
 
 type ListHomeIntakeFilters = {
   routeKind?: HomeIntakeRouteKind;
+  roomSlug?: IssueRoomSlug;
   limit?: number;
 };
 
@@ -105,10 +107,14 @@ export async function createHomeIntakeEntry(prompt: string): Promise<HomeIntakeR
       routing,
     };
 
-    if (routing.routeKind === "new-room-draft") {
+    if (routing.routeKind === "new-room-draft" || routing.routeKind === "room-topic-draft") {
       const matchingEntry = findMatchingRoomCandidate(
         prompt,
-        document.entries.filter((item) => item.routing.routeKind === "new-room-draft"),
+        document.entries.filter(
+          (item) =>
+            item.routing.routeKind === routing.routeKind &&
+            (!routing.roomSlug || item.routing.roomSlug === routing.roomSlug),
+        ),
       );
 
       if (matchingEntry) {
@@ -127,7 +133,7 @@ export async function createHomeIntakeEntry(prompt: string): Promise<HomeIntakeR
     }
 
     const storedEntry =
-      routing.routeKind === "new-room-draft"
+      routing.routeKind === "new-room-draft" || routing.routeKind === "room-topic-draft"
         ? buildNewCandidateRecord(entry, prompt, timestamp)
         : entry;
 
@@ -149,6 +155,10 @@ export async function listHomeIntakeEntries(filters: ListHomeIntakeFilters = {})
   return [...document.entries]
     .filter((item) => {
       if (filters.routeKind && item.routing.routeKind !== filters.routeKind) {
+        return false;
+      }
+
+      if (filters.roomSlug && item.routing.roomSlug !== filters.roomSlug) {
         return false;
       }
 

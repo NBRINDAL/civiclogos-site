@@ -14,7 +14,8 @@ import {
   getHomeIntakeCookieName,
   parseHomeIntakeCookie,
 } from "../../lib/home-intake-cookie";
-import { getHomeIntakeEntry } from "../../lib/home-intake-store";
+import { getHomeIntakeEntry, listHomeIntakeEntries } from "../../lib/home-intake-store";
+import type { HomeIntakeRecord } from "../../lib/home-intake-types";
 import styles from "../../healthcare/page.module.css";
 
 function ProposalTrack({
@@ -83,6 +84,25 @@ function getSingleSearchParam(
   return Array.isArray(value) ? value[0] : undefined;
 }
 
+function mergeCookieDraftTopic(
+  drafts: HomeIntakeRecord[],
+  cookieDraft: HomeIntakeRecord | null,
+) {
+  if (!cookieDraft) {
+    return drafts;
+  }
+
+  if (drafts.some((item) => item.id === cookieDraft.id)) {
+    return drafts;
+  }
+
+  return [cookieDraft, ...drafts].slice(0, 6);
+}
+
+function getPromptHistoryCount(entry: HomeIntakeRecord) {
+  return entry.promptCount ?? entry.relatedPrompts?.length ?? 1;
+}
+
 export default async function IssueRoomPage({
   params,
   searchParams,
@@ -106,18 +126,41 @@ export default async function IssueRoomPage({
   const cookieEntry = parseHomeIntakeCookie(
     cookieStore.get(getHomeIntakeCookieName())?.value,
   );
-  const routeEntry =
+  const [routeEntry, draftTopics] = await Promise.all([
     intakeId && cookieEntry?.id === intakeId
       ? {
           id: cookieEntry.id,
           prompt: cookieEntry.prompt,
           createdAt: "",
           updatedAt: "",
+          promptCount: cookieEntry.promptCount,
+          relatedPrompts: cookieEntry.relatedPrompts,
           routing: cookieEntry.routing,
         }
       : intakeId
         ? await getHomeIntakeEntry(intakeId)
-        : null;
+        : null,
+    listHomeIntakeEntries({
+      routeKind: "room-topic-draft",
+      roomSlug,
+      limit: 6,
+    }),
+  ]);
+  const cookieDraftTopic =
+    cookieEntry?.routing.routeKind === "room-topic-draft" &&
+    cookieEntry.routing.roomSlug === roomSlug
+      ? ({
+          id: cookieEntry.id,
+          prompt: cookieEntry.prompt,
+          createdAt: "",
+          updatedAt: "",
+          promptCount:
+            cookieEntry.promptCount ?? cookieEntry.relatedPrompts?.length ?? 1,
+          relatedPrompts: cookieEntry.relatedPrompts,
+          routing: cookieEntry.routing,
+        } satisfies HomeIntakeRecord)
+      : null;
+  const visibleDraftTopics = mergeCookieDraftTopic(draftTopics, cookieDraftTopic);
 
   return (
     <div className={styles.page}>
@@ -182,12 +225,12 @@ export default async function IssueRoomPage({
                 <span>live topic card{inspectableTopics.length === 1 ? "" : "s"}</span>
               </div>
               <div>
-                <strong>{room.stakeholders.length}</strong>
-                <span>stakeholders already visible</span>
+                <strong>{visibleDraftTopics.length}</strong>
+                <span>draft topic{visibleDraftTopics.length === 1 ? "" : "s"} on deck</span>
               </div>
               <div>
-                <strong>{room.openQuestions.length}</strong>
-                <span>open questions in play</span>
+                <strong>{room.stakeholders.length}</strong>
+                <span>stakeholders already visible</span>
               </div>
             </div>
           </aside>
@@ -209,6 +252,9 @@ export default async function IssueRoomPage({
           <a href="#major-frames">Frames</a>
           <a href="#ask-room">Ask room</a>
           <a href="#topic-field">Topics</a>
+          {visibleDraftTopics.length ? (
+            <a href="#draft-topics">Draft topics</a>
+          ) : null}
           {inspectableTopics.length ? (
             <a href="#inspectable-cards">Inspect cards</a>
           ) : null}
@@ -351,6 +397,45 @@ export default async function IssueRoomPage({
             />
           </div>
         </section>
+
+        {visibleDraftTopics.length ? (
+          <section className={styles.section} id="draft-topics">
+            <div className={styles.sectionHeading}>
+              <span className={styles.eyebrow}>Draft topics from intake</span>
+              <h2>Ideas that clearly belong in this room can now become durable draft topics before they become full live cards.</h2>
+              <p>
+                These are room-attached draft topics created through the public
+                intake layer. They are not official live cards yet, but they now
+                have a visible home inside the room instead of dissolving into
+                route suggestions or one-off answers.
+              </p>
+            </div>
+
+            <div className={styles.trackGrid}>
+              {visibleDraftTopics.map((entry) => (
+                <Link className={styles.trackItem} href={`/intake/${entry.id}`} key={entry.id}>
+                  <div className={styles.trackMeta}>
+                    <span>{entry.routing.routeConfidence ?? "working draft"}</span>
+                    <strong>
+                      {getPromptHistoryCount(entry)} prompt
+                      {getPromptHistoryCount(entry) === 1 ? "" : "s"} attached
+                    </strong>
+                  </div>
+                  <h3>
+                    {entry.routing.suggestedTopicTitle ??
+                      entry.routing.suggestedCentralQuestion ??
+                      "Draft topic"}
+                  </h3>
+                  <p>
+                    {entry.routing.suggestedTopicSummary ??
+                      entry.routing.fitSummary ??
+                      "This draft topic was opened because the room fit was clear but the current live cards did not absorb the idea cleanly yet."}
+                  </p>
+                </Link>
+              ))}
+            </div>
+          </section>
+        ) : null}
 
         {inspectableTopics.length ? (
           <section className={styles.section} id="inspectable-cards">

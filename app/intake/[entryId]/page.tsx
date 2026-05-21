@@ -84,7 +84,7 @@ export default async function IntakeEntryPage({
       ? getRoomTopicHref(entry.routing.roomSlug, entry.routing.topicId)
       : undefined;
   const issueDevelopment =
-    entry.routing.routeKind === "new-room-draft"
+    entry.routing.routeKind !== "existing-room"
       ? await buildHomeIntakeBrief(entry)
       : null;
 
@@ -113,6 +113,8 @@ export default async function IntakeEntryPage({
             <span className={styles.eyebrow}>
               {entry.routing.routeKind === "existing-room"
                 ? "Routed to current room"
+                : entry.routing.routeKind === "room-topic-draft"
+                  ? "Draft topic created in current room"
                 : "Room candidate created"}
             </span>
             <h1>
@@ -136,7 +138,7 @@ export default async function IntakeEntryPage({
                 <span>Confidence</span>
                 <strong>{entry.routing.routeConfidence ?? "working draft"}</strong>
               </div>
-              {entry.routing.routeKind === "new-room-draft" ? (
+              {entry.routing.routeKind !== "existing-room" ? (
                 <div>
                   <span>Attached prompts</span>
                   <strong>{getPromptHistoryCount(entry)}</strong>
@@ -157,6 +159,8 @@ export default async function IntakeEntryPage({
           <h2>
             {entry.routing.routeKind === "existing-room"
               ? "This idea fits a current room more cleanly than it needs a new one."
+              : entry.routing.routeKind === "room-topic-draft"
+                ? "This idea belongs inside a current room, but it still needs its own durable draft topic."
               : "The current room map is still incomplete for this issue, so Civic Logos opened a room candidate instead."}
           </h2>
           <p>{entry.routing.suggestedTopicSummary}</p>
@@ -179,18 +183,26 @@ export default async function IntakeEntryPage({
             </div>
           ) : null}
 
-          {entry.routing.routeKind === "new-room-draft" && entry.routing.whyNotExistingRooms ? (
+          {entry.routing.routeKind !== "existing-room" && entry.routing.whyNotExistingRooms ? (
             <div className={styles.listBlock}>
-              <h3>Why this was not placed in a current room</h3>
+              <h3>
+                {entry.routing.routeKind === "room-topic-draft"
+                  ? "Why this became a new draft topic"
+                  : "Why this was not placed in a current room"}
+              </h3>
               <p>{entry.routing.whyNotExistingRooms}</p>
             </div>
           ) : null}
 
-          {entry.routing.routeKind === "new-room-draft" &&
+          {entry.routing.routeKind !== "existing-room" &&
           entry.relatedPrompts &&
           entry.relatedPrompts.length > 1 ? (
             <div className={styles.listBlock}>
-              <h3>Supporting prompts already attached to this candidate</h3>
+              <h3>
+                {entry.routing.routeKind === "room-topic-draft"
+                  ? "Supporting prompts already attached to this draft topic"
+                  : "Supporting prompts already attached to this candidate"}
+              </h3>
               <ul>
                 {entry.relatedPrompts
                   .slice()
@@ -215,8 +227,17 @@ export default async function IntakeEntryPage({
 
           <div className={styles.actions}>
             {roomHref ? (
-              <Link className={styles.primaryAction} href={`${roomHref}?intake=${entry.id}`}>
-                Open routed room
+              <Link
+                className={styles.primaryAction}
+                href={
+                  entry.routing.routeKind === "room-topic-draft"
+                    ? `${roomHref}#draft-topics`
+                    : `${roomHref}?intake=${entry.id}`
+                }
+              >
+                {entry.routing.routeKind === "room-topic-draft"
+                  ? "Open host room"
+                  : "Open routed room"}
               </Link>
             ) : null}
             {entry.routing.routeKind === "new-room-draft" ? (
@@ -224,9 +245,16 @@ export default async function IntakeEntryPage({
                 Open room candidates
               </Link>
             ) : null}
+            {entry.routing.routeKind === "room-topic-draft" && roomHref ? (
+              <Link className={styles.secondaryAction} href={`${roomHref}#draft-topics`}>
+                Open room draft topics
+              </Link>
+            ) : null}
             {topicHref ? (
               <Link className={styles.secondaryAction} href={topicHref}>
-                Open suggested live card
+                {entry.routing.routeKind === "room-topic-draft"
+                  ? "Open closest live card"
+                  : "Open suggested live card"}
               </Link>
             ) : null}
             <Link className={styles.secondaryAction} href="/rooms">
@@ -313,7 +341,9 @@ export default async function IntakeEntryPage({
                     <strong>Route:</strong>{" "}
                     {provider.routeKind === "existing-room"
                       ? provider.roomTitle ?? "Current room"
-                      : "Room candidate"}
+                      : provider.routeKind === "room-topic-draft"
+                        ? `${provider.roomTitle ?? "Current room"} (draft topic)`
+                        : "Room candidate"}
                   </p>
                 ) : null}
 

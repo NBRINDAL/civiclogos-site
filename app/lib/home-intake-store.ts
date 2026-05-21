@@ -13,11 +13,13 @@ import type {
   HomeIntakeRouteKind,
   HomeIntakeStoreMetadata,
 } from "./home-intake-types";
+import type { IssueRoomSlug } from "./civic-logos";
 
 const databaseStore = createDatabaseHomeIntakeStore();
 
 type ListHomeIntakeFilters = {
   routeKind?: HomeIntakeRouteKind;
+  roomSlug?: IssueRoomSlug;
   limit?: number;
 };
 

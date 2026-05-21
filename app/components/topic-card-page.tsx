@@ -122,6 +122,8 @@ export default async function TopicCardPage({
       ? roomCards[currentTopicIndex + 1]
       : null;
   const siblingCards = roomCards.filter((item) => item.id !== card.id);
+  const showInstitutionalPilotCta =
+    roomSlug === "institutional-trust" && card.id === "topic-001";
 
   return (
     <div className={styles.page}>
@@ -571,6 +573,44 @@ export default async function TopicCardPage({
           </div>
         </section>
 
+        {showInstitutionalPilotCta ? (
+          <section className={styles.panel}>
+            <span className={styles.eyebrow}>Institutional pilot</span>
+            <h2>Request an institutional review pilot.</h2>
+            <p>
+              Civic Logos can use a room like this to structure a hard public or
+              institutional question into a living review object. Paying for the
+              pilot funds review capacity, evidence work, synthesis labor, and
+              public memory. It does not buy favorable conclusions.
+            </p>
+
+            <div className={styles.copyBlock}>
+              <h3>Revenue firewall</h3>
+              <ul className={styles.bulletList}>
+                <li>Paying funds review capacity, not authority over the synthesis.</li>
+                <li>Funder identity, relevant constraints, and review conditions must be disclosed.</li>
+                <li>Objections, reviewer notes, and visible revision history remain part of the record.</li>
+                <li>Civic Logos does not sell legitimacy, favorable scoring, or quiet review outcomes.</li>
+              </ul>
+            </div>
+
+            <div className={styles.roomActions}>
+              <Link
+                className={styles.roomActionPrimary}
+                href="/?interest=Institutional%20pilot#contact"
+              >
+                Request an institutional review pilot
+              </Link>
+              <Link
+                className={styles.roomActionSecondary}
+                href="/rooms/institutional-trust"
+              >
+                Return to trust room
+              </Link>
+            </div>
+          </section>
+        ) : null}
+
         <section className={styles.gridSection}>
           <article className={styles.panel}>
             <span className={styles.eyebrow}>Review cycle</span>
@@ -794,6 +834,9 @@ export default async function TopicCardPage({
 
         <TopicContributionLoop
           debatePrompts={card.debatePrompts}
+          initialContributions={liveContributions}
+          initialStoreMode={contributionStoreMetadata.mode}
+          initialStoreNote={contributionStoreMetadata.note}
           openQuestions={card.openQuestions}
           roomSlug={roomSlug}
           topicId={card.id}

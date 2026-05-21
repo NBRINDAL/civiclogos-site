@@ -1,7 +1,10 @@
 import type { AiProvider } from "./contribution-types";
 import type { IssueRoomSlug } from "./civic-logos";
 
-export type HomeIntakeRouteKind = "existing-room" | "new-room-draft";
+export type HomeIntakeRouteKind =
+  | "existing-room"
+  | "room-topic-draft"
+  | "new-room-draft";
 
 export type HomeIntakeConfidence = "high" | "medium" | "low";
 

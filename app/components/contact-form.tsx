@@ -21,6 +21,14 @@ const initialValues: ContactValues = {
   website: "",
 };
 
+const allowedInterests = new Set([
+  "Early access",
+  "Offering expertise",
+  "Healthcare issue room",
+  "Institutional pilot",
+  "General inquiry",
+]);
+
 type SubmissionState = {
   tone: "idle" | "success" | "error";
   message: string;
@@ -31,8 +39,19 @@ const initialState: SubmissionState = {
   message: "",
 };
 
-export function ContactForm() {
-  const [values, setValues] = useState<ContactValues>(initialValues);
+export function ContactForm({
+  initialInterest,
+}: {
+  initialInterest?: string;
+}) {
+  const seededInterest =
+    initialInterest && allowedInterests.has(initialInterest)
+      ? initialInterest
+      : initialValues.interest;
+  const [values, setValues] = useState<ContactValues>({
+    ...initialValues,
+    interest: seededInterest,
+  });
   const [submission, setSubmission] = useState<SubmissionState>(initialState);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -71,7 +90,10 @@ export function ContactForm() {
         return;
       }
 
-      setValues(initialValues);
+      setValues({
+        ...initialValues,
+        interest: seededInterest,
+      });
       setSubmission({
         tone: "success",
         message:

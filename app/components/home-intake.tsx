@@ -6,7 +6,7 @@ import styles from "./home-intake.module.css";
 
 type HomeIntakeResponse = {
   destinationHref?: string;
-  destinationKind?: "existing-room" | "new-room-draft";
+  destinationKind?: "existing-room" | "room-topic-draft" | "new-room-draft";
   roomTitle?: string;
   topicTitle?: string;
   fitSummary?: string;
@@ -67,7 +67,9 @@ export default function HomeIntake() {
         setStatusMessage(
           payload.destinationKind === "existing-room"
             ? `Opening ${payload.roomTitle ?? "the best current room"}…`
-            : "Opening a room candidate…",
+            : payload.destinationKind === "room-topic-draft"
+              ? `Opening a draft topic in ${payload.roomTitle ?? "the current room"}…`
+              : "Opening a room candidate…",
         );
 
         router.push(payload.destinationHref);
@@ -91,8 +93,10 @@ export default function HomeIntake() {
         </h2>
         <p>
           Civic Logos will try to place the idea inside the closest current room.
-          If none of the current rooms fit, it will open a room candidate
-          instead of pretending the fit is cleaner than it is.
+          If a room fits but the current live cards do not hold it cleanly yet,
+          it will open a draft topic inside that room. If no current room fits,
+          it will open a room candidate instead of pretending the fit is cleaner
+          than it is.
         </p>
       </div>
 

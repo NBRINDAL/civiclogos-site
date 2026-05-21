@@ -118,6 +118,7 @@ export async function GET(request: NextRequest) {
 
   return NextResponse.json({
     prototype: metadata.prototype,
+    mode: metadata.mode,
     note: metadata.note,
     contributions,
   });

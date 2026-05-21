@@ -20,6 +20,7 @@ type TopicHeuristicMatch = {
   topicId?: string;
   topicTitle?: string;
   score: number;
+  topicOverlapCount?: number;
   title?: string;
   summary?: string;
 };
@@ -35,7 +36,7 @@ type RoomHeuristicMatch = {
 };
 
 type RoutingSchemaResult = {
-  route_kind: "existing-room" | "new-room-draft";
+  route_kind: "existing-room" | "room-topic-draft" | "new-room-draft";
   room_slug:
     | IssueRoomSlug
     | "new-room-draft";
@@ -287,7 +288,7 @@ const intakeSchema = {
   properties: {
     route_kind: {
       type: "string",
-      enum: ["existing-room", "new-room-draft"],
+      enum: ["existing-room", "room-topic-draft", "new-room-draft"],
     },
     room_slug: {
       type: "string",
@@ -338,7 +339,7 @@ function buildRoutingPrompt(prompt: string) {
       user_prompt: prompt,
       current_room_map: buildRoomContext(),
       routing_instruction:
-        "Prefer an existing room whenever the idea clearly belongs inside one of the current domains, even if it would become a new topic card inside that room. Only recommend a new-room-draft when the current room map is a genuinely poor fit.",
+        "Use existing-room when the idea already fits a live room and one of the current live topic cards can reasonably absorb it. Use room-topic-draft when the room is clearly right but the current live topic cards do not hold the idea cleanly enough yet, so Civic Logos should open a durable draft topic inside that room. Only recommend a new-room-draft when the current room map itself is a genuinely poor fit.",
     },
     null,
     2,
@@ -415,6 +416,12 @@ function buildFallbackTopicSummary(prompt: string) {
   return `This room candidate was opened because the current room map did not cleanly absorb the question: ${summarizePrompt(prompt, 170)}`;
 }
 
+function buildQuestionFromPrompt(prompt: string, maxLength = 180) {
+  return prompt.trim().endsWith("?")
+    ? summarizePrompt(prompt.trim(), maxLength)
+    : `${summarizePrompt(prompt.trim(), maxLength - 4)}?`;
+}
+
 function isHighSaliencePrompt(promptTokens: readonly string[]) {
   return promptTokens.some((token) => highSalienceKeywords.has(token));
 }
@@ -431,8 +438,9 @@ function buildHeuristicRouting(prompt: string): RoutingDraft {
         const topicTokens = tokenize(
           [item.title, item.summary, item.metric, item.label].join(" "),
         );
+        const topicOverlapCount = scoreCorpusOverlap(promptTokens, topicTokens);
         const score =
-          scoreCorpusOverlap(promptTokens, topicTokens) * 2 +
+          topicOverlapCount * 2 +
           scoreKeywordHits(promptTokens, roomKeywordMap[roomSlug]);
 
         if (score <= best.score) {
@@ -443,6 +451,7 @@ function buildHeuristicRouting(prompt: string): RoutingDraft {
           topicId: getTopicIdFromHref(item.href),
           topicTitle: item.title,
           score,
+          topicOverlapCount,
           title: item.title,
           summary: item.summary,
         };
@@ -505,6 +514,10 @@ function buildHeuristicRouting(prompt: string): RoutingDraft {
         bestRoom.matchedTokenCount >= 2 &&
         promptCoverage >= 0.28)
     );
+  const strongTopicFit =
+    Boolean(bestRoom?.topicMatch.topicId) &&
+    Boolean(bestRoom) &&
+    (bestRoom.topicMatch.topicOverlapCount ?? 0) >= 2;
 
   if (!bestRoom || !useExistingRoom) {
     const closestRoom =
@@ -519,9 +532,7 @@ function buildHeuristicRouting(prompt: string): RoutingDraft {
       fitSummary: highSalience
         ? "This looks like a real public issue, but the current room map does not yet hold it cleanly. Civic Logos is opening a room candidate instead of minimizing it with a forced fit."
         : "The current room map does not cleanly absorb this question yet, so Civic Logos is opening a room candidate instead of forcing a weak fit.",
-      suggestedCentralQuestion: prompt.trim().endsWith("?")
-        ? summarizePrompt(prompt.trim(), 180)
-        : `${summarizePrompt(prompt.trim(), 176)}?`,
+      suggestedCentralQuestion: buildQuestionFromPrompt(prompt),
       suggestedTopicTitle: buildFallbackTopicTitle(prompt),
       suggestedTopicSummary: buildFallbackTopicSummary(prompt),
       suggestedFirstQuestions: [
@@ -544,6 +555,32 @@ function buildHeuristicRouting(prompt: string): RoutingDraft {
   const matchedKeywordSummary = bestRoom.matchedKeywords.length
     ? `It overlaps most strongly with ${bestRoom.matchedKeywords.slice(0, 3).join(", ")}.`
     : `It is closer to ${bestRoom.roomTitle} than the other current rooms.`;
+
+  if (!strongTopicFit) {
+    return {
+      routeKind: "room-topic-draft",
+      roomSlug: bestRoom.roomSlug,
+      roomTitle: bestRoom.roomTitle,
+      topicId: matchedTopic?.topicId,
+      topicTitle: matchedTopic?.topicTitle,
+      routeConfidence:
+        bestScore >= 10 || bestRoom.matchedKeywords.length >= 3 ? "high" : "medium",
+      fitSummary:
+        `This idea clearly belongs inside ${bestRoom.roomTitle}, but the current live topic cards do not absorb it cleanly enough yet. Civic Logos should open a durable draft topic inside the room instead of forcing the fit into an existing card.`,
+      suggestedCentralQuestion: buildQuestionFromPrompt(prompt),
+      suggestedTopicTitle: buildFallbackTopicTitle(prompt),
+      suggestedTopicSummary:
+        matchedTopic
+          ? `This issue belongs inside ${bestRoom.roomTitle}, but it needs a sharper draft topic than the current live card ${matchedTopic.title}. ${matchedKeywordSummary}`
+          : `This issue belongs inside ${bestRoom.roomTitle}, but the room still needs a dedicated draft topic to hold it cleanly. ${matchedKeywordSummary}`,
+      suggestedFirstQuestions: [
+        "What is the cleanest central question for this draft topic inside the room?",
+        "How does this pressure or complicate the room's current live cards?",
+        "What objection, evidence, or implementation detail would most shape this draft topic first?",
+      ],
+      whyNotExistingRooms: `The room map judged ${bestRoom.roomTitle} to be the right host room, but the current live topic cards still leave this idea under-modeled.`,
+    };
+  }
 
   return {
     routeKind: "existing-room",
@@ -631,10 +668,14 @@ function parseRoutingResult(
 ): Omit<ProviderHomeIntakeRouting, "provider" | "state" | "model"> {
   const routeKind = result.route_kind;
   const roomSlug =
-    routeKind === "existing-room" && isRoomSlug(result.room_slug)
+    routeKind !== "new-room-draft" && isRoomSlug(result.room_slug)
       ? result.room_slug
       : undefined;
-  const roomTitle = roomSlug ? issueRooms[roomSlug].title : "Provisional new room";
+  const roomTitle = roomSlug
+    ? issueRooms[roomSlug].title
+    : routeKind === "new-room-draft"
+      ? "Room candidate"
+      : "Current room";
   const topicCard =
     roomSlug && result.topic_id ? getRoomTopicCard(roomSlug, result.topic_id) : undefined;
 
@@ -852,6 +893,7 @@ async function classifyWithAnthropic(prompt: string): Promise<ProviderHomeIntake
 export async function buildHomeIntakeRouting(
   prompt: string,
 ): Promise<HomeIntakeRouting> {
+  const heuristicRouting = buildHeuristicRouting(prompt);
   const providers = await Promise.all([
     classifyWithOpenAI(prompt),
     classifyWithAnthropic(prompt),
@@ -862,7 +904,7 @@ export async function buildHomeIntakeRouting(
   if (!providers.length || providers.every((item) => item.state === "unavailable")) {
     return {
       state: "partial",
-      ...buildHeuristicRouting(prompt),
+      ...heuristicRouting,
       providers,
     };
   }
@@ -870,7 +912,19 @@ export async function buildHomeIntakeRouting(
   if (!completedProviders.length || !primaryProvider) {
     return {
       state: "partial",
-      ...buildHeuristicRouting(prompt),
+      ...heuristicRouting,
+      providers,
+    };
+  }
+
+  if (
+    primaryProvider.routeKind === "existing-room" &&
+    heuristicRouting.routeKind === "room-topic-draft" &&
+    heuristicRouting.roomSlug === primaryProvider.roomSlug
+  ) {
+    return {
+      state: completedProviders.length === providers.length ? "completed" : "partial",
+      ...heuristicRouting,
       providers,
     };
   }

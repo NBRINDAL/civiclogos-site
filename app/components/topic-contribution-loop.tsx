@@ -26,6 +26,9 @@ type TopicContributionLoopProps = {
   debatePrompts: readonly DebatePrompt[];
   openQuestions: readonly string[];
   whatWouldStrengthen: readonly string[];
+  initialContributions: PublicContribution[];
+  initialStoreMode: "prototype" | "database" | "fallback";
+  initialStoreNote: string;
 };
 
 type SubmissionState = {
@@ -44,6 +47,7 @@ type DraftState = {
 
 type ContributionResponse = {
   prototype: boolean;
+  mode: "prototype" | "database" | "fallback";
   note: string;
   contributions: PublicContribution[];
 };
@@ -82,6 +86,8 @@ const statusLabels: Record<ReviewStatus, string> = {
 
 const prototypeExamplesNote =
   "These are prototype examples showing how Civic Logos preserves and reviews contributions. They are not fake public activity.";
+const prototypeFallbackNote =
+  "Prototype contribution record is active while persistent storage is being finalized.";
 
 function formatTimestamp(value: string) {
   return new Intl.DateTimeFormat("en-US", {
@@ -110,11 +116,13 @@ function formatAttachmentPoint(
     return label ?? null;
   }
 
+  const normalizedKind = kind === "claim" ? "synthesis" : kind.replaceAll("-", " ");
+
   if (!label) {
-    return kind;
+    return normalizedKind;
   }
 
-  return `${kind} — ${label}`;
+  return `${normalizedKind} — ${label}`;
 }
 
 function getAiReaderLabel(provider: AiProvider) {
@@ -154,15 +162,18 @@ export default function TopicContributionLoop({
   debatePrompts,
   openQuestions,
   whatWouldStrengthen,
+  initialContributions,
+  initialStoreMode,
+  initialStoreNote,
 }: TopicContributionLoopProps) {
   const [formState, setFormState] = useState<FormState>(initialFormState);
   const [submissionState, setSubmissionState] = useState<SubmissionState>({
     kind: "idle",
   });
   const [draftState, setDraftState] = useState<DraftState>(null);
-  const [contributions, setContributions] = useState<PublicContribution[]>([]);
-  const [prototypeNote, setPrototypeNote] = useState("");
-  const [isLoading, setIsLoading] = useState(true);
+  const [contributions, setContributions] = useState<PublicContribution[]>(initialContributions);
+  const [storeMode, setStoreMode] = useState(initialStoreMode);
+  const [storeNote, setStoreNote] = useState(initialStoreNote);
   const [isPending, startTransition] = useTransition();
   const titleRef = useRef<HTMLInputElement>(null);
 
@@ -187,13 +198,20 @@ export default function TopicContributionLoop({
   );
 
   const hasPrototypeExamples = contributions.some((item) => item.isSeedExample);
+  const recentContributionNote =
+    storeMode !== "database"
+      ? hasPrototypeExamples
+        ? `${prototypeFallbackNote} ${prototypeExamplesNote}`
+        : prototypeFallbackNote
+      : hasPrototypeExamples
+        ? prototypeExamplesNote
+        : storeNote ||
+          "Recent public contributions, assisted reading, and human review decisions stay visible here.";
 
   useEffect(() => {
     let isCancelled = false;
 
     async function loadContributions() {
-      setIsLoading(true);
-
       try {
         const response = await fetch(
           `/api/contributions?roomSlug=${encodeURIComponent(roomSlug)}&topicId=${encodeURIComponent(topicId)}&limit=8`,
@@ -206,21 +224,18 @@ export default function TopicContributionLoop({
 
         if (!isCancelled) {
           setContributions(payload.contributions);
-          setPrototypeNote(payload.note);
+          setStoreMode(payload.mode);
+          setStoreNote(payload.note);
         }
       } catch (error) {
         console.error(error);
 
-        if (!isCancelled) {
+        if (!isCancelled && !initialContributions.length) {
           setSubmissionState({
             kind: "error",
             message:
               "The contribution record could not be loaded right now. You can still try again in a moment.",
           });
-        }
-      } finally {
-        if (!isCancelled) {
-          setIsLoading(false);
         }
       }
     }
@@ -230,7 +245,7 @@ export default function TopicContributionLoop({
     return () => {
       isCancelled = true;
     };
-  }, [roomSlug, topicId]);
+  }, [roomSlug, topicId, initialContributions.length]);
 
   useEffect(() => {
     function handleAiDraft(event: Event) {
@@ -639,14 +654,10 @@ export default function TopicContributionLoop({
             <span className={styles.eyebrow}>Recent contributions</span>
             <h2>Contribution, assisted reading, review, and synthesis impact.</h2>
           </div>
-          <p className={styles.metaNote}>
-            {hasPrototypeExamples ? prototypeExamplesNote : prototypeNote}
-          </p>
+          <p className={styles.metaNote}>{recentContributionNote}</p>
         </div>
 
-        {isLoading ? (
-          <p className={styles.loadingNote}>Loading the current contribution record…</p>
-        ) : contributions.length ? (
+        {contributions.length ? (
           <div className={styles.contributionList}>
             {contributions.map((item) => {
               const statusClassName = `status${getStatusClassName(item.status)}`;
@@ -658,8 +669,12 @@ export default function TopicContributionLoop({
                 item.review?.assignedToKind,
                 item.review?.assignedToLabel,
               );
+              const visibleAttachmentPoint =
+                reviewedAttachmentPoint ?? proposedAttachmentPoint ?? "None yet";
               const structurerRead = getCompletedReader(item, "openai");
               const criticRead = getCompletedReader(item, "anthropic");
+              const changedCardValue =
+                item.review?.changedSynthesis ?? item.aiIntake?.changedSynthesisLikely;
 
               return (
                 <article className={styles.contributionCard} key={item.id}>
@@ -685,6 +700,24 @@ export default function TopicContributionLoop({
                   ) : null}
                   <p className={styles.contributionBody}>{item.body}</p>
 
+                  <div className={styles.recordSection}>
+                    <span className={styles.sectionLabel}>Contribution record</span>
+                    <dl className={styles.recordGrid}>
+                      <div className={styles.recordRow}>
+                        <dt>Recorded</dt>
+                        <dd>{formatTimestamp(item.createdAt)}</dd>
+                      </div>
+                      <div className={styles.recordRow}>
+                        <dt>Attachment target</dt>
+                        <dd>{visibleAttachmentPoint}</dd>
+                      </div>
+                      <div className={styles.recordRow}>
+                        <dt>Whether it changed the card</dt>
+                        <dd>{getChangedCardLabel(changedCardValue)}</dd>
+                      </div>
+                    </dl>
+                  </div>
+
                   {item.evidenceSource?.url ? (
                     <div className={styles.recordSection}>
                       <span className={styles.sectionLabel}>Source / evidence</span>
@@ -709,12 +742,10 @@ export default function TopicContributionLoop({
                           <dt>Lane fit</dt>
                           <dd>{getDebateLaneLabel(item.aiIntake.laneFit ?? item.lane)}</dd>
                         </div>
-                        {proposedAttachmentPoint ? (
-                          <div className={styles.recordRow}>
-                            <dt>Proposed attachment point</dt>
-                            <dd>{proposedAttachmentPoint}</dd>
-                          </div>
-                        ) : null}
+                        <div className={styles.recordRow}>
+                          <dt>Proposed attachment point</dt>
+                          <dd>{proposedAttachmentPoint ?? "None yet"}</dd>
+                        </div>
                         <div className={styles.recordRow}>
                           <dt>Likely synthesis impact</dt>
                           <dd>{getChangedCardLabel(item.aiIntake.changedSynthesisLikely)}</dd>
@@ -805,9 +836,9 @@ export default function TopicContributionLoop({
           </div>
         ) : (
           <p className={styles.loadingNote}>
-            No contributions have been submitted yet. The first strong objection,
-            evidence item, correction, or nuance here will become part of the
-            visible review record.
+            No contributions are visible on this topic card yet. The first strong
+            objection, evidence item, correction, or nuance here will become part
+            of the public review record rather than disappearing into a feed.
           </p>
         )}
       </section>
