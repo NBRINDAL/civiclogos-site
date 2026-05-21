@@ -2,7 +2,11 @@
 
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import type { DebatePrompt, IssueRoomSlug } from "../lib/civic-logos";
-import type { PublicContribution } from "../lib/contribution-types";
+import type {
+  AiProvider,
+  ProviderContributionAiIntake,
+  PublicContribution,
+} from "../lib/contribution-types";
 import {
   getDebateLaneLabel,
   normalizeDebateLane,
@@ -63,6 +67,9 @@ const statusLabels: Record<ReviewStatus, string> = {
   rejected: "Rejected",
 };
 
+const prototypeExamplesNote =
+  "These are prototype examples showing how Civic Logos preserves and reviews contributions. They are not fake public activity.";
+
 function formatTimestamp(value: string) {
   return new Intl.DateTimeFormat("en-US", {
     dateStyle: "medium",
@@ -76,6 +83,55 @@ function getStatusClassName(status: ReviewStatus) {
     .split("-")
     .map((item) => item[0]?.toUpperCase() + item.slice(1))
     .join("");
+}
+
+function formatAttachmentPoint(
+  kind?: string,
+  label?: string,
+) {
+  if (!kind && !label) {
+    return null;
+  }
+
+  if (!kind) {
+    return label ?? null;
+  }
+
+  if (!label) {
+    return kind;
+  }
+
+  return `${kind} — ${label}`;
+}
+
+function getAiReaderLabel(provider: AiProvider) {
+  return provider === "openai" ? "Structurer read" : "Critic read";
+}
+
+function getAiReaderProviderLabel(provider: AiProvider) {
+  return provider === "openai" ? "OpenAI assisted reader" : "Claude assisted reader";
+}
+
+function getCompletedReader(
+  contribution: PublicContribution,
+  provider: AiProvider,
+) {
+  return contribution.aiIntake?.providers.find(
+    (item): item is ProviderContributionAiIntake =>
+      item.provider === provider && item.state === "completed",
+  );
+}
+
+function getChangedCardLabel(value: boolean | null | undefined) {
+  if (value === true) {
+    return "Yes";
+  }
+
+  if (value === false) {
+    return "No";
+  }
+
+  return "Not decided yet";
 }
 
 export default function TopicContributionLoop({
@@ -115,6 +171,8 @@ export default function TopicContributionLoop({
         .filter((item): item is NonNullable<typeof item> => Boolean(item)),
     [debatePrompts],
   );
+
+  const hasPrototypeExamples = contributions.some((item) => item.isSeedExample);
 
   useEffect(() => {
     let isCancelled = false;
@@ -468,9 +526,11 @@ export default function TopicContributionLoop({
         <div className={styles.sectionHeader}>
           <div>
             <span className={styles.eyebrow}>Recent contributions</span>
-            <h2>Visible review beats invisible comment drift.</h2>
+            <h2>Contribution, assisted reading, review, and synthesis impact.</h2>
           </div>
-          <p className={styles.metaNote}>{prototypeNote}</p>
+          <p className={styles.metaNote}>
+            {hasPrototypeExamples ? prototypeExamplesNote : prototypeNote}
+          </p>
         </div>
 
         {isLoading ? (
@@ -479,23 +539,131 @@ export default function TopicContributionLoop({
           <div className={styles.contributionList}>
             {contributions.map((item) => {
               const statusClassName = `status${getStatusClassName(item.status)}`;
+              const proposedAttachmentPoint = formatAttachmentPoint(
+                item.aiIntake?.suggestedAssignmentKind,
+                item.aiIntake?.suggestedAssignmentLabel,
+              );
+              const reviewedAttachmentPoint = formatAttachmentPoint(
+                item.review?.assignedToKind,
+                item.review?.assignedToLabel,
+              );
+              const structurerRead = getCompletedReader(item, "openai");
+              const criticRead = getCompletedReader(item, "anthropic");
 
               return (
                 <article className={styles.contributionCard} key={item.id}>
                   <div className={styles.contributionMeta}>
+                    {item.isSeedExample ? (
+                      <span className={styles.seedLabel}>Prototype example</span>
+                    ) : null}
                     <span className={styles.laneLabel}>
                       {getDebateLaneLabel(item.lane)}
                     </span>
                     <span className={styles[statusClassName]}>
                       {statusLabels[item.status]}
                     </span>
-                    {item.isSeedExample ? (
-                      <span className={styles.seedLabel}>Seed example</span>
-                    ) : null}
                   </div>
 
                   <h3>{item.title}</h3>
                   <p className={styles.contributionBody}>{item.body}</p>
+
+                  {item.evidenceSource?.url ? (
+                    <div className={styles.recordSection}>
+                      <span className={styles.sectionLabel}>Source / evidence</span>
+                      <a
+                        className={styles.sourceLink}
+                        href={item.evidenceSource.url}
+                        rel="noreferrer"
+                        target="_blank"
+                      >
+                        {item.evidenceSource.label || "View source"}
+                      </a>
+                    </div>
+                  ) : null}
+
+                  {item.aiIntake?.state === "completed" ? (
+                    <div className={styles.aiIntake}>
+                      <strong>AI sorting result</strong>
+                      {item.aiIntake.summary ? <p>{item.aiIntake.summary}</p> : null}
+
+                      <dl className={styles.recordGrid}>
+                        <div className={styles.recordRow}>
+                          <dt>Lane fit</dt>
+                          <dd>{getDebateLaneLabel(item.aiIntake.laneFit ?? item.lane)}</dd>
+                        </div>
+                        {proposedAttachmentPoint ? (
+                          <div className={styles.recordRow}>
+                            <dt>Proposed attachment point</dt>
+                            <dd>{proposedAttachmentPoint}</dd>
+                          </div>
+                        ) : null}
+                        <div className={styles.recordRow}>
+                          <dt>Likely synthesis impact</dt>
+                          <dd>{getChangedCardLabel(item.aiIntake.changedSynthesisLikely)}</dd>
+                        </div>
+                      </dl>
+
+                      {(structurerRead || criticRead) ? (
+                        <div className={styles.readerGrid}>
+                          {structurerRead ? (
+                            <article className={styles.readerCard}>
+                              <div className={styles.readerHeader}>
+                                <strong>{getAiReaderLabel(structurerRead.provider)}</strong>
+                                <span>{getAiReaderProviderLabel(structurerRead.provider)}</span>
+                              </div>
+                              <p>{structurerRead.summary}</p>
+                            </article>
+                          ) : null}
+
+                          {criticRead ? (
+                            <article className={styles.readerCard}>
+                              <div className={styles.readerHeader}>
+                                <strong>{getAiReaderLabel(criticRead.provider)}</strong>
+                                <span>{getAiReaderProviderLabel(criticRead.provider)}</span>
+                              </div>
+                              <p>{criticRead.summary}</p>
+                            </article>
+                          ) : null}
+                        </div>
+                      ) : null}
+                    </div>
+                  ) : null}
+
+                  {item.review ? (
+                    <div className={styles.reviewNote}>
+                      <strong>Human review</strong>
+                      <dl className={styles.recordGrid}>
+                        <div className={styles.recordRow}>
+                          <dt>Review status</dt>
+                          <dd>{statusLabels[item.status]}</dd>
+                        </div>
+                        {reviewedAttachmentPoint ? (
+                          <div className={styles.recordRow}>
+                            <dt>Attachment point after review</dt>
+                            <dd>{reviewedAttachmentPoint}</dd>
+                          </div>
+                        ) : null}
+                        <div className={styles.recordRow}>
+                          <dt>Whether it changed the card</dt>
+                          <dd>{getChangedCardLabel(item.review.changedSynthesis)}</dd>
+                        </div>
+                      </dl>
+
+                      {item.review.decisionReason ? (
+                        <div className={styles.reviewCopy}>
+                          <span className={styles.sectionLabel}>Decision rationale</span>
+                          <p>{item.review.decisionReason}</p>
+                        </div>
+                      ) : null}
+
+                      {item.review.reviewerNote ? (
+                        <div className={styles.reviewCopy}>
+                          <span className={styles.sectionLabel}>Human reviewer note</span>
+                          <p>{item.review.reviewerNote}</p>
+                        </div>
+                      ) : null}
+                    </div>
+                  ) : null}
 
                   <div className={styles.contributionFooter}>
                     <div className={styles.contributorMeta}>
@@ -505,43 +673,7 @@ export default function TopicContributionLoop({
                         <span>{item.author.expertise}</span>
                       ) : null}
                     </div>
-                    {item.evidenceSource?.url ? (
-                      <a
-                        className={styles.sourceLink}
-                        href={item.evidenceSource.url}
-                        rel="noreferrer"
-                        target="_blank"
-                      >
-                        {item.evidenceSource.label || "View source"}
-                      </a>
-                    ) : null}
                   </div>
-
-                  {item.aiIntake?.state === "completed" &&
-                  (item.aiIntake.summary ||
-                    item.aiIntake.suggestedAssignmentLabel ||
-                    item.aiIntake.reviewerNote) ? (
-                    <div className={styles.aiIntake}>
-                      <strong>AI intake suggestion</strong>
-                      {item.aiIntake.summary ? <p>{item.aiIntake.summary}</p> : null}
-                      {item.aiIntake.suggestedAssignmentLabel ? (
-                        <p>
-                          Suggested placement:{" "}
-                          {item.aiIntake.suggestedAssignmentKind
-                            ? `${item.aiIntake.suggestedAssignmentKind} — `
-                            : ""}
-                          {item.aiIntake.suggestedAssignmentLabel}
-                        </p>
-                      ) : null}
-                    </div>
-                  ) : null}
-
-                  {item.review?.decisionReason ? (
-                    <div className={styles.reviewNote}>
-                      <strong>Review note</strong>
-                      <p>{item.review.decisionReason}</p>
-                    </div>
-                  ) : null}
                 </article>
               );
             })}

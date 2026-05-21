@@ -1,60 +1,300 @@
 {
   "prototype": true,
-  "note": "Prototype contribution data. Until a persistent backend is added, submissions are stored in local demo data for iteration and review.",
-  "updatedAt": "2026-05-21T06:30:00.000Z",
+  "note": "Prototype contribution data is active while the persistent backend is being wired.",
+  "updatedAt": "2026-05-21T08:12:00.000Z",
   "contributions": [
     {
-      "id": "seed-healthcare-topic-001-evidence",
+      "id": "seed-healthcare-topic-001-objection-price-power",
+      "roomSlug": "healthcare",
+      "topicId": "topic-001",
+      "topicTitle": "Administrative Simplification and AI-Assisted Triage",
+      "lane": "objection",
+      "title": "Administrative cleanup may leave hospital and drug price power untouched",
+      "body": "Administrative simplification may remove billing friction without materially changing hospital pricing leverage, specialist market concentration, or pharmaceutical pricing power. If those cost centers remain intact, the card should not imply that workflow reform alone can bend the total system cost curve very far.",
+      "author": {
+        "name": "Prototype example",
+        "expertise": "Cost-structure objection"
+      },
+      "status": "accepted",
+      "createdAt": "2026-05-21T07:00:00.000Z",
+      "updatedAt": "2026-05-21T07:18:00.000Z",
+      "isSeedExample": true,
+      "aiIntake": {
+        "state": "completed",
+        "summary": "Sorted as a durable objection to the card's savings thesis. The contribution argues that administrative reform may lower friction while leaving the largest pricing levers outside the proposal's reach.",
+        "suggestedAssignmentKind": "objection",
+        "suggestedAssignmentLabel": "Administrative simplification may not resolve hospital or pharmaceutical price leverage",
+        "laneFit": "objection",
+        "changedSynthesisLikely": false,
+        "reviewerNote": "Keep visible against any claim that simplification alone solves overall cost inflation.",
+        "providers": [
+          {
+            "provider": "openai",
+            "state": "completed",
+            "model": "gpt-5.5",
+            "summary": "This is a clean objection-lane contribution because it forces the card to separate workflow waste from market power. It should attach to the main cost-savings claim rather than being treated as a side comment.",
+            "suggestedAssignmentKind": "objection",
+            "suggestedAssignmentLabel": "Administrative simplification may not resolve hospital or pharmaceutical price leverage",
+            "laneFit": "objection",
+            "changedSynthesisLikely": false,
+            "reviewerNote": "Good pressure against overclaiming total-cost impact."
+          },
+          {
+            "provider": "anthropic",
+            "state": "completed",
+            "model": "claude-opus-4-7",
+            "summary": "The strongest feature of this contribution is that it targets the proposal's likely overreach rather than its weakest form. Savings may be real but still strategically insufficient if concentrated price power remains untouched.",
+            "suggestedAssignmentKind": "objection",
+            "suggestedAssignmentLabel": "Administrative simplification may not resolve hospital or pharmaceutical price leverage",
+            "laneFit": "objection",
+            "changedSynthesisLikely": false,
+            "reviewerNote": "Preserve as a live objection unless the topic card directly answers the price-power problem."
+          }
+        ]
+      },
+      "review": {
+        "assignedToKind": "objection",
+        "assignedToLabel": "Administrative simplification may not resolve hospital or pharmaceutical price leverage",
+        "changedSynthesis": false,
+        "decisionReason": "Accepted into the objection lane so the card does not overclaim cost relief from administrative reform alone.",
+        "reviewerNote": "Keep tied to the main thesis until the room has a stronger answer on hospitals, specialist networks, and pharmaceuticals.",
+        "reviewedAt": "2026-05-21T07:18:00.000Z"
+      }
+    },
+    {
+      "id": "seed-healthcare-topic-001-evidence-admin-overhead",
       "roomSlug": "healthcare",
       "topicId": "topic-001",
       "topicTitle": "Administrative Simplification and AI-Assisted Triage",
       "lane": "evidence",
-      "title": "Example: prior authorization burden should stay measurable",
-      "body": "Seed example. A useful contribution in this lane should not only claim that prior authorization creates waste. It should point to a measurable workflow burden, like repeated resubmission, clinician time lost, or delayed care episodes, so the room can compare claims against a visible cost surface.",
+      "title": "Administrative overhead is materially significant and worth a direct pilot",
+      "body": "A serious evidence contribution should keep the room anchored to the possibility that administrative overhead is large enough to justify focused testing. If a meaningful share of healthcare spending and clinician time is consumed by claims handling, prior authorization, and documentation churn, the card is right to treat simplification as a non-trivial reform lever.",
       "evidenceSource": {
-        "label": "Seed example reference",
-        "url": "https://www.ama-assn.org/practice-management/prior-authorization"
+        "label": "Health Affairs: Slowing the growth of health care spending",
+        "url": "https://www.healthaffairs.org/do/10.1377/hpb20170909.946676/"
       },
       "author": {
-        "name": "Seed example",
-        "expertise": "Prototype content"
+        "name": "Prototype example",
+        "expertise": "Evidence lane"
       },
-      "status": "accepted",
-      "createdAt": "2026-05-20T18:15:00.000Z",
-      "updatedAt": "2026-05-20T18:45:00.000Z",
+      "status": "incorporated",
+      "createdAt": "2026-05-21T07:06:00.000Z",
+      "updatedAt": "2026-05-21T07:24:00.000Z",
       "isSeedExample": true,
       "aiIntake": {
-        "state": "unavailable",
-        "providers": []
+        "state": "completed",
+        "summary": "Sorted as evidence supporting the claim that administrative overhead is large enough to justify direct testing. Both assisted readers treat it as a strengthening input rather than as a conclusive proof of savings.",
+        "suggestedAssignmentKind": "evidence",
+        "suggestedAssignmentLabel": "Administrative overhead appears materially significant",
+        "laneFit": "evidence",
+        "changedSynthesisLikely": true,
+        "reviewerNote": "Use as baseline support while keeping the evidence burden high on measured savings.",
+        "providers": [
+          {
+            "provider": "openai",
+            "state": "completed",
+            "model": "gpt-5.5",
+            "summary": "This contribution strengthens the card's starting claim that paperwork burden is not trivial noise. It belongs in the evidence layer because it justifies testing the topic rather than proving the full proposal.",
+            "suggestedAssignmentKind": "evidence",
+            "suggestedAssignmentLabel": "Administrative overhead appears materially significant",
+            "laneFit": "evidence",
+            "changedSynthesisLikely": true,
+            "reviewerNote": "Good evidence anchor for why the topic is worth examining."
+          },
+          {
+            "provider": "anthropic",
+            "state": "completed",
+            "model": "claude-opus-4-7",
+            "summary": "The contribution is useful because it narrows the claim: administrative burden may be large enough to matter, but the room still has to show where savings are real, durable, and clinically meaningful.",
+            "suggestedAssignmentKind": "evidence",
+            "suggestedAssignmentLabel": "Administrative overhead appears materially significant",
+            "laneFit": "evidence",
+            "changedSynthesisLikely": true,
+            "reviewerNote": "Keep as support for the room's evidence layer, not as license for overclaiming."
+          }
+        ]
       },
       "review": {
         "assignedToKind": "evidence",
         "assignedToLabel": "Administrative overhead appears materially significant",
         "changedSynthesis": true,
-        "decisionReason": "Kept as a seed example because it demonstrates the level of specificity the room needs from evidence submissions.",
-        "reviewerNote": "Translate this pattern into real evidence requirements once live contributors arrive.",
-        "reviewedAt": "2026-05-20T18:45:00.000Z"
+        "decisionReason": "Incorporated into the evidence layer because it strengthens the case that administrative waste is large enough to test directly.",
+        "reviewerNote": "Use this as a baseline reference, but continue separating insurer overhead from provider workflow waste.",
+        "reviewedAt": "2026-05-21T07:24:00.000Z"
       }
     },
     {
-      "id": "seed-healthcare-topic-001-objection",
+      "id": "seed-healthcare-topic-001-transition-costs",
       "roomSlug": "healthcare",
       "topicId": "topic-001",
       "topicTitle": "Administrative Simplification and AI-Assisted Triage",
-      "lane": "objection",
-      "title": "Example: simplification may shift burden rather than remove it",
-      "body": "Seed example. A serious objection is that claims simplification can look efficient at the payer layer while quietly shifting work onto clinics, especially smaller or rural providers with weaker staffing and IT support. The room should preserve this as a live objection unless a transition design answers it directly.",
+      "lane": "economic-assumption-challenge",
+      "title": "Transition costs may consume the first years of projected savings",
+      "body": "Even if the steady-state model is cleaner, early savings may be consumed by software migration, retraining, contract rewrites, temporary dual workflows, and local implementation failure. The card should pressure-test whether the proposal's timing assumptions are realistic rather than counting gross administrative savings as if the transition were free.",
       "author": {
-        "name": "Seed example",
-        "expertise": "Prototype content"
+        "name": "Prototype example",
+        "expertise": "Transition-cost challenge"
       },
-      "status": "pending",
-      "createdAt": "2026-05-20T19:05:00.000Z",
-      "updatedAt": "2026-05-20T19:05:00.000Z",
+      "status": "needs review",
+      "createdAt": "2026-05-21T07:12:00.000Z",
+      "updatedAt": "2026-05-21T07:28:00.000Z",
       "isSeedExample": true,
       "aiIntake": {
-        "state": "unavailable",
-        "providers": []
+        "state": "completed",
+        "summary": "Sorted as an economic assumption challenge focused on timing rather than direction. The contribution argues that implementation friction could consume the first wave of nominal savings.",
+        "suggestedAssignmentKind": "assumption",
+        "suggestedAssignmentLabel": "Transition costs stay below early administrative savings",
+        "laneFit": "economic-assumption-challenge",
+        "changedSynthesisLikely": true,
+        "reviewerNote": "Strong enough to hold open, but still needs quantified transition modeling.",
+        "providers": [
+          {
+            "provider": "openai",
+            "state": "completed",
+            "model": "gpt-5.5",
+            "summary": "This belongs in the economic assumption challenge lane because it attacks the timing logic of the proposal. It should attach to the cost-savings assumptions and the economic-delta read.",
+            "suggestedAssignmentKind": "assumption",
+            "suggestedAssignmentLabel": "Transition costs stay below early administrative savings",
+            "laneFit": "economic-assumption-challenge",
+            "changedSynthesisLikely": true,
+            "reviewerNote": "Flag for comparative rollout modeling."
+          },
+          {
+            "provider": "anthropic",
+            "state": "completed",
+            "model": "claude-opus-4-7",
+            "summary": "The contribution is important because many reform models confuse long-run plausibility with near-term fiscal credibility. Early implementation drag may determine whether the reform is survivable at all.",
+            "suggestedAssignmentKind": "assumption",
+            "suggestedAssignmentLabel": "Transition costs stay below early administrative savings",
+            "laneFit": "economic-assumption-challenge",
+            "changedSynthesisLikely": true,
+            "reviewerNote": "Treat as a real stress test on the card's economic optimism."
+          }
+        ]
+      },
+      "review": {
+        "assignedToKind": "assumption",
+        "assignedToLabel": "Transition costs stay below early administrative savings",
+        "changedSynthesis": null,
+        "decisionReason": "Marked needs review because the challenge is strong, but the room still needs a comparable implementation model before changing the current read.",
+        "reviewerNote": "Hold this against the economic-delta section until the card has a firmer transition-cost model.",
+        "reviewedAt": "2026-05-21T07:28:00.000Z"
+      }
+    },
+    {
+      "id": "seed-healthcare-topic-001-ai-triage-thresholds",
+      "roomSlug": "healthcare",
+      "topicId": "topic-001",
+      "topicTitle": "Administrative Simplification and AI-Assisted Triage",
+      "lane": "nuance",
+      "title": "AI triage helps only if human-escalation thresholds are explicit",
+      "body": "AI-assisted triage may be genuinely useful for routine routing, intake normalization, and low-risk redirection. But the card should treat it as bounded support, not autonomous judgment. Hard human-escalation thresholds, override ownership, and auditability need to be part of the design or the triage layer becomes a new clinical risk instead of a workflow improvement.",
+      "author": {
+        "name": "Prototype example",
+        "expertise": "Clinical safety nuance"
+      },
+      "status": "incorporated",
+      "createdAt": "2026-05-21T07:18:00.000Z",
+      "updatedAt": "2026-05-21T07:34:00.000Z",
+      "isSeedExample": true,
+      "aiIntake": {
+        "state": "completed",
+        "summary": "Sorted as nuance with implementation implications. The contribution narrows the AI claim by requiring explicit escalation thresholds and human override design.",
+        "suggestedAssignmentKind": "assumption",
+        "suggestedAssignmentLabel": "AI triage is safe only if escalation thresholds and human override paths are explicit",
+        "laneFit": "nuance",
+        "changedSynthesisLikely": true,
+        "reviewerNote": "Useful because it improves the card without collapsing into generic anti-AI skepticism.",
+        "providers": [
+          {
+            "provider": "openai",
+            "state": "completed",
+            "model": "gpt-5.5",
+            "summary": "This contribution fits the nuance lane and should attach to the card's mechanism and assumptions. It improves the proposal by turning AI triage from a broad promise into a bounded workflow tool.",
+            "suggestedAssignmentKind": "assumption",
+            "suggestedAssignmentLabel": "AI triage is safe only if escalation thresholds and human override paths are explicit",
+            "laneFit": "nuance",
+            "changedSynthesisLikely": true,
+            "reviewerNote": "Good narrowing move that makes the topic more governable."
+          },
+          {
+            "provider": "anthropic",
+            "state": "completed",
+            "model": "claude-opus-4-7",
+            "summary": "The strength of this contribution is that it rescues the proposal from vague automation optimism. It identifies the boundary condition that determines whether AI triage is a support layer or a liability generator.",
+            "suggestedAssignmentKind": "assumption",
+            "suggestedAssignmentLabel": "AI triage is safe only if escalation thresholds and human override paths are explicit",
+            "laneFit": "nuance",
+            "changedSynthesisLikely": true,
+            "reviewerNote": "Preserve as a first-order design constraint, not a footnote."
+          }
+        ]
+      },
+      "review": {
+        "assignedToKind": "assumption",
+        "assignedToLabel": "AI triage is safe only if escalation thresholds and human override paths are explicit",
+        "changedSynthesis": true,
+        "decisionReason": "Incorporated because it converts the AI layer from generic efficiency language into a bounded safety condition.",
+        "reviewerNote": "Future revisions should specify escalation triggers, audit paths, and manual override ownership.",
+        "reviewedAt": "2026-05-21T07:34:00.000Z"
+      }
+    },
+    {
+      "id": "seed-healthcare-topic-001-provider-time-back",
+      "roomSlug": "healthcare",
+      "topicId": "topic-001",
+      "topicTitle": "Administrative Simplification and AI-Assisted Triage",
+      "lane": "personal-perspective",
+      "title": "Paperwork reduction matters only if time actually returns to care teams",
+      "body": "A provider-facing perspective should ask whether reduced clicks, fewer forms, or faster intake actually give time back to nurses, physicians, and coordinators. If reclaimed minutes are immediately reabsorbed into new compliance tasks or higher throughput demands, the card may mistake administrative rearrangement for real clinical relief.",
+      "author": {
+        "name": "Prototype example",
+        "expertise": "Provider operations perspective"
+      },
+      "status": "pending",
+      "createdAt": "2026-05-21T07:24:00.000Z",
+      "updatedAt": "2026-05-21T07:38:00.000Z",
+      "isSeedExample": true,
+      "aiIntake": {
+        "state": "completed",
+        "summary": "Sorted as a personal/provider perspective with measurable operational implications. The contribution argues that savings claims should be tested against time actually returned to care teams.",
+        "suggestedAssignmentKind": "open-question",
+        "suggestedAssignmentLabel": "How should the room measure whether simplification returns time to clinical care rather than to new compliance demands?",
+        "laneFit": "personal-perspective",
+        "changedSynthesisLikely": true,
+        "reviewerNote": "Good contribution, but it needs a sharper measurement frame before it can move the card.",
+        "providers": [
+          {
+            "provider": "openai",
+            "state": "completed",
+            "model": "gpt-5.5",
+            "summary": "This fits the personal-perspective lane while still giving the room a measurable operational question. It should attach to the open-question layer around how savings are defined and verified.",
+            "suggestedAssignmentKind": "open-question",
+            "suggestedAssignmentLabel": "How should the room measure whether simplification returns time to clinical care rather than to new compliance demands?",
+            "laneFit": "personal-perspective",
+            "changedSynthesisLikely": true,
+            "reviewerNote": "Invite follow-up on staffing metrics and workflow measurement."
+          },
+          {
+            "provider": "anthropic",
+            "state": "completed",
+            "model": "claude-opus-4-7",
+            "summary": "The contribution is useful because it resists abstract efficiency claims and asks where recovered capacity actually lands. Without that check, the proposal could look humane while merely increasing throughput pressure.",
+            "suggestedAssignmentKind": "open-question",
+            "suggestedAssignmentLabel": "How should the room measure whether simplification returns time to clinical care rather than to new compliance demands?",
+            "laneFit": "personal-perspective",
+            "changedSynthesisLikely": true,
+            "reviewerNote": "Keep the perspective visible even before the room has a settled metric."
+          }
+        ]
+      },
+      "review": {
+        "assignedToKind": "open-question",
+        "assignedToLabel": "How should the room measure whether simplification returns time to clinical care rather than to new compliance demands?",
+        "changedSynthesis": null,
+        "decisionReason": "Left pending because the perspective is strong, but the card still needs a clearer measurement standard before the contribution can alter the current read.",
+        "reviewerNote": "Keep in the visible record and ask the next provider-facing contribution to translate this into measurable time-back criteria.",
+        "reviewedAt": "2026-05-21T07:38:00.000Z"
       }
     }
   ]
