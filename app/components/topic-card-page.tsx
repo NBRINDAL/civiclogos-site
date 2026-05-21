@@ -103,6 +103,15 @@ export default async function TopicCardPage({
   const pendingDocumentContributions = documentBackedContributions.filter(
     (item) => item.status === "pending" || item.status === "needs review",
   );
+  const assistedRecordContributions = liveContributions.filter(
+    (item) => item.draftSource,
+  );
+  const assistedPendingContributions = assistedRecordContributions.filter(
+    (item) => item.status === "pending" || item.status === "needs review",
+  );
+  const assistedChangedContributions = assistedRecordContributions.filter(
+    (item) => item.review?.changedSynthesis === true,
+  );
   const needsAttentionContributions = liveContributions.filter(
     (item) => item.status === "pending" || item.status === "needs review",
   );
@@ -857,6 +866,58 @@ export default async function TopicCardPage({
                   Nothing is currently waiting on a maintainer decision for this
                   card. New submissions should appear here until a human review
                   resolves them.
+                </p>
+              )}
+            </div>
+
+            <div className={styles.copyBlock}>
+              <h3>AI-assisted record activity</h3>
+              {assistedRecordContributions.length ? (
+                <>
+                  <p>
+                    {assistedRecordContributions.length} visible contribution
+                    {assistedRecordContributions.length === 1 ? "" : "s"} on
+                    this card began in the GPT/Claude topic reader layer, with{" "}
+                    {assistedPendingContributions.length} still waiting on a full
+                    human decision and {assistedChangedContributions.length} already
+                    marked as changing the card.
+                  </p>
+                  <div className={styles.historyList}>
+                    {assistedRecordContributions.slice(0, 4).map((item) => (
+                      <article className={styles.historyItem} key={`assisted-${item.id}`}>
+                        <div>
+                          <strong>{item.title}</strong>
+                          <span>
+                            {item.status} · {item.draftSource?.providerLabel}
+                            {item.draftSource?.model
+                              ? ` (${item.draftSource.model})`
+                              : ""}
+                          </span>
+                        </div>
+                        <p>
+                          {getPublicContributionOutcomeNote(
+                            item.review?.decisionReason,
+                            item.review?.publicRecordNote,
+                            item.status === "pending" || item.status === "needs review"
+                              ? "This AI-assisted topic-chat suggestion is visible in the record and still waiting on a human decision."
+                              : "This AI-assisted topic-chat suggestion has been resolved in the public record.",
+                          )}
+                        </p>
+                        {item.draftSource?.question ? (
+                          <p className={styles.metaParagraph}>
+                            Prompt that generated the draft: {item.draftSource.question}
+                          </p>
+                        ) : null}
+                      </article>
+                    ))}
+                  </div>
+                </>
+              ) : (
+                <p>
+                  No visible contribution on this card has yet come through the
+                  live GPT/Claude topic-reader path. When that happens, the card
+                  should show the chat-to-record trace here instead of burying it
+                  inside the transcript alone.
                 </p>
               )}
             </div>
