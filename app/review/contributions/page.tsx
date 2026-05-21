@@ -433,6 +433,37 @@ export default async function ContributionReviewPage({
                       </a>
                     </p>
                   ) : null}
+                  {item.evidenceDocument ? (
+                    <>
+                      <p>
+                        Uploaded document:{" "}
+                        <a
+                          href={item.evidenceDocument.downloadHref}
+                          rel="noreferrer"
+                          target="_blank"
+                        >
+                          {item.evidenceDocument.fileName}
+                        </a>{" "}
+                        · {item.evidenceDocument.mimeType} ·{" "}
+                        {Math.max(item.evidenceDocument.sizeBytes / 1024, 1).toFixed(1)} KB
+                      </p>
+                      <p>
+                        Extraction status: {item.evidenceDocument.extraction.status}
+                        {item.evidenceDocument.extraction.pageCount
+                          ? ` · ${item.evidenceDocument.extraction.pageCount} pages`
+                          : ""}
+                        {item.evidenceDocument.extraction.wordCount
+                          ? ` · ${item.evidenceDocument.extraction.wordCount} words`
+                          : ""}
+                      </p>
+                      {item.evidenceDocument.extraction.note ? (
+                        <p>{item.evidenceDocument.extraction.note}</p>
+                      ) : null}
+                      {item.evidenceDocument.extraction.excerpt ? (
+                        <p>{item.evidenceDocument.extraction.excerpt}</p>
+                      ) : null}
+                    </>
+                  ) : null}
                 </div>
 
                 <div className={styles.providerList}>

@@ -63,6 +63,7 @@ type FormState = {
   name: string;
   email: string;
   expertise: string;
+  evidenceFile: File | null;
 };
 
 const initialFormState: FormState = {
@@ -74,6 +75,7 @@ const initialFormState: FormState = {
   name: "",
   email: "",
   expertise: "",
+  evidenceFile: null,
 };
 
 const statusLabels: Record<ReviewStatus, string> = {
@@ -153,6 +155,18 @@ function getChangedCardLabel(value: boolean | null | undefined) {
   }
 
   return "Not decided yet";
+}
+
+function formatBytes(value: number) {
+  if (value < 1024) {
+    return `${value} B`;
+  }
+
+  if (value < 1024 * 1024) {
+    return `${(value / 1024).toFixed(1)} KB`;
+  }
+
+  return `${(value / (1024 * 1024)).toFixed(1)} MB`;
 }
 
 export default function TopicContributionLoop({
@@ -328,6 +342,7 @@ export default function TopicContributionLoop({
       body: "",
       evidenceLabel: "",
       evidenceUrl: "",
+      evidenceFile: null,
     }));
   }
 
@@ -357,31 +372,39 @@ export default function TopicContributionLoop({
       try {
         const response = await fetch("/api/contributions", {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            roomSlug,
-            topicId,
-            lane: formState.lane,
-            title: formState.title,
-            body: formState.body,
-            evidenceLabel: formState.evidenceLabel,
-            evidenceUrl: formState.evidenceUrl,
-            name: formState.name,
-            email: formState.email,
-            expertise: formState.expertise,
-            draftSource: draftState
-              ? {
+          body: (() => {
+            const formData = new FormData();
+            formData.set("roomSlug", roomSlug);
+            formData.set("topicId", topicId);
+            formData.set("lane", formState.lane);
+            formData.set("title", formState.title);
+            formData.set("body", formState.body);
+            formData.set("evidenceLabel", formState.evidenceLabel);
+            formData.set("evidenceUrl", formState.evidenceUrl);
+            formData.set("name", formState.name);
+            formData.set("email", formState.email);
+            formData.set("expertise", formState.expertise);
+            formData.set("website", website);
+
+            if (draftState) {
+              formData.set(
+                "draftSource",
+                JSON.stringify({
                   provider: draftState.provider,
                   providerLabel: draftState.providerLabel,
                   model: draftState.model,
                   question: draftState.question,
                   generatedAt: draftState.generatedAt,
-                }
-              : undefined,
-            website,
-          }),
+                }),
+              );
+            }
+
+            if (formState.evidenceFile) {
+              formData.set("evidenceFile", formState.evidenceFile);
+            }
+
+            return formData;
+          })(),
         });
 
         const payload = (await response.json()) as {
@@ -564,6 +587,26 @@ export default function TopicContributionLoop({
               </label>
             </div>
 
+            <label className={styles.field}>
+              <span>Upload supporting paper or document</span>
+              <input
+                accept=".pdf,.txt,.md,.markdown,.json,.csv,.xml,.html,.htm,.docx"
+                onChange={(event) =>
+                  handleFieldChange("evidenceFile", event.target.files?.[0] ?? null)
+                }
+                type="file"
+              />
+              <small className={styles.fieldHelp}>
+                Optional. Best for PDFs or plain-text documents under 8 MB. Civic Logos will
+                store the file, extract text when possible, and surface it for review.
+              </small>
+              {formState.evidenceFile ? (
+                <small className={styles.fieldHelp}>
+                  Selected: {formState.evidenceFile.name} ({formatBytes(formState.evidenceFile.size)})
+                </small>
+              ) : null}
+            </label>
+
             <div className={styles.fieldGrid}>
               <label className={styles.field}>
                 <span>Name</span>
@@ -721,14 +764,48 @@ export default function TopicContributionLoop({
                   {item.evidenceSource?.url ? (
                     <div className={styles.recordSection}>
                       <span className={styles.sectionLabel}>Source / evidence</span>
+                  <a
+                    className={styles.sourceLink}
+                    href={item.evidenceSource.url}
+                    rel="noreferrer"
+                    target="_blank"
+                  >
+                    {item.evidenceSource.label || "View source"}
+                  </a>
+                </div>
+              ) : null}
+
+                  {item.evidenceDocument ? (
+                    <div className={styles.recordSection}>
+                      <span className={styles.sectionLabel}>Uploaded document</span>
                       <a
                         className={styles.sourceLink}
-                        href={item.evidenceSource.url}
+                        href={item.evidenceDocument.downloadHref}
                         rel="noreferrer"
                         target="_blank"
                       >
-                        {item.evidenceSource.label || "View source"}
+                        {item.evidenceDocument.fileName}
                       </a>
+                      <p className={styles.metaNote}>
+                        {item.evidenceDocument.mimeType} · {formatBytes(item.evidenceDocument.sizeBytes)}
+                      </p>
+                      <p className={styles.metaNote}>
+                        Extraction status: {item.evidenceDocument.extraction.status}
+                        {item.evidenceDocument.extraction.pageCount
+                          ? ` · ${item.evidenceDocument.extraction.pageCount} pages`
+                          : ""}
+                        {item.evidenceDocument.extraction.wordCount
+                          ? ` · ${item.evidenceDocument.extraction.wordCount} words`
+                          : ""}
+                      </p>
+                      {item.evidenceDocument.extraction.note ? (
+                        <p className={styles.metaNote}>{item.evidenceDocument.extraction.note}</p>
+                      ) : null}
+                      {item.evidenceDocument.extraction.excerpt ? (
+                        <p className={styles.contributionBody}>
+                          {item.evidenceDocument.extraction.excerpt}
+                        </p>
+                      ) : null}
                     </div>
                   ) : null}
 

@@ -196,6 +196,7 @@ export async function createContribution(input: CreateContributionInput) {
       title: input.title,
       body: input.body,
       evidenceSource: input.evidenceSource ?? undefined,
+      evidenceDocument: input.evidenceDocument ?? undefined,
       author: input.author,
       draftSource: input.draftSource,
       status: "pending",

@@ -28,6 +28,24 @@ export type AssistedDraftSource = {
   generatedAt: string;
 };
 
+export type EvidenceExtraction = {
+  status: "completed" | "unavailable" | "error";
+  excerpt?: string;
+  wordCount?: number;
+  pageCount?: number;
+  note?: string;
+};
+
+export type EvidenceDocument = {
+  id: string;
+  fileName: string;
+  mimeType: string;
+  sizeBytes: number;
+  uploadedAt: string;
+  downloadHref: string;
+  extraction: EvidenceExtraction;
+};
+
 export type ProviderContributionAiIntake = {
   provider: AiProvider;
   state: "completed" | "unavailable" | "error";
@@ -68,6 +86,7 @@ export type Contribution = TopicCardReference & {
   title: string;
   body: string;
   evidenceSource?: EvidenceSource | null;
+  evidenceDocument?: EvidenceDocument | null;
   author: ContributionAuthor;
   draftSource?: AssistedDraftSource;
   status: ReviewStatus;
@@ -83,6 +102,7 @@ export type CreateContributionInput = TopicCardReference & {
   title: string;
   body: string;
   evidenceSource?: EvidenceSource | null;
+  evidenceDocument?: EvidenceDocument | null;
   author: ContributionAuthor;
   draftSource?: AssistedDraftSource;
 };

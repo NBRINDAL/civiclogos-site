@@ -29,6 +29,7 @@ type ContributionRow = {
   title: string;
   body: string;
   evidence_source: Contribution["evidenceSource"] | null;
+  evidence_document: Contribution["evidenceDocument"] | null;
   author: Contribution["author"];
   draft_source: Contribution["draftSource"] | null;
   status: Contribution["status"];
@@ -112,6 +113,7 @@ async function ensureContributionTable() {
           title text not null,
           body text not null,
           evidence_source jsonb,
+          evidence_document jsonb,
           author jsonb not null,
           draft_source jsonb,
           status text not null,
@@ -121,6 +123,11 @@ async function ensureContributionTable() {
           ai_intake jsonb,
           review jsonb
         )
+      `;
+
+      await sql`
+        alter table civiclogos_contributions
+        add column if not exists evidence_document jsonb
       `;
 
       await sql`
@@ -151,6 +158,7 @@ async function ensureContributionTable() {
               title,
               body,
               evidence_source,
+              evidence_document,
               author,
               status,
               created_at,
@@ -167,6 +175,7 @@ async function ensureContributionTable() {
               ${contribution.title},
               ${contribution.body},
               ${sql.json(contribution.evidenceSource ?? null)},
+              ${sql.json(contribution.evidenceDocument ?? null)},
               ${sql.json(contribution.author)},
               ${contribution.status},
               ${contribution.createdAt},
@@ -216,6 +225,7 @@ function rowToContribution(row: ContributionRow): Contribution {
     title: row.title,
     body: row.body,
     evidenceSource: row.evidence_source ?? undefined,
+    evidenceDocument: row.evidence_document ?? undefined,
     author: row.author,
     draftSource: row.draft_source ?? undefined,
     status: row.status,
@@ -291,6 +301,7 @@ export function createDatabaseContributionStore(): DatabaseContributionStore {
         title: input.title,
         body: input.body,
         evidenceSource: input.evidenceSource ?? undefined,
+        evidenceDocument: input.evidenceDocument ?? undefined,
         author: input.author,
         status: "pending",
         createdAt: timestamp,
@@ -308,6 +319,7 @@ export function createDatabaseContributionStore(): DatabaseContributionStore {
           title,
           body,
           evidence_source,
+          evidence_document,
           author,
           draft_source,
           status,
@@ -325,6 +337,7 @@ export function createDatabaseContributionStore(): DatabaseContributionStore {
           ${contribution.title},
           ${contribution.body},
           ${sql.json(contribution.evidenceSource ?? null)},
+          ${sql.json(contribution.evidenceDocument ?? null)},
           ${sql.json(contribution.author)},
           ${sql.json(contribution.draftSource ?? null)},
           ${contribution.status},

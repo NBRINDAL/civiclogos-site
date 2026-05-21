@@ -97,6 +97,9 @@ export async function sendContributionSubmittedNotification(
   const evidenceLine = contribution.evidenceSource?.url
     ? `${contribution.evidenceSource.label || "Source"}: ${contribution.evidenceSource.url}`
     : "No evidence/source link provided";
+  const uploadedEvidenceLine = contribution.evidenceDocument
+    ? `${contribution.evidenceDocument.fileName} (${contribution.evidenceDocument.mimeType}, ${contribution.evidenceDocument.sizeBytes} bytes) — ${contribution.evidenceDocument.downloadHref}`
+    : "No uploaded evidence document provided";
   const safeTitle = escapeHtml(contribution.title);
   const safeBody = escapeHtml(contribution.body).replaceAll("\n", "<br />");
 
@@ -118,6 +121,7 @@ export async function sendContributionSubmittedNotification(
       contribution.body,
       "",
       evidenceLine,
+      uploadedEvidenceLine,
       "",
       "Open the scoped queue:",
       `${process.env.NEXT_PUBLIC_SITE_URL?.trim() || "https://www.civiclogos.com"}/review/contributions?roomSlug=${encodeURIComponent(contribution.roomSlug)}&topicId=${encodeURIComponent(contribution.topicId)}`,
@@ -134,6 +138,7 @@ export async function sendContributionSubmittedNotification(
         <p><strong>Title:</strong> ${safeTitle}</p>
         <p><strong>Contribution:</strong><br />${safeBody}</p>
         <p><strong>Evidence/source:</strong> ${escapeHtml(evidenceLine)}</p>
+        <p><strong>Uploaded evidence:</strong> ${escapeHtml(uploadedEvidenceLine)}</p>
         <p><a href="${escapeHtml(
           `${process.env.NEXT_PUBLIC_SITE_URL?.trim() || "https://www.civiclogos.com"}/review/contributions?roomSlug=${encodeURIComponent(contribution.roomSlug)}&topicId=${encodeURIComponent(contribution.topicId)}`,
         )}">Open the scoped queue</a></p>

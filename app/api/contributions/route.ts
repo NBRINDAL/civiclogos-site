@@ -9,6 +9,7 @@ import {
 } from "@/app/lib/civic-logos";
 import type { AssistedDraftSource } from "@/app/lib/contribution-types";
 import { createContribution, getContributionStoreMetadata, listPublicContributions } from "@/app/lib/contribution-store";
+import { createEvidenceDocument } from "@/app/lib/evidence-document-store";
 import { sendContributionSubmittedNotification } from "@/app/lib/maintainer-notifications";
 import { normalizeDebateLane } from "@/app/lib/reasoning-types";
 
@@ -33,6 +34,14 @@ function asTrimmedString(value: unknown) {
   return typeof value === "string" ? value.trim() : "";
 }
 
+function asFile(value: unknown) {
+  if (!value || typeof value !== "object") {
+    return null;
+  }
+
+  return value instanceof File ? value : null;
+}
+
 function isValidEmail(value: string) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
 }
@@ -55,6 +64,14 @@ function isRoomSlug(value: string): value is IssueRoomSlug {
 }
 
 function parseDraftSource(value: unknown): AssistedDraftSource | undefined {
+  if (typeof value === "string") {
+    try {
+      return parseDraftSource(JSON.parse(value));
+    } catch {
+      return undefined;
+    }
+  }
+
   if (!value || typeof value !== "object" || Array.isArray(value)) {
     return undefined;
   }
@@ -126,9 +143,31 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   let payload: ContributionPayload;
+  let uploadedEvidenceFile: File | null = null;
 
   try {
-    payload = (await request.json()) as ContributionPayload;
+    const contentType = request.headers.get("content-type") ?? "";
+
+    if (contentType.includes("multipart/form-data")) {
+      const formData = await request.formData();
+      uploadedEvidenceFile = asFile(formData.get("evidenceFile"));
+      payload = {
+        roomSlug: formData.get("roomSlug"),
+        topicId: formData.get("topicId"),
+        lane: formData.get("lane"),
+        title: formData.get("title"),
+        body: formData.get("body"),
+        evidenceLabel: formData.get("evidenceLabel"),
+        evidenceUrl: formData.get("evidenceUrl"),
+        name: formData.get("name"),
+        email: formData.get("email"),
+        expertise: formData.get("expertise"),
+        draftSource: formData.get("draftSource"),
+        website: formData.get("website"),
+      };
+    } else {
+      payload = (await request.json()) as ContributionPayload;
+    }
   } catch {
     return NextResponse.json({ error: "Invalid request body." }, { status: 400 });
   }
@@ -195,6 +234,35 @@ export async function POST(request: NextRequest) {
     );
   }
 
+  if (uploadedEvidenceFile) {
+    if (!uploadedEvidenceFile.size) {
+      return NextResponse.json(
+        { error: "The selected evidence document was empty." },
+        { status: 400 },
+      );
+    }
+
+    if (uploadedEvidenceFile.size > 8 * 1024 * 1024) {
+      return NextResponse.json(
+        { error: "Keep uploaded evidence documents under 8 MB for this MVP." },
+        { status: 400 },
+      );
+    }
+  }
+
+  const evidenceDocument =
+    uploadedEvidenceFile && uploadedEvidenceFile.size
+      ? await createEvidenceDocument({
+          roomSlug,
+          topicId,
+          topicTitle: topic.title,
+          fileName: uploadedEvidenceFile.name || "uploaded-evidence",
+          mimeType:
+            uploadedEvidenceFile.type || "application/octet-stream",
+          bytes: Buffer.from(await uploadedEvidenceFile.arrayBuffer()),
+        })
+      : null;
+
   const contribution = await createContribution({
     roomSlug,
     topicId,
@@ -208,6 +276,7 @@ export async function POST(request: NextRequest) {
           url: evidenceUrl,
         }
       : null,
+    evidenceDocument,
     author: {
       name: name || undefined,
       email: email || undefined,
