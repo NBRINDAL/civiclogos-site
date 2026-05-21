@@ -425,6 +425,7 @@ export const governanceIssueRoom = {
         "Pushes authority downward wherever possible while preserving a limited central layer for rights protection and coordination.",
       label: "Topic in focus",
       metric: "Strong legitimacy case, uneven capacity risk",
+      href: "/rooms/governance/topic-001",
     },
     {
       title: "Technocratic Administrative State Model",
@@ -1517,6 +1518,195 @@ export const topic001: TopicCardData = {
       version: "v0.3",
       date: "May 2026",
       note: "Economic delta section marked explicitly low-confidence pending real cost and implementation assumptions.",
+    },
+  ],
+};
+
+export const governanceTopic001: TopicCardData = {
+  id: "topic-001",
+  title: "Subsidiarity-First Governance Model",
+  subtitle:
+    "A first governance topic card for testing whether authority should move downward by default while still preserving common capacity and rights protection",
+  draftNote:
+    "This topic card is intentionally unfinished because governance arguments often sound cleaner than they are. It is meant to make one recurring institutional instinct inspectable: push authority downward wherever possible, but do not pretend local control solves every coordination or justice problem.",
+  thesis:
+    "Governance should default toward subsidiarity: authority should sit as close as possible to the people who live with the consequences, while a thinner higher layer protects rights, coordinates large systems, and intervenes only where scale or spillover makes local control inadequate.",
+  currentRead:
+    "This topic card feels strongest because it answers one of the deepest legitimacy problems directly: many people experience governance as too distant, too opaque, and too insulated from consequence. It feels weakest wherever local knowledge is romanticized and local capture, uneven competence, and coordination failure are underweighted. The card is useful because it forces governance arguments to specify what really must stay central and what should move downward.",
+  problemStatement:
+    "High-complexity societies often centralize authority for efficiency, expertise, and standardization, but centralization can also weaken legitimacy, flatten local knowledge, and create institutions that are formally accountable yet practically remote. At the same time, pure decentralization can leave rights unevenly protected, infrastructure fragmented, and crisis coordination too weak. The problem is not merely where power sits, but how authority can be allocated so that correction remains possible at every level.",
+  proposedSolution:
+    "Use subsidiarity as a governing default: place decisions at the lowest competent and accountable level, then reserve higher-order authority for constitutional rights, large-scale infrastructure, spillover problems, emergency coordination, and domains where local capture or incapacity is too high. Make the boundaries explicit enough that centralization must justify itself rather than silently expanding by habit.",
+  mechanism: [
+    "Map governance functions by scale and spillover instead of treating all public authority as if it belongs at the same level.",
+    "Assign routine and place-sensitive decisions to the most local competent layer that can actually bear responsibility for outcomes.",
+    "Retain higher-level authority for rights protection, interstate coordination, large infrastructure, national defense, and failures local systems cannot correct alone.",
+    "Create visible correction paths so citizens can see which layer decided, which layer can review it, and when escalation to a higher layer is justified.",
+  ],
+  benefits: [
+    "Local knowledge and public feedback loops become more relevant to actual decision-making.",
+    "Legitimacy may improve when people can identify who decided, why, and how to challenge failure.",
+    "Central institutions can focus on domains that truly require scale rather than absorbing every public problem.",
+    "The model surfaces coordination questions directly instead of burying them inside one-size-fits-all administration.",
+  ],
+  risks: [
+    "Local control can entrench local capture, prejudice, incompetence, or fiscal weakness rather than civic responsibility.",
+    "Citizens may celebrate decentralization rhetorically while rejecting the uneven outcomes it produces in practice.",
+    "Central governments may still creep downward into local domains unless hard boundaries and correction rules exist.",
+    "In crisis conditions, fragmented authority can slow action or produce blame-shifting instead of accountability.",
+  ],
+  assumptions: [
+    "Many governance failures come from authority being too distant rather than simply too weak.",
+    "Local institutions can be made competent enough to handle a broader share of public decisions.",
+    "Rights protection and anti-capture safeguards can be preserved even when more authority moves downward.",
+    "Citizens can tolerate meaningful differences across jurisdictions if the system remains legible and fair enough.",
+  ],
+  stakeholders: [
+    "Citizens and local communities",
+    "Municipal and county governments",
+    "State or provincial governments",
+    "National legislatures and executives",
+    "Courts and constitutional bodies",
+    "Civil servants and regulators",
+    "Minority groups vulnerable to local abuse",
+    "Future residents inheriting governance design",
+  ],
+  evidence: [
+    {
+      title: "Local knowledge often improves policy fit and public legitimacy",
+      status: "Useful but uneven",
+      note: "Supports subsidiarity in many domains, though it does not guarantee competence or fairness.",
+    },
+    {
+      title: "Centralized systems can coordinate large infrastructure and rights enforcement more reliably",
+      status: "Strong evidence",
+      note: "This is the clearest reason subsidiarity cannot simply mean localism everywhere.",
+    },
+    {
+      title: "Local capture and unequal capacity are recurring governance problems",
+      status: "Strong evidence",
+      note: "A subsidiarity model has to answer this directly or it becomes a romantic theory of decentralization.",
+    },
+    {
+      title: "Clear escalation and correction pathways improve trust in layered systems",
+      status: "Needs verification",
+      note: "The idea is plausible but still depends on institutional design quality and civic literacy.",
+    },
+  ] satisfies EvidenceSummary[],
+  economicDelta: {
+    summary:
+      "Estimated Economic Delta: Unknown but potentially meaningful if subsidiarity reduces bureaucratic friction, increases local problem-solving quality, and reserves expensive central capacity for genuinely high-scale functions. Main costs include uneven local capacity, transition complexity, oversight needs, and possible duplication across jurisdictions. Confidence remains low until specific domains are tested rather than theorized in the abstract.",
+    metrics: [
+      "Possible local-efficiency gains: positive if authority and competence align",
+      "Implementation cost: moderate because boundaries and oversight have to be redesigned",
+      "Coordination cost: potentially high in infrastructure, health, or emergency domains",
+      "Public-trust upside: potentially meaningful if legitimacy visibly improves",
+      "Inequality risk: elevated if weak jurisdictions are left without real support",
+    ],
+  },
+  strongestSupport:
+    "This topic speaks directly to a foundational civic intuition: people trust governance more when decisions are made closer to lived consequence and when escalation to higher authority has to justify itself.",
+  strongestObjection:
+    "Subsidiarity can become an elegant moral cover for fragmentation, unequal rights, local corruption, and under-capacity unless the system makes hard decisions about what cannot safely be left local.",
+  whatWouldStrengthen: [
+    "Concrete domain-by-domain mapping showing which governance functions should be local, regional, or central and why.",
+    "Case comparisons where decentralization improved legitimacy or outcomes without quietly worsening inequality or capture.",
+    "A clearer escalation rule for when higher authority can or must override local control.",
+  ],
+  openQuestions: [
+    "Which rights or services should never depend on local willingness or competence alone?",
+    "How should weak local jurisdictions be supported without recentralizing everything by default?",
+    "What metrics best distinguish legitimate local diversity from unacceptable local failure?",
+    "How should emergency powers interact with a subsidiarity-first constitutional order?",
+  ],
+  maturity: "Seed topic",
+  scorecard: [
+    { label: "Novelty", value: 61 },
+    { label: "Coherence", value: 84 },
+    { label: "Feasibility", value: 58 },
+    { label: "Evidence quality", value: 53 },
+    { label: "Economic delta clarity", value: 44 },
+    { label: "Public value", value: 81 },
+  ],
+  aiPanels: [
+    {
+      role: "Structurer",
+      confidence: "Moderate",
+      summary:
+        "The topic is now explicit about boundaries, escalation, and failure modes instead of treating decentralization as a vibe or a slogan.",
+    },
+    {
+      role: "Steelman",
+      confidence: "Moderate",
+      summary:
+        "Subsidiarity can restore legitimacy by moving authority closer to consequence while preserving a thinner central layer for rights and coordination.",
+    },
+    {
+      role: "Critic",
+      confidence: "Moderate",
+      summary:
+        "Without a serious answer to local capture and unequal capacity, the model risks sounding humane while offloading harm onto weaker communities.",
+    },
+    {
+      role: "Institutionalist",
+      confidence: "Low",
+      summary:
+        "The idea is strongest when treated as a domain-by-domain design rule rather than as one total constitutional answer for every public function.",
+    },
+  ],
+  debatePrompts: [
+    {
+      title: "Support",
+      description: "Add the strongest argument for why subsidiarity should be the default allocation rule in governance.",
+    },
+    {
+      title: "Objection",
+      description: "Surface the strongest reason the model could fail, fragment authority, or protect local abuse.",
+    },
+    {
+      title: "Evidence",
+      description: "Add case studies, constitutional examples, or institutional comparisons that support or weaken the subsidiarity case.",
+    },
+    {
+      title: "Correction",
+      description: "Identify conceptual, legal, or historical errors in the current card.",
+    },
+    {
+      title: "Nuance",
+      description: "Improve the topic by exposing a missing condition or boundary rule without rejecting subsidiarity entirely.",
+    },
+    {
+      title: "Governance concern",
+      description: "Identify where accountability, escalation, or anti-capture design could quietly fail inside this model.",
+    },
+    {
+      title: "Economic assumption challenge",
+      description: "Question whether the legitimacy gains and local-efficiency gains are strong enough to offset coordination and inequality costs.",
+    },
+    {
+      title: "Alternate topic",
+      description: "Offer a better governance allocation rule for balancing legitimacy, competence, and liberty.",
+    },
+    {
+      title: "Institutional perspective",
+      description: "Add the likely view of a court, regulator, governor, mayor, or local community that would have to live inside this design.",
+    },
+  ] satisfies DebatePrompt[],
+  revisionHistory: [
+    {
+      version: "v0.1",
+      date: "May 2026",
+      note: "Initial seed topic card created to give the governance room a concrete object around authority allocation rather than leaving it at the framing level.",
+    },
+    {
+      version: "v0.2",
+      date: "May 2026",
+      note: "Local capture and unequal-capacity risks were raised to first-order visibility instead of being treated as secondary complications.",
+    },
+    {
+      version: "v0.3",
+      date: "May 2026",
+      note: "Escalation rules and domain-by-domain mapping were made explicit so the model reads as a governance design problem, not just a political instinct.",
     },
   ],
 };
