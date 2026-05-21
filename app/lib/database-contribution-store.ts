@@ -71,6 +71,7 @@ function getDatabaseUrl() {
     process.env.DATABASE_URL?.trim() ||
     process.env.POSTGRES_URL?.trim() ||
     process.env.POSTGRES_PRISMA_URL?.trim() ||
+    process.env.POSTGRES_URL_NON_POOLING?.trim() ||
     ""
   );
 }

@@ -89,6 +89,20 @@ and provisional draft pages. If a database connection string is configured, weak
 fits and routed ideas are stored persistently instead of only in the prototype
 runtime file.
 
+Supported Postgres environment variable names:
+
+- `DATABASE_URL`
+- `POSTGRES_URL`
+- `POSTGRES_PRISMA_URL`
+- `POSTGRES_URL_NON_POOLING`
+
+To verify what the deployed site is actually using, open:
+
+- `GET /api/storage/status`
+
+It returns whether the intake and contribution layers are running in
+`database`, `fallback`, or `prototype` mode.
+
 If you want AI-assisted intake on submitted contributions, add one or both of:
 
 - `OPENAI_API_KEY`
