@@ -886,6 +886,14 @@ export const aiLaborIssueRoom = {
       href: "/rooms/ai-labor/topic-001",
     },
     {
+      title: "Synthetic Media Verification and Anti-Propaganda Layer",
+      summary:
+        "Builds provenance, verification, challenge, and public-trust infrastructure so AI does not dissolve shared reality before its productive upside arrives.",
+      label: "Topic in focus",
+      metric: "Truth-preserving rather than productivity-first",
+      href: "/rooms/ai-labor/topic-002",
+    },
+    {
       title: "Strong Public-Governance and Safety Model",
       summary:
         "Places frontier AI behind tighter institutional oversight, safety testing, and public-interest constraints before broad deployment.",
@@ -2090,6 +2098,195 @@ export const aiTopic001: TopicCardData = {
   ],
 };
 
+export const aiTopic002: TopicCardData = {
+  id: "topic-002",
+  title: "Synthetic Media Verification and Anti-Propaganda Layer",
+  subtitle:
+    "A second AI room topic card for keeping public truth-seeking viable in an age of cheap synthetic persuasion",
+  draftNote:
+    "This topic card is intentionally early because the verification problem is moving faster than public institutions are. It is meant to pressure one of the darkest AI failure modes directly: a world where persuasion, impersonation, and synthetic consensus become too cheap to distinguish from reality in time.",
+  thesis:
+    "If AI is going to be net good overall, civilization will likely need a visible verification and anti-propaganda layer that preserves provenance, challenge rights, and shared reality before synthetic media and personalized persuasion dissolve public trust.",
+  currentRead:
+    "This topic card feels strong because it names a concrete civilizational choke point: the public cannot reason well if identity, evidence, and media authenticity become too easy to spoof. It feels weak wherever it assumes technical provenance alone can restore trust, since propaganda is institutional and psychological as much as it is computational.",
+  problemStatement:
+    "AI systems can now generate persuasive text, images, audio, video, personas, and targeted narratives at low cost and high scale. That means the same systems that can educate or clarify can also produce deepfakes, fake consensus, automated astroturfing, imitation experts, and reality-distorting floods of synthetic content. Without public verification infrastructure, the epistemic environment may deteriorate faster than any individual fact-checking habit can compensate.",
+  proposedSolution:
+    "Build a layered public verification system: provenance standards, synthetic media labeling, challenge workflows, public dispute records, and room-level trust architecture that makes claims, media, and institutional assertions easier to examine before they become durable public belief.",
+  mechanism: [
+    "Require robust provenance and signing where feasible for institutional releases, public-interest communications, and high-impact synthetic media.",
+    "Create public challenge paths where suspicious content can be contested, traced, and attached to visible review records instead of disappearing into platform churn.",
+    "Use AI to assist verification triage, pattern detection, and cluster analysis while keeping final public judgment contestable and transparent.",
+    "Integrate verification signals into issue rooms so claims, media artifacts, and institutional communications carry visible trust context rather than being consumed as isolated feed objects.",
+  ],
+  benefits: [
+    "Helps preserve a usable public reality even as synthetic content becomes cheaper and more convincing.",
+    "Makes AI governance less abstract by connecting it to visible trust, provenance, and public-memory infrastructure.",
+    "Creates a clearer distinction between AI used for civic clarification and AI used for covert manipulation.",
+    "Supports journalists, researchers, institutions, and ordinary readers who need challengeable authenticity signals rather than passive content warnings.",
+  ],
+  risks: [
+    "Verification systems can drift into censorship, gatekeeping, or government-corporate control over what counts as legitimate speech.",
+    "Bad actors may adapt quickly, using verification norms selectively while moving the real manipulation into gray zones, private channels, or compromised identities.",
+    "The public may overtrust labeled or signed material even when the underlying claim is false, incomplete, or strategically framed.",
+    "Smaller publishers, dissidents, or privacy-sensitive actors may be harmed if verification expectations become too expensive or identity-heavy.",
+  ],
+  assumptions: [
+    "Shared reality can be strengthened by better provenance, challenge systems, and public verification habits rather than only by content moderation alone.",
+    "Institutions will adopt some verification norms if the cost of unverified communication becomes reputationally or operationally high enough.",
+    "Readers can learn to distinguish authenticity signals from truth claims, so provenance improves judgment without becoming a fake oracle.",
+    "AI-assisted verification can scale faster than purely manual review without simply becoming another opaque authority layer.",
+  ],
+  stakeholders: [
+    "Citizens and readers",
+    "Journalists and fact-checkers",
+    "Platforms and model providers",
+    "Governments and election administrators",
+    "Researchers and verification labs",
+    "Whistleblowers and dissidents",
+    "Creators and public institutions",
+    "Communities targeted by propaganda operations",
+  ],
+  evidence: [
+    {
+      title: "Synthetic media quality and volume are increasing quickly",
+      status: "Strong evidence",
+      note: "Supports the claim that authenticity friction is collapsing and that manual detection habits will weaken over time.",
+    },
+    {
+      title: "Existing content-labeling and provenance tools are unevenly adopted",
+      status: "Useful but incomplete",
+      note: "Shows there are partial building blocks, but no stable public trust layer yet.",
+    },
+    {
+      title: "Coordinated propaganda already exploits speed, scale, and ambiguity",
+      status: "Strong evidence",
+      note: "Suggests AI will magnify existing manipulation dynamics rather than inventing them from scratch.",
+    },
+    {
+      title: "Verification signals can improve trust without overcentralizing power",
+      status: "Needs verification",
+      note: "This remains the hardest assumption because governance and adoption matter as much as the technical signal itself.",
+    },
+  ] satisfies EvidenceSummary[],
+  economicDelta: {
+    summary:
+      "Estimated Economic Delta: Indirect but potentially large if better verification reduces fraud, panic, reputational warfare, legal churn, institutional mistrust, and coordination breakdown. Main costs include standards work, infrastructure, review capacity, adversarial adaptation, and governance. Confidence remains low because the value is partly preventive and partly tied to avoiding civilizational downside rather than generating obvious short-term revenue.",
+    metrics: [
+      "Possible societal savings: high if verification reduces large-scale misinformation and fraud costs",
+      "Implementation cost: moderate to high because infrastructure and governance must move together",
+      "Adoption cost: high if institutions and platforms resist common standards",
+      "Public value: very high if shared reality remains more challengeable and legible",
+      "Centralization risk cost: high if verification becomes speech control by another name",
+    ],
+  },
+  strongestSupport:
+    "This topic card addresses one of the clearest conditions under which AI becomes bad overall: when synthetic persuasion scales faster than public verification. If that asymmetry is not corrected, many other AI upsides may arrive inside a degraded epistemic environment.",
+  strongestObjection:
+    "A verification layer can easily harden into a legitimacy layer for powerful institutions, where signed, labeled, and authenticated content is treated as socially real while outsider speech, anonymity, and dissent become easier to dismiss or suppress.",
+  whatWouldStrengthen: [
+    "A clearer governance distinction between authenticity signals, truth claims, moderation powers, and dissent protections.",
+    "A room-level pilot showing how provenance, challenge, and correction records can work without collapsing into bureaucratic friction or trust theater.",
+    "Evidence that verification infrastructure reduces manipulation meaningfully in practice rather than simply adding labels most people ignore.",
+  ],
+  openQuestions: [
+    "Who should operate verification infrastructure without turning it into a censorship or monopoly tool?",
+    "How should anonymity, whistleblowing, and dissident speech be protected inside a stronger provenance regime?",
+    "Which claims or media types deserve the strongest verification expectations first?",
+    "Can public challenge systems keep up with the speed and scale of synthetic persuasion at all?",
+  ],
+  maturity: "Seed topic",
+  scorecard: [
+    { label: "Novelty", value: 78 },
+    { label: "Coherence", value: 83 },
+    { label: "Feasibility", value: 51 },
+    { label: "Evidence quality", value: 58 },
+    { label: "Economic delta clarity", value: 47 },
+    { label: "Public value", value: 94 },
+  ],
+  aiPanels: [
+    {
+      role: "Structurer",
+      confidence: "Moderate",
+      summary:
+        "The topic successfully turns the truth-versus-propaganda frame into a specific infrastructure problem: provenance, challenge, trust context, and governance are all visible rather than implied.",
+    },
+    {
+      role: "Steelman",
+      confidence: "Moderate",
+      summary:
+        "If shared reality fails, many other AI benefits become politically or civically unusable. That makes verification a precondition topic rather than a side concern.",
+    },
+    {
+      role: "Critic",
+      confidence: "Moderate",
+      summary:
+        "The design risks building a subtle authority hierarchy in which authenticated or institutional speech gains legitimacy while anonymous, weakly signed, or outsider speech becomes culturally discounted.",
+    },
+    {
+      role: "Civic theorist",
+      confidence: "Low",
+      summary:
+        "The topic fits Civic Logos well because it keeps truth-seeking challengeable instead of pretending labels solve epistemology. But it still needs a sharper freedom-versus-control theory.",
+    },
+  ],
+  debatePrompts: [
+    {
+      title: "Support",
+      description: "Add the strongest argument for why verification infrastructure is a precondition for AI being net good overall.",
+    },
+    {
+      title: "Objection",
+      description: "Surface the strongest reason this topic could become censorship, gatekeeping, or institutional legitimacy laundering.",
+    },
+    {
+      title: "Evidence",
+      description: "Add cases, standards, or research that support or weaken the practical value of provenance, labeling, and challenge systems.",
+    },
+    {
+      title: "Correction",
+      description: "Identify technical, civil-liberties, or governance errors in the current card.",
+    },
+    {
+      title: "Nuance",
+      description: "Improve the topic by exposing a missing tradeoff between verification, freedom, anonymity, and institutional trust.",
+    },
+    {
+      title: "Governance concern",
+      description: "Identify how the verification layer could centralize narrative power even if its formal goal is only authenticity and challengeability.",
+    },
+    {
+      title: "Economic assumption challenge",
+      description: "Question whether preventive trust infrastructure creates enough visible value for institutions and the public to adopt it seriously.",
+    },
+    {
+      title: "Alternate topic",
+      description: "Offer a better way to preserve public truth-seeking under AI pressure than building a verification and anti-propaganda layer.",
+    },
+    {
+      title: "Civil-liberties perspective",
+      description: "Add the view of a privacy advocate, dissident, or whistleblower worried that verification infrastructure becomes soft control.",
+    },
+  ] satisfies DebatePrompt[],
+  revisionHistory: [
+    {
+      version: "v0.1",
+      date: "May 2026",
+      note: "Initial seed topic card created to turn the truth and propaganda frame into a concrete inspectable object inside the AI room.",
+    },
+    {
+      version: "v0.2",
+      date: "May 2026",
+      note: "Centralization, censorship, and outsider-speech risks were raised to first-order visibility rather than treated as implementation details.",
+    },
+    {
+      version: "v0.3",
+      date: "May 2026",
+      note: "The card was sharpened around provenance, challenge rights, and the distinction between authenticity signals and truth claims.",
+    },
+  ],
+};
+
 export const institutionalTrustTopic001: TopicCardData = {
   id: "topic-001",
   title: "Public Review Stake for Institutional Claims",
@@ -2283,7 +2480,7 @@ export const roomTopicCards = {
   healthcare: [topic001],
   governance: [governanceTopic001],
   housing: [housingTopic001],
-  "ai-labor": [aiTopic001],
+  "ai-labor": [aiTopic001, aiTopic002],
   "institutional-trust": [institutionalTrustTopic001],
 } satisfies Record<IssueRoomSlug, readonly TopicCardData[]>;
 
