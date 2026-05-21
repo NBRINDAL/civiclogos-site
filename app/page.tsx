@@ -26,6 +26,44 @@ const distinctions = [
   },
 ];
 
+const priorArtComparisons = [
+  {
+    title: "Wikipedia",
+    body: "Wikipedia is built to summarize relatively settled knowledge under neutrality norms. Civic Logos is built for unresolved public questions, where perspectives stay attributable and synthesis stays visibly revisable.",
+  },
+  {
+    title: "Reddit and feeds",
+    body: "Feeds are strong at reaction and discovery, but weak at memory. Civic Logos is trying to keep the object stable enough that objections, evidence, and revisions accumulate instead of vanishing into chronology.",
+  },
+  {
+    title: "Kialo and argument maps",
+    body: "Argument maps clarify pro and con structure, but Civic Logos wants a wider room object: stakeholder interests, economic delta, institutional incentives, public perspectives, and a living synthesis in one place.",
+  },
+  {
+    title: "Polis and public comment tools",
+    body: "Polis is good at showing opinion clusters. Civic Logos is trying to go further by keeping durable topic cards, room-level synthesis, and evidence-bearing disagreement visible over time.",
+  },
+] as const;
+
+const contributorLoop = [
+  {
+    title: "Contributions stay visible",
+    body: "A strong objection should not disappear into a thread. The room should preserve what changed the synthesis and make later readers able to find it.",
+  },
+  {
+    title: "Expertise becomes legible",
+    body: "People return when the platform makes their judgment visible in a domain-specific way rather than flattening everyone into one generic social score.",
+  },
+  {
+    title: "The room can actually move",
+    body: "The reward is not just posting. It is seeing a claim sharpened, a blind spot exposed, or the synthesis change because your contribution survived review.",
+  },
+  {
+    title: "Status comes from quality, not volume",
+    body: "Civic Logos should eventually reward the people who clarify, steelman, correct, and improve the record, not the people who simply generate the most noise.",
+  },
+] as const;
+
 const manifestoPoints = [
   "Public discourse is trapped inside posts, feeds, outrage loops, and fragmented commentary.",
   "Important ideas are buried, duplicated, distorted, or forgotten before they become public memory.",
@@ -164,6 +202,49 @@ export default function Home() {
           <div className={styles.distinctionGrid}>
             {distinctions.map((item) => (
               <article className={styles.distinctionCard} key={item.title}>
+                <h3>{item.title}</h3>
+                <p>{item.body}</p>
+              </article>
+            ))}
+          </div>
+        </section>
+
+        <section className={`${styles.section} ${styles.reveal}`}>
+          <div className={styles.sectionIntro}>
+            <span className={styles.cardLabel}>Why This Is Different</span>
+            <h2>The project needs an answer to “why isn’t this just Wikipedia or Reddit for ideas?”</h2>
+            <p>
+              The answer is not that Civic Logos is simply cleaner or more thoughtful.
+              It is that the underlying object is different: unresolved public questions,
+              attributable perspectives, visible objections, and a living synthesis that
+              updates without pretending the disagreement is gone.
+            </p>
+          </div>
+
+          <div className={styles.compareGrid}>
+            {priorArtComparisons.map((item) => (
+              <article className={styles.compareCard} key={item.title}>
+                <h3>{item.title}</h3>
+                <p>{item.body}</p>
+              </article>
+            ))}
+          </div>
+        </section>
+
+        <section className={`${styles.section} ${styles.reveal}`}>
+          <div className={styles.sectionIntro}>
+            <span className={styles.cardLabel}>Contributor Loop</span>
+            <h2>People will only come back if the platform gives them a real reason to return.</h2>
+            <p>
+              The long-term loop is not generic engagement. It is contribution, visibility,
+              synthesis impact, and domain reputation. People should feel that their
+              judgment can survive, matter, and compound inside the room.
+            </p>
+          </div>
+
+          <div className={styles.loopGrid}>
+            {contributorLoop.map((item) => (
+              <article className={styles.loopCard} key={item.title}>
                 <h3>{item.title}</h3>
                 <p>{item.body}</p>
               </article>
