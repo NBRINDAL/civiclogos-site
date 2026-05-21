@@ -131,6 +131,10 @@ function getReviewQueueHref(
   return `/review/contributions?${searchParams.toString()}`;
 }
 
+function getRecordViewHref(filter: "needs-review" | "ai-assisted") {
+  return `?recordView=${encodeURIComponent(filter)}#contribution-record`;
+}
+
 function buildTranscript(messages: TopicChatMessage[]): TranscriptItem[] {
   let lastUserQuestion = "";
 
@@ -314,6 +318,11 @@ export default function TopicAiPanel({
               Narrow AI turns Civic Logos treated as obvious enough to enter
               the live record without waiting on human review.
             </p>
+            {sessionImpact.autoRecordedCount ? (
+              <a className={styles.promotionLink} href={getRecordViewHref("ai-assisted")}>
+                Open AI-assisted ledger
+              </a>
+            ) : null}
           </article>
           <article className={styles.sessionImpactCard}>
             <span className={styles.sessionImpactLabel}>Sent to review</span>
@@ -322,6 +331,11 @@ export default function TopicAiPanel({
               AI turns that became proposed record changes and now
               depend on a human decision.
             </p>
+            {sessionImpact.sentToReviewCount ? (
+              <a className={styles.promotionLink} href={getRecordViewHref("needs-review")}>
+                Open needs-review ledger
+              </a>
+            ) : null}
           </article>
           <article className={styles.sessionImpactCard}>
             <span className={styles.sessionImpactLabel}>Exploratory only</span>
