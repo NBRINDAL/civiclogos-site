@@ -181,7 +181,6 @@ const roomKeywordMap: Record<IssueRoomSlug, readonly string[]> = {
   ],
   "ai-labor": [
     "ai",
-    "ais",
     "artificial",
     "intelligence",
     "model",
@@ -308,11 +307,11 @@ function normalizeToken(token: string) {
     return [];
   }
 
-  const expanded = new Set<string>([normalized]);
-
   if (normalized === "ais") {
-    expanded.add("ai");
+    return ["ai"];
   }
+
+  const expanded = new Set<string>([normalized]);
 
   if (normalized.endsWith("s") && normalized.length > 3) {
     expanded.add(normalized.slice(0, -1));
