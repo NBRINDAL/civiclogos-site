@@ -1,5 +1,10 @@
 import Link from "next/link";
-import { getRoomTopicHref } from "@/app/lib/civic-logos";
+import {
+  getRoomTopicCard,
+  getRoomTopicHref,
+  issueRooms,
+  type IssueRoomSlug,
+} from "@/app/lib/civic-logos";
 import { getContributionStoreMetadata, listAllContributions } from "@/app/lib/contribution-store";
 import {
   debateLaneLabels,
@@ -11,11 +16,49 @@ import styles from "./page.module.css";
 
 export const dynamic = "force-dynamic";
 
-export default async function ContributionReviewPage() {
+function isRoomSlug(value: string): value is IssueRoomSlug {
+  return value in issueRooms;
+}
+
+export default async function ContributionReviewPage({
+  searchParams,
+}: {
+  searchParams: Promise<{
+    roomSlug?: string;
+    topicId?: string;
+    status?: string;
+  }>;
+}) {
+  const params = await searchParams;
+  const roomSlug = params.roomSlug?.trim() ?? "";
+  const topicId = params.topicId?.trim() ?? "";
+  const status = params.status?.trim() ?? "";
+  const scopedRoomSlug = isRoomSlug(roomSlug) ? roomSlug : undefined;
+  const scopedTopicId =
+    scopedRoomSlug && topicId && getRoomTopicCard(scopedRoomSlug, topicId)
+      ? topicId
+      : undefined;
   const [contributions, metadata] = await Promise.all([
-    listAllContributions(),
+    listAllContributions({
+      roomSlug: scopedRoomSlug,
+      topicId: scopedTopicId,
+      status: status || undefined,
+    }),
     getContributionStoreMetadata(),
   ]);
+  const summary = {
+    pending: contributions.filter((item) => item.status === "pending").length,
+    needsReview: contributions.filter((item) => item.status === "needs review").length,
+    accepted: contributions.filter((item) => item.status === "accepted").length,
+    incorporated: contributions.filter((item) => item.status === "incorporated").length,
+    rejected: contributions.filter((item) => item.status === "rejected").length,
+  };
+  const scopeLabel =
+    scopedRoomSlug && scopedTopicId
+      ? `${scopedRoomSlug} / ${scopedTopicId}`
+      : scopedRoomSlug
+        ? scopedRoomSlug
+        : "all rooms";
 
   return (
     <div className={styles.page}>
@@ -29,9 +72,35 @@ export default async function ContributionReviewPage() {
             they visibly affect a living topic card.
           </p>
           <p className={styles.meta}>{metadata.note}</p>
+          <p className={styles.meta}>
+            Current scope: <strong>{scopeLabel}</strong>
+          </p>
         </section>
 
         <section className={styles.panel}>
+          <div className={styles.summaryRow}>
+            <div className={styles.summaryCard}>
+              <span>Pending</span>
+              <strong>{summary.pending}</strong>
+            </div>
+            <div className={styles.summaryCard}>
+              <span>Needs review</span>
+              <strong>{summary.needsReview}</strong>
+            </div>
+            <div className={styles.summaryCard}>
+              <span>Accepted</span>
+              <strong>{summary.accepted}</strong>
+            </div>
+            <div className={styles.summaryCard}>
+              <span>Incorporated</span>
+              <strong>{summary.incorporated}</strong>
+            </div>
+            <div className={styles.summaryCard}>
+              <span>Rejected</span>
+              <strong>{summary.rejected}</strong>
+            </div>
+          </div>
+
           <h2 className={styles.sectionTitle}>Contribution queue</h2>
           <div className={styles.list}>
             {contributions.map((item) => (

@@ -81,6 +81,38 @@
   gap: 18px;
 }
 
+.summaryRow {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.summaryCard {
+  display: grid;
+  gap: 8px;
+  padding: 18px;
+  border: 1px solid rgba(18, 33, 39, 0.1);
+  border-radius: 20px;
+  background: rgba(255, 251, 245, 0.92);
+}
+
+.summaryCard span {
+  color: var(--signal);
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.summaryCard strong {
+  color: var(--foreground);
+  font-family: var(--font-serif), serif;
+  font-size: 1.8rem;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  line-height: 1;
+}
+
 .sectionTitle {
   font-size: clamp(1.9rem, 3.5vw, 2.6rem);
 }
@@ -212,7 +244,8 @@
 @media (max-width: 960px) {
   .statusBar,
   .providerList,
-  .reviewFields {
+  .reviewFields,
+  .summaryRow {
     grid-template-columns: 1fr;
   }
 }

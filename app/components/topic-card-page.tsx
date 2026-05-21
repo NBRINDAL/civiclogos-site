@@ -2,7 +2,10 @@ import Link from "next/link";
 import TopicContributionLoop from "./topic-contribution-loop";
 import TopicAiPanel from "./topic-ai-panel";
 import type { IssueRoomSlug, TopicCardData } from "../lib/civic-logos";
-import { listPublicContributions } from "../lib/contribution-store";
+import {
+  getContributionStoreMetadata,
+  listPublicContributions,
+} from "../lib/contribution-store";
 import styles from "../healthcare/proposal-001/page.module.css";
 
 type TopicCardLink = {
@@ -30,16 +33,29 @@ export default async function TopicCardPage({
   roomCards,
   currentTopicIndex,
 }: TopicCardPageProps) {
-  const liveContributions = await listPublicContributions({
-    roomSlug,
-    topicId: card.id,
-    limit: 12,
-  });
+  const [liveContributions, contributionStoreMetadata] = await Promise.all([
+    listPublicContributions({
+      roomSlug,
+      topicId: card.id,
+      limit: 12,
+    }),
+    getContributionStoreMetadata(),
+  ]);
   const contributorObjectionThatChangedCard = liveContributions.find(
     (item) => item.lane === "objection" && item.review?.changedSynthesis === true,
   );
   const strongestLiveContributorObjection = liveContributions.find(
     (item) => item.lane === "objection",
+  );
+  const contributionStatusCounts = {
+    pending: liveContributions.filter((item) => item.status === "pending").length,
+    needsReview: liveContributions.filter((item) => item.status === "needs review").length,
+    accepted: liveContributions.filter((item) => item.status === "accepted").length,
+    incorporated: liveContributions.filter((item) => item.status === "incorporated").length,
+    rejected: liveContributions.filter((item) => item.status === "rejected").length,
+  };
+  const changedCardContributions = liveContributions.filter(
+    (item) => item.review?.changedSynthesis === true,
   );
   const previousCard =
     currentTopicIndex > 0 ? roomCards[currentTopicIndex - 1] : null;
@@ -309,6 +325,103 @@ export default async function TopicCardPage({
               </article>
             ))}
           </div>
+        </section>
+
+        <section className={styles.gridSection}>
+          <article className={styles.panel}>
+            <span className={styles.eyebrow}>Review cycle</span>
+            <h2>This card should show what is waiting on human judgment.</h2>
+            <p>
+              The contribution record is currently running in{" "}
+              <strong>{contributionStoreMetadata.mode}</strong> mode.{" "}
+              {contributionStoreMetadata.note}
+            </p>
+
+            <div className={styles.snapshotGrid}>
+              <article className={styles.snapshotCard}>
+                <span className={styles.snapshotLabel}>Live record</span>
+                <strong>{liveContributions.length}</strong>
+                <p>Visible contributions currently attached to this topic card.</p>
+              </article>
+              <article className={styles.snapshotCard}>
+                <span className={styles.snapshotLabel}>Pending review</span>
+                <strong>
+                  {contributionStatusCounts.pending + contributionStatusCounts.needsReview}
+                </strong>
+                <p>Items still waiting on a clear maintainer decision.</p>
+              </article>
+              <article className={styles.snapshotCard}>
+                <span className={styles.snapshotLabel}>Changed card</span>
+                <strong>{changedCardContributions.length}</strong>
+                <p>Contributions whose human review says they altered the public record.</p>
+              </article>
+            </div>
+
+            <div className={styles.copyBlock}>
+              <h3>Review status breakdown</h3>
+              <div className={styles.reviewPills}>
+                <span className={styles.reviewPill}>
+                  Pending {contributionStatusCounts.pending}
+                </span>
+                <span className={styles.reviewPill}>
+                  Needs review {contributionStatusCounts.needsReview}
+                </span>
+                <span className={styles.reviewPill}>
+                  Accepted {contributionStatusCounts.accepted}
+                </span>
+                <span className={styles.reviewPill}>
+                  Incorporated {contributionStatusCounts.incorporated}
+                </span>
+                <span className={styles.reviewPill}>
+                  Rejected {contributionStatusCounts.rejected}
+                </span>
+              </div>
+            </div>
+          </article>
+
+          <article className={styles.panel}>
+            <span className={styles.eyebrow}>Manual cycle</span>
+            <h2>The loop only becomes real when review decisions become visible.</h2>
+            <p>
+              A maintainer should be able to read the pending queue, attach each
+              contribution to a claim, objection, evidence item, assumption, or
+              open question, and then state whether it changed the card.
+            </p>
+
+            {changedCardContributions.length ? (
+              <div className={styles.copyBlock}>
+                <h3>Most recent contributor-driven card changes</h3>
+                <ul className={styles.bulletList}>
+                  {changedCardContributions.slice(0, 3).map((item) => (
+                    <li key={item.id}>
+                      <strong>{item.title}.</strong>{" "}
+                      {item.review?.decisionReason ?? "Marked as changing the card."}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ) : (
+              <div className={styles.copyBlock}>
+                <h3>No contributor-driven card change yet</h3>
+                <p>
+                  The card is still waiting for a reviewed outside contribution to
+                  visibly move its synthesis. That is the threshold this manual
+                  cycle is meant to prove.
+                </p>
+              </div>
+            )}
+
+            <div className={styles.roomActions}>
+              <Link
+                className={styles.roomActionPrimary}
+                href={`/review/contributions?roomSlug=${encodeURIComponent(
+                  roomSlug,
+                )}&topicId=${encodeURIComponent(card.id)}`}
+              >
+                Open review queue for this card
+              </Link>
+            </div>
+          </article>
         </section>
 
         <TopicAiPanel roomSlug={roomSlug} topicId={card.id} topicTitle={card.title} />
