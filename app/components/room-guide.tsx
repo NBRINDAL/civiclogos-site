@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { healthcareIssueRoom, proposal001 } from "../lib/civic-logos";
+import { healthcareIssueRoom, topic001 } from "../lib/civic-logos";
 import styles from "./room-guide.module.css";
 
 type RoomAnswer = {
@@ -43,7 +43,7 @@ function buildDefaultAnswer(): RoomAnswer {
       "Evidence library",
       "Objection library",
     ],
-    ctaHref: "/healthcare/proposal-001",
+    ctaHref: "/healthcare/topic-001",
     ctaLabel: "Open topic card",
   };
 }
@@ -62,12 +62,12 @@ function buildAnswer(question: string): RoomAnswer {
       intro:
         "Administrative simplification and AI-assisted triage is currently the clearest demonstration object because it narrows the healthcare debate to one testable reform path instead of trying to solve everything at once.",
       bullets: [
-        proposal001.currentRead,
-        proposal001.strongestSupport,
-        `Main open question: ${proposal001.openQuestions[0]}`,
+        topic001.currentRead,
+        topic001.strongestSupport,
+        `Main open question: ${topic001.openQuestions[0]}`,
       ],
       sources: ["Topic card current read", "Strongest support", "Open questions"],
-      ctaHref: "/healthcare/proposal-001",
+      ctaHref: "/healthcare/topic-001",
       ctaLabel: "Open the full topic card",
     };
   }
@@ -193,11 +193,11 @@ function buildAnswer(question: string): RoomAnswer {
       "The room can already answer in a few grounded ways: it can summarize the current synthesis, compare topic families, surface objections, and point to what evidence would actually change the room.",
     bullets: [
       "Try asking about the current synthesis, administrative simplification, objections, evidence, stakeholders, or what could move the room.",
-      `The most developed topic card right now is ${proposal001.title}.`,
+      `The most developed topic card right now is ${topic001.title}.`,
       `The room is still openly uncertain about transition cost, rural access, and long-run household impact.`,
     ],
     sources: ["Current synthesis", "Topic field", "Open questions"],
-    ctaHref: "/healthcare/proposal-001",
+    ctaHref: "/healthcare/topic-001",
     ctaLabel: "Open topic card",
   };
 }

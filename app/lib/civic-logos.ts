@@ -177,7 +177,7 @@ export const healthcareIssueRoom = {
         "A seed topic focused on reducing administrative overhead, standardizing claims flows, and using AI-guided intake to improve access and redirect savings toward care.",
       label: "Topic in focus",
       metric: "Best first demonstration of the topic-card process",
-      href: "/healthcare/proposal-001",
+      href: "/healthcare/topic-001",
     },
     {
       title: "Public Option Model",
@@ -217,7 +217,7 @@ export const healthcareIssueRoom = {
         "Possible savings come from lower billing complexity, lower intake friction, and better routing of low-risk cases. Costs center on transition systems and implementation confidence.",
       label: "Highest economic-delta",
       metric: "Low-confidence positive case",
-      href: "/healthcare/proposal-001",
+      href: "/healthcare/topic-001",
     },
     {
       title: "Pharmaceutical Pricing Reform Model",
@@ -1267,8 +1267,8 @@ export const roomDirectory: readonly RoomDirectoryItem[] = [
   },
 ] as const;
 
-export const proposal001 = {
-  id: "proposal-001",
+export const topic001 = {
+  id: "topic-001",
   title: "Administrative Simplification and AI-Assisted Triage",
   subtitle: "An initial healthcare reform topic card submitted for public reasoning",
   draftNote:

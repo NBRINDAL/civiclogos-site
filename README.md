@@ -36,7 +36,7 @@ The current site includes:
 - mission-led homepage copy
 - concise manifesto section
 - core distinctions for the platform
-- healthcare issue room with Proposal 001
+- healthcare issue room with an initial working topic card
 - seeded room library for governance, housing, AI/labor, and institutional trust
 - early-access contact calls to action
 

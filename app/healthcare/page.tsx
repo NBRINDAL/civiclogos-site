@@ -370,7 +370,7 @@ export default function HealthcareIssueRoomPage() {
             </p>
           </div>
 
-          <Link className={styles.primaryAction} href="/healthcare/proposal-001">
+          <Link className={styles.primaryAction} href="/healthcare/topic-001">
             Open one topic card
           </Link>
         </section>
