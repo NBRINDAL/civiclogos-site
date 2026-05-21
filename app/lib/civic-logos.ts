@@ -457,6 +457,7 @@ export const governanceIssueRoom = {
         "Combines expert process with rotating citizen review bodies to reduce capture and restore legitimacy.",
       label: "Most novel",
       metric: "Legitimacy experiment with scale questions",
+      href: "/rooms/governance/topic-002",
     },
   ],
   economicDeltaLeaders: [
@@ -1911,6 +1912,195 @@ export const governanceTopic001: TopicCardData = {
   ],
 };
 
+export const governanceTopic002: TopicCardData = {
+  id: "topic-002",
+  title: "Sortition and Citizen Review Hybrid",
+  subtitle:
+    "A second governance topic card for testing whether rotating citizen review can restore legitimacy without collapsing competence",
+  draftNote:
+    "This topic card is intentionally unfinished because sortition ideas are easy to romanticize. It is meant to make one legitimacy instinct inspectable: bring ordinary citizens back into governance review without pretending random selection automatically produces wisdom, fairness, or institutional durability.",
+  thesis:
+    "High-complexity governance can gain legitimacy and anti-capture pressure by combining expert process with rotating citizen review bodies that examine decisions, surface objections, and force public reasoning back into visible civic space.",
+  currentRead:
+    "This topic card feels strongest because it answers a real democratic injury directly: many people experience governance as something done to them by professionals, parties, courts, and administrative systems they can barely touch. It feels weakest wherever civic participation is idealized and the real burdens of competence, manipulation risk, and scale are underweighted. The card is useful because it asks not whether experts matter, but how expert governance stays publicly answerable.",
+  problemStatement:
+    "Modern governance often relies on professional expertise, party structures, administrative continuity, and procedural distance to manage complexity. That can improve competence, but it can also produce institutions that are hard to trust, hard to challenge, and easy to experience as insulated. Ordinary publics are then left with low-information elections, reactive outrage, or broad distrust rather than durable civic participation in review and correction.",
+  proposedSolution:
+    "Use a hybrid model where expert institutions continue doing specialized work, but selected citizen panels, assemblies, or review bodies are given structured roles in examining major decisions, hearing objections, reviewing tradeoffs, and producing visible public reasoning that can pressure or check formal institutions without pretending to replace them wholesale.",
+  mechanism: [
+    "Select citizen review bodies through transparent sortition or mixed selection processes designed to reduce factional capture and professional gatekeeping.",
+    "Pair those bodies with expert briefings, structured objections, evidence packets, and visible facilitation so participation is informed rather than purely symbolic.",
+    "Assign review roles to domains where legitimacy and public trust matter most, such as oversight, contested reforms, emergency review, or institutional accountability rather than every routine administrative choice.",
+    "Publish the review record, disagreements, recommendations, and correction pathways so citizen involvement becomes durable civic memory instead of one-time consultation theater.",
+  ],
+  benefits: [
+    "Governance can regain some public legitimacy by creating visible civic participation between elections and beyond passive comment channels.",
+    "Rotating citizen review may counter some forms of professional groupthink, party capture, and administrative insulation.",
+    "The model can preserve expertise while still forcing major institutional choices into more publicly intelligible reasoning spaces.",
+    "Civic Logos gains a governance-native object for thinking about review, correction, and legitimacy without collapsing into plebiscitary politics.",
+  ],
+  risks: [
+    "Citizen review bodies can be manipulated, performative, or informationally overwhelmed if expert framing quietly dominates the process.",
+    "Sortition can produce legitimacy theater if recommendations are visible but structurally easy for formal institutions to ignore.",
+    "Highly technical domains may not lend themselves well to meaningful citizen review without large support overhead.",
+    "The model could slow action or create another symbolic layer unless powers, scope, and escalation rules are sharply defined.",
+  ],
+  assumptions: [
+    "Legitimacy can be materially improved by better civic review even when direct decision power remains mostly institutional.",
+    "Ordinary citizens can contribute meaningfully when the process is structured, informed, and bounded rather than theatrical or purely adversarial.",
+    "Expertise and public legitimacy do not have to be zero-sum if review roles are designed carefully.",
+    "Institutional systems will accept some real public pressure from citizen review bodies instead of reducing them to ceremonial legitimacy props.",
+  ],
+  stakeholders: [
+    "Citizens and local communities",
+    "Legislatures and executives",
+    "Civil servants and regulators",
+    "Courts and constitutional bodies",
+    "Political parties and campaigns",
+    "Expert communities and advisors",
+    "Watchdogs and journalists",
+    "Minority groups vulnerable to majoritarian distortion",
+  ],
+  evidence: [
+    {
+      title: "Citizens' assemblies and deliberative panels can improve legitimacy and quality of discussion under structured conditions",
+      status: "Useful but uneven",
+      note: "Supports the core intuition, though outcomes vary a lot by mandate, facilitation, and institutional uptake.",
+    },
+    {
+      title: "Technical and institutional complexity often overwhelms ordinary public review without strong scaffolding",
+      status: "Strong evidence",
+      note: "This is the clearest reason the model must stay hybrid rather than pretending raw participation solves competence problems.",
+    },
+    {
+      title: "Symbolic participation processes are often ignored once the public ritual is complete",
+      status: "Strong evidence",
+      note: "A real governance role requires visible consequence and correction pathways, not just consultation theater.",
+    },
+    {
+      title: "Citizen review can resist capture more effectively than party-mediated participation at scale",
+      status: "Needs verification",
+      note: "This remains one of the most attractive but least settled assumptions behind the model.",
+    },
+  ] satisfies EvidenceSummary[],
+  economicDelta: {
+    summary:
+      "Estimated Economic Delta: Indirect but potentially meaningful if better legitimacy, lower capture, and more trusted oversight improve policy quality and reduce expensive distrust cycles. Main costs include facilitation, briefing, process design, participant support, and slower throughput in review-heavy domains. Confidence remains low-to-moderate because much of the value is institutional and preventive rather than immediately fiscal.",
+    metrics: [
+      "Possible legitimacy gain: potentially high if the process is visibly consequential",
+      "Implementation cost: moderate because citizen review requires design, staffing, and support",
+      "Throughput cost: elevated if the model is applied too broadly",
+      "Capture reduction potential: meaningful but highly design-sensitive",
+      "Competence risk: elevated in technical domains without strong expert scaffolding",
+    ],
+  },
+  strongestSupport:
+    "This topic card answers a central governance wound directly: many societies need more than elections and more than bureaucracy. They need visible civic review that can pressure institutions without pretending all expertise is fake or all direct democracy is wise.",
+  strongestObjection:
+    "Sortition can easily become a beautiful democratic symbol with weak real power, where selected citizens legitimize decisions they do not truly shape and where complex agendas are still set by experts, parties, or institutional staff behind the scenes.",
+  whatWouldStrengthen: [
+    "A clearer rule set for which domains citizen review can actually improve and which are too technical, time-sensitive, or rights-sensitive for this model to carry much weight.",
+    "Comparative evidence on when deliberative panels produce durable institutional change versus ceremonial participation.",
+    "A stronger theory of how recommendations, objections, and review outputs would bind or pressure formal governance structures in practice.",
+  ],
+  openQuestions: [
+    "Which governance functions are best suited to citizen review rather than direct citizen decision?",
+    "How can minority rights and anti-demagoguery protections be preserved inside sortition-based legitimacy models?",
+    "What makes a citizen review body genuinely consequential rather than symbolic?",
+    "How much expert framing is necessary before a hybrid model simply becomes expert governance with public decoration?",
+  ],
+  maturity: "Seed topic",
+  scorecard: [
+    { label: "Novelty", value: 74 },
+    { label: "Coherence", value: 80 },
+    { label: "Feasibility", value: 52 },
+    { label: "Evidence quality", value: 55 },
+    { label: "Economic delta clarity", value: 41 },
+    { label: "Public value", value: 85 },
+  ],
+  aiPanels: [
+    {
+      role: "Structurer",
+      confidence: "Moderate",
+      summary:
+        "The topic is now framed as a review-and-legitimacy design rather than as generic participatory democracy, which makes its scope and tradeoffs much clearer.",
+    },
+    {
+      role: "Steelman",
+      confidence: "Moderate",
+      summary:
+        "A hybrid sortition model could restore civic trust by letting ordinary citizens visibly pressure institutions without pretending technical governance can be crowdsourced wholesale.",
+    },
+    {
+      role: "Critic",
+      confidence: "Moderate",
+      summary:
+        "Without real consequence, the model risks becoming democratic theater; with too much consequence, it risks overload, manipulation, or poorly informed review in complex domains.",
+    },
+    {
+      role: "Institutionalist",
+      confidence: "Low",
+      summary:
+        "The idea is strongest when treated as a bounded oversight and legitimacy mechanism, not as a universal replacement for representative or administrative institutions.",
+    },
+  ],
+  debatePrompts: [
+    {
+      title: "Support",
+      description: "Add the strongest argument for why sortition-based citizen review could improve legitimacy without sacrificing too much competence.",
+    },
+    {
+      title: "Objection",
+      description: "Surface the strongest reason the model could become symbolic, manipulable, or dangerously underinformed.",
+    },
+    {
+      title: "Evidence",
+      description: "Add examples of citizens' assemblies, review panels, or deliberative bodies that support or weaken the hybrid model.",
+    },
+    {
+      title: "Correction",
+      description: "Identify conceptual, constitutional, or process-design errors in the current card.",
+    },
+    {
+      title: "Nuance",
+      description: "Improve the topic by exposing a missing boundary between citizen legitimacy review and expert operational competence.",
+    },
+    {
+      title: "Governance concern",
+      description: "Identify how agenda setting, facilitation, or institutional uptake could quietly empty the citizen-review layer of real force.",
+    },
+    {
+      title: "Economic assumption challenge",
+      description: "Question whether legitimacy gains and anti-capture gains are large enough to justify the review overhead and slower process.",
+    },
+    {
+      title: "Alternate topic",
+      description: "Offer a better legitimacy-restoring governance model than sortition and citizen review hybridization.",
+    },
+    {
+      title: "Institutional perspective",
+      description: "Add the likely view of a judge, civil servant, mayor, legislator, or ordinary citizen who would have to live inside this design.",
+    },
+  ] satisfies DebatePrompt[],
+  revisionHistory: [
+    {
+      version: "v0.1",
+      date: "May 2026",
+      note: "Initial seed topic card created to turn the citizen-review legitimacy instinct into a real inspectable object inside the governance room.",
+    },
+    {
+      version: "v0.2",
+      date: "May 2026",
+      note: "Symbolic participation, expert framing, and low-consequence theater risks were raised to first-order visibility rather than left implicit.",
+    },
+    {
+      version: "v0.3",
+      date: "May 2026",
+      note: "The card was sharpened around bounded oversight, legitimacy pressure, and consequence pathways so it reads as governance design rather than participatory idealism.",
+    },
+  ],
+};
+
 export const housingTopic001: TopicCardData = {
   id: "topic-001",
   title: "Abundance and Zoning Reform Model",
@@ -2858,7 +3048,7 @@ export const institutionalTrustTopic002: TopicCardData = {
 
 export const roomTopicCards = {
   healthcare: [topic001, topic002],
-  governance: [governanceTopic001],
+  governance: [governanceTopic001, governanceTopic002],
   housing: [housingTopic001],
   "ai-labor": [aiTopic001, aiTopic002],
   "institutional-trust": [institutionalTrustTopic001, institutionalTrustTopic002],
