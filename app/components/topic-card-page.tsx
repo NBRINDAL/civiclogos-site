@@ -89,6 +89,36 @@ function getContributionLedgerHref({
   return `${query ? `?${query}` : ""}#${hash}`;
 }
 
+function getContributionAttachmentFilter(
+  contribution: PublicContribution,
+): ContributionAttachmentFilter {
+  const kind = contribution.review?.assignedToKind ?? contribution.aiIntake?.suggestedAssignmentKind;
+
+  if (!kind || kind === "unclear") {
+    return "none-yet";
+  }
+
+  return kind;
+}
+
+function getContributionAttachmentLabel(filter: ContributionAttachmentFilter) {
+  switch (filter) {
+    case "claim":
+      return "Synthesis";
+    case "objection":
+      return "Objection";
+    case "evidence":
+      return "Evidence";
+    case "assumption":
+      return "Assumption";
+    case "open-question":
+      return "Open question";
+    case "none-yet":
+    default:
+      return "None yet";
+  }
+}
+
 export default async function TopicCardPage({
   roomSlug,
   card,
@@ -151,6 +181,17 @@ export default async function TopicCardPage({
   const assistedChangedContributions = assistedRecordContributions.filter(
     (item) => item.review?.changedSynthesis === true,
   );
+  const assistedAttachmentCounts = (
+    ["claim", "objection", "evidence", "assumption", "open-question", "none-yet"] as const
+  )
+    .map((attachment) => ({
+      attachment,
+      label: getContributionAttachmentLabel(attachment),
+      count: assistedRecordContributions.filter(
+        (item) => getContributionAttachmentFilter(item) === attachment,
+      ).length,
+    }))
+    .filter((item) => item.count > 0);
   const needsAttentionContributions = liveContributions.filter(
     (item) => item.status === "pending" || item.status === "needs review",
   );
@@ -1137,6 +1178,20 @@ export default async function TopicCardPage({
                     human decision and {assistedChangedContributions.length} already
                     marked as changing the card.
                   </p>
+                  <div className={styles.reviewPills}>
+                    {assistedAttachmentCounts.map((item) => (
+                      <Link
+                        className={styles.reviewPillLink}
+                        href={getContributionLedgerHref({
+                          recordView: "ai-assisted",
+                          attachment: item.attachment,
+                        })}
+                        key={`assisted-target-${item.attachment}`}
+                      >
+                        {item.label} {item.count}
+                      </Link>
+                    ))}
+                  </div>
                   <div className={styles.historyList}>
                     {assistedRecordContributions.slice(0, 4).map((item) => (
                       <article className={styles.historyItem} key={`assisted-${item.id}`}>
@@ -1146,6 +1201,7 @@ export default async function TopicCardPage({
                             className={styles.sourceLink}
                             href={getContributionLedgerHref({
                               recordView: "ai-assisted",
+                              attachment: getContributionAttachmentFilter(item),
                               contributionId: item.id,
                             })}
                           >
@@ -1156,7 +1212,8 @@ export default async function TopicCardPage({
                             {item.status} · {item.draftSource?.providerLabel}
                             {item.draftSource?.model
                               ? ` (${item.draftSource.model})`
-                              : ""}
+                              : ""}{" "}
+                            · {getContributionAttachmentLabel(getContributionAttachmentFilter(item))}
                           </span>
                         </div>
                         <p>
