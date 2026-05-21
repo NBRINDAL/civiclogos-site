@@ -498,6 +498,39 @@ export default async function TopicCardPage({
               </article>
             ))}
           </div>
+
+          <div className={styles.copyBlock}>
+            <h3>Contribution-driven trace</h3>
+            {changedCardContributions.length ? (
+              <div className={styles.historyList}>
+                {changedCardContributions.slice(0, 4).map((item) => (
+                  <article className={styles.historyItem} key={item.id}>
+                    <div>
+                      <strong>{item.title}</strong>
+                      <span>
+                        {item.review?.reviewedAt
+                          ? new Date(item.review.reviewedAt).toLocaleString("en-US", {
+                              dateStyle: "medium",
+                              timeStyle: "short",
+                            })
+                          : "Reviewed change"}
+                      </span>
+                    </div>
+                    <p>
+                      {item.review?.decisionReason ??
+                        "This contribution was marked as changing the card."}
+                    </p>
+                  </article>
+                ))}
+              </div>
+            ) : (
+              <p>
+                No reviewed outside contribution has been marked as changing this
+                card yet. When that happens, the change should appear here as part
+                of the visible public revision trail.
+              </p>
+            )}
+          </div>
         </section>
       </main>
     </div>

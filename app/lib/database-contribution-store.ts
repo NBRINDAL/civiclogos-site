@@ -1,7 +1,9 @@
 import { randomUUID } from "node:crypto";
 import postgres, { type Sql } from "postgres";
+import seedStore from "@/data/prototype-contributions.seed.json";
 import type {
   Contribution,
+  ContributionStoreDocument,
   CreateContributionInput,
   PublicContribution,
   ReviewContributionInput,
@@ -59,6 +61,7 @@ type DatabaseContributionStore = {
 
 let sqlClient: Sql | null = null;
 let initPromise: Promise<void> | null = null;
+const seedDocument = seedStore as ContributionStoreDocument;
 
 function getDatabaseUrl() {
   return (
@@ -124,6 +127,53 @@ async function ensureContributionTable() {
         create index if not exists civiclogos_contributions_status_idx
         on civiclogos_contributions (status, created_at desc)
       `;
+
+      const rowCountResult = await sql<{ count: string }[]>`
+        select count(*)::text as count
+        from civiclogos_contributions
+      `;
+      const rowCount = Number(rowCountResult[0]?.count ?? "0");
+
+      if (rowCount === 0 && seedDocument.contributions.length) {
+        for (const contribution of seedDocument.contributions) {
+          await sql`
+            insert into civiclogos_contributions (
+              id,
+              room_slug,
+              topic_id,
+              topic_title,
+              lane,
+              title,
+              body,
+              evidence_source,
+              author,
+              status,
+              created_at,
+              updated_at,
+              is_seed_example,
+              ai_intake,
+              review
+            ) values (
+              ${contribution.id},
+              ${contribution.roomSlug},
+              ${contribution.topicId},
+              ${contribution.topicTitle},
+              ${contribution.lane},
+              ${contribution.title},
+              ${contribution.body},
+              ${sql.json(contribution.evidenceSource ?? null)},
+              ${sql.json(contribution.author)},
+              ${contribution.status},
+              ${contribution.createdAt},
+              ${contribution.updatedAt},
+              ${Boolean(contribution.isSeedExample)},
+              ${sql.json(contribution.aiIntake ?? null)},
+              ${sql.json(contribution.review ?? null)}
+            )
+            on conflict (id) do nothing
+          `;
+        }
+      }
     })();
   }
 
