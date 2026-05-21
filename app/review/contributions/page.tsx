@@ -59,6 +59,10 @@ export default async function ContributionReviewPage({
       ? getRoomTopicCard(scopedRoomSlug, scopedTopicId)
       : undefined;
   const scopedLane = isDebateLane(lane) ? lane : undefined;
+  const scopedLaneGuidance =
+    scopedTopicCard && scopedLane
+      ? scopedTopicCard.debatePrompts.find((item) => item.id === scopedLane)
+      : undefined;
   const [contributions, metadata] = await Promise.all([
     listAllContributions({
       roomSlug: scopedRoomSlug,
@@ -155,6 +159,57 @@ export default async function ContributionReviewPage({
                     ))}
                   </ul>
                 </article>
+              </div>
+
+              <div className={styles.topicSnapshot}>
+                <div className={styles.topicSnapshotHeader}>
+                  <div>
+                    <span className={styles.eyebrow}>Reasoning lane guidance</span>
+                    <h2>
+                      {scopedLaneGuidance
+                        ? `Current lane: ${scopedLaneGuidance.title}`
+                        : "How this topic wants contributions to behave"}
+                    </h2>
+                  </div>
+                </div>
+
+                {scopedLaneGuidance ? (
+                  <div className={styles.topicSnapshotCard}>
+                    <strong>{scopedLaneGuidance.title}</strong>
+                    <p>{scopedLaneGuidance.description}</p>
+                    <Link
+                      className={styles.topicSnapshotLink}
+                      href={`/review/contributions?roomSlug=${encodeURIComponent(
+                        scopedRoomSlug,
+                      )}&topicId=${encodeURIComponent(scopedTopicCard.id)}`}
+                    >
+                      View all lanes for this topic
+                    </Link>
+                  </div>
+                ) : (
+                  <div className={styles.laneGuidanceGrid}>
+                    {scopedTopicCard.debatePrompts
+                      .filter((item): item is typeof item & { id: DebateLane } =>
+                        Boolean(item.id),
+                      )
+                      .map((item) => (
+                        <article className={styles.laneGuidanceCard} key={item.id}>
+                          <strong>{item.title}</strong>
+                          <p>{item.description}</p>
+                          <Link
+                            className={styles.topicSnapshotLink}
+                            href={`/review/contributions?roomSlug=${encodeURIComponent(
+                              scopedRoomSlug,
+                            )}&topicId=${encodeURIComponent(
+                              scopedTopicCard.id,
+                            )}&lane=${encodeURIComponent(item.id)}`}
+                          >
+                            Open this lane
+                          </Link>
+                        </article>
+                      ))}
+                  </div>
+                )}
               </div>
             </div>
           ) : null}
