@@ -38,6 +38,7 @@ The current site includes:
 - core distinctions for the platform
 - healthcare issue room with an initial working topic card
 - governance room with a first card on subsidiarity and authority allocation
+- housing room with a first card on abundance and zoning reform
 - AI and civilizational impact room with its first working topic card
 - institutional trust room with a first card on public review stakes
 - seeded room library for governance, housing, AI/labor, and institutional trust

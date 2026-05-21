@@ -630,6 +630,7 @@ export const housingIssueRoom = {
         "Expands by-right construction capacity, legalizes more density, and treats scarcity as a policy choice that must be reversed.",
       label: "Topic in focus",
       metric: "Strong supply logic, contested local politics",
+      href: "/rooms/housing/topic-001",
     },
     {
       title: "Public and Social Housing Expansion",
@@ -1711,6 +1712,195 @@ export const governanceTopic001: TopicCardData = {
   ],
 };
 
+export const housingTopic001: TopicCardData = {
+  id: "topic-001",
+  title: "Abundance and Zoning Reform Model",
+  subtitle:
+    "A first housing topic card for testing whether artificial scarcity in land use and approvals is the most leverageable driver of high housing cost",
+  draftNote:
+    "This topic card is intentionally unfinished because housing arguments often hide their hardest tradeoffs behind one clean moral emphasis. It is meant to make the abundance instinct inspectable without pretending supply alone dissolves displacement, infrastructure, or local legitimacy problems.",
+  thesis:
+    "High-cost regions should move toward abundance by legalizing more homes by right, reducing discretionary approval choke points, and treating a large share of housing scarcity as a policy-created condition rather than as an unavoidable fact of modern life.",
+  currentRead:
+    "This topic card feels strongest because it identifies a recurring structural failure clearly: places with high demand often make new housing too slow, too uncertain, and too politically discretionary to arrive at meaningful scale. It feels weakest wherever it assumes more legal capacity will translate cleanly into affordable outcomes without stronger answers on infrastructure, transitional displacement, capital structure, and where new units actually land. The card is useful because it forces the room to ask whether scarcity is primarily natural, financial, or political.",
+  problemStatement:
+    "Many high-cost regions face rising rents, delayed household formation, longer commutes, displacement pressure, and declining affordability even while demand to live and work there remains strong. A major claim in the room is that land use rules, permitting delay, low-density defaults, and discretionary local veto systems make housing supply far harder to deliver than it needs to be. The opposing concern is that rapid buildout can feel imposed, destabilizing, or extractive if infrastructure, neighborhood trust, and resident protection are treated as secondary.",
+  proposedSolution:
+    "Legalize substantially more housing capacity by right in high-demand areas, especially missing-middle and transit-accessible development; compress discretionary approval pathways; and combine abundance reforms with visible anti-displacement, infrastructure, and public-benefit mechanisms so the system delivers more homes without pretending the transitional politics disappear.",
+  mechanism: [
+    "Expand by-right building envelopes so more housing can be approved without endless discretionary negotiation.",
+    "Reduce entitlement delay, uncertainty, and local veto chokepoints that raise cost before construction even begins.",
+    "Target missing-middle, infill, and transit-adjacent growth as the first large-scale test of abundance rather than only towers or greenfield expansion.",
+    "Pair legal capacity increases with infrastructure sequencing, tenant protection, and clearer public-benefit recapture so abundance does not read as pure developer privilege.",
+  ],
+  benefits: [
+    "More legal housing capacity may lower long-run scarcity pressure and reduce rent escalation in high-demand regions.",
+    "Builders, lenders, and municipalities gain more predictable approval environments, which can reduce carrying cost and project failure.",
+    "Regions may improve labor mobility, household formation, and commute patterns if more homes can actually be built where demand exists.",
+    "The room gains a concrete object for testing whether policy-created scarcity is a primary causal driver instead of a convenient narrative.",
+  ],
+  risks: [
+    "Upzoning and legal capacity increases may still produce luxury-heavy output, slow affordability relief, or geographically uneven benefits.",
+    "Neighborhood backlash can intensify if reform is experienced as override without infrastructure, design quality, or local legitimacy.",
+    "Displacement pressure may remain acute in transition periods even if long-run supply logic is directionally correct.",
+    "Landowners and sophisticated developers may capture much of the upside if public-benefit and anti-speculation mechanisms are weak.",
+  ],
+  assumptions: [
+    "A significant share of observed scarcity is policy-created rather than physically unavoidable.",
+    "Developers will respond to legal and process reform with materially higher housing production in the places that matter most.",
+    "Household affordability improves meaningfully when supply constraints loosen enough, even if the effect is not immediate.",
+    "Political legitimacy can survive stronger regional or state override if the abundance case is paired with visible fairness safeguards.",
+  ],
+  stakeholders: [
+    "Renters and first-time buyers",
+    "Longtime homeowners",
+    "Developers and builders",
+    "Planning boards and city councils",
+    "Transit agencies and infrastructure providers",
+    "Tenant advocates and anti-displacement groups",
+    "Regional employers and workers",
+    "Future households priced out today",
+  ],
+  evidence: [
+    {
+      title: "Zoning and permitting restrictions measurably constrain housing production in many high-demand regions",
+      status: "Strong evidence",
+      note: "Supports the core claim that scarcity is at least partly policy-created rather than simply natural.",
+    },
+    {
+      title: "Additional supply can reduce overall market pressure over time",
+      status: "Strong evidence",
+      note: "Important to the abundance case, though timing and local distribution of benefit remain contested.",
+    },
+    {
+      title: "Displacement and neighborhood-change effects vary widely by context",
+      status: "Contested evidence",
+      note: "This is the clearest reason the card cannot rely on one simple moral story about building more homes.",
+    },
+    {
+      title: "Infrastructure and service capacity shape whether growth remains politically and socially durable",
+      status: "Useful but incomplete",
+      note: "Strengthens the case for pairing abundance with sequencing and public investment rather than treating approvals as the whole story.",
+    },
+  ] satisfies EvidenceSummary[],
+  economicDelta: {
+    summary:
+      "Estimated Economic Delta: Potentially large if abundance reforms materially reduce long-run scarcity, commute burden, and labor-market distortion in high-cost regions. Main costs include infrastructure expansion, transition politics, anti-displacement measures, and the risk that supply arrives too slowly or in the wrong segments to deliver visible relief. Confidence remains moderate-low until the room maps out where legal capacity most reliably becomes real housing output.",
+    metrics: [
+      "Possible regional productivity gains: meaningful if workers can live closer to opportunity",
+      "Implementation cost: moderate because legal reform is cheaper than direct construction but politically hard",
+      "Infrastructure cost: potentially high where growth outpaces transit, schools, and utilities",
+      "Household affordability impact: positive over time if supply becomes real and abundant enough",
+      "Political backlash risk: high if reform is perceived as override without fairness or service planning",
+    ],
+  },
+  strongestSupport:
+    "This topic gives the housing room a sharp causal claim to test: many places are expensive not because housing is inherently impossible, but because policy has made abundance much harder than it needs to be.",
+  strongestObjection:
+    "The abundance frame can become a flattening ideology if it treats all resistance as selfishness and all new supply as socially beneficial regardless of timing, type, location, or who actually captures the gains.",
+  whatWouldStrengthen: [
+    "Regional case comparisons showing where abundance reforms measurably changed approvals, starts, and household affordability.",
+    "A clearer anti-displacement layer explaining what protections are compatible with abundant supply rather than opposed to it.",
+    "Better sequencing logic on transit, utilities, schools, and public space so the model addresses neighborhood legitimacy as well as unit count.",
+  ],
+  openQuestions: [
+    "How much legal capacity needs to be unlocked before affordability effects become visible to ordinary households?",
+    "Which anti-displacement protections are compatible with real abundance rather than symbolic alone?",
+    "When should state or regional override defeat local veto, and how should that be justified publicly?",
+    "How much of the value created by upzoning should be recaptured for public infrastructure or affordability support?",
+  ],
+  maturity: "Seed topic",
+  scorecard: [
+    { label: "Novelty", value: 56 },
+    { label: "Coherence", value: 83 },
+    { label: "Feasibility", value: 64 },
+    { label: "Evidence quality", value: 61 },
+    { label: "Economic delta clarity", value: 58 },
+    { label: "Public value", value: 84 },
+  ],
+  aiPanels: [
+    {
+      role: "Structurer",
+      confidence: "Moderate",
+      summary:
+        "The card now makes the abundance thesis explicit enough to test: approvals, legal capacity, transitional protection, and public-benefit sequencing are all visible objects rather than background assumptions.",
+    },
+    {
+      role: "Steelman",
+      confidence: "Moderate",
+      summary:
+        "If scarcity is substantially policy-created, zoning and permitting reform may be one of the highest-leverage ways to improve affordability and regional opportunity without waiting on much slower public-delivery systems.",
+    },
+    {
+      role: "Critic",
+      confidence: "Moderate",
+      summary:
+        "The card can still overread unit count as social success unless it treats displacement, infrastructure, and value capture as first-order design problems rather than afterthoughts.",
+    },
+    {
+      role: "Urban systems reader",
+      confidence: "Low",
+      summary:
+        "The idea is strongest when paired with region-specific sequencing and public-benefit recapture, not when presented as one universal abundance formula for every place.",
+    },
+  ],
+  debatePrompts: [
+    {
+      title: "Support",
+      description: "Add the strongest argument for why policy-created scarcity is the main driver of high housing cost in many regions.",
+    },
+    {
+      title: "Objection",
+      description: "Surface the strongest reason the abundance model could misfire, displace, or overpromise.",
+    },
+    {
+      title: "Evidence",
+      description: "Add case studies, empirical work, or comparative examples that support or weaken the zoning-and-abundance case.",
+    },
+    {
+      title: "Correction",
+      description: "Identify conceptual, urban, or historical errors in the current card.",
+    },
+    {
+      title: "Nuance",
+      description: "Improve the topic by exposing a missing condition or tradeoff without rejecting abundance entirely.",
+    },
+    {
+      title: "Governance concern",
+      description: "Identify how local legitimacy, regional override, or value capture could quietly break inside this model.",
+    },
+    {
+      title: "Economic assumption challenge",
+      description: "Question whether legal capacity actually becomes real housing fast enough to justify the political and infrastructure cost.",
+    },
+    {
+      title: "Alternate topic",
+      description: "Offer a better route for lowering housing pressure than an abundance-and-zoning-first model.",
+    },
+    {
+      title: "Institutional perspective",
+      description: "Add the likely view of a renter, homeowner, planner, mayor, transit agency, or builder that would have to live inside this design.",
+    },
+  ] satisfies DebatePrompt[],
+  revisionHistory: [
+    {
+      version: "v0.1",
+      date: "May 2026",
+      note: "Initial seed topic card created to give the housing room a first concrete object around scarcity, approvals, and abundance.",
+    },
+    {
+      version: "v0.2",
+      date: "May 2026",
+      note: "Displacement, local legitimacy, and value-capture concerns were raised to first-order visibility rather than treated as secondary caveats.",
+    },
+    {
+      version: "v0.3",
+      date: "May 2026",
+      note: "Infrastructure sequencing and regional specificity were made more explicit so the model reads as urban systems design rather than a pure slogan.",
+    },
+  ],
+};
+
 export const aiTopic001: TopicCardData = {
   id: "topic-001",
   title: "AI as Public Reasoning Infrastructure",
@@ -2092,7 +2282,7 @@ export const institutionalTrustTopic001: TopicCardData = {
 export const roomTopicCards = {
   healthcare: [topic001],
   governance: [governanceTopic001],
-  housing: [],
+  housing: [housingTopic001],
   "ai-labor": [aiTopic001],
   "institutional-trust": [institutionalTrustTopic001],
 } satisfies Record<IssueRoomSlug, readonly TopicCardData[]>;
