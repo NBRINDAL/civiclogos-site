@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { getRoomHref, getRoomTopicHref, type IssueRoomSlug } from "@/app/lib/civic-logos";
 import { reviewContribution } from "@/app/lib/contribution-store";
+import { sendContributionReviewedNotification } from "@/app/lib/maintainer-notifications";
 import {
   normalizeReviewStatus,
   normalizeReviewTargetKind,
@@ -37,7 +38,7 @@ export async function updateContributionReview(formData: FormData) {
         ? false
         : null;
 
-  await reviewContribution(id, {
+  const reviewedContribution = await reviewContribution(id, {
     status,
     assignedToKind: assignedToKind ?? undefined,
     assignedToLabel: assignedToLabel || undefined,
@@ -46,6 +47,10 @@ export async function updateContributionReview(formData: FormData) {
     decisionReason: decisionReason || undefined,
     reviewerNote: reviewerNote || undefined,
   });
+
+  if (reviewedContribution) {
+    void sendContributionReviewedNotification(reviewedContribution);
+  }
 
   revalidatePath("/review/contributions");
 

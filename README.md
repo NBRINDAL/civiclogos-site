@@ -60,6 +60,7 @@ Set these environment variables in Vercel before relying on the form in producti
 - `SMTP_PASS`
 - `CONTACT_TO`
 - `CONTACT_FROM`
+- `MAINTAINER_NOTIFICATION_TO` (optional override for contribution/review notifications)
 
 For Microsoft 365 from GoDaddy, the default SMTP host is typically `smtp.office365.com`.
 

@@ -8,6 +8,7 @@ import {
   type IssueRoomSlug,
 } from "@/app/lib/civic-logos";
 import { createContribution, getContributionStoreMetadata, listPublicContributions } from "@/app/lib/contribution-store";
+import { sendContributionSubmittedNotification } from "@/app/lib/maintainer-notifications";
 import { normalizeDebateLane } from "@/app/lib/reasoning-types";
 
 export const runtime = "nodejs";
@@ -174,6 +175,15 @@ export async function POST(request: NextRequest) {
           url: evidenceUrl,
         }
       : null,
+    author: {
+      name: name || undefined,
+      email: email || undefined,
+      expertise: expertise || undefined,
+    },
+  });
+
+  void sendContributionSubmittedNotification({
+    ...contribution,
     author: {
       name: name || undefined,
       email: email || undefined,
