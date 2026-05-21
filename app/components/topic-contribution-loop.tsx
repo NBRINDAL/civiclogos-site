@@ -35,8 +35,10 @@ type ContributionResponse = {
   contributions: PublicContribution[];
 };
 
+type FormLane = DebateLane | "";
+
 type FormState = {
-  lane: DebateLane;
+  lane: FormLane;
   title: string;
   body: string;
   evidenceLabel: string;
@@ -46,10 +48,8 @@ type FormState = {
   expertise: string;
 };
 
-const defaultLane: DebateLane = "support";
-
 const initialFormState: FormState = {
-  lane: defaultLane,
+  lane: "",
   title: "",
   body: "",
   evidenceLabel: "",
@@ -243,7 +243,7 @@ export default function TopicContributionLoop({
   function resetContributionFields() {
     setFormState((current) => ({
       ...current,
-      lane: current.lane,
+      lane: "",
       title: "",
       body: "",
       evidenceLabel: "",
@@ -259,6 +259,14 @@ export default function TopicContributionLoop({
       setSubmissionState({
         kind: "error",
         message: "Title and contribution body are required.",
+      });
+      return;
+    }
+
+    if (!formState.lane) {
+      setSubmissionState({
+        kind: "error",
+        message: "Choose the debate lane your contribution belongs in.",
       });
       return;
     }
@@ -362,8 +370,9 @@ export default function TopicContributionLoop({
                 <h3>Improve the current public record.</h3>
               </div>
               <p className={styles.formNote}>
-                Prototype intake. Contributions are stored in prototype data until
-                a persistent backend is added.
+                Choose the lane deliberately. The room should know whether you are
+                adding an objection, evidence item, nuance, correction, or
+                perspective before it tries to sort the record.
               </p>
             </div>
 
@@ -374,11 +383,12 @@ export default function TopicContributionLoop({
                   onChange={(event) =>
                     handleFieldChange(
                       "lane",
-                      normalizeDebateLane(event.target.value) ?? defaultLane,
+                      normalizeDebateLane(event.target.value) ?? "",
                     )
                   }
                   value={formState.lane}
                 >
+                  <option value="">Choose the reasoning lane for this contribution</option>
                   {prompts.map((item) => (
                     <option key={item.lane} value={item.lane}>
                       {item.title}
