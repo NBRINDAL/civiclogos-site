@@ -316,24 +316,6 @@ export default function TopicContributionLoop({
     }),
     [contributions],
   );
-  const attachmentFilterCounts = useMemo(
-    () => ({
-      "all-targets": contributions.length,
-      claim: contributions.filter((item) => getVisibleAttachmentFilter(item) === "claim").length,
-      objection: contributions.filter((item) => getVisibleAttachmentFilter(item) === "objection")
-        .length,
-      evidence: contributions.filter((item) => getVisibleAttachmentFilter(item) === "evidence")
-        .length,
-      assumption: contributions.filter((item) => getVisibleAttachmentFilter(item) === "assumption")
-        .length,
-      "open-question": contributions.filter(
-        (item) => getVisibleAttachmentFilter(item) === "open-question",
-      ).length,
-      "none-yet": contributions.filter((item) => getVisibleAttachmentFilter(item) === "none-yet")
-        .length,
-    }),
-    [contributions],
-  );
   const activeFilter = useMemo(
     () => normalizeContributionFilter(searchParams.get("recordView")),
     [searchParams],
@@ -342,8 +324,9 @@ export default function TopicContributionLoop({
     () => normalizeContributionAttachmentFilter(searchParams.get("attachment")),
     [searchParams],
   );
-  const filteredContributions = useMemo(() => {
-    const recordFilteredContributions = (() => {
+  const recordFilteredContributions = useMemo(
+    () =>
+      (() => {
       switch (activeFilter) {
         case "needs-review":
           return contributions.filter(
@@ -359,7 +342,34 @@ export default function TopicContributionLoop({
         default:
           return contributions;
       }
-    })();
+      })(),
+    [activeFilter, contributions],
+  );
+  const attachmentFilterCounts = useMemo(
+    () => ({
+      "all-targets": recordFilteredContributions.length,
+      claim: recordFilteredContributions.filter(
+        (item) => getVisibleAttachmentFilter(item) === "claim",
+      ).length,
+      objection: recordFilteredContributions.filter(
+        (item) => getVisibleAttachmentFilter(item) === "objection",
+      ).length,
+      evidence: recordFilteredContributions.filter(
+        (item) => getVisibleAttachmentFilter(item) === "evidence",
+      ).length,
+      assumption: recordFilteredContributions.filter(
+        (item) => getVisibleAttachmentFilter(item) === "assumption",
+      ).length,
+      "open-question": recordFilteredContributions.filter(
+        (item) => getVisibleAttachmentFilter(item) === "open-question",
+      ).length,
+      "none-yet": recordFilteredContributions.filter(
+        (item) => getVisibleAttachmentFilter(item) === "none-yet",
+      ).length,
+    }),
+    [recordFilteredContributions],
+  );
+  const filteredContributions = useMemo(() => {
 
     if (activeAttachmentFilter === "all-targets") {
       return recordFilteredContributions;
@@ -368,7 +378,7 @@ export default function TopicContributionLoop({
     return recordFilteredContributions.filter(
       (item) => getVisibleAttachmentFilter(item) === activeAttachmentFilter,
     );
-  }, [activeAttachmentFilter, activeFilter, contributions]);
+  }, [activeAttachmentFilter, recordFilteredContributions]);
 
   function handleFilterPick(filter: ContributionFilter) {
     const nextSearchParams = new URLSearchParams(searchParams.toString());
@@ -929,8 +939,9 @@ export default function TopicContributionLoop({
             </div>
           </div>
           <p className={styles.filterNote}>
-            Showing {filteredContributions.length} of {contributions.length} visible
-            contribution{contributions.length === 1 ? "" : "s"} in the current public record.
+            Showing {filteredContributions.length} of {recordFilteredContributions.length} visible
+            contribution{recordFilteredContributions.length === 1 ? "" : "s"} in the{" "}
+            <strong>{contributionFilterLabels[activeFilter]}</strong> record view.
           </p>
         </div>
 
