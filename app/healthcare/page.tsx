@@ -1,4 +1,5 @@
 import Link from "next/link";
+import RelatedRooms from "../components/related-rooms";
 import RoomGuide from "../components/room-guide";
 import {
   getInspectableTopics,
@@ -144,6 +145,7 @@ export default function HealthcareIssueRoomPage() {
           <a href="#ask-room">Ask room</a>
           <a href="#topic-field">Topics</a>
           {inspectableTopics.length ? <a href="#inspectable-cards">Inspect cards</a> : null}
+          <a href="#adjacent-rooms">Adjacent rooms</a>
           <a href="#room-structure">Structure</a>
           <a href="#working-materials">Materials</a>
         </nav>
@@ -307,6 +309,12 @@ export default function HealthcareIssueRoomPage() {
             </div>
           </section>
         ) : null}
+
+        <RelatedRooms
+          currentRoomSlug="healthcare"
+          intro="Healthcare is only one front in the larger system. Trust, governance, and AI all shape what a workable healthcare model can actually survive inside."
+          title="The room gets stronger when it shows which other rooms are quietly shaping the answer."
+        />
 
         <section className={styles.section} id="room-structure">
           <div className={styles.sectionHeading}>

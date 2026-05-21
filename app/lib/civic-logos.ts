@@ -1375,6 +1375,28 @@ export const roomDirectory: readonly RoomDirectoryItem[] = [
   },
 ] as const;
 
+const roomDirectoryBySlug = Object.fromEntries(
+  roomDirectory.map((room) => [room.slug, room]),
+) as Record<IssueRoomSlug, RoomDirectoryItem>;
+
+const relatedRoomSlugs = {
+  healthcare: ["institutional-trust", "governance", "ai-labor"],
+  governance: ["institutional-trust", "housing", "ai-labor"],
+  housing: ["governance", "institutional-trust", "healthcare"],
+  "ai-labor": ["institutional-trust", "governance", "healthcare"],
+  "institutional-trust": ["governance", "ai-labor", "healthcare"],
+} satisfies Record<IssueRoomSlug, readonly IssueRoomSlug[]>;
+
+export function getRoomDirectoryItem(roomSlug: IssueRoomSlug): RoomDirectoryItem {
+  return roomDirectoryBySlug[roomSlug];
+}
+
+export function getRelatedRooms(
+  roomSlug: IssueRoomSlug,
+): readonly RoomDirectoryItem[] {
+  return relatedRoomSlugs[roomSlug].map((slug) => roomDirectoryBySlug[slug]);
+}
+
 export const topic001: TopicCardData = {
   id: "topic-001",
   title: "Administrative Simplification and AI-Assisted Triage",

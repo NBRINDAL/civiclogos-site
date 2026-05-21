@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import RelatedRooms from "../../components/related-rooms";
 import RoomGuide from "../../components/room-guide";
 import {
   getInspectableTopics,
@@ -166,6 +167,7 @@ export default async function IssueRoomPage({
           {inspectableTopics.length ? (
             <a href="#inspectable-cards">Inspect cards</a>
           ) : null}
+          <a href="#adjacent-rooms">Adjacent rooms</a>
           <a href="#room-structure">Structure</a>
           <a href="#working-materials">Materials</a>
         </nav>
@@ -331,6 +333,12 @@ export default async function IssueRoomPage({
             </div>
           </section>
         ) : null}
+
+        <RelatedRooms
+          currentRoomSlug={roomSlug}
+          intro="Each room is only one slice of the larger civic reasoning graph. These adjacent rooms are where the same incentives, institutions, or failure modes are likely to surface again from a different angle."
+          title="A real room library should make it easy to move sideways into the neighboring questions."
+        />
 
         <section className={styles.section} id="room-structure">
           <div className={styles.sectionHeading}>
