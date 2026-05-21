@@ -928,7 +928,17 @@ export default async function TopicCardPage({
                         "Waiting on human placement, acceptance, or rejection."}
                     </p>
                     <p className={styles.metaParagraph}>
-                      Current record target: {getContributionAttachmentSummary(item)}. Origin:{" "}
+                      Lane:{" "}
+                      <Link
+                        className={styles.sourceLink}
+                        href={getContributionLedgerHref({
+                          recordView: "needs-review",
+                          lane: item.lane,
+                        })}
+                      >
+                        {debateLaneLabels[item.lane]}
+                      </Link>
+                      . Current record target: {getContributionAttachmentSummary(item)}. Origin:{" "}
                       {getContributionOriginLabel(getContributionOrigin(item))}.
                     </p>
                     {item.draftSource ? (
@@ -1219,12 +1229,28 @@ export default async function TopicCardPage({
                           ? `Latest open pressure: ${item.latestUnresolved.title}.`
                           : "No open pressure right now. This lane has only reviewed changes in the current visible record."}
                       </p>
-                      <Link
-                        className={styles.lanePressureLink}
-                        href={getContributionLedgerHref({ lane: item.lane })}
-                      >
-                        Open public lane slice
-                      </Link>
+                      {item.unresolvedCount ? (
+                        <Link
+                          className={styles.lanePressureLink}
+                          href={getContributionLedgerHref({
+                            recordView: "needs-review",
+                            lane: item.lane,
+                          })}
+                        >
+                          Open unresolved lane slice
+                        </Link>
+                      ) : null}
+                      {item.changedCount ? (
+                        <Link
+                          className={styles.lanePressureLink}
+                          href={getContributionLedgerHref({
+                            recordView: "changed-card",
+                            lane: item.lane,
+                          })}
+                        >
+                          Open changed-card lane slice
+                        </Link>
+                      ) : null}
                       <Link
                         className={styles.lanePressureLink}
                         href={`/review/contributions?roomSlug=${encodeURIComponent(
