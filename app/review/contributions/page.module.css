@@ -81,6 +81,78 @@
   gap: 18px;
 }
 
+.topicSnapshot {
+  display: grid;
+  gap: 18px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgba(18, 33, 39, 0.08);
+}
+
+.topicSnapshotHeader {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.topicSnapshotHeader h2 {
+  margin-top: 12px;
+  color: var(--foreground);
+  font-family: var(--font-serif), serif;
+  font-size: clamp(1.8rem, 3vw, 2.4rem);
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  line-height: 1.06;
+}
+
+.topicSnapshotLink {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 0 16px;
+  border: 1px solid rgba(18, 33, 39, 0.14);
+  border-radius: 999px;
+  background: rgba(255, 251, 245, 0.9);
+  color: var(--foreground);
+  font-weight: 700;
+}
+
+.topicSnapshotGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.topicSnapshotCard {
+  display: grid;
+  gap: 10px;
+  padding: 18px;
+  border: 1px solid rgba(18, 33, 39, 0.1);
+  border-radius: 20px;
+  background: rgba(255, 251, 245, 0.92);
+}
+
+.topicSnapshotCard strong {
+  color: var(--signal);
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.topicSnapshotCard p,
+.topicQuestionList {
+  color: var(--muted);
+  line-height: 1.7;
+}
+
+.topicQuestionList {
+  display: grid;
+  gap: 10px;
+  padding-left: 18px;
+}
+
 .filterForm {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -297,8 +369,13 @@
   .statusBar,
   .providerList,
   .reviewFields,
-  .summaryRow {
+  .summaryRow,
+  .topicSnapshotGrid {
     grid-template-columns: 1fr;
+  }
+
+  .topicSnapshotHeader {
+    display: grid;
   }
 }
 

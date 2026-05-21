@@ -54,6 +54,10 @@ export default async function ContributionReviewPage({
     scopedRoomSlug && topicId && getRoomTopicCard(scopedRoomSlug, topicId)
       ? topicId
       : undefined;
+  const scopedTopicCard =
+    scopedRoomSlug && scopedTopicId
+      ? getRoomTopicCard(scopedRoomSlug, scopedTopicId)
+      : undefined;
   const scopedLane = isDebateLane(lane) ? lane : undefined;
   const [contributions, metadata] = await Promise.all([
     listAllContributions({
@@ -109,6 +113,52 @@ export default async function ContributionReviewPage({
         </section>
 
         <section className={styles.panel}>
+          {scopedRoomSlug && scopedTopicCard ? (
+            <div className={styles.topicSnapshot}>
+              <div className={styles.topicSnapshotHeader}>
+                <div>
+                  <span className={styles.eyebrow}>Scoped topic snapshot</span>
+                  <h2>{scopedTopicCard.title}</h2>
+                </div>
+                <Link
+                  className={styles.topicSnapshotLink}
+                  href={getRoomTopicHref(scopedRoomSlug, scopedTopicCard.id)}
+                >
+                  Open topic card
+                </Link>
+              </div>
+
+              <div className={styles.topicSnapshotGrid}>
+                <article className={styles.topicSnapshotCard}>
+                  <strong>Current read</strong>
+                  <p>{scopedTopicCard.currentRead}</p>
+                </article>
+                <article className={styles.topicSnapshotCard}>
+                  <strong>Thesis under review</strong>
+                  <p>{scopedTopicCard.thesis}</p>
+                </article>
+              </div>
+
+              <div className={styles.topicSnapshotGrid}>
+                <article className={styles.topicSnapshotCard}>
+                  <strong>Anticipated objection</strong>
+                  <p>
+                    {scopedTopicCard.anticipatedObjection ??
+                      scopedTopicCard.strongestObjection}
+                  </p>
+                </article>
+                <article className={styles.topicSnapshotCard}>
+                  <strong>Open questions the queue can help resolve</strong>
+                  <ul className={styles.topicQuestionList}>
+                    {scopedTopicCard.openQuestions.slice(0, 3).map((item) => (
+                      <li key={item}>{item}</li>
+                    ))}
+                  </ul>
+                </article>
+              </div>
+            </div>
+          ) : null}
+
           <form className={styles.filterForm} method="get">
             {scopedRoomSlug ? (
               <input name="roomSlug" type="hidden" value={scopedRoomSlug} />
