@@ -1099,6 +1099,7 @@ export const institutionalTrustIssueRoom = {
         "Requires visible institutional incentives, affiliations, funding, and correction history as first-order public objects.",
       label: "Topic in focus",
       metric: "Strong transparency logic",
+      href: "/rooms/institutional-trust/topic-002",
     },
     {
       title: "Independent Public Audit Layer",
@@ -2666,12 +2667,201 @@ export const institutionalTrustTopic001: TopicCardData = {
   ],
 };
 
+export const institutionalTrustTopic002: TopicCardData = {
+  id: "topic-002",
+  title: "Radical Disclosure and Conflict Mapping Model",
+  subtitle:
+    "A second institutional-trust topic card for making incentives, affiliations, and correction history legible before trust claims harden",
+  draftNote:
+    "This topic card is intentionally early because disclosure can easily become either a fetish or a fig leaf. It is meant to test a narrower claim: public trust improves when institutional speech carries visible incentive context and correction memory, but only if that visibility is actually interpretable and hard to launder.",
+  thesis:
+    "Institutional speech, claims, and public-facing outputs should carry visible conflict mapping: affiliations, funding relationships, relevant incentives, correction history, and role context, so trust is earned through legibility rather than assumed through brand or credential alone.",
+  currentRead:
+    "This topic card feels strongest because it attacks one of the cleanest trust failures directly: people are routinely asked to evaluate institutional claims without seeing the incentive landscape around them. It feels weakest wherever disclosure is treated as sufficient by itself, since a flood of raw disclosures can obscure as much as it clarifies if there is no structure for interpretation.",
+  problemStatement:
+    "Institutions often speak into public life through reports, media appearances, lobbying, research, public statements, nonprofit advocacy, and expert commentary without ordinary readers being able to see the relevant affiliations, financial incentives, strategic interests, prior corrections, or adjacent conflicts that shape the message. As a result, people either overtrust institutional speech by default or overcorrect into blanket suspicion.",
+  proposedSolution:
+    "Create a disclosure and conflict-mapping layer where institutional speech is paired with visible affiliation context, funding relationships, relevant incentives, correction history, and role labels. The goal is not to tell readers what to think, but to make incentive structure legible enough that trust and skepticism can become more proportional.",
+  mechanism: [
+    "Define the core disclosure objects that matter most in public reasoning: funding, role, institutional affiliation, prior correction history, relevant incentives, and domain-specific trust context.",
+    "Attach those objects visibly to high-impact institutional claims, publications, public statements, and room contributions rather than burying them in legal fine print or separate databases.",
+    "Use conflict maps and correction ledgers to show relationships and history in structured form so readers can interpret disclosure instead of drowning in document dumps.",
+    "Allow challenges, corrections, and updates so disclosure itself becomes a revisable public object rather than a one-time compliance artifact.",
+  ],
+  benefits: [
+    "Readers gain a clearer basis for proportional trust instead of being forced into naive deference or generalized cynicism.",
+    "Institutions that behave responsibly can make their correction practices and incentive boundaries more visible over time.",
+    "Civic Logos gets a concrete mechanism for the paper's idea that institutional speech should be labeled, attributable, and pressure-testable.",
+    "Disclosure becomes more useful as public reasoning infrastructure rather than a static compliance exercise.",
+  ],
+  risks: [
+    "Disclosure overload can create the illusion of transparency while making the real power structure even harder to interpret.",
+    "Sophisticated institutions may optimize for performative compliance, disclosing technically while still hiding the most important strategic relationships.",
+    "Readers may misuse conflict signals as automatic dismissal, flattening substantive disagreement into motive hunting.",
+    "Heavy disclosure regimes can burden smaller institutions, independent researchers, or dissident actors more than large professionalized organizations.",
+  ],
+  assumptions: [
+    "A better visibility layer around incentives and corrections can improve trust without collapsing into pure cynicism or suspicion theater.",
+    "The most decision-relevant disclosures can be identified and surfaced without turning every public statement into unusable bureaucracy.",
+    "Readers can learn to use conflict context as an interpretive aid rather than as a substitute for substantive reasoning.",
+    "Institutions will tolerate stronger legibility norms if they become culturally expected or structurally tied to public credibility.",
+  ],
+  stakeholders: [
+    "Citizens and readers",
+    "Journalists and editors",
+    "Researchers and experts",
+    "Government agencies and public officials",
+    "Corporations, nonprofits, and trade groups",
+    "Whistleblowers and watchdogs",
+    "Platforms and public-information intermediaries",
+    "Smaller institutions with limited compliance capacity",
+  ],
+  evidence: [
+    {
+      title: "Conflict-of-interest and funding disclosures can change how claims are interpreted",
+      status: "Strong evidence",
+      note: "Supports the idea that incentive context matters materially for public judgment.",
+    },
+    {
+      title: "Disclosure systems often become formalistic and hard for ordinary readers to use",
+      status: "Strong evidence",
+      note: "This is the clearest warning that structured interpretation matters as much as the raw disclosure itself.",
+    },
+    {
+      title: "Public correction practices affect long-run institutional trust",
+      status: "Useful but uneven",
+      note: "Suggests memory and correction history are part of trust, not just current messaging.",
+    },
+    {
+      title: "Conflict mapping can improve public reasoning without encouraging blanket motive reduction",
+      status: "Needs verification",
+      note: "This is central to the card and still partly aspirational until the design is tested in live rooms.",
+    },
+  ] satisfies EvidenceSummary[],
+  economicDelta: {
+    summary:
+      "Estimated Economic Delta: Indirect but potentially meaningful if clearer disclosure reduces fraud, reputational distortion, bad procurement, captured expertise, and duplicated public confusion. Main costs include compliance burden, mapping infrastructure, governance, challenge handling, and interface design that keeps disclosures interpretable. Confidence remains moderate-to-low because value depends on whether readers actually use the structure well.",
+    metrics: [
+      "Possible trust-value gain: high if disclosure becomes meaningfully legible",
+      "Implementation cost: moderate because the hard part is interpretation design, not just data collection",
+      "Institutional resistance: likely high where disclosure threatens narrative control",
+      "Compliance burden: moderate with risk of uneven impact on smaller actors",
+      "Public value: high if conflict and correction context become easier to reason over",
+    ],
+  },
+  strongestSupport:
+    "This topic card gives Civic Logos a concrete way to operationalize one of its central claims: institutional speech should not arrive as disembodied authority. It should arrive with visible context about incentives, affiliations, and correction history.",
+  strongestObjection:
+    "Disclosure regimes often produce ritual transparency without real clarity. If the system mainly teaches people to sniff for motives while sophisticated institutions continue shaping the frame, the result may be cynicism theater rather than better trust.",
+  whatWouldStrengthen: [
+    "A sharper model for which disclosures matter most in different domains so the card avoids one-size-fits-all transparency clutter.",
+    "A live example showing how correction history and conflict mapping could be presented in a genuinely legible interface.",
+    "Better distinction between useful motive context and lazy motive dismissal so the system does not reward reductionism.",
+  ],
+  openQuestions: [
+    "Which conflicts, affiliations, and incentives are most decision-relevant in public-facing institutional speech?",
+    "How can disclosure stay readable and comparable instead of becoming legal boilerplate or data exhaust?",
+    "What protections should exist for smaller actors, whistleblowers, or dissidents who cannot comply like major institutions can?",
+    "How should correction history affect trust without making honest revision look like weakness?",
+  ],
+  maturity: "Seed topic",
+  scorecard: [
+    { label: "Novelty", value: 76 },
+    { label: "Coherence", value: 85 },
+    { label: "Feasibility", value: 59 },
+    { label: "Evidence quality", value: 63 },
+    { label: "Economic delta clarity", value: 54 },
+    { label: "Public value", value: 88 },
+  ],
+  aiPanels: [
+    {
+      role: "Structurer",
+      confidence: "Moderate",
+      summary:
+        "The topic card successfully converts abstract transparency talk into a specific visibility layer: conflicts, incentives, correction history, and interpretation design all stay in view.",
+    },
+    {
+      role: "Steelman",
+      confidence: "Moderate",
+      summary:
+        "If institutional speech carried better conflict and correction context, public trust could become more proportional and less dependent on blind brand deference or generalized suspicion.",
+    },
+    {
+      role: "Critic",
+      confidence: "Moderate",
+      summary:
+        "The model could still reward surface transparency while leaving deeper agenda setting and informal influence mostly untouched, especially for sophisticated institutions.",
+    },
+    {
+      role: "Institutionalist",
+      confidence: "Low",
+      summary:
+        "The design is promising, but the real test is whether it helps readers interpret institutions better instead of simply increasing disclosure volume and compliance theater.",
+    },
+  ],
+  debatePrompts: [
+    {
+      title: "Support",
+      description: "Add the strongest argument for why visible conflict mapping and correction history would improve trust more than current disclosure norms do.",
+    },
+    {
+      title: "Objection",
+      description: "Surface the strongest reason this model could become transparency theater, motive reductionism, or unequal compliance burden.",
+    },
+    {
+      title: "Evidence",
+      description: "Add examples, studies, or systems that support or weaken structured disclosure as a trust-repair mechanism.",
+    },
+    {
+      title: "Correction",
+      description: "Identify conceptual, governance, or interface-design errors in the current card.",
+    },
+    {
+      title: "Nuance",
+      description: "Improve the topic by exposing a missing tradeoff between legibility, fairness, anonymity, and institutional burden.",
+    },
+    {
+      title: "Implementation concern",
+      description: "Identify how institutions could comply performatively while still obscuring the most important strategic relationships.",
+    },
+    {
+      title: "Economic assumption challenge",
+      description: "Question whether the trust and anti-corruption value created by structured disclosure is large enough to justify the overhead.",
+    },
+    {
+      title: "Alternate topic",
+      description: "Offer a better way to make institutional speech legible without creating disclosure clutter or motive-hunting pathologies.",
+    },
+    {
+      title: "Reader perspective",
+      description: "Add the view of an ordinary reader, journalist, whistleblower, or small institution trying to use or survive this disclosure layer.",
+    },
+  ] satisfies DebatePrompt[],
+  revisionHistory: [
+    {
+      version: "v0.1",
+      date: "May 2026",
+      note: "Initial seed topic card created to turn disclosure and conflict legibility into a real inspectable object inside the trust room.",
+    },
+    {
+      version: "v0.2",
+      date: "May 2026",
+      note: "Disclosure overload, performative compliance, and motive-hunting risks were raised to first-order visibility rather than treated as minor caveats.",
+    },
+    {
+      version: "v0.3",
+      date: "May 2026",
+      note: "The card was sharpened around incentive context, correction memory, and interpretability so it reads as public reasoning infrastructure rather than generic transparency rhetoric.",
+    },
+  ],
+};
+
 export const roomTopicCards = {
   healthcare: [topic001, topic002],
   governance: [governanceTopic001],
   housing: [housingTopic001],
   "ai-labor": [aiTopic001, aiTopic002],
-  "institutional-trust": [institutionalTrustTopic001],
+  "institutional-trust": [institutionalTrustTopic001, institutionalTrustTopic002],
 } satisfies Record<IssueRoomSlug, readonly TopicCardData[]>;
 
 export function getRoomTopicCards(roomSlug: IssueRoomSlug): readonly TopicCardData[] {
