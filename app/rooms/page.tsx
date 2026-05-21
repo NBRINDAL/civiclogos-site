@@ -1,6 +1,7 @@
 import { cookies } from "next/headers";
 import Link from "next/link";
 import LiveCardBrowser from "../components/live-card-browser";
+import { SiteBrand } from "../components/site-brand";
 import {
   getHomeIntakeCookieName,
   parseHomeIntakeCookie,
@@ -93,13 +94,7 @@ export default async function RoomsPage({
 
       <header className={styles.header}>
         <div className={styles.headerBar}>
-          <Link className={styles.brand} href="/">
-            <span className={styles.brandMark}>CL</span>
-            <span className={styles.brandText}>
-              <strong>Civic Logos</strong>
-              <span>Issue room library</span>
-            </span>
-          </Link>
+          <SiteBrand className={styles.brand} href="/" subtitle="Issue room library" />
 
           <nav className={styles.nav}>
             <Link href="/">Home</Link>

@@ -9,9 +9,10 @@
   inset: 0;
   z-index: -1;
   background:
-    radial-gradient(circle at top left, rgba(181, 94, 51, 0.14), transparent 32%),
-    radial-gradient(circle at top right, rgba(91, 110, 69, 0.16), transparent 28%),
-    linear-gradient(180deg, rgba(255, 250, 243, 0.95), rgba(245, 239, 227, 0.93));
+    radial-gradient(circle at 12% 14%, rgba(var(--brand-red-rgb), 0.1), transparent 26%),
+    radial-gradient(circle at 86% 14%, rgba(var(--brand-blue-rgb), 0.12), transparent 30%),
+    radial-gradient(circle at 48% 92%, rgba(var(--brand-green-rgb), 0.11), transparent 26%),
+    linear-gradient(180deg, rgba(252, 249, 243, 0.95), rgba(243, 239, 231, 0.93));
 }
 
 .header,
@@ -150,7 +151,7 @@
 .heroPanel {
   display: grid;
   gap: 18px;
-  background: linear-gradient(180deg, rgba(229, 235, 220, 0.82), rgba(255, 250, 243, 0.84));
+  background: linear-gradient(180deg, rgba(var(--brand-blue-rgb), 0.09), rgba(var(--brand-green-rgb), 0.12) 55%, rgba(255, 251, 245, 0.84));
 }
 
 .heroStats {
@@ -211,7 +212,7 @@
   padding: 16px 18px;
   border: 1px solid rgba(18, 33, 39, 0.1);
   border-radius: 20px;
-  background: rgba(245, 239, 227, 0.7);
+  background: rgba(var(--brand-blue-rgb), 0.06);
 }
 
 .liveCardNote span {
@@ -272,7 +273,7 @@
   padding: 0 18px;
   border-radius: 999px;
   border: 1px solid transparent;
-  background: var(--foreground);
+  background: var(--accent-dark);
   color: #fff7ee;
   font-weight: 700;
   transition:
@@ -300,12 +301,12 @@
 @media (hover: hover) and (pointer: fine) {
   .roomLink:hover {
     transform: translateY(-1px);
-    background: #24363c;
+    background: var(--accent);
   }
 
   .roomSubLink:hover {
     transform: translateY(-1px);
-    border-color: rgba(18, 33, 39, 0.28);
+    border-color: rgba(var(--brand-blue-rgb), 0.28);
     background: rgba(255, 251, 245, 1);
   }
 }

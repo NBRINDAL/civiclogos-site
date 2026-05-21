@@ -5,7 +5,7 @@
   border: 1px solid rgba(18, 33, 39, 0.12);
   border-radius: 32px;
   background:
-    linear-gradient(180deg, rgba(243, 247, 237, 0.88), rgba(255, 250, 243, 0.82));
+    linear-gradient(180deg, rgba(var(--brand-blue-rgb), 0.08), rgba(var(--brand-green-rgb), 0.11) 55%, rgba(255, 251, 245, 0.82));
   box-shadow: 0 24px 52px rgba(18, 33, 39, 0.08);
   backdrop-filter: blur(14px);
 }
@@ -83,7 +83,7 @@
 }
 
 .field textarea:focus {
-  outline: 2px solid rgba(91, 110, 69, 0.22);
+  outline: 2px solid rgba(var(--brand-blue-rgb), 0.22);
   outline-offset: 2px;
 }
 
@@ -120,10 +120,10 @@
   padding: 0 22px;
   border: 1px solid transparent;
   border-radius: 999px;
-  background: var(--foreground);
+  background: var(--accent-dark);
   color: #fff7ee;
   font-weight: 700;
-  box-shadow: 0 12px 28px rgba(18, 33, 39, 0.18);
+  box-shadow: 0 12px 28px rgba(var(--brand-blue-rgb), 0.2);
   transition:
     transform 180ms ease,
     background 180ms ease;
@@ -142,22 +142,22 @@
 
 .successState {
   border: 1px solid rgba(91, 110, 69, 0.18);
-  background: rgba(229, 235, 220, 0.52);
+  background: rgba(var(--brand-green-rgb), 0.12);
 }
 
 .errorState {
-  border: 1px solid rgba(181, 94, 51, 0.24);
-  background: rgba(255, 244, 236, 0.92);
+  border: 1px solid rgba(var(--brand-red-rgb), 0.24);
+  background: rgba(var(--brand-red-rgb), 0.1);
 }
 
 @media (hover: hover) and (pointer: fine) {
   .submitButton:hover:not(:disabled) {
     transform: translateY(-2px);
-    background: #24363c;
+    background: var(--accent);
   }
 
   .suggestedPrompt:hover {
-    border-color: rgba(91, 110, 69, 0.28);
+    border-color: rgba(var(--brand-blue-rgb), 0.24);
     background: rgba(255, 251, 245, 0.96);
   }
 }

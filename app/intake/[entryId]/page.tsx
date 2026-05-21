@@ -6,6 +6,7 @@ import {
   getRoomTopicHref,
 } from "@/app/lib/civic-logos";
 import { buildHomeIntakeBrief } from "@/app/lib/home-intake-brief";
+import { SiteBrand } from "@/app/components/site-brand";
 import {
   getHomeIntakeCookieName,
   parseHomeIntakeCookie,
@@ -94,13 +95,7 @@ export default async function IntakeEntryPage({
 
       <header className={styles.header}>
         <div className={styles.headerBar}>
-          <Link className={styles.brand} href="/">
-            <span className={styles.brandMark}>CL</span>
-            <span className={styles.brandText}>
-              <strong>Civic Logos</strong>
-              <span>AI intake result</span>
-            </span>
-          </Link>
+          <SiteBrand className={styles.brand} href="/" subtitle="AI intake result" />
 
           <nav className={styles.nav}>
             <Link href="/">Home</Link>

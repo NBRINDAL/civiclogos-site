@@ -134,7 +134,7 @@
 .activeLaneButton,
 .submitButton {
   border: 1px solid transparent;
-  background: var(--foreground);
+  background: var(--accent-dark);
   color: #fff7ee;
 }
 
@@ -187,8 +187,8 @@
 .field input:focus,
 .field select:focus,
 .field textarea:focus {
-  outline: 2px solid rgba(181, 94, 51, 0.18);
-  border-color: rgba(181, 94, 51, 0.52);
+  outline: 2px solid rgba(var(--brand-blue-rgb), 0.18);
+  border-color: rgba(var(--brand-blue-rgb), 0.52);
 }
 
 .field textarea {
@@ -256,8 +256,8 @@
 }
 
 .errorState {
-  border: 1px solid rgba(181, 94, 51, 0.22);
-  background: rgba(181, 94, 51, 0.1);
+  border: 1px solid rgba(var(--brand-red-rgb), 0.22);
+  background: rgba(var(--brand-red-rgb), 0.1);
   color: var(--foreground);
 }
 
@@ -326,7 +326,7 @@
 
 .activeFilterChip {
   border: 1px solid transparent;
-  background: var(--foreground);
+  background: var(--accent-dark);
   color: #fff7ee;
 }
 
@@ -374,9 +374,9 @@
 
 .statusPending,
 .statusNeedsReview {
-  border: 1px solid rgba(181, 94, 51, 0.22);
-  background: rgba(181, 94, 51, 0.1);
-  color: var(--accent-dark);
+  border: 1px solid rgba(var(--brand-red-rgb), 0.22);
+  background: rgba(var(--brand-red-rgb), 0.1);
+  color: var(--bias);
 }
 
 .statusAccepted,
@@ -523,7 +523,7 @@
   .activeLaneButton:hover,
   .submitButton:hover,
   .activeFilterChip:hover {
-    background: #24363c;
+    background: var(--accent);
   }
 }
 

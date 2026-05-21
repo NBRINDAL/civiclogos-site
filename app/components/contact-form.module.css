@@ -50,8 +50,8 @@
 .field select:focus,
 .field textarea:focus {
   outline: none;
-  border-color: rgba(181, 94, 51, 0.55);
-  box-shadow: 0 0 0 4px rgba(181, 94, 51, 0.12);
+  border-color: rgba(var(--brand-blue-rgb), 0.55);
+  box-shadow: 0 0 0 4px rgba(var(--brand-blue-rgb), 0.12);
   background: rgba(255, 252, 247, 0.95);
 }
 
@@ -76,11 +76,11 @@
   padding: 0 24px;
   border: 0;
   border-radius: 999px;
-  background: var(--foreground);
+  background: var(--accent-dark);
   color: #fff7ee;
   font-weight: 700;
   cursor: pointer;
-  box-shadow: 0 12px 28px rgba(18, 33, 39, 0.18);
+  box-shadow: 0 12px 28px rgba(var(--brand-blue-rgb), 0.2);
   transition:
     transform 180ms ease,
     background 180ms ease,
@@ -113,20 +113,20 @@
 
 .successMessage {
   border: 1px solid rgba(91, 110, 69, 0.24);
-  background: rgba(91, 110, 69, 0.12);
-  color: #344426;
+  background: rgba(var(--brand-green-rgb), 0.12);
+  color: var(--signal);
 }
 
 .errorMessage {
-  border: 1px solid rgba(181, 94, 51, 0.24);
-  background: rgba(181, 94, 51, 0.12);
-  color: #7d3f22;
+  border: 1px solid rgba(var(--brand-red-rgb), 0.24);
+  background: rgba(var(--brand-red-rgb), 0.12);
+  color: var(--bias);
 }
 
 @media (hover: hover) and (pointer: fine) {
   .primaryButton:hover:not(:disabled) {
     transform: translateY(-2px);
-    background: #24363c;
+    background: var(--accent);
   }
 }
 

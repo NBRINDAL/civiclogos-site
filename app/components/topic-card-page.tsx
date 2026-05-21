@@ -2,6 +2,7 @@ import { cookies } from "next/headers";
 import Link from "next/link";
 import TopicContributionLoop from "./topic-contribution-loop";
 import TopicAiPanel from "./topic-ai-panel";
+import { SiteBrand } from "./site-brand";
 import type { IssueRoomSlug, TopicCardData } from "../lib/civic-logos";
 import { topicCardVisibleContributionLimit } from "../lib/contribution-constants";
 import type { PublicContribution } from "../lib/contribution-types";
@@ -180,13 +181,7 @@ export default async function TopicCardPage({
 
       <header className={styles.header}>
         <div className={styles.headerBar}>
-          <Link className={styles.brand} href={roomHref}>
-            <span className={styles.brandMark}>CL</span>
-            <span className={styles.brandText}>
-              <strong>Civic Logos</strong>
-              <span>{brandSubtitle}</span>
-            </span>
-          </Link>
+          <SiteBrand className={styles.brand} href={roomHref} subtitle={brandSubtitle} />
 
           <nav className={styles.nav}>
             <Link href="/">Home</Link>

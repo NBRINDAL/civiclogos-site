@@ -9,9 +9,10 @@
   inset: 0;
   z-index: -1;
   background:
-    radial-gradient(circle at top left, rgba(181, 94, 51, 0.14), transparent 32%),
-    radial-gradient(circle at top right, rgba(91, 110, 69, 0.16), transparent 28%),
-    linear-gradient(180deg, rgba(255, 250, 243, 0.96), rgba(245, 239, 227, 0.93));
+    radial-gradient(circle at 12% 14%, rgba(var(--brand-red-rgb), 0.1), transparent 26%),
+    radial-gradient(circle at 86% 14%, rgba(var(--brand-blue-rgb), 0.12), transparent 30%),
+    radial-gradient(circle at 48% 92%, rgba(var(--brand-green-rgb), 0.11), transparent 26%),
+    linear-gradient(180deg, rgba(252, 249, 243, 0.96), rgba(243, 239, 231, 0.93));
 }
 
 .header,
@@ -176,7 +177,7 @@
 .heroPanel {
   display: grid;
   gap: 18px;
-  background: linear-gradient(180deg, rgba(229, 235, 220, 0.82), rgba(255, 250, 243, 0.84));
+  background: linear-gradient(180deg, rgba(var(--brand-blue-rgb), 0.09), rgba(var(--brand-green-rgb), 0.12) 55%, rgba(255, 251, 245, 0.84));
 }
 
 .heroMeta {
@@ -300,7 +301,7 @@
   display: block;
   height: 100%;
   border-radius: inherit;
-  background: linear-gradient(90deg, var(--accent), #d48a5d);
+  background: linear-gradient(90deg, var(--accent-dark), var(--accent));
 }
 
 .numberList,
@@ -435,7 +436,7 @@
 
 .roomActionPrimary {
   border: 1px solid transparent;
-  background: var(--foreground);
+  background: var(--accent-dark);
   color: #fff7ee;
 }
 
@@ -595,13 +596,13 @@
   }
 
   .roomActionPrimary:hover {
-    background: #24363c;
+    background: var(--accent);
   }
 
   .roomActionSecondary:hover,
   .relatedCardItem:hover,
   .lanePressureLink:hover {
-    border-color: rgba(18, 33, 39, 0.26);
+    border-color: rgba(var(--brand-blue-rgb), 0.26);
     background: rgba(255, 251, 245, 0.96);
   }
 }

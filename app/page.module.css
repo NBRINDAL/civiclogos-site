@@ -12,9 +12,10 @@
   inset: 0;
   z-index: -1;
   background:
-    radial-gradient(circle at top left, rgba(181, 94, 51, 0.18), transparent 34%),
-    radial-gradient(circle at top right, rgba(91, 110, 69, 0.2), transparent 30%),
-    linear-gradient(180deg, rgba(255, 250, 243, 0.88), rgba(245, 239, 227, 0.92));
+    radial-gradient(circle at 12% 14%, rgba(var(--brand-red-rgb), 0.12), transparent 26%),
+    radial-gradient(circle at 86% 14%, rgba(var(--brand-blue-rgb), 0.14), transparent 32%),
+    radial-gradient(circle at 50% 92%, rgba(var(--brand-green-rgb), 0.12), transparent 28%),
+    linear-gradient(180deg, rgba(252, 249, 243, 0.88), rgba(243, 239, 231, 0.94));
 }
 
 .hero,
@@ -129,7 +130,7 @@
   border-radius: 32px;
   background:
     linear-gradient(180deg, rgba(255, 251, 245, 0.92), rgba(255, 247, 239, 0.8));
-  box-shadow: 0 28px 64px rgba(31, 31, 31, 0.08);
+  box-shadow: var(--shadow-strong);
 }
 
 .kicker,
@@ -220,9 +221,9 @@
 }
 
 .primaryAction {
-  background: var(--foreground);
+  background: var(--accent-dark);
   color: #fff7ee;
-  box-shadow: 0 12px 28px rgba(18, 33, 39, 0.18);
+  box-shadow: 0 12px 28px rgba(var(--brand-blue-rgb), 0.22);
 }
 
 .secondaryAction {
@@ -234,11 +235,11 @@
   display: grid;
   gap: 18px;
   padding: 32px;
-  border: 1px solid rgba(91, 110, 69, 0.24);
+  border: 1px solid rgba(var(--brand-blue-rgb), 0.18);
   border-radius: 32px;
   background:
-    linear-gradient(180deg, rgba(91, 110, 69, 0.16), rgba(255, 250, 243, 0.84));
-  box-shadow: 0 24px 56px rgba(46, 58, 35, 0.1);
+    linear-gradient(180deg, rgba(var(--brand-blue-rgb), 0.1), rgba(var(--brand-green-rgb), 0.12) 52%, rgba(255, 251, 245, 0.84));
+  box-shadow: 0 24px 56px rgba(var(--brand-blue-rgb), 0.08);
 }
 
 .heroPanel h2 {
@@ -269,10 +270,10 @@
 
 .quoteBand {
   padding: 28px 32px;
-  border: 1px solid rgba(181, 94, 51, 0.18);
+  border: 1px solid rgba(var(--brand-blue-rgb), 0.18);
   border-radius: 28px;
   background: rgba(255, 249, 240, 0.7);
-  box-shadow: 0 20px 42px rgba(181, 94, 51, 0.08);
+  box-shadow: 0 20px 42px rgba(var(--brand-blue-rgb), 0.08);
 }
 
 .quoteBand p {
@@ -345,8 +346,8 @@
   min-width: 44px;
   height: 44px;
   border-radius: 999px;
-  background: rgba(181, 94, 51, 0.12);
-  color: var(--accent-dark);
+  background: rgba(var(--brand-red-rgb), 0.12);
+  color: var(--bias);
   font-weight: 800;
 }
 
@@ -487,9 +488,9 @@
   align-items: center;
   justify-content: center;
   padding: 12px 14px;
-  border: 1px solid rgba(91, 110, 69, 0.22);
+  border: 1px solid rgba(var(--brand-blue-rgb), 0.16);
   border-radius: 999px;
-  background: rgba(91, 110, 69, 0.08);
+  background: rgba(var(--brand-green-rgb), 0.08);
   color: var(--foreground);
   text-align: center;
   font-size: 0.92rem;
@@ -505,7 +506,7 @@
   border: 1px solid rgba(18, 33, 39, 0.14);
   border-radius: 32px;
   background:
-    linear-gradient(135deg, rgba(255, 250, 243, 0.9), rgba(229, 235, 220, 0.72));
+    linear-gradient(135deg, rgba(255, 251, 245, 0.9), rgba(var(--brand-blue-rgb), 0.08), rgba(var(--brand-green-rgb), 0.12));
   box-shadow: 0 24px 54px rgba(18, 33, 39, 0.08);
 }
 
@@ -545,11 +546,11 @@
   }
 
   .primaryAction:hover {
-    background: #24363c;
+    background: var(--accent);
   }
 
   .secondaryAction:hover {
-    border-color: rgba(18, 33, 39, 0.28);
+    border-color: rgba(var(--brand-blue-rgb), 0.28);
     background: rgba(255, 251, 245, 0.92);
   }
 }

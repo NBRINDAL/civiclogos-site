@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ContactForm } from "./components/contact-form";
 import HomeIntake from "./components/home-intake";
+import { SiteBrand } from "./components/site-brand";
 import { getLiveCardIndex, issueRoomQuestion, roomDirectory } from "./lib/civic-logos";
 import styles from "./page.module.css";
 
@@ -99,13 +100,7 @@ export default async function Home({
 
       <header className={styles.hero} id="top">
         <nav className={styles.nav}>
-          <a className={styles.brand} href="#top">
-            <span className={styles.brandMark}>CL</span>
-            <span className={styles.brandText}>
-              <strong>Civic Logos</strong>
-              <span>Phase 1 launch site</span>
-            </span>
-          </a>
+          <SiteBrand className={styles.brand} href="#top" subtitle="Phase 1 launch site" />
 
           <div className={styles.navLinks}>
             <Link href="/rooms">Room library</Link>

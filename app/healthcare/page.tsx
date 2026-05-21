@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import IntakeRouteBanner from "../components/intake-route-banner";
 import RelatedRooms from "../components/related-rooms";
 import RoomGuide from "../components/room-guide";
+import { SiteBrand } from "../components/site-brand";
 import {
   getInspectableTopics,
   healthcareIssueRoom,
@@ -107,13 +108,7 @@ export default async function HealthcareIssueRoomPage({
 
       <header className={styles.header}>
         <div className={styles.headerBar}>
-          <Link className={styles.brand} href="/">
-            <span className={styles.brandMark}>CL</span>
-            <span className={styles.brandText}>
-              <strong>Civic Logos</strong>
-              <span>Healthcare issue room</span>
-            </span>
-          </Link>
+          <SiteBrand className={styles.brand} href="/" subtitle="Healthcare issue room" />
 
           <nav className={styles.nav}>
             <Link href="/">Home</Link>

@@ -198,13 +198,13 @@
 }
 
 .promotionRecorded {
-  background: rgba(108, 135, 77, 0.14);
-  color: #4f6633;
+  background: rgba(var(--brand-green-rgb), 0.14);
+  color: var(--signal);
 }
 
 .promotionReview {
-  background: rgba(146, 113, 66, 0.14);
-  color: #7e5c29;
+  background: rgba(var(--brand-red-rgb), 0.12);
+  color: var(--bias);
 }
 
 .promotionExploratory {
@@ -376,7 +376,7 @@
 
 .primaryAction {
   border: 1px solid transparent;
-  background: var(--foreground);
+  background: var(--accent-dark);
   color: #fff7ee;
 }
 
@@ -394,9 +394,9 @@
 
 .errorState {
   padding: 16px 18px;
-  border: 1px solid rgba(181, 94, 51, 0.18);
+  border: 1px solid rgba(var(--brand-red-rgb), 0.18);
   border-radius: 22px;
-  background: rgba(255, 244, 236, 0.92);
+  background: rgba(var(--brand-red-rgb), 0.1);
 }
 
 .resultBlock {
@@ -493,7 +493,7 @@
   }
 
   .primaryAction:hover {
-    background: #24363c;
+    background: var(--accent);
   }
 
   .secondaryAction:hover,
