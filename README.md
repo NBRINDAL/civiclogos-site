@@ -68,6 +68,21 @@ For Microsoft 365 from GoDaddy, the default SMTP host is typically `smtp.office3
 The healthcare administrative simplification topic card now supports a prototype
 contribution loop backed by `/api/contributions`.
 
+## Contribution persistence backend
+
+The contribution loop now supports a database-backed storage path for the
+healthcare reasoning record.
+
+If either of these environment variables is present, Civic Logos will try to use
+Postgres for contribution submissions and maintainer review state:
+
+- `DATABASE_URL`
+- `POSTGRES_URL`
+
+If no database connection string is configured, or if the database is
+temporarily unavailable, the site falls back to the existing local prototype
+store so the healthcare room continues to function.
+
 If you want AI-assisted intake on submitted contributions, add one or both of:
 
 - `OPENAI_API_KEY`

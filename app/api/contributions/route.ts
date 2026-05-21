@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getRoomTopicCard, issueRooms, type IssueRoomSlug } from "@/app/lib/civic-logos";
-import { createContribution, getContributionStoreMetadata, listPublicContributions } from "@/app/lib/prototype-contribution-store";
+import { createContribution, getContributionStoreMetadata, listPublicContributions } from "@/app/lib/contribution-store";
 import { normalizeDebateLane } from "@/app/lib/reasoning-types";
 
 export const runtime = "nodejs";

@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { reviewContribution } from "@/app/lib/prototype-contribution-store";
+import { reviewContribution } from "@/app/lib/contribution-store";
 import {
   normalizeReviewStatus,
   normalizeReviewTargetKind,

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { getRoomTopicHref } from "@/app/lib/civic-logos";
-import { getContributionStoreMetadata, listAllContributions } from "@/app/lib/prototype-contribution-store";
+import { getContributionStoreMetadata, listAllContributions } from "@/app/lib/contribution-store";
 import {
   debateLaneLabels,
   reviewStatusOptions,
