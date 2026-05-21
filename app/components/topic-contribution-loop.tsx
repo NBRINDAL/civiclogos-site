@@ -379,6 +379,20 @@ export default function TopicContributionLoop({
       (item) => getVisibleAttachmentFilter(item) === activeAttachmentFilter,
     );
   }, [activeAttachmentFilter, recordFilteredContributions]);
+  const hasActiveLedgerFilters =
+    activeFilter !== "all" || activeAttachmentFilter !== "all-targets";
+  const activeLedgerSliceLabel = useMemo(() => {
+    const labels = [
+      contributionFilterLabels[activeFilter],
+      contributionAttachmentFilterLabels[activeAttachmentFilter],
+    ];
+
+    if (activeFilter === "all" && activeAttachmentFilter === "all-targets") {
+      return "All visible contributions";
+    }
+
+    return labels.join(" · ");
+  }, [activeAttachmentFilter, activeFilter]);
 
   function handleFilterPick(filter: ContributionFilter) {
     const nextSearchParams = new URLSearchParams(searchParams.toString());
@@ -388,6 +402,20 @@ export default function TopicContributionLoop({
     } else {
       nextSearchParams.set("recordView", filter);
     }
+
+    const nextQuery = nextSearchParams.toString();
+    router.replace(
+      `${pathname}${nextQuery ? `?${nextQuery}` : ""}#contribution-record`,
+      {
+        scroll: false,
+      },
+    );
+  }
+
+  function resetLedgerFilters() {
+    const nextSearchParams = new URLSearchParams(searchParams.toString());
+    nextSearchParams.delete("recordView");
+    nextSearchParams.delete("attachment");
 
     const nextQuery = nextSearchParams.toString();
     router.replace(
@@ -943,6 +971,20 @@ export default function TopicContributionLoop({
             contribution{recordFilteredContributions.length === 1 ? "" : "s"} in the{" "}
             <strong>{contributionFilterLabels[activeFilter]}</strong> record view.
           </p>
+          <div className={styles.filterSummaryRow}>
+            <p className={styles.filterSummary}>
+              Viewing slice: <strong>{activeLedgerSliceLabel}</strong>
+            </p>
+            {hasActiveLedgerFilters ? (
+              <button
+                className={styles.filterReset}
+                onClick={resetLedgerFilters}
+                type="button"
+              >
+                Clear filters
+              </button>
+            ) : null}
+          </div>
         </div>
 
         {filteredContributions.length ? (
