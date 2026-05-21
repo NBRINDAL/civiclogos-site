@@ -2088,3 +2088,56 @@ export const institutionalTrustTopic001: TopicCardData = {
     },
   ],
 };
+
+export const roomTopicCards = {
+  healthcare: [topic001],
+  governance: [governanceTopic001],
+  housing: [],
+  "ai-labor": [aiTopic001],
+  "institutional-trust": [institutionalTrustTopic001],
+} satisfies Record<IssueRoomSlug, readonly TopicCardData[]>;
+
+export function getRoomTopicCards(roomSlug: IssueRoomSlug): readonly TopicCardData[] {
+  return roomTopicCards[roomSlug];
+}
+
+export function getRoomTopicCard(
+  roomSlug: IssueRoomSlug,
+  topicId: string,
+): TopicCardData | undefined {
+  return roomTopicCards[roomSlug].find((card) => card.id === topicId);
+}
+
+export function getRoomHref(roomSlug: IssueRoomSlug): string {
+  return roomSlug === "healthcare" ? "/healthcare" : `/rooms/${roomSlug}`;
+}
+
+export function getRoomTopicBrandSubtitle(roomSlug: IssueRoomSlug): string {
+  switch (roomSlug) {
+    case "healthcare":
+      return "Healthcare topic card";
+    case "governance":
+      return "Governance topic card";
+    case "housing":
+      return "Housing topic card";
+    case "ai-labor":
+      return "AI topic card";
+    case "institutional-trust":
+      return "Institutional trust topic card";
+  }
+}
+
+export function getRoomTopicLabel(roomSlug: IssueRoomSlug): string {
+  switch (roomSlug) {
+    case "healthcare":
+      return "Healthcare room";
+    case "governance":
+      return "Governance room";
+    case "housing":
+      return "Housing room";
+    case "ai-labor":
+      return "AI room";
+    case "institutional-trust":
+      return "Trust room";
+  }
+}
