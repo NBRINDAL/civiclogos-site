@@ -531,10 +531,66 @@
   text-align: center;
 }
 
+.lanePressureGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.lanePressureCard {
+  display: grid;
+  gap: 12px;
+  padding: 20px;
+  border: 1px solid rgba(18, 33, 39, 0.12);
+  border-radius: 22px;
+  background: rgba(255, 251, 245, 0.82);
+  box-shadow: 0 16px 34px rgba(18, 33, 39, 0.05);
+}
+
+.lanePressureHeader {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.lanePressureHeader strong {
+  color: var(--foreground);
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.lanePressureHeader span,
+.lanePressureCard p {
+  color: var(--muted);
+  font-size: 0.92rem;
+  line-height: 1.6;
+}
+
+.lanePressureLink {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 0 16px;
+  border: 1px solid rgba(18, 33, 39, 0.14);
+  border-radius: 999px;
+  background: rgba(255, 251, 245, 0.9);
+  color: var(--foreground);
+  font-size: 0.9rem;
+  font-weight: 700;
+  text-decoration: none;
+  transition:
+    transform 180ms ease,
+    border-color 180ms ease,
+    background 180ms ease;
+}
+
 @media (hover: hover) and (pointer: fine) {
   .roomActionPrimary:hover,
   .roomActionSecondary:hover,
-  .relatedCardItem:hover {
+  .relatedCardItem:hover,
+  .lanePressureLink:hover {
     transform: translateY(-2px);
   }
 
@@ -543,7 +599,8 @@
   }
 
   .roomActionSecondary:hover,
-  .relatedCardItem:hover {
+  .relatedCardItem:hover,
+  .lanePressureLink:hover {
     border-color: rgba(18, 33, 39, 0.26);
     background: rgba(255, 251, 245, 0.96);
   }
@@ -558,7 +615,8 @@
   .tagList,
   .roomActions,
   .snapshotGrid,
-  .reviewPills {
+  .reviewPills,
+  .lanePressureGrid {
     grid-template-columns: 1fr;
   }
 }

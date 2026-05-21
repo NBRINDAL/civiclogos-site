@@ -2,16 +2,26 @@ import Link from "next/link";
 import TopicContributionLoop from "./topic-contribution-loop";
 import TopicAiPanel from "./topic-ai-panel";
 import type { IssueRoomSlug, TopicCardData } from "../lib/civic-logos";
+import type { PublicContribution } from "../lib/contribution-types";
 import {
   getContributionStoreMetadata,
   listPublicContributions,
 } from "../lib/contribution-store";
+import { debateLaneLabels, debateLaneOptions } from "../lib/reasoning-types";
 import styles from "../healthcare/proposal-001/page.module.css";
 
 type TopicCardLink = {
   id: string;
   title: string;
   href: string;
+};
+
+type LanePressureItem = {
+  lane: (typeof debateLaneOptions)[number];
+  label: string;
+  unresolvedCount: number;
+  changedCount: number;
+  latestUnresolved: PublicContribution | null;
 };
 
 type TopicCardPageProps = {
@@ -80,6 +90,24 @@ export default async function TopicCardPage({
   const changedCardContributions = liveContributions.filter(
     (item) => item.review?.changedSynthesis === true,
   );
+  const lanePressure = debateLaneOptions.reduce<LanePressureItem[]>((acc, lane) => {
+      const unresolved = needsAttentionContributions.filter((item) => item.lane === lane);
+      const changed = changedCardContributions.filter((item) => item.lane === lane);
+
+      if (!unresolved.length && !changed.length) {
+        return acc;
+      }
+
+      acc.push({
+        lane,
+        label: debateLaneLabels[lane],
+        unresolvedCount: unresolved.length,
+        changedCount: changed.length,
+        latestUnresolved: unresolved[0] ?? null,
+      });
+
+      return acc;
+    }, []);
   const previousCard =
     currentTopicIndex > 0 ? roomCards[currentTopicIndex - 1] : null;
   const nextCard =
@@ -501,6 +529,46 @@ export default async function TopicCardPage({
                   Rejected {contributionStatusCounts.rejected}
                 </span>
               </div>
+            </div>
+
+            <div className={styles.copyBlock}>
+              <h3>Pressure by lane</h3>
+              {lanePressure.length ? (
+                <div className={styles.lanePressureGrid}>
+                  {lanePressure.map((item) => (
+                    <article className={styles.lanePressureCard} key={item.lane}>
+                      <div className={styles.lanePressureHeader}>
+                        <strong>{item.label}</strong>
+                        <span>
+                          {item.unresolvedCount} open · {item.changedCount} changed card
+                        </span>
+                      </div>
+                      <p>
+                        {item.latestUnresolved
+                          ? `Latest open pressure: ${item.latestUnresolved.title}.`
+                          : "No open pressure right now. This lane has only reviewed changes in the current visible record."}
+                      </p>
+                      <Link
+                        className={styles.lanePressureLink}
+                        href={`/review/contributions?roomSlug=${encodeURIComponent(
+                          roomSlug,
+                        )}&topicId=${encodeURIComponent(card.id)}&lane=${encodeURIComponent(
+                          item.lane,
+                        )}`}
+                      >
+                        Review this lane
+                      </Link>
+                    </article>
+                  ))}
+                </div>
+              ) : (
+                <p>
+                  No lane-level pressure is visible yet. As real contributions
+                  arrive, this should show which parts of the card are carrying
+                  unresolved scrutiny and which lanes have already changed the
+                  object.
+                </p>
+              )}
             </div>
           </article>
 
