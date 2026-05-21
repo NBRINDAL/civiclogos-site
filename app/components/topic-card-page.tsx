@@ -90,6 +90,13 @@ export default async function TopicCardPage({
   const changedCardContributions = liveContributions.filter(
     (item) => item.review?.changedSynthesis === true,
   );
+  const reviewedContributions = [...liveContributions]
+    .filter((item) => item.review?.reviewedAt)
+    .sort((left, right) => {
+      const leftTime = new Date(left.review?.reviewedAt ?? 0).getTime();
+      const rightTime = new Date(right.review?.reviewedAt ?? 0).getTime();
+      return rightTime - leftTime;
+    });
   const lanePressure = debateLaneOptions.reduce<LanePressureItem[]>((acc, lane) => {
       const unresolved = needsAttentionContributions.filter((item) => item.lane === lane);
       const changed = changedCardContributions.filter((item) => item.lane === lane);
@@ -625,6 +632,43 @@ export default async function TopicCardPage({
                   Nothing is currently waiting on a maintainer decision for this
                   card. New submissions should appear here until a human review
                   resolves them.
+                </p>
+              )}
+            </div>
+
+            <div className={styles.copyBlock}>
+              <h3>Recent human review decisions</h3>
+              {reviewedContributions.length ? (
+                <div className={styles.historyList}>
+                  {reviewedContributions.slice(0, 4).map((item) => (
+                    <article className={styles.historyItem} key={`review-${item.id}`}>
+                      <div>
+                        <strong>{item.title}</strong>
+                        <span>
+                          {item.status} · {debateLaneLabels[item.lane]} ·{" "}
+                          {item.review?.reviewedAt
+                            ? new Date(item.review.reviewedAt).toLocaleString("en-US", {
+                                dateStyle: "medium",
+                                timeStyle: "short",
+                              })
+                            : "Reviewed"}
+                        </span>
+                      </div>
+                      <p>
+                        {getPublicContributionOutcomeNote(
+                          item.review?.decisionReason,
+                          item.review?.publicRecordNote,
+                          "Human review resolved this contribution without a public note yet.",
+                        )}
+                      </p>
+                    </article>
+                  ))}
+                </div>
+              ) : (
+                <p>
+                  No human review decisions are visible on this card yet. As the
+                  manual cycle becomes real, this section should show the latest
+                  decisions that resolved or carried forward outside pressure.
                 </p>
               )}
             </div>
