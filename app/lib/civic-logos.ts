@@ -1093,6 +1093,7 @@ export const institutionalTrustIssueRoom = {
         "Forces high-impact institutional claims to pay for structured examination without buying favorable outcomes.",
       label: "Highest economic-delta",
       metric: "Trust and revenue architecture overlap",
+      href: "/rooms/institutional-trust/topic-001",
     },
   ],
   mostDebated: [
@@ -1664,6 +1665,195 @@ export const aiTopic001 = {
       version: "v0.3",
       date: "May 2026",
       note: "Economic delta and contributor-return questions were made more explicit so the card does not hide behind philosophical appeal alone.",
+    },
+  ],
+} as const;
+
+export const institutionalTrustTopic001 = {
+  id: "topic-001",
+  title: "Public Review Stake for Institutional Claims",
+  subtitle:
+    "A first institutional-trust topic card for making scrutiny fundable without letting money buy legitimacy",
+  draftNote:
+    "This topic card is intentionally unfinished because it sits close to the economic and civic core of Civic Logos. It is meant to test whether examination itself can be funded in public without collapsing into sponsorship, pay-to-play legitimacy, or institutional capture.",
+  thesis:
+    "High-impact institutional claims should be able to trigger a public review stake: funding that pays for structured examination, evidence work, synthesis labor, and challenge processes without giving the payer authority over the conclusion.",
+  currentRead:
+    "This topic card feels strongest because it inverts a standard internet incentive. Instead of money buying amplification or friendly treatment, money buys examination. It feels weakest wherever enforcement, governance, and neutrality are assumed rather than designed. If the payer can shape the process or if public readers cannot see the constraints clearly, the mechanism becomes just another laundering layer.",
+  problemStatement:
+    "Major institutions already spend heavily on messaging, lobbying, PR, legal positioning, and narrative management, but there is very little durable public infrastructure for forcing high-impact claims into structured scrutiny. As a result, institutions can often outspend criticism, hide behind complexity, or flood the information space without paying for the civic labor needed to examine what they say and do.",
+  proposedSolution:
+    "Create a mechanism where important institutional claims, reforms, spending proposals, or disputed public assertions can be attached to a visible review stake. That stake funds evidence gathering, structured objections, synthesis work, and public review capacity while the conclusions remain contestable, attributable, and independent of the funder.",
+  mechanism: [
+    "Define which kinds of institutional claims, policies, or public assertions are eligible or required to enter a review-stake process.",
+    "Route stake funding into visible review work such as evidence gathering, adversarial critique, synthesis drafting, and correction tracking instead of into promotional placement.",
+    "Separate funding from judgment by making perspectives attributable, synthesis contestable, and reviewer roles transparent.",
+    "Publish revision history, conflicts, funding relationships, and strongest objections so the public can examine both the claim and the review process itself.",
+  ],
+  benefits: [
+    "Money is redirected toward scrutiny rather than attention capture or favorable narrative placement.",
+    "Institutions with real stakes in public questions help fund the civic labor required to examine them.",
+    "Readers gain a clearer record of evidence, objections, revisions, and incentives instead of just competing messaging.",
+    "Civic Logos gets a plausible institutional revenue path that is structurally aligned with its epistemic goals.",
+  ],
+  risks: [
+    "Powerful actors may still find subtle ways to shape scope, framing, reviewer selection, or timing even if they cannot directly buy conclusions.",
+    "The public may confuse a funded review with a truthful result, giving the mechanism undeserved authority.",
+    "Review labor could become procedural theater if the outputs are visible but not meaningfully adversarial or independent.",
+    "Smaller institutions or grassroots groups may be disadvantaged if review stakes become too expensive or culturally mandatory.",
+  ],
+  assumptions: [
+    "Institutions will sometimes accept scrutiny if the process is legible, prestigious enough, or normatively expected.",
+    "A review process can be governed tightly enough that funders do not quietly capture conclusions.",
+    "Readers will understand the difference between funded examination and purchased legitimacy.",
+    "There is enough real civic demand for structured review outputs to justify the overhead.",
+  ],
+  stakeholders: [
+    "Citizens and readers",
+    "Government agencies",
+    "Corporations and trade groups",
+    "Universities and nonprofits",
+    "Journalists and researchers",
+    "Reviewers and synthesis workers",
+    "Whistleblowers and critics",
+    "Communities affected by high-impact claims",
+  ],
+  evidence: [
+    {
+      title: "Institutions already spend heavily on influence and narrative management",
+      status: "Strong evidence",
+      note: "Supports the basic premise that public reasoning is currently underfunded relative to persuasion infrastructure.",
+    },
+    {
+      title: "Independent review and audit mechanisms can improve trust when they remain visible and adversarial",
+      status: "Useful but uneven",
+      note: "Suggests the model can work in principle, though outcomes vary a lot by governance quality.",
+    },
+    {
+      title: "Sponsored research and funded oversight are vulnerable to subtle capture",
+      status: "Strong evidence",
+      note: "This is the clearest warning that the stake mechanism has to separate funding from judgment very carefully.",
+    },
+    {
+      title: "A public review stake can become a durable institutional norm",
+      status: "Needs verification",
+      note: "The model is plausible but still mostly hypothetical without live adoption and repeated use.",
+    },
+  ] satisfies EvidenceSummary[],
+  economicDelta: {
+    summary:
+      "Estimated Economic Delta: Unknown but potentially meaningful if structured review reduces bad policy, institutional waste, legal churn, reputational distortion, and duplicated public confusion. Main costs include staffing review capacity, synthesis governance, anti-capture controls, and slower throughput. Confidence remains low until real pilots show whether funded scrutiny is cheaper than unmanaged distrust and messaging warfare.",
+    metrics: [
+      "Possible public value: high if scrutiny quality genuinely improves",
+      "Implementation cost: moderate to high because governance is the hard part",
+      "Institutional willingness-to-pay: uncertain but strategically important",
+      "Revenue alignment: unusually strong if conclusions remain independent",
+      "Capture risk cost: high if the review process becomes prestige theater",
+    ],
+  },
+  strongestSupport:
+    "This topic captures one of Civic Logos's most original ideas: money should fund examination, not authority. If that mechanism works, it creates both epistemic value and a business model that does not depend on attention extraction.",
+  strongestObjection:
+    "Any system that takes money from institutions to examine institutions risks becoming an elegant compromise formation where scrutiny is visible enough to reassure the public but controlled enough not to threaten power seriously.",
+  whatWouldStrengthen: [
+    "A concrete pilot structure showing who pays, who reviews, what becomes public, and how conflicts are disclosed.",
+    "A clearer governance rule set for reviewer independence, funder constraints, challenge rights, and revision procedures.",
+    "Examples from adjacent domains showing where funded scrutiny improved trust instead of becoming procedural theater.",
+  ],
+  openQuestions: [
+    "Which kinds of claims should qualify for or require a review stake?",
+    "How should smaller institutions or public-interest groups participate without being priced out?",
+    "Who decides whether a review has been adequately adversarial and complete?",
+    "What stops the process from becoming a prestige shield for sophisticated institutions?",
+  ],
+  maturity: "Seed topic",
+  scorecard: [
+    { label: "Novelty", value: 91 },
+    { label: "Coherence", value: 82 },
+    { label: "Feasibility", value: 44 },
+    { label: "Evidence quality", value: 46 },
+    { label: "Economic delta clarity", value: 63 },
+    { label: "Public value", value: 89 },
+  ],
+  aiPanels: [
+    {
+      role: "Structurer",
+      confidence: "Moderate",
+      summary:
+        "The topic successfully converts a philosophical slogan into a mechanism: funding source, review labor, independence constraints, and public memory are all on the table.",
+    },
+    {
+      role: "Steelman",
+      confidence: "Moderate",
+      summary:
+        "If this works, it creates one of the rare monetization models where power pays to be examined instead of paying to dominate attention.",
+    },
+    {
+      role: "Critic",
+      confidence: "Moderate",
+      summary:
+        "The mechanism could easily become a legitimacy service for sophisticated institutions unless review independence, challenge rights, and public transparency are exceptionally strong.",
+    },
+    {
+      role: "Institutionalist",
+      confidence: "Low",
+      summary:
+        "The idea is strategically important, but it still needs a credible adoption path showing why real institutions would submit to this process instead of staying inside existing PR, legal, and media channels.",
+    },
+  ],
+  debatePrompts: [
+    {
+      title: "Support",
+      description: "Add the best argument for why funded scrutiny could improve trust more than current PR, audit, or media systems do.",
+    },
+    {
+      title: "Objection",
+      description: "Surface the strongest reason this mechanism could become capture theater or a prestige shield.",
+    },
+    {
+      title: "Evidence",
+      description: "Add examples from auditing, journalism, oversight, procurement, or regulation that support or weaken the design.",
+    },
+    {
+      title: "Correction",
+      description: "Identify conceptual, financial, or governance errors in the current card.",
+    },
+    {
+      title: "Nuance",
+      description: "Improve the topic by exposing a missing condition or tradeoff without discarding the mechanism.",
+    },
+    {
+      title: "Governance concern",
+      description: "Identify how reviewer selection, process design, or funder influence could quietly distort the outcome.",
+    },
+    {
+      title: "Economic assumption challenge",
+      description: "Question whether institutions would actually fund this process at meaningful scale and whether the value is legible enough to sustain it.",
+    },
+    {
+      title: "Alternate topic",
+      description: "Offer a better way to make public examination durable and fundable without introducing the same capture risk.",
+    },
+    {
+      title: "Institutional perspective",
+      description: "Add the likely view of a city, university, corporation, newsroom, or regulator asked to participate in a review-stake process.",
+    },
+  ] satisfies DebatePrompt[],
+  revisionHistory: [
+    {
+      version: "v0.1",
+      date: "May 2026",
+      note: "Initial seed topic card created to turn the 'money funds examination, not authority' idea into a real inspectable object inside the trust room.",
+    },
+    {
+      version: "v0.2",
+      date: "May 2026",
+      note: "Capture and prestige-laundering risks were raised to first-order visibility rather than left as side concerns.",
+    },
+    {
+      version: "v0.3",
+      date: "May 2026",
+      note: "Adoption and reviewer-governance questions were made more explicit so the card does not rely on moral elegance alone.",
     },
   ],
 } as const;
