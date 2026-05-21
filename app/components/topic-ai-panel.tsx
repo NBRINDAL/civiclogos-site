@@ -156,6 +156,22 @@ function getPromotionAttachmentFilterLabel(filter: PromotionAttachmentFilter) {
   }
 }
 
+function getAttachmentCounts(messages: TopicChatMessage[]) {
+  return (
+    ["claim", "objection", "evidence", "assumption", "open-question", "none-yet"] as const
+  )
+    .map((attachment) => ({
+      attachment,
+      label: getPromotionAttachmentFilterLabel(attachment),
+      count: messages.filter(
+        (message) =>
+          message.promotion &&
+          getPromotionAttachmentFilter(message.promotion) === attachment,
+      ).length,
+    }))
+    .filter((item) => item.count > 0);
+}
+
 function getContributionRecordHref(promotion: TopicChatPromotion) {
   if (!promotion.contributionId) {
     return "#contribution-record";
@@ -232,37 +248,22 @@ function getSessionImpact(messages: TopicChatMessage[]) {
   const promotedMessages = messages.filter(
     (message) => message.role === "assistant" && message.promotion,
   );
-  const recordAffectingMessages = promotedMessages.filter(
-    (message) =>
-      message.promotion?.state === "auto-recorded" ||
-      message.promotion?.state === "sent-to-review",
+  const autoRecordedMessages = promotedMessages.filter(
+    (message) => message.promotion?.state === "auto-recorded",
+  );
+  const sentToReviewMessages = promotedMessages.filter(
+    (message) => message.promotion?.state === "sent-to-review",
   );
 
   return {
     promotedMessages,
-    recordAffectingMessages,
-    autoRecordedCount: promotedMessages.filter(
-      (message) => message.promotion?.state === "auto-recorded",
-    ).length,
-    sentToReviewCount: promotedMessages.filter(
-      (message) => message.promotion?.state === "sent-to-review",
-    ).length,
+    autoRecordedCount: autoRecordedMessages.length,
+    sentToReviewCount: sentToReviewMessages.length,
     exploratoryCount: promotedMessages.filter(
       (message) => message.promotion?.state === "not-added",
     ).length,
-    attachmentCounts: (
-      ["claim", "objection", "evidence", "assumption", "open-question", "none-yet"] as const
-    )
-      .map((attachment) => ({
-        attachment,
-        label: getPromotionAttachmentFilterLabel(attachment),
-        count: recordAffectingMessages.filter(
-          (message) =>
-            message.promotion &&
-            getPromotionAttachmentFilter(message.promotion) === attachment,
-        ).length,
-      }))
-      .filter((item) => item.count > 0),
+    autoRecordedAttachmentCounts: getAttachmentCounts(autoRecordedMessages),
+    sentToReviewAttachmentCounts: getAttachmentCounts(sentToReviewMessages),
   };
 }
 
@@ -415,12 +416,27 @@ export default function TopicAiPanel({
               the live record without waiting on human review.
             </p>
             {sessionImpact.autoRecordedCount ? (
-              <a
-                className={styles.promotionLink}
-                href={getRecordViewHref("ai-assisted")}
-              >
-                Open AI-assisted ledger
-              </a>
+              <>
+                <a
+                  className={styles.promotionLink}
+                  href={getRecordViewHref("ai-assisted")}
+                >
+                  Open AI-assisted ledger
+                </a>
+                {sessionImpact.autoRecordedAttachmentCounts.length ? (
+                  <div className={styles.sessionTargetMap}>
+                    {sessionImpact.autoRecordedAttachmentCounts.map((item) => (
+                      <a
+                        className={styles.sessionTargetLink}
+                        href={getRecordViewHref("ai-assisted", item.attachment)}
+                        key={`auto-recorded-target-${item.attachment}`}
+                      >
+                        {item.label} {item.count}
+                      </a>
+                    ))}
+                  </div>
+                ) : null}
+              </>
             ) : null}
           </article>
           <article className={styles.sessionImpactCard}>
@@ -431,12 +447,27 @@ export default function TopicAiPanel({
               depend on a human decision.
             </p>
             {sessionImpact.sentToReviewCount ? (
-              <a
-                className={styles.promotionLink}
-                href={getRecordViewHref("needs-review")}
-              >
-                Open needs-review ledger
-              </a>
+              <>
+                <a
+                  className={styles.promotionLink}
+                  href={getRecordViewHref("needs-review")}
+                >
+                  Open needs-review ledger
+                </a>
+                {sessionImpact.sentToReviewAttachmentCounts.length ? (
+                  <div className={styles.sessionTargetMap}>
+                    {sessionImpact.sentToReviewAttachmentCounts.map((item) => (
+                      <a
+                        className={styles.sessionTargetLink}
+                        href={getRecordViewHref("needs-review", item.attachment)}
+                        key={`sent-to-review-target-${item.attachment}`}
+                      >
+                        {item.label} {item.count}
+                      </a>
+                    ))}
+                  </div>
+                ) : null}
+              </>
             ) : null}
           </article>
           <article className={styles.sessionImpactCard}>
@@ -452,22 +483,6 @@ export default function TopicAiPanel({
         {sessionImpact.promotedMessages.length ? (
           <div className={styles.sessionImpactTrace}>
             <span className={styles.quickPromptLabel}>AI session impact</span>
-            {sessionImpact.attachmentCounts.length ? (
-              <div className={styles.sessionTargetMap}>
-                {sessionImpact.attachmentCounts.map((item) => (
-                  <a
-                    className={styles.sessionTargetLink}
-                    href={getRecordViewHref(
-                      "ai-assisted",
-                      item.attachment,
-                    )}
-                    key={`session-target-${item.attachment}`}
-                  >
-                    {item.label} {item.count}
-                  </a>
-                ))}
-              </div>
-            ) : null}
             <div className={styles.issueList}>
               {sessionImpact.promotedMessages.slice(-3).reverse().map((message) => (
                 <p className={styles.issueItem} key={`impact-${message.id}`}>
