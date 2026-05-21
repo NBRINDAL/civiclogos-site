@@ -351,7 +351,8 @@
 }
 
 .providerCard,
-.reviewSummary {
+.reviewSummary,
+.suggestionSummary {
   padding: 18px;
   border: 1px solid rgba(18, 33, 39, 0.1);
   border-radius: 20px;
@@ -359,7 +360,8 @@
 }
 
 .providerCard strong,
-.reviewSummary strong {
+.reviewSummary strong,
+.suggestionSummary strong {
   display: block;
   margin-bottom: 8px;
 }
@@ -401,6 +403,12 @@
 .field textarea {
   min-height: 140px;
   resize: vertical;
+}
+
+.prefillNote {
+  color: var(--muted);
+  font-size: 0.92rem;
+  line-height: 1.7;
 }
 
 .submitButton {

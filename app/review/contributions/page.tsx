@@ -370,7 +370,20 @@ export default async function ContributionReviewPage({
 
           <h2 className={styles.sectionTitle}>Contribution queue</h2>
           <div className={styles.list}>
-            {sortedContributions.map((item) => (
+            {sortedContributions.map((item) => {
+              const suggestedAssignmentKind =
+                item.review?.assignedToKind ?? item.aiIntake?.suggestedAssignmentKind ?? "";
+              const suggestedAssignmentLabel =
+                item.review?.assignedToLabel ?? item.aiIntake?.suggestedAssignmentLabel ?? "";
+              const suggestedChangedSynthesis =
+                item.review?.changedSynthesis ?? item.aiIntake?.changedSynthesisLikely ?? null;
+              const hasAiReviewSuggestion =
+                Boolean(item.aiIntake?.summary) ||
+                Boolean(item.aiIntake?.reviewerNote) ||
+                Boolean(item.aiIntake?.suggestedAssignmentKind) ||
+                Boolean(item.aiIntake?.suggestedAssignmentLabel);
+
+              return (
               <article className={styles.contribution} key={item.id}>
                 <div className={styles.statusBar}>
                   <span className={styles.badge}>{item.status}</span>
@@ -467,6 +480,36 @@ export default async function ContributionReviewPage({
                       {item.review.reviewerNote ? <p>{item.review.reviewerNote}</p> : null}
                     </div>
                   ) : null}
+
+                  {hasAiReviewSuggestion ? (
+                    <div className={styles.suggestionSummary}>
+                      <strong>Assisted-review recommendation</strong>
+                      {item.aiIntake?.summary ? <p>{item.aiIntake.summary}</p> : null}
+                      {item.aiIntake?.suggestedAssignmentLabel ? (
+                        <p>
+                          Suggested placement:{" "}
+                          {item.aiIntake.suggestedAssignmentKind
+                            ? `${item.aiIntake.suggestedAssignmentKind} — `
+                            : ""}
+                          {item.aiIntake.suggestedAssignmentLabel}
+                        </p>
+                      ) : null}
+                      {item.aiIntake?.laneFit ? (
+                        <p>Suggested lane fit: {debateLaneLabels[item.aiIntake.laneFit]}</p>
+                      ) : null}
+                      {typeof item.aiIntake?.changedSynthesisLikely === "boolean" ? (
+                        <p>
+                          Suggested synthesis impact:{" "}
+                          {item.aiIntake.changedSynthesisLikely
+                            ? "Likely to change the card"
+                            : "Unlikely to change the card"}
+                        </p>
+                      ) : null}
+                      {item.aiIntake?.reviewerNote ? (
+                        <p>{item.aiIntake.reviewerNote}</p>
+                      ) : null}
+                    </div>
+                  ) : null}
                 </div>
 
                 <form action={updateContributionReview} className={styles.reviewForm}>
@@ -490,7 +533,7 @@ export default async function ContributionReviewPage({
                     <label className={styles.field}>
                       <span>Assign to</span>
                       <select
-                        defaultValue={item.review?.assignedToKind ?? ""}
+                        defaultValue={suggestedAssignmentKind}
                         name="assignedToKind"
                       >
                         <option value="">Not assigned yet</option>
@@ -505,7 +548,7 @@ export default async function ContributionReviewPage({
                     <label className={styles.field}>
                       <span>Assignment label</span>
                       <input
-                        defaultValue={item.review?.assignedToLabel ?? ""}
+                        defaultValue={suggestedAssignmentLabel}
                         list={assignmentDatalistId}
                         name="assignedToLabel"
                         placeholder="Claim, objection, evidence item, assumption, or question"
@@ -518,9 +561,13 @@ export default async function ContributionReviewPage({
                         defaultValue={
                           item.review?.changedSynthesis === true
                             ? "yes"
-                            : item.review?.changedSynthesis === false
+                          : item.review?.changedSynthesis === false
                               ? "no"
-                              : "undecided"
+                              : suggestedChangedSynthesis === true
+                                ? "yes"
+                                : suggestedChangedSynthesis === false
+                                  ? "no"
+                                  : "undecided"
                         }
                         name="changedSynthesis"
                       >
@@ -530,6 +577,14 @@ export default async function ContributionReviewPage({
                       </select>
                     </label>
                   </div>
+
+                  {hasAiReviewSuggestion && !item.review ? (
+                    <p className={styles.prefillNote}>
+                      The placement fields above were prefilled from the assisted-reader
+                      suggestion. Keep, revise, or clear them before saving the human
+                      review decision.
+                    </p>
+                  ) : null}
 
                   <label className={styles.field}>
                     <span>Public record note</span>
@@ -563,7 +618,7 @@ export default async function ContributionReviewPage({
                   </button>
                 </form>
               </article>
-            ))}
+            )})}
           </div>
 
           {suggestedAttachmentTargets ? (
