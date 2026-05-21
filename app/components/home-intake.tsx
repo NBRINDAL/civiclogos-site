@@ -67,7 +67,7 @@ export default function HomeIntake() {
         setStatusMessage(
           payload.destinationKind === "existing-room"
             ? `Opening ${payload.roomTitle ?? "the best current room"}…`
-            : "Opening a provisional new-room draft…",
+            : "Opening a room candidate…",
         );
 
         router.push(payload.destinationHref);
@@ -91,8 +91,8 @@ export default function HomeIntake() {
         </h2>
         <p>
           Civic Logos will try to place the idea inside the closest current room.
-          If none of the current rooms fit, it will open a provisional new-room
-          draft instead of pretending the fit is cleaner than it is.
+          If none of the current rooms fit, it will open a room candidate
+          instead of pretending the fit is cleaner than it is.
         </p>
       </div>
 

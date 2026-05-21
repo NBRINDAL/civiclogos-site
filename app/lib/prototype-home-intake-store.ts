@@ -6,8 +6,14 @@ import seedStore from "@/data/prototype-home-intakes.seed.json";
 import { buildHomeIntakeRouting } from "./home-intake-ai";
 import type {
   HomeIntakeRecord,
+  HomeIntakeRouteKind,
   HomeIntakeStoreDocument,
 } from "./home-intake-types";
+
+type ListHomeIntakeFilters = {
+  routeKind?: HomeIntakeRouteKind;
+  limit?: number;
+};
 
 const seedDocument = seedStore as HomeIntakeStoreDocument;
 
@@ -105,4 +111,22 @@ export async function createHomeIntakeEntry(prompt: string): Promise<HomeIntakeR
 export async function getHomeIntakeEntry(id: string) {
   const document = await readStoreDocument();
   return document.entries.find((item) => item.id === id) ?? null;
+}
+
+export async function listHomeIntakeEntries(filters: ListHomeIntakeFilters = {}) {
+  const document = await readStoreDocument();
+
+  return [...document.entries]
+    .filter((item) => {
+      if (filters.routeKind && item.routing.routeKind !== filters.routeKind) {
+        return false;
+      }
+
+      return true;
+    })
+    .sort(
+      (left, right) =>
+        new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime(),
+    )
+    .slice(0, filters.limit ?? 12);
 }

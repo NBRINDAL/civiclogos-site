@@ -1,5 +1,6 @@
 import Link from "next/link";
 import LiveCardBrowser from "../components/live-card-browser";
+import { listHomeIntakeEntries } from "../lib/home-intake-store";
 import {
   getInspectableTopics,
   getLiveCardIndex,
@@ -8,6 +9,8 @@ import {
   type IssueRoomSlug,
 } from "../lib/civic-logos";
 import styles from "./page.module.css";
+
+export const dynamic = "force-dynamic";
 
 export default async function RoomsPage({
   searchParams,
@@ -24,7 +27,13 @@ export default async function RoomsPage({
   const initialQuery = Array.isArray(resolvedSearchParams.q)
     ? resolvedSearchParams.q[0]
     : resolvedSearchParams.q;
-  const liveCardIndex = getLiveCardIndex();
+  const [liveCardIndex, roomCandidates] = await Promise.all([
+    Promise.resolve(getLiveCardIndex()),
+    listHomeIntakeEntries({
+      routeKind: "new-room-draft",
+      limit: 6,
+    }),
+  ]);
   const totalInspectableCards = roomDirectory.reduce((total, room) => {
     const roomData = issueRooms[room.slug as IssueRoomSlug];
     return total + getInspectableTopics(roomData).length;
@@ -82,8 +91,8 @@ export default async function RoomsPage({
                 <span>live topic cards</span>
               </div>
               <div>
-                <strong>{roomDirectory.length - 1}</strong>
-                <span>heavier seeded drafts</span>
+                <strong>{roomCandidates.length}</strong>
+                <span>room candidates on deck</span>
               </div>
             </div>
           </aside>
@@ -158,6 +167,78 @@ export default async function RoomsPage({
               );
             })}
           </div>
+        </section>
+
+        <section className={styles.section} id="room-candidates">
+          <div className={styles.sectionIntro}>
+            <span className={styles.eyebrow}>Room candidates</span>
+            <h2>Unmapped questions should still become part of the civic map.</h2>
+            <p>
+              When an idea does not fit the current room set, Civic Logos should
+              still hold it as a durable room candidate. These candidates are not
+              official rooms yet, but they are no longer disposable one-off answers.
+            </p>
+          </div>
+
+          {roomCandidates.length ? (
+            <div className={styles.roomGrid}>
+              {roomCandidates.map((entry) => (
+                <article className={styles.roomCard} key={entry.id}>
+                  <div className={styles.roomMeta}>
+                    <span>{entry.routing.routeConfidence ?? "working draft"}</span>
+                    <strong>Room candidate</strong>
+                  </div>
+
+                  <h3>
+                    {entry.routing.suggestedTopicTitle ??
+                      entry.routing.suggestedCentralQuestion ??
+                      "Unmapped public question"}
+                  </h3>
+                  <p>
+                    {entry.routing.fitSummary ??
+                      entry.routing.suggestedTopicSummary ??
+                      "This candidate was opened because the current room map did not cleanly absorb the idea yet."}
+                  </p>
+
+                  {entry.routing.suggestedCentralQuestion ? (
+                    <div className={styles.liveCardNote}>
+                      <span>Central question</span>
+                      <strong>{entry.routing.suggestedCentralQuestion}</strong>
+                    </div>
+                  ) : null}
+
+                  <div className={styles.roomFooter}>
+                    <span>
+                      Created{" "}
+                      {new Date(entry.createdAt).toLocaleDateString("en-US", {
+                        month: "short",
+                        day: "numeric",
+                        year: "numeric",
+                      })}
+                    </span>
+
+                    <div className={styles.roomActions}>
+                      <Link className={styles.roomLink} href={`/intake/${entry.id}`}>
+                        Open candidate
+                      </Link>
+                    </div>
+                  </div>
+                </article>
+              ))}
+            </div>
+          ) : (
+            <article className={styles.roomCard}>
+              <div className={styles.roomMeta}>
+                <span>No candidates yet</span>
+                <strong>Waiting for new unmapped questions</strong>
+              </div>
+              <h3>The room map still has blank edges.</h3>
+              <p>
+                When a public question does not belong cleanly inside the current
+                rooms, Civic Logos should hold it here until the map grows.
+              </p>
+            </article>
+          )}
         </section>
 
         <section className={styles.section} id="card-index">

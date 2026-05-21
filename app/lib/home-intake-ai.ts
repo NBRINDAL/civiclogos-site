@@ -368,7 +368,7 @@ function buildFallbackTopicTitle(prompt: string) {
 }
 
 function buildFallbackTopicSummary(prompt: string) {
-  return `This provisional draft was opened because the current room map did not cleanly absorb the question: ${summarizePrompt(prompt, 170)}`;
+  return `This room candidate was opened because the current room map did not cleanly absorb the question: ${summarizePrompt(prompt, 170)}`;
 }
 
 function buildHeuristicRouting(prompt: string): RoutingDraft {
@@ -465,10 +465,10 @@ function buildHeuristicRouting(prompt: string): RoutingDraft {
 
     return {
       routeKind: "new-room-draft",
-      roomTitle: "Provisional new room",
+      roomTitle: "Room candidate",
       routeConfidence: bestScore >= 3 ? "medium" : "low",
       fitSummary:
-        "The current room map does not cleanly absorb this question yet, so Civic Logos is opening a provisional new-room draft instead of forcing a weak fit.",
+        "The current room map does not cleanly absorb this question yet, so Civic Logos is opening a room candidate instead of forcing a weak fit.",
       suggestedCentralQuestion: prompt.trim().endsWith("?")
         ? summarizePrompt(prompt.trim(), 180)
         : `${summarizePrompt(prompt.trim(), 176)}?`,
@@ -623,7 +623,7 @@ async function classifyWithOpenAI(prompt: string): Promise<ProviderHomeIntakeRou
         temperature: 0.2,
         max_output_tokens: 650,
         instructions:
-          "You are a routing reader for Civic Logos. Read a user's question or idea and decide whether it belongs in one of the current rooms or whether it needs a provisional new-room draft. You are not writing a manifesto. You are mapping the idea into the cleanest current public reasoning object.",
+          "You are a routing reader for Civic Logos. Read a user's question or idea and decide whether it belongs in one of the current rooms or whether it needs a new room candidate. You are not writing a manifesto. You are mapping the idea into the cleanest current public reasoning object.",
         input: [
           {
             role: "user",
@@ -719,7 +719,7 @@ async function classifyWithAnthropic(prompt: string): Promise<ProviderHomeIntake
         model,
         max_tokens: 650,
         system:
-          "You are a routing reader for Civic Logos. Read a user's question or idea and decide whether it belongs in one of the current rooms or whether it needs a provisional new-room draft. Return only JSON that matches the requested schema.",
+          "You are a routing reader for Civic Logos. Read a user's question or idea and decide whether it belongs in one of the current rooms or whether it needs a new room candidate. Return only JSON that matches the requested schema.",
         messages: [
           {
             role: "user",

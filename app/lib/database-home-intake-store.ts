@@ -4,10 +4,16 @@ import seedStore from "@/data/prototype-home-intakes.seed.json";
 import { buildHomeIntakeRouting } from "./home-intake-ai";
 import type {
   HomeIntakeRecord,
+  HomeIntakeRouteKind,
   HomeIntakeRouting,
   HomeIntakeStoreDocument,
   HomeIntakeStoreMetadata,
 } from "./home-intake-types";
+
+type ListHomeIntakeFilters = {
+  routeKind?: HomeIntakeRouteKind;
+  limit?: number;
+};
 
 type HomeIntakeRow = {
   id: string;
@@ -21,6 +27,9 @@ type DatabaseHomeIntakeStore = {
   getHomeIntakeStoreMetadata: () => Promise<HomeIntakeStoreMetadata>;
   createHomeIntakeEntry: (prompt: string) => Promise<HomeIntakeRecord>;
   getHomeIntakeEntry: (id: string) => Promise<HomeIntakeRecord | null>;
+  listHomeIntakeEntries: (
+    filters?: ListHomeIntakeFilters,
+  ) => Promise<HomeIntakeRecord[]>;
 };
 
 let sqlClient: Sql | null = null;
@@ -180,6 +189,21 @@ export function createDatabaseHomeIntakeStore(): DatabaseHomeIntakeStore {
 
       const row = rows[0];
       return row ? rowToEntry(row) : null;
+    },
+
+    async listHomeIntakeEntries(filters = {}) {
+      await ensureHomeIntakeTable();
+      const sql = getSqlClient();
+      const limit = Math.min(Math.max(filters.limit ?? 12, 1), 50);
+      const rows = await sql<HomeIntakeRow[]>`
+        select *
+        from civiclogos_home_intakes
+        where (${filters.routeKind ?? null}::text is null or routing ->> 'routeKind' = ${filters.routeKind ?? null})
+        order by created_at desc
+        limit ${limit}
+      `;
+
+      return rows.map(rowToEntry);
     },
   };
 }

@@ -94,12 +94,12 @@ export default async function IntakeEntryPage({
             <span className={styles.eyebrow}>
               {entry.routing.routeKind === "existing-room"
                 ? "Routed to current room"
-                : "Provisional new-room draft"}
+                : "Room candidate created"}
             </span>
             <h1>
               {entry.routing.routeKind === "existing-room"
                 ? entry.routing.roomTitle ?? "Current room"
-                : entry.routing.suggestedTopicTitle ?? "New room draft"}
+                : entry.routing.suggestedTopicTitle ?? "Room candidate"}
             </h1>
             <p className={styles.summary}>
               {entry.routing.fitSummary ??
@@ -130,7 +130,7 @@ export default async function IntakeEntryPage({
           <h2>
             {entry.routing.routeKind === "existing-room"
               ? "This idea fits a current room more cleanly than it needs a new one."
-              : "The current room map was treated as a weak fit, so Civic Logos opened a provisional draft instead."}
+              : "The current room map was treated as a weak fit, so Civic Logos opened a room candidate instead."}
           </h2>
           <p>{entry.routing.suggestedTopicSummary}</p>
 
@@ -163,6 +163,11 @@ export default async function IntakeEntryPage({
             {roomHref ? (
               <Link className={styles.primaryAction} href={`${roomHref}?intake=${entry.id}`}>
                 Open routed room
+              </Link>
+            ) : null}
+            {entry.routing.routeKind === "new-room-draft" ? (
+              <Link className={styles.primaryAction} href="/rooms#room-candidates">
+                Open room candidates
               </Link>
             ) : null}
             {topicHref ? (

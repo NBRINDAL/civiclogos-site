@@ -6,13 +6,20 @@ import {
   createHomeIntakeEntry as createPrototypeHomeIntakeEntry,
   getHomeIntakeEntry as getPrototypeHomeIntakeEntry,
   getHomeIntakeStoreMetadata as getPrototypeHomeIntakeStoreMetadata,
+  listHomeIntakeEntries as listPrototypeHomeIntakeEntries,
 } from "./prototype-home-intake-store";
 import type {
   HomeIntakeRecord,
+  HomeIntakeRouteKind,
   HomeIntakeStoreMetadata,
 } from "./home-intake-types";
 
 const databaseStore = createDatabaseHomeIntakeStore();
+
+type ListHomeIntakeFilters = {
+  routeKind?: HomeIntakeRouteKind;
+  limit?: number;
+};
 
 function withFallbackNote(note: string) {
   return `${note} Database connection was unavailable, so Civic Logos fell back to the local prototype intake store for this request.`;
@@ -24,6 +31,9 @@ async function withHomeIntakeStore<T>(
       getHomeIntakeStoreMetadata: () => Promise<HomeIntakeStoreMetadata>;
       createHomeIntakeEntry: (prompt: string) => Promise<HomeIntakeRecord>;
       getHomeIntakeEntry: (id: string) => Promise<HomeIntakeRecord | null>;
+      listHomeIntakeEntries: (
+        filters?: ListHomeIntakeFilters,
+      ) => Promise<HomeIntakeRecord[]>;
     },
   ) => Promise<T>,
 ) {
@@ -50,6 +60,7 @@ async function withHomeIntakeStore<T>(
         : metadata,
     createHomeIntakeEntry: createPrototypeHomeIntakeEntry,
     getHomeIntakeEntry: getPrototypeHomeIntakeEntry,
+    listHomeIntakeEntries: listPrototypeHomeIntakeEntries,
   };
 
   return action(prototypeStore);
@@ -65,4 +76,8 @@ export async function createHomeIntakeEntry(prompt: string) {
 
 export async function getHomeIntakeEntry(id: string) {
   return withHomeIntakeStore((store) => store.getHomeIntakeEntry(id));
+}
+
+export async function listHomeIntakeEntries(filters: ListHomeIntakeFilters = {}) {
+  return withHomeIntakeStore((store) => store.listHomeIntakeEntries(filters));
 }
