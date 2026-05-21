@@ -6,6 +6,7 @@ import type { DebateLane } from "../lib/reasoning-types";
 import { topicAiDraftEventName, type TopicAiDraftDetail } from "../lib/topic-ai-draft";
 import type {
   TopicChatMessage,
+  TopicChatPromotion,
   TopicChatPromotionState,
   TopicChatStoreMetadata,
 } from "../lib/topic-chat-types";
@@ -89,6 +90,27 @@ function getPromotionLabel(state: TopicChatPromotionState) {
   }
 
   return "Exploratory only";
+}
+
+function getContributionRecordHref(contributionId: string) {
+  return `#contribution-${contributionId}`;
+}
+
+function getReviewQueueHref(
+  roomSlug: IssueRoomSlug,
+  topicId: string,
+  contributionStatus?: TopicChatPromotion["contributionStatus"],
+) {
+  const searchParams = new URLSearchParams({
+    roomSlug,
+    topicId,
+  });
+
+  if (contributionStatus === "pending" || contributionStatus === "needs review") {
+    searchParams.set("status", contributionStatus);
+  }
+
+  return `/review/contributions?${searchParams.toString()}`;
 }
 
 function buildTranscript(messages: TopicChatMessage[]): TranscriptItem[] {
@@ -367,6 +389,31 @@ export default function TopicAiPanel({
                           </div>
                         ) : null}
                       </dl>
+                    ) : null}
+
+                    {item.message.promotion.contributionId ? (
+                      <div className={styles.promotionActions}>
+                        <a
+                          className={styles.promotionLink}
+                          href={getContributionRecordHref(
+                            item.message.promotion.contributionId,
+                          )}
+                        >
+                          View public record entry
+                        </a>
+                        {item.message.promotion.state === "sent-to-review" ? (
+                          <a
+                            className={styles.promotionLink}
+                            href={getReviewQueueHref(
+                              roomSlug,
+                              topicId,
+                              item.message.promotion.contributionStatus,
+                            )}
+                          >
+                            Open review queue
+                          </a>
+                        ) : null}
+                      </div>
                     ) : null}
                   </div>
                 ) : null}

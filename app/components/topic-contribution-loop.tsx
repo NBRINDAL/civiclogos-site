@@ -720,7 +720,11 @@ export default function TopicContributionLoop({
                 item.review?.changedSynthesis ?? item.aiIntake?.changedSynthesisLikely;
 
               return (
-                <article className={styles.contributionCard} key={item.id}>
+                <article
+                  className={styles.contributionCard}
+                  id={`contribution-${item.id}`}
+                  key={item.id}
+                >
                   <div className={styles.contributionMeta}>
                     {item.isSeedExample ? (
                       <span className={styles.seedLabel}>Prototype example</span>

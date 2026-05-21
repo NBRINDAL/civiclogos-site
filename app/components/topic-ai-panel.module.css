@@ -234,6 +234,30 @@
   font-weight: 700;
 }
 
+.promotionActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.promotionLink {
+  display: inline-flex;
+  align-items: center;
+  min-height: 40px;
+  padding: 0 16px;
+  border: 1px solid rgba(18, 33, 39, 0.14);
+  border-radius: 999px;
+  background: rgba(255, 251, 245, 0.92);
+  color: var(--foreground);
+  font-size: 0.9rem;
+  font-weight: 700;
+  text-decoration: none;
+  transition:
+    transform 180ms ease,
+    border-color 180ms ease,
+    background 180ms ease;
+}
+
 .emptyState {
   padding: 14px 16px;
   border: 1px dashed rgba(18, 33, 39, 0.14);
@@ -463,7 +487,8 @@
   .primaryAction:hover,
   .secondaryAction:hover,
   .quickPrompt:hover,
-  .answerAction:hover {
+  .answerAction:hover,
+  .promotionLink:hover {
     transform: translateY(-2px);
   }
 
@@ -473,7 +498,8 @@
 
   .secondaryAction:hover,
   .quickPrompt:hover,
-  .answerAction:hover {
+  .answerAction:hover,
+  .promotionLink:hover {
     border-color: rgba(18, 33, 39, 0.26);
     background: rgba(255, 251, 245, 0.96);
   }
