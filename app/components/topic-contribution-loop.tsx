@@ -12,7 +12,9 @@ import type {
 import {
   getDebateLaneLabel,
   normalizeDebateLane,
+  normalizeReviewTargetKind,
   type DebateLane,
+  type ReviewTargetKind,
   type ReviewStatus,
 } from "../lib/reasoning-types";
 import {
@@ -63,6 +65,11 @@ type ContributionFilter =
   | "ai-assisted"
   | "document-backed";
 
+type ContributionAttachmentFilter =
+  | "all-targets"
+  | Exclude<ReviewTargetKind, "unclear">
+  | "none-yet";
+
 type FormState = {
   lane: FormLane;
   title: string;
@@ -108,6 +115,16 @@ const contributionFilterLabels: Record<ContributionFilter, string> = {
   "document-backed": "Document-backed",
 };
 
+const contributionAttachmentFilterLabels: Record<ContributionAttachmentFilter, string> = {
+  "all-targets": "All targets",
+  claim: "Synthesis",
+  objection: "Objection",
+  evidence: "Evidence",
+  assumption: "Assumption",
+  "open-question": "Open question",
+  "none-yet": "None yet",
+};
+
 function normalizeContributionFilter(value: string | null | undefined): ContributionFilter {
   if (
     value === "all" ||
@@ -120,6 +137,24 @@ function normalizeContributionFilter(value: string | null | undefined): Contribu
   }
 
   return "all";
+}
+
+function normalizeContributionAttachmentFilter(
+  value: string | null | undefined,
+): ContributionAttachmentFilter {
+  if (
+    value === "all-targets" ||
+    value === "claim" ||
+    value === "objection" ||
+    value === "evidence" ||
+    value === "assumption" ||
+    value === "open-question" ||
+    value === "none-yet"
+  ) {
+    return value;
+  }
+
+  return "all-targets";
 }
 
 function formatTimestamp(value: string) {
@@ -156,6 +191,18 @@ function formatAttachmentPoint(
   }
 
   return `${normalizedKind} — ${label}`;
+}
+
+function getVisibleAttachmentFilter(contribution: PublicContribution): ContributionAttachmentFilter {
+  const kind =
+    contribution.review?.assignedToKind ?? contribution.aiIntake?.suggestedAssignmentKind;
+  const normalizedKind = kind ? normalizeReviewTargetKind(kind) : null;
+
+  if (!normalizedKind || normalizedKind === "unclear") {
+    return "none-yet";
+  }
+
+  return normalizedKind;
 }
 
 function getAiReaderLabel(provider: AiProvider) {
@@ -269,27 +316,59 @@ export default function TopicContributionLoop({
     }),
     [contributions],
   );
+  const attachmentFilterCounts = useMemo(
+    () => ({
+      "all-targets": contributions.length,
+      claim: contributions.filter((item) => getVisibleAttachmentFilter(item) === "claim").length,
+      objection: contributions.filter((item) => getVisibleAttachmentFilter(item) === "objection")
+        .length,
+      evidence: contributions.filter((item) => getVisibleAttachmentFilter(item) === "evidence")
+        .length,
+      assumption: contributions.filter((item) => getVisibleAttachmentFilter(item) === "assumption")
+        .length,
+      "open-question": contributions.filter(
+        (item) => getVisibleAttachmentFilter(item) === "open-question",
+      ).length,
+      "none-yet": contributions.filter((item) => getVisibleAttachmentFilter(item) === "none-yet")
+        .length,
+    }),
+    [contributions],
+  );
   const activeFilter = useMemo(
     () => normalizeContributionFilter(searchParams.get("recordView")),
     [searchParams],
   );
+  const activeAttachmentFilter = useMemo(
+    () => normalizeContributionAttachmentFilter(searchParams.get("attachment")),
+    [searchParams],
+  );
   const filteredContributions = useMemo(() => {
-    switch (activeFilter) {
-      case "needs-review":
-        return contributions.filter(
-          (item) => item.status === "pending" || item.status === "needs review",
-        );
-      case "changed-card":
-        return contributions.filter((item) => item.review?.changedSynthesis === true);
-      case "ai-assisted":
-        return contributions.filter((item) => item.draftSource);
-      case "document-backed":
-        return contributions.filter((item) => item.evidenceDocument);
-      case "all":
-      default:
-        return contributions;
+    const recordFilteredContributions = (() => {
+      switch (activeFilter) {
+        case "needs-review":
+          return contributions.filter(
+            (item) => item.status === "pending" || item.status === "needs review",
+          );
+        case "changed-card":
+          return contributions.filter((item) => item.review?.changedSynthesis === true);
+        case "ai-assisted":
+          return contributions.filter((item) => item.draftSource);
+        case "document-backed":
+          return contributions.filter((item) => item.evidenceDocument);
+        case "all":
+        default:
+          return contributions;
+      }
+    })();
+
+    if (activeAttachmentFilter === "all-targets") {
+      return recordFilteredContributions;
     }
-  }, [activeFilter, contributions]);
+
+    return recordFilteredContributions.filter(
+      (item) => getVisibleAttachmentFilter(item) === activeAttachmentFilter,
+    );
+  }, [activeAttachmentFilter, activeFilter, contributions]);
 
   function handleFilterPick(filter: ContributionFilter) {
     const nextSearchParams = new URLSearchParams(searchParams.toString());
@@ -298,6 +377,24 @@ export default function TopicContributionLoop({
       nextSearchParams.delete("recordView");
     } else {
       nextSearchParams.set("recordView", filter);
+    }
+
+    const nextQuery = nextSearchParams.toString();
+    router.replace(
+      `${pathname}${nextQuery ? `?${nextQuery}` : ""}#contribution-record`,
+      {
+        scroll: false,
+      },
+    );
+  }
+
+  function handleAttachmentFilterPick(filter: ContributionAttachmentFilter) {
+    const nextSearchParams = new URLSearchParams(searchParams.toString());
+
+    if (filter === "all-targets") {
+      nextSearchParams.delete("attachment");
+    } else {
+      nextSearchParams.set("attachment", filter);
     }
 
     const nextQuery = nextSearchParams.toString();
@@ -790,19 +887,46 @@ export default function TopicContributionLoop({
         </div>
 
         <div className={styles.filterBlock}>
-          <div className={styles.filterList}>
-            {(Object.keys(contributionFilterLabels) as ContributionFilter[]).map((filter) => (
-              <button
-                className={
-                  activeFilter === filter ? styles.activeFilterChip : styles.filterChip
-                }
-                key={filter}
-                onClick={() => handleFilterPick(filter)}
-                type="button"
-              >
-                {contributionFilterLabels[filter]} {filterCounts[filter]}
-              </button>
-            ))}
+          <div className={styles.filterSection}>
+            <span className={styles.sectionLabel}>Record view</span>
+            <div className={styles.filterList}>
+              {(Object.keys(contributionFilterLabels) as ContributionFilter[]).map((filter) => (
+                <button
+                  className={
+                    activeFilter === filter ? styles.activeFilterChip : styles.filterChip
+                  }
+                  key={filter}
+                  onClick={() => handleFilterPick(filter)}
+                  type="button"
+                >
+                  {contributionFilterLabels[filter]} {filterCounts[filter]}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className={styles.filterSection}>
+            <span className={styles.sectionLabel}>Attachment target</span>
+            <div className={styles.filterList}>
+              {(
+                Object.keys(
+                  contributionAttachmentFilterLabels,
+                ) as ContributionAttachmentFilter[]
+              ).map((filter) => (
+                <button
+                  className={
+                    activeAttachmentFilter === filter
+                      ? styles.activeFilterChip
+                      : styles.filterChip
+                  }
+                  key={filter}
+                  onClick={() => handleAttachmentFilterPick(filter)}
+                  type="button"
+                >
+                  {contributionAttachmentFilterLabels[filter]}{" "}
+                  {attachmentFilterCounts[filter]}
+                </button>
+              ))}
+            </div>
           </div>
           <p className={styles.filterNote}>
             Showing {filteredContributions.length} of {contributions.length} visible
@@ -1028,7 +1152,15 @@ export default function TopicContributionLoop({
         ) : contributions.length ? (
           <p className={styles.loadingNote}>
             No visible contributions match the <strong>{contributionFilterLabels[activeFilter]}</strong>{" "}
-            view right now. Try another record view to inspect a different part of the
+            record view
+            {activeAttachmentFilter !== "all-targets" ? (
+              <>
+                {" "}for the{" "}
+                <strong>{contributionAttachmentFilterLabels[activeAttachmentFilter]}</strong>{" "}
+                attachment target
+              </>
+            ) : null}
+            . Try another ledger slice to inspect a different part of the
             topic&apos;s public reasoning trace.
           </p>
         ) : (

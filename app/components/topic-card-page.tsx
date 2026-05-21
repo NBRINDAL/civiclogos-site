@@ -10,7 +10,11 @@ import {
   getContributionStoreMetadata,
   listPublicContributions,
 } from "../lib/contribution-store";
-import { debateLaneLabels, debateLaneOptions } from "../lib/reasoning-types";
+import {
+  debateLaneLabels,
+  debateLaneOptions,
+  type ReviewTargetKind,
+} from "../lib/reasoning-types";
 import {
   getTopicChatSessionCookieName,
 } from "../lib/topic-chat-session";
@@ -34,6 +38,14 @@ type LanePressureItem = {
   latestUnresolved: PublicContribution | null;
 };
 
+type ContributionRecordView =
+  | "needs-review"
+  | "changed-card"
+  | "ai-assisted"
+  | "document-backed";
+
+type ContributionAttachmentFilter = Exclude<ReviewTargetKind, "unclear"> | "none-yet";
+
 type TopicCardPageProps = {
   roomSlug: IssueRoomSlug;
   card: TopicCardData;
@@ -52,17 +64,29 @@ function getPublicContributionOutcomeNote(
   return publicRecordNote ?? decisionReason ?? fallback;
 }
 
-function getRecordViewHref(
-  filter: "needs-review" | "changed-card" | "ai-assisted" | "document-backed",
-) {
-  return `?recordView=${encodeURIComponent(filter)}#contribution-record`;
-}
+function getContributionLedgerHref({
+  recordView,
+  attachment,
+  contributionId,
+}: {
+  recordView?: ContributionRecordView;
+  attachment?: ContributionAttachmentFilter;
+  contributionId?: string;
+}) {
+  const params = new URLSearchParams();
 
-function getContributionRecordHref(
-  filter: "needs-review" | "changed-card" | "ai-assisted" | "document-backed",
-  contributionId: string,
-) {
-  return `?recordView=${encodeURIComponent(filter)}#contribution-${contributionId}`;
+  if (recordView) {
+    params.set("recordView", recordView);
+  }
+
+  if (attachment) {
+    params.set("attachment", attachment);
+  }
+
+  const query = params.toString();
+  const hash = contributionId ? `contribution-${contributionId}` : "contribution-record";
+
+  return `${query ? `?${query}` : ""}#${hash}`;
 }
 
 export default async function TopicCardPage({
@@ -319,7 +343,17 @@ export default async function TopicCardPage({
                   {incorporatedAssumptions.slice(0, 3).map((item) => (
                     <article className={styles.historyItem} key={`assumption-${item.id}`}>
                       <div>
-                        <strong>{item.review?.assignedToLabel ?? item.title}</strong>
+                        <strong>
+                          <Link
+                            className={styles.sourceLink}
+                            href={getContributionLedgerHref({
+                              attachment: "assumption",
+                              contributionId: item.id,
+                            })}
+                          >
+                            {item.review?.assignedToLabel ?? item.title}
+                          </Link>
+                        </strong>
                         <span>{item.title}</span>
                       </div>
                       <p>
@@ -338,6 +372,14 @@ export default async function TopicCardPage({
                   card&apos;s assumption layer.
                 </p>
               )}
+              <div className={styles.roomActions}>
+                <Link
+                  className={styles.roomActionSecondary}
+                  href={getContributionLedgerHref({ attachment: "assumption" })}
+                >
+                  Open assumption slice
+                </Link>
+              </div>
             </div>
           </article>
         </section>
@@ -362,7 +404,19 @@ export default async function TopicCardPage({
               {contributorObjectionThatChangedCard ? (
                 <>
                   <p>
-                    <strong>{contributorObjectionThatChangedCard.title}.</strong>{" "}
+                    <strong>
+                      <Link
+                        className={styles.sourceLink}
+                        href={getContributionLedgerHref({
+                          recordView: "changed-card",
+                          attachment: "objection",
+                          contributionId: contributorObjectionThatChangedCard.id,
+                        })}
+                      >
+                        {contributorObjectionThatChangedCard.title}
+                      </Link>
+                      .
+                    </strong>{" "}
                     {contributorObjectionThatChangedCard.body}
                   </p>
                   {contributorObjectionThatChangedCard.review?.reviewerNote ? (
@@ -377,7 +431,18 @@ export default async function TopicCardPage({
                   <p>
                     No contributor objection has changed this card yet. The
                     strongest live objection in the visible record is{" "}
-                    <strong>{strongestLiveContributorObjection.title}.</strong>
+                    <strong>
+                      <Link
+                        className={styles.sourceLink}
+                        href={getContributionLedgerHref({
+                          attachment: "objection",
+                          contributionId: strongestLiveContributorObjection.id,
+                        })}
+                      >
+                        {strongestLiveContributorObjection.title}
+                      </Link>
+                      .
+                    </strong>
                   </p>
                   <p>{strongestLiveContributorObjection.body}</p>
                 </>
@@ -388,6 +453,14 @@ export default async function TopicCardPage({
                   alters the public record.
                 </p>
               )}
+              <div className={styles.roomActions}>
+                <Link
+                  className={styles.roomActionSecondary}
+                  href={getContributionLedgerHref({ attachment: "objection" })}
+                >
+                  Open objection slice
+                </Link>
+              </div>
             </div>
 
             <div className={styles.copyBlock}>
@@ -423,7 +496,17 @@ export default async function TopicCardPage({
                   {incorporatedEvidence.slice(0, 3).map((item) => (
                     <article className={styles.historyItem} key={`evidence-${item.id}`}>
                       <div>
-                        <strong>{item.review?.assignedToLabel ?? item.title}</strong>
+                        <strong>
+                          <Link
+                            className={styles.sourceLink}
+                            href={getContributionLedgerHref({
+                              attachment: "evidence",
+                              contributionId: item.id,
+                            })}
+                          >
+                            {item.review?.assignedToLabel ?? item.title}
+                          </Link>
+                        </strong>
                         <span>{item.title}</span>
                       </div>
                       <p>
@@ -442,6 +525,14 @@ export default async function TopicCardPage({
                   card&apos;s evidence layer.
                 </p>
               )}
+              <div className={styles.roomActions}>
+                <Link
+                  className={styles.roomActionSecondary}
+                  href={getContributionLedgerHref({ attachment: "evidence" })}
+                >
+                  Open evidence slice
+                </Link>
+              </div>
             </div>
 
             <div className={styles.copyBlock}>
@@ -484,7 +575,10 @@ export default async function TopicCardPage({
                             <strong>
                               <Link
                                 className={styles.sourceLink}
-                                href={getContributionRecordHref("document-backed", item.id)}
+                                href={getContributionLedgerHref({
+                                  recordView: "document-backed",
+                                  contributionId: item.id,
+                                })}
                               >
                                 {item.title}
                               </Link>
@@ -513,7 +607,9 @@ export default async function TopicCardPage({
                   <div className={styles.roomActions}>
                     <Link
                       className={styles.roomActionSecondary}
-                      href={getRecordViewHref("document-backed")}
+                      href={getContributionLedgerHref({
+                        recordView: "document-backed",
+                      })}
                     >
                       View document-backed contributions
                     </Link>
@@ -546,10 +642,21 @@ export default async function TopicCardPage({
                 <div className={styles.historyList}>
                   {incorporatedAssumptions.slice(0, 3).map((item) => (
                     <article className={styles.historyItem} key={item.id}>
-                      <div>
-                        <strong>{item.title}</strong>
-                        <span>{item.review?.assignedToLabel ?? "Assumption shift"}</span>
-                      </div>
+                        <div>
+                          <strong>
+                            <Link
+                              className={styles.sourceLink}
+                              href={getContributionLedgerHref({
+                                recordView: "changed-card",
+                                attachment: "assumption",
+                                contributionId: item.id,
+                              })}
+                            >
+                              {item.title}
+                            </Link>
+                          </strong>
+                          <span>{item.review?.assignedToLabel ?? "Assumption shift"}</span>
+                        </div>
                       <p>
                         {getPublicContributionOutcomeNote(
                           item.review?.decisionReason,
@@ -567,6 +674,14 @@ export default async function TopicCardPage({
                   disappearing into the review backend.
                 </p>
               )}
+              <div className={styles.roomActions}>
+                <Link
+                  className={styles.roomActionSecondary}
+                  href={getContributionLedgerHref({ attachment: "assumption" })}
+                >
+                  Open assumption-layer record
+                </Link>
+              </div>
             </div>
 
             <div className={styles.copyBlock}>
@@ -578,7 +693,21 @@ export default async function TopicCardPage({
                     .map((item) => (
                       <article className={styles.historyItem} key={item.id}>
                         <div>
-                          <strong>{item.title}</strong>
+                          <strong>
+                            <Link
+                              className={styles.sourceLink}
+                              href={getContributionLedgerHref({
+                                recordView: "changed-card",
+                                attachment:
+                                  item.review?.assignedToKind === "open-question"
+                                    ? "open-question"
+                                    : "evidence",
+                                contributionId: item.id,
+                              })}
+                            >
+                              {item.title}
+                            </Link>
+                          </strong>
                           <span>{item.review?.assignedToLabel ?? "Reviewed update"}</span>
                         </div>
                         <p>
@@ -597,6 +726,20 @@ export default async function TopicCardPage({
                   marked as changing the visible record.
                 </p>
               )}
+              <div className={styles.roomActions}>
+                <Link
+                  className={styles.roomActionSecondary}
+                  href={getContributionLedgerHref({ attachment: "evidence" })}
+                >
+                  Open evidence slice
+                </Link>
+                <Link
+                  className={styles.roomActionSecondary}
+                  href={getContributionLedgerHref({ attachment: "open-question" })}
+                >
+                  Open open-question slice
+                </Link>
+              </div>
             </div>
           </article>
 
@@ -638,7 +781,17 @@ export default async function TopicCardPage({
                   {incorporatedQuestions.slice(0, 3).map((item) => (
                     <article className={styles.historyItem} key={`question-${item.id}`}>
                       <div>
-                        <strong>{item.review?.assignedToLabel ?? item.title}</strong>
+                        <strong>
+                          <Link
+                            className={styles.sourceLink}
+                            href={getContributionLedgerHref({
+                              attachment: "open-question",
+                              contributionId: item.id,
+                            })}
+                          >
+                            {item.review?.assignedToLabel ?? item.title}
+                          </Link>
+                        </strong>
                         <span>{item.title}</span>
                       </div>
                       <p>
@@ -657,6 +810,14 @@ export default async function TopicCardPage({
                   card&apos;s open-question layer.
                 </p>
               )}
+              <div className={styles.roomActions}>
+                <Link
+                  className={styles.roomActionSecondary}
+                  href={getContributionLedgerHref({ attachment: "open-question" })}
+                >
+                  Open open-question slice
+                </Link>
+              </div>
             </div>
           </article>
         </section>
@@ -770,7 +931,7 @@ export default async function TopicCardPage({
                 <p>Items still waiting on a clear maintainer decision.</p>
                 <Link
                   className={styles.roomActionSecondary}
-                  href={getRecordViewHref("needs-review")}
+                  href={getContributionLedgerHref({ recordView: "needs-review" })}
                 >
                   Open needs-review slice
                 </Link>
@@ -781,7 +942,7 @@ export default async function TopicCardPage({
                 <p>Contributions whose human review says they altered the public record.</p>
                 <Link
                   className={styles.roomActionSecondary}
-                  href={getRecordViewHref("changed-card")}
+                  href={getContributionLedgerHref({ recordView: "changed-card" })}
                 >
                   Open changed-card slice
                 </Link>
@@ -796,7 +957,7 @@ export default async function TopicCardPage({
                 </p>
                 <Link
                   className={styles.roomActionSecondary}
-                  href={getRecordViewHref("document-backed")}
+                  href={getContributionLedgerHref({ recordView: "document-backed" })}
                 >
                   Open document-backed slice
                 </Link>
@@ -884,7 +1045,10 @@ export default async function TopicCardPage({
                         <strong>
                           <Link
                             className={styles.sourceLink}
-                            href={getContributionRecordHref("changed-card", item.id)}
+                            href={getContributionLedgerHref({
+                              recordView: "changed-card",
+                              contributionId: item.id,
+                            })}
                           >
                             {item.title}
                           </Link>
@@ -902,7 +1066,7 @@ export default async function TopicCardPage({
                 <div className={styles.roomActions}>
                   <Link
                     className={styles.roomActionSecondary}
-                    href={getRecordViewHref("changed-card")}
+                    href={getContributionLedgerHref({ recordView: "changed-card" })}
                   >
                     View changed-card contributions
                   </Link>
@@ -929,7 +1093,10 @@ export default async function TopicCardPage({
                         <strong>
                           <Link
                             className={styles.sourceLink}
-                            href={getContributionRecordHref("needs-review", item.id)}
+                            href={getContributionLedgerHref({
+                              recordView: "needs-review",
+                              contributionId: item.id,
+                            })}
                           >
                             {item.title}
                           </Link>
@@ -942,11 +1109,11 @@ export default async function TopicCardPage({
                   </ul>
                   <div className={styles.roomActions}>
                     <Link
-                      className={styles.roomActionSecondary}
-                      href={getRecordViewHref("needs-review")}
-                    >
-                      View needs-review contributions
-                    </Link>
+                    className={styles.roomActionSecondary}
+                    href={getContributionLedgerHref({ recordView: "needs-review" })}
+                  >
+                    View needs-review contributions
+                  </Link>
                   </div>
                 </>
               ) : (
@@ -976,11 +1143,14 @@ export default async function TopicCardPage({
                         <div>
                           <strong>
                             <Link
-                              className={styles.sourceLink}
-                              href={getContributionRecordHref("ai-assisted", item.id)}
-                            >
-                              {item.title}
-                            </Link>
+                            className={styles.sourceLink}
+                            href={getContributionLedgerHref({
+                              recordView: "ai-assisted",
+                              contributionId: item.id,
+                            })}
+                          >
+                            {item.title}
+                          </Link>
                           </strong>
                           <span>
                             {item.status} · {item.draftSource?.providerLabel}
@@ -1008,11 +1178,11 @@ export default async function TopicCardPage({
                   </div>
                   <div className={styles.roomActions}>
                     <Link
-                      className={styles.roomActionSecondary}
-                      href={getRecordViewHref("ai-assisted")}
-                    >
-                      View AI-assisted contributions
-                    </Link>
+                    className={styles.roomActionSecondary}
+                    href={getContributionLedgerHref({ recordView: "ai-assisted" })}
+                  >
+                    View AI-assisted contributions
+                  </Link>
                   </div>
                 </>
               ) : (

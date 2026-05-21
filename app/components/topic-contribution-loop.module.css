@@ -297,6 +297,11 @@
   gap: 10px;
 }
 
+.filterSection {
+  display: grid;
+  gap: 8px;
+}
+
 .filterList {
   display: flex;
   flex-wrap: wrap;
