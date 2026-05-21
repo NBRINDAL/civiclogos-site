@@ -91,6 +91,48 @@
   gap: 10px;
 }
 
+.sessionImpactGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.sessionImpactCard {
+  display: grid;
+  gap: 8px;
+  padding: 18px;
+  border: 1px solid rgba(18, 33, 39, 0.1);
+  border-radius: 22px;
+  background: rgba(255, 251, 245, 0.82);
+}
+
+.sessionImpactCard strong {
+  color: var(--foreground);
+  font-family: var(--font-serif), serif;
+  font-size: 2rem;
+  font-weight: 600;
+  letter-spacing: -0.04em;
+}
+
+.sessionImpactCard p,
+.sessionImpactTrace p {
+  color: var(--muted);
+  line-height: 1.68;
+}
+
+.sessionImpactLabel {
+  color: var(--signal);
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.sessionImpactTrace {
+  display: grid;
+  gap: 10px;
+}
+
 .transcriptList {
   display: grid;
   gap: 14px;
@@ -438,6 +480,7 @@
 }
 
 @media (max-width: 960px) {
+  .sessionImpactGrid,
   .answerGrid {
     grid-template-columns: 1fr;
   }

@@ -107,6 +107,25 @@ function buildTranscript(messages: TopicChatMessage[]): TranscriptItem[] {
   });
 }
 
+function getSessionImpact(messages: TopicChatMessage[]) {
+  const promotedMessages = messages.filter(
+    (message) => message.role === "assistant" && message.promotion,
+  );
+
+  return {
+    promotedMessages,
+    autoRecordedCount: promotedMessages.filter(
+      (message) => message.promotion?.state === "auto-recorded",
+    ).length,
+    sentToReviewCount: promotedMessages.filter(
+      (message) => message.promotion?.state === "sent-to-review",
+    ).length,
+    exploratoryCount: promotedMessages.filter(
+      (message) => message.promotion?.state === "not-added",
+    ).length,
+  };
+}
+
 export default function TopicAiPanel({
   initialMessages,
   initialStoreMode,
@@ -129,6 +148,7 @@ export default function TopicAiPanel({
   const [storeNote, setStoreNote] = useState(initialStoreNote);
   const [isPending, startTransition] = useTransition();
   const transcript = useMemo(() => buildTranscript(messages), [messages]);
+  const sessionImpact = useMemo(() => getSessionImpact(messages), [messages]);
 
   function submitQuestion(provider: ProviderRequest, nextQuestion?: string) {
     const prompt = nextQuestion ?? question;
@@ -245,6 +265,47 @@ export default function TopicAiPanel({
             <p className={styles.disclaimer}>{disclaimer}</p>
           </div>
         </div>
+
+        <div className={styles.sessionImpactGrid}>
+          <article className={styles.sessionImpactCard}>
+            <span className={styles.sessionImpactLabel}>Auto-recorded</span>
+            <strong>{sessionImpact.autoRecordedCount}</strong>
+            <p>
+              Narrow reader turns Civic Logos treated as obvious enough to enter
+              the live record without waiting on human review.
+            </p>
+          </article>
+          <article className={styles.sessionImpactCard}>
+            <span className={styles.sessionImpactLabel}>Sent to review</span>
+            <strong>{sessionImpact.sentToReviewCount}</strong>
+            <p>
+              Assisted-reader turns that became proposed record changes and now
+              depend on a human decision.
+            </p>
+          </article>
+          <article className={styles.sessionImpactCard}>
+            <span className={styles.sessionImpactLabel}>Exploratory only</span>
+            <strong>{sessionImpact.exploratoryCount}</strong>
+            <p>
+              Reader turns that stayed chat-only because they were not yet
+              specific or grounded enough for the public record.
+            </p>
+          </article>
+        </div>
+
+        {sessionImpact.promotedMessages.length ? (
+          <div className={styles.sessionImpactTrace}>
+            <span className={styles.quickPromptLabel}>Reader session impact</span>
+            <div className={styles.issueList}>
+              {sessionImpact.promotedMessages.slice(-3).reverse().map((message) => (
+                <p className={styles.issueItem} key={`impact-${message.id}`}>
+                  <strong>{getProviderLabel(message.provider ?? "openai")}:</strong>{" "}
+                  {message.promotion?.note}
+                </p>
+              ))}
+            </div>
+          </div>
+        ) : null}
 
         {transcript.length ? (
           <div className={styles.transcriptList}>
