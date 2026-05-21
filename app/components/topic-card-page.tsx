@@ -97,6 +97,12 @@ export default async function TopicCardPage({
   const incorporatedQuestions = incorporatedContributions.filter(
     (item) => item.review?.assignedToKind === "open-question",
   );
+  const documentBackedContributions = liveContributions.filter(
+    (item) => item.evidenceDocument,
+  );
+  const pendingDocumentContributions = documentBackedContributions.filter(
+    (item) => item.status === "pending" || item.status === "needs review",
+  );
   const needsAttentionContributions = liveContributions.filter(
     (item) => item.status === "pending" || item.status === "needs review",
   );
@@ -419,6 +425,72 @@ export default async function TopicCardPage({
                 </p>
               )}
             </div>
+
+            <div className={styles.copyBlock}>
+              <h3>Uploaded documents in the visible evidence record</h3>
+              {documentBackedContributions.length ? (
+                <div className={styles.historyList}>
+                  {documentBackedContributions.slice(0, 4).map((item) => {
+                    const document = item.evidenceDocument;
+
+                    if (!document) {
+                      return null;
+                    }
+
+                    const isPendingDocument =
+                      item.status === "pending" || item.status === "needs review";
+
+                    return (
+                      <article className={styles.historyItem} key={`document-${item.id}`}>
+                        <div>
+                          <strong>
+                            <a
+                              className={styles.sourceLink}
+                              href={document.downloadHref}
+                              rel="noreferrer"
+                              target="_blank"
+                            >
+                              {document.fileName}
+                            </a>
+                          </strong>
+                          <span>
+                            {item.status} · {document.mimeType}
+                            {item.review?.assignedToLabel
+                              ? ` · ${item.review.assignedToLabel}`
+                              : ""}
+                          </span>
+                        </div>
+                        <p>
+                          Attached through <strong>{item.title}</strong>.
+                          {item.review?.publicRecordNote
+                            ? ` ${item.review.publicRecordNote}`
+                            : isPendingDocument
+                              ? " This document-backed contribution is still waiting on a full human review decision."
+                              : " This document is visible in the record even if its full synthesis impact is still being clarified."}
+                        </p>
+                        {document.extraction.note ? (
+                          <p className={styles.metaParagraph}>
+                            {document.extraction.note}
+                          </p>
+                        ) : null}
+                        {document.extraction.excerpt ? (
+                          <p className={styles.metaParagraph}>
+                            {document.extraction.excerpt}
+                          </p>
+                        ) : null}
+                      </article>
+                    );
+                  })}
+                </div>
+              ) : (
+                <p>
+                  No uploaded paper or document is visible on this topic card
+                  yet. When someone attaches one through the contribution loop,
+                  it should become part of the evidence record rather than
+                  disappearing into the queue.
+                </p>
+              )}
+            </div>
           </article>
         </section>
 
@@ -658,6 +730,15 @@ export default async function TopicCardPage({
                 <span className={styles.snapshotLabel}>Changed card</span>
                 <strong>{changedCardContributions.length}</strong>
                 <p>Contributions whose human review says they altered the public record.</p>
+              </article>
+              <article className={styles.snapshotCard}>
+                <span className={styles.snapshotLabel}>Uploaded evidence</span>
+                <strong>{documentBackedContributions.length}</strong>
+                <p>
+                  Document-backed contributions attached to this topic card,
+                  with {pendingDocumentContributions.length} still awaiting a
+                  full human decision.
+                </p>
               </article>
             </div>
 

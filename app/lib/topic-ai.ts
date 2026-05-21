@@ -118,6 +118,18 @@ export async function getTopicCardReaderContext(
       ? contributions.map((item) =>
           [
             `- [${item.status}] ${item.lane}: ${item.title}`,
+            item.evidenceSource?.url
+              ? `  Linked source: ${item.evidenceSource.label ?? item.evidenceSource.url} (${item.evidenceSource.url})`
+              : null,
+            item.evidenceDocument
+              ? `  Uploaded document: ${item.evidenceDocument.fileName} [${item.evidenceDocument.mimeType}, ${item.evidenceDocument.extraction.status}]`
+              : null,
+            item.evidenceDocument?.extraction.note
+              ? `  Extraction note: ${item.evidenceDocument.extraction.note}`
+              : null,
+            item.evidenceDocument?.extraction.excerpt
+              ? `  Extracted excerpt: ${item.evidenceDocument.extraction.excerpt}`
+              : null,
             item.aiIntake?.summary ? `  AI sorting: ${item.aiIntake.summary}` : null,
             item.review?.changedSynthesis === true
               ? "  Human review: changed the card."
@@ -131,6 +143,22 @@ export async function getTopicCardReaderContext(
             .join("\n"),
         )
       : ["- No contribution record is visible yet."];
+  const uploadedEvidenceLines = contributions
+    .filter((item) => item.evidenceDocument)
+    .slice(0, 4)
+    .map((item) =>
+      [
+        `- ${item.evidenceDocument!.fileName} [${item.status}] via contribution "${item.title}"`,
+        item.evidenceDocument?.extraction.note
+          ? `  Extraction note: ${item.evidenceDocument.extraction.note}`
+          : null,
+        item.evidenceDocument?.extraction.excerpt
+          ? `  Extracted excerpt: ${item.evidenceDocument.extraction.excerpt}`
+          : null,
+      ]
+        .filter(Boolean)
+        .join("\n"),
+    );
 
   return {
     card,
@@ -168,6 +196,11 @@ export async function getTopicCardReaderContext(
       ...card.evidence.map(
         (item) => `- ${item.title} [${item.status}] — ${item.note}`,
       ),
+      "",
+      "Uploaded evidence documents already attached to recent contributions:",
+      ...(uploadedEvidenceLines.length
+        ? uploadedEvidenceLines
+        : ["- No uploaded evidence document is in the visible record yet."]),
       "",
       "Recent contributions and review state:",
       ...contributionLines,
