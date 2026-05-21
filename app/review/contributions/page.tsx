@@ -34,6 +34,39 @@ const reviewStatusPriority: Record<string, number> = {
   rejected: 4,
 };
 
+function getSuggestedAttachmentTargets(
+  topicCard: NonNullable<ReturnType<typeof getRoomTopicCard>>,
+) {
+  return {
+    claim: [
+      { label: "Card thesis", value: topicCard.thesis },
+      { label: "Current read", value: topicCard.currentRead },
+      ...topicCard.whatWouldStrengthen.slice(0, 3).map((item) => ({
+        label: "Strengthening path",
+        value: item,
+      })),
+    ],
+    objection: [
+      {
+        label: "Anticipated objection",
+        value: topicCard.anticipatedObjection ?? topicCard.strongestObjection,
+      },
+    ],
+    evidence: topicCard.evidence.map((item) => ({
+      label: item.status,
+      value: item.title,
+    })),
+    assumption: topicCard.assumptions.map((item) => ({
+      label: "Assumption",
+      value: item,
+    })),
+    "open-question": topicCard.openQuestions.map((item) => ({
+      label: "Open question",
+      value: item,
+    })),
+  };
+}
+
 export default async function ContributionReviewPage({
   searchParams,
 }: {
@@ -63,6 +96,13 @@ export default async function ContributionReviewPage({
     scopedTopicCard && scopedLane
       ? scopedTopicCard.debatePrompts.find((item) => item.id === scopedLane)
       : undefined;
+  const suggestedAttachmentTargets = scopedTopicCard
+    ? getSuggestedAttachmentTargets(scopedTopicCard)
+    : null;
+  const assignmentDatalistId =
+    scopedRoomSlug && scopedTopicId
+      ? `assignment-targets-${scopedRoomSlug}-${scopedTopicId}`
+      : "assignment-targets-generic";
   const [contributions, metadata] = await Promise.all([
     listAllContributions({
       roomSlug: scopedRoomSlug,
@@ -211,6 +251,49 @@ export default async function ContributionReviewPage({
                   </div>
                 )}
               </div>
+
+              {suggestedAttachmentTargets ? (
+                <div className={styles.topicSnapshot}>
+                  <div className={styles.topicSnapshotHeader}>
+                    <div>
+                      <span className={styles.eyebrow}>Suggested attachment targets</span>
+                      <h2>Attach reviewed contributions back to the live object.</h2>
+                    </div>
+                  </div>
+
+                  <div className={styles.attachmentGrid}>
+                    {(
+                      [
+                        ["claim", "Claims and room direction"],
+                        ["objection", "Objection anchor"],
+                        ["evidence", "Evidence layer"],
+                        ["assumption", "Assumption layer"],
+                        ["open-question", "Open questions"],
+                      ] as const
+                    ).map(([kind, title]) => {
+                      const items = suggestedAttachmentTargets[kind];
+
+                      return (
+                        <article className={styles.attachmentCard} key={kind}>
+                          <strong>{title}</strong>
+                          <ul className={styles.topicQuestionList}>
+                            {items.length ? (
+                              items.slice(0, 4).map((item) => (
+                                <li key={`${kind}-${item.value}`}>
+                                  <span>{item.label}: </span>
+                                  {item.value}
+                                </li>
+                              ))
+                            ) : (
+                              <li>No current targets listed for this layer.</li>
+                            )}
+                          </ul>
+                        </article>
+                      );
+                    })}
+                  </div>
+                </div>
+              ) : null}
             </div>
           ) : null}
 
@@ -423,6 +506,7 @@ export default async function ContributionReviewPage({
                       <span>Assignment label</span>
                       <input
                         defaultValue={item.review?.assignedToLabel ?? ""}
+                        list={assignmentDatalistId}
                         name="assignedToLabel"
                         placeholder="Claim, objection, evidence item, assumption, or question"
                       />
@@ -481,6 +565,19 @@ export default async function ContributionReviewPage({
               </article>
             ))}
           </div>
+
+          {suggestedAttachmentTargets ? (
+            <datalist id={assignmentDatalistId}>
+              {Object.entries(suggestedAttachmentTargets).flatMap(([kind, items]) =>
+                items.map((item) => (
+                  <option
+                    key={`${kind}-${item.value}`}
+                    value={item.value}
+                  >{`${kind} — ${item.label}`}</option>
+                )),
+              )}
+            </datalist>
+          ) : null}
         </section>
       </div>
     </div>
