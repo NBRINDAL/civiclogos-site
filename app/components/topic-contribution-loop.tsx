@@ -54,6 +54,13 @@ type ContributionResponse = {
 
 type FormLane = DebateLane | "";
 
+type ContributionFilter =
+  | "all"
+  | "needs-review"
+  | "changed-card"
+  | "ai-assisted"
+  | "document-backed";
+
 type FormState = {
   lane: FormLane;
   title: string;
@@ -90,6 +97,14 @@ const prototypeExamplesNote =
   "These are prototype examples showing how Civic Logos preserves and reviews contributions. They are not fake public activity.";
 const prototypeFallbackNote =
   "Prototype contribution record is active while persistent storage is being finalized.";
+
+const contributionFilterLabels: Record<ContributionFilter, string> = {
+  all: "All",
+  "needs-review": "Needs review",
+  "changed-card": "Changed card",
+  "ai-assisted": "AI-assisted",
+  "document-backed": "Document-backed",
+};
 
 function formatTimestamp(value: string) {
   return new Intl.DateTimeFormat("en-US", {
@@ -188,6 +203,7 @@ export default function TopicContributionLoop({
   const [contributions, setContributions] = useState<PublicContribution[]>(initialContributions);
   const [storeMode, setStoreMode] = useState(initialStoreMode);
   const [storeNote, setStoreNote] = useState(initialStoreNote);
+  const [activeFilter, setActiveFilter] = useState<ContributionFilter>("all");
   const [isPending, startTransition] = useTransition();
   const titleRef = useRef<HTMLInputElement>(null);
 
@@ -221,6 +237,37 @@ export default function TopicContributionLoop({
         ? prototypeExamplesNote
         : storeNote ||
           "Recent public contributions, assisted reading, and human review decisions stay visible here.";
+  const filterCounts = useMemo(
+    () => ({
+      all: contributions.length,
+      "needs-review": contributions.filter(
+        (item) => item.status === "pending" || item.status === "needs review",
+      ).length,
+      "changed-card": contributions.filter(
+        (item) => item.review?.changedSynthesis === true,
+      ).length,
+      "ai-assisted": contributions.filter((item) => item.draftSource).length,
+      "document-backed": contributions.filter((item) => item.evidenceDocument).length,
+    }),
+    [contributions],
+  );
+  const filteredContributions = useMemo(() => {
+    switch (activeFilter) {
+      case "needs-review":
+        return contributions.filter(
+          (item) => item.status === "pending" || item.status === "needs review",
+        );
+      case "changed-card":
+        return contributions.filter((item) => item.review?.changedSynthesis === true);
+      case "ai-assisted":
+        return contributions.filter((item) => item.draftSource);
+      case "document-backed":
+        return contributions.filter((item) => item.evidenceDocument);
+      case "all":
+      default:
+        return contributions;
+    }
+  }, [activeFilter, contributions]);
 
   useEffect(() => {
     let isCancelled = false;
@@ -700,9 +747,30 @@ export default function TopicContributionLoop({
           <p className={styles.metaNote}>{recentContributionNote}</p>
         </div>
 
-        {contributions.length ? (
+        <div className={styles.filterBlock}>
+          <div className={styles.filterList}>
+            {(Object.keys(contributionFilterLabels) as ContributionFilter[]).map((filter) => (
+              <button
+                className={
+                  activeFilter === filter ? styles.activeFilterChip : styles.filterChip
+                }
+                key={filter}
+                onClick={() => setActiveFilter(filter)}
+                type="button"
+              >
+                {contributionFilterLabels[filter]} {filterCounts[filter]}
+              </button>
+            ))}
+          </div>
+          <p className={styles.filterNote}>
+            Showing {filteredContributions.length} of {contributions.length} visible
+            contribution{contributions.length === 1 ? "" : "s"} in the current public record.
+          </p>
+        </div>
+
+        {filteredContributions.length ? (
           <div className={styles.contributionList}>
-            {contributions.map((item) => {
+            {filteredContributions.map((item) => {
               const statusClassName = `status${getStatusClassName(item.status)}`;
               const proposedAttachmentPoint = formatAttachmentPoint(
                 item.aiIntake?.suggestedAssignmentKind,
@@ -915,6 +983,12 @@ export default function TopicContributionLoop({
               );
             })}
           </div>
+        ) : contributions.length ? (
+          <p className={styles.loadingNote}>
+            No visible contributions match the <strong>{contributionFilterLabels[activeFilter]}</strong>{" "}
+            view right now. Try another record view to inspect a different part of the
+            topic&apos;s public reasoning trace.
+          </p>
         ) : (
           <p className={styles.loadingNote}>
             No contributions are visible on this topic card yet. The first strong

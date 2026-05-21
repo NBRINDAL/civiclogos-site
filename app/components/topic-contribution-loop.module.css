@@ -292,6 +292,50 @@
   margin-top: 4px;
 }
 
+.filterBlock {
+  display: grid;
+  gap: 10px;
+}
+
+.filterList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.filterChip,
+.activeFilterChip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 38px;
+  padding: 0 14px;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  transition:
+    transform 180ms ease,
+    border-color 180ms ease,
+    background 180ms ease;
+}
+
+.filterChip {
+  border: 1px solid rgba(18, 33, 39, 0.14);
+  background: rgba(255, 251, 245, 0.9);
+  color: var(--foreground);
+}
+
+.activeFilterChip {
+  border: 1px solid transparent;
+  background: var(--foreground);
+  color: #fff7ee;
+}
+
+.filterNote {
+  color: var(--muted);
+  font-size: 0.92rem;
+  line-height: 1.68;
+}
+
 .contributionMeta,
 .contributionFooter,
 .contributorMeta {
@@ -463,18 +507,22 @@
   .laneButton:hover,
   .activeLaneButton:hover,
   .submitButton:hover,
-  .sourceLink:hover {
+  .sourceLink:hover,
+  .filterChip:hover,
+  .activeFilterChip:hover {
     transform: translateY(-1px);
   }
 
   .laneButton:hover,
-  .sourceLink:hover {
+  .sourceLink:hover,
+  .filterChip:hover {
     border-color: rgba(18, 33, 39, 0.24);
     background: rgba(255, 251, 245, 0.96);
   }
 
   .activeLaneButton:hover,
-  .submitButton:hover {
+  .submitButton:hover,
+  .activeFilterChip:hover {
     background: #24363c;
   }
 }
@@ -516,7 +564,9 @@
   .laneButton,
   .activeLaneButton,
   .submitButton,
-  .sourceLink {
+  .sourceLink,
+  .filterChip,
+  .activeFilterChip {
     transition: none;
   }
 }
