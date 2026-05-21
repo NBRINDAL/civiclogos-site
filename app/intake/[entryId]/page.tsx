@@ -33,6 +33,15 @@ function getStorageModeLabel(mode: "prototype" | "database" | "fallback") {
   return "Prototype";
 }
 
+function getPromptHistoryCount(
+  entry: {
+    promptCount?: number;
+    relatedPrompts?: { prompt: string; createdAt: string }[];
+  },
+) {
+  return entry.promptCount ?? entry.relatedPrompts?.length ?? 1;
+}
+
 export default async function IntakeEntryPage({
   params,
 }: {
@@ -54,6 +63,11 @@ export default async function IntakeEntryPage({
           prompt: cookieEntry.prompt,
           createdAt: "",
           updatedAt: "",
+          promptCount:
+            cookieEntry.promptCount ??
+            cookieEntry.relatedPrompts?.length ??
+            1,
+          relatedPrompts: cookieEntry.relatedPrompts,
           routing: cookieEntry.routing,
         }
       : storedEntry;
@@ -113,13 +127,21 @@ export default async function IntakeEntryPage({
           </div>
 
           <aside className={styles.heroPanel}>
-            <span className={styles.panelLabel}>Original prompt</span>
+            <span className={styles.panelLabel}>
+              {entry.routing.routeKind === "new-room-draft" ? "Seed prompt" : "Original prompt"}
+            </span>
             <p>{entry.prompt}</p>
             <div className={styles.heroMeta}>
               <div>
                 <span>Confidence</span>
                 <strong>{entry.routing.routeConfidence ?? "working draft"}</strong>
               </div>
+              {entry.routing.routeKind === "new-room-draft" ? (
+                <div>
+                  <span>Attached prompts</span>
+                  <strong>{getPromptHistoryCount(entry)}</strong>
+                </div>
+              ) : null}
               <div>
                 <span>Storage mode</span>
                 <strong>{getStorageModeLabel(metadata.mode)}</strong>
@@ -161,6 +183,33 @@ export default async function IntakeEntryPage({
             <div className={styles.listBlock}>
               <h3>Why this was not placed in a current room</h3>
               <p>{entry.routing.whyNotExistingRooms}</p>
+            </div>
+          ) : null}
+
+          {entry.routing.routeKind === "new-room-draft" &&
+          entry.relatedPrompts &&
+          entry.relatedPrompts.length > 1 ? (
+            <div className={styles.listBlock}>
+              <h3>Supporting prompts already attached to this candidate</h3>
+              <ul>
+                {entry.relatedPrompts
+                  .slice()
+                  .reverse()
+                  .slice(0, 5)
+                  .map((item) => (
+                    <li key={item.id}>
+                      <strong>
+                        {new Date(item.createdAt).toLocaleDateString("en-US", {
+                          month: "short",
+                          day: "numeric",
+                          year: "numeric",
+                        })}
+                        :
+                      </strong>{" "}
+                      {item.prompt}
+                    </li>
+                  ))}
+              </ul>
             </div>
           ) : null}
 

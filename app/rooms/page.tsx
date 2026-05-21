@@ -33,6 +33,10 @@ function mergeLatestCookieCandidate(
   return [cookieCandidate, ...roomCandidates].slice(0, 6);
 }
 
+function getCandidatePromptCount(entry: HomeIntakeRecord) {
+  return entry.promptCount ?? entry.relatedPrompts?.length ?? 1;
+}
+
 export default async function RoomsPage({
   searchParams,
 }: {
@@ -66,6 +70,11 @@ export default async function RoomsPage({
           prompt: latestCookieIntake.prompt,
           createdAt: "",
           updatedAt: "",
+          promptCount:
+            latestCookieIntake.promptCount ??
+            latestCookieIntake.relatedPrompts?.length ??
+            1,
+          relatedPrompts: latestCookieIntake.relatedPrompts,
           routing: latestCookieIntake.routing,
         } satisfies HomeIntakeRecord)
       : null;
@@ -248,13 +257,23 @@ export default async function RoomsPage({
 
                   <div className={styles.roomFooter}>
                     <span>
-                      {entry.createdAt
-                        ? `Created ${new Date(entry.createdAt).toLocaleDateString("en-US", {
+                      {getCandidatePromptCount(entry)} prompt
+                      {getCandidatePromptCount(entry) === 1 ? "" : "s"} attached
+                    </span>
+                    <span>
+                      {entry.updatedAt
+                        ? `Updated ${new Date(entry.updatedAt).toLocaleDateString("en-US", {
                             month: "short",
                             day: "numeric",
                             year: "numeric",
                           })}`
-                        : "Current browser-session candidate"}
+                        : entry.createdAt
+                          ? `Created ${new Date(entry.createdAt).toLocaleDateString("en-US", {
+                              month: "short",
+                              day: "numeric",
+                              year: "numeric",
+                            })}`
+                          : "Current browser-session candidate"}
                     </span>
 
                     <div className={styles.roomActions}>

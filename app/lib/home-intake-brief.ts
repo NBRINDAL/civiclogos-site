@@ -73,6 +73,13 @@ function buildBriefPrompt(entry: HomeIntakeRecord) {
     entry.routing.suggestedTopicTitle ??
     entry.routing.suggestedCentralQuestion ??
     "New public issue candidate";
+  const relatedPrompts =
+    entry.relatedPrompts?.length && entry.relatedPrompts.length > 1
+      ? entry.relatedPrompts
+          .slice(-5)
+          .map((item, index) => `${index + 1}. ${item.prompt}`)
+          .join("\n")
+      : null;
 
   return [
     "You are an assisted public reasoning reader for Civic Logos.",
@@ -93,7 +100,8 @@ function buildBriefPrompt(entry: HomeIntakeRecord) {
     "Underlying civic issue",
     "",
     `Candidate label: ${topicLabel}`,
-    `Prompt: ${entry.prompt}`,
+    `Seed prompt: ${entry.prompt}`,
+    relatedPrompts ? `Related prompts already attached to this candidate:\n${relatedPrompts}` : null,
     entry.routing.whyNotExistingRooms
       ? `Routing note: ${entry.routing.whyNotExistingRooms}`
       : null,

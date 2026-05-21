@@ -2,10 +2,16 @@ import { randomUUID } from "node:crypto";
 import postgres, { type Sql } from "postgres";
 import seedStore from "@/data/prototype-home-intakes.seed.json";
 import { buildHomeIntakeRouting } from "./home-intake-ai";
+import {
+  appendPromptToCandidate,
+  buildNewCandidateRecord,
+  findMatchingRoomCandidate,
+} from "./home-intake-candidates";
 import type {
   HomeIntakeRecord,
   HomeIntakeRouteKind,
   HomeIntakeRouting,
+  HomeIntakePromptTrace,
   HomeIntakeStoreDocument,
   HomeIntakeStoreMetadata,
 } from "./home-intake-types";
@@ -20,6 +26,8 @@ type HomeIntakeRow = {
   prompt: string;
   created_at: string | Date;
   updated_at: string | Date;
+  prompt_count: number | null;
+  related_prompts: HomeIntakePromptTrace[] | null;
   routing: HomeIntakeRouting;
 };
 
@@ -77,8 +85,20 @@ async function ensureHomeIntakeTable() {
           prompt text not null,
           created_at timestamptz not null,
           updated_at timestamptz not null,
+          prompt_count integer not null default 1,
+          related_prompts jsonb not null default '[]'::jsonb,
           routing jsonb not null
         )
+      `;
+
+      await sql`
+        alter table civiclogos_home_intakes
+        add column if not exists prompt_count integer not null default 1
+      `;
+
+      await sql`
+        alter table civiclogos_home_intakes
+        add column if not exists related_prompts jsonb not null default '[]'::jsonb
       `;
 
       await sql`
@@ -100,12 +120,16 @@ async function ensureHomeIntakeTable() {
               prompt,
               created_at,
               updated_at,
+              prompt_count,
+              related_prompts,
               routing
             ) values (
               ${entry.id},
               ${entry.prompt},
               ${entry.createdAt},
               ${entry.updatedAt},
+              ${entry.promptCount ?? 1},
+              ${sql.json(entry.relatedPrompts ?? [])},
               ${sql.json(entry.routing)}
             )
             on conflict (id) do nothing
@@ -123,13 +147,15 @@ function normalizeDate(value: string | Date) {
 }
 
 function rowToEntry(row: HomeIntakeRow): HomeIntakeRecord {
-  return {
-    id: row.id,
-    prompt: row.prompt,
-    createdAt: normalizeDate(row.created_at),
-    updatedAt: normalizeDate(row.updated_at),
-    routing: row.routing,
-  };
+    return {
+      id: row.id,
+      prompt: row.prompt,
+      createdAt: normalizeDate(row.created_at),
+      updatedAt: normalizeDate(row.updated_at),
+      promptCount: row.prompt_count ?? 1,
+      relatedPrompts: row.related_prompts ?? [],
+      routing: row.routing,
+    };
 }
 
 export function createDatabaseHomeIntakeStore(): DatabaseHomeIntakeStore {
@@ -149,7 +175,6 @@ export function createDatabaseHomeIntakeStore(): DatabaseHomeIntakeStore {
       const sql = getSqlClient();
       const timestamp = new Date().toISOString();
       const routing = await buildHomeIntakeRouting(prompt);
-
       const entry: HomeIntakeRecord = {
         id: randomUUID(),
         prompt,
@@ -158,23 +183,67 @@ export function createDatabaseHomeIntakeStore(): DatabaseHomeIntakeStore {
         routing,
       };
 
+      if (routing.routeKind === "new-room-draft") {
+        const recentCandidates = await sql<HomeIntakeRow[]>`
+          select *
+          from civiclogos_home_intakes
+          where routing ->> 'routeKind' = 'new-room-draft'
+          order by updated_at desc
+          limit 50
+        `;
+        const matchingEntry = findMatchingRoomCandidate(
+          prompt,
+          recentCandidates.map(rowToEntry),
+        );
+
+        if (matchingEntry) {
+          const updatedEntry = appendPromptToCandidate(
+            matchingEntry,
+            prompt,
+            timestamp,
+            routing,
+          );
+
+          await sql`
+            update civiclogos_home_intakes
+            set
+              updated_at = ${updatedEntry.updatedAt},
+              prompt_count = ${updatedEntry.promptCount ?? 1},
+              related_prompts = ${sql.json(updatedEntry.relatedPrompts ?? [])},
+              routing = ${sql.json(updatedEntry.routing)}
+            where id = ${updatedEntry.id}
+          `;
+
+          return updatedEntry;
+        }
+      }
+
+      const storedEntry =
+        routing.routeKind === "new-room-draft"
+          ? buildNewCandidateRecord(entry, prompt, timestamp)
+          : entry;
+
       await sql`
         insert into civiclogos_home_intakes (
           id,
           prompt,
           created_at,
           updated_at,
+          prompt_count,
+          related_prompts,
           routing
         ) values (
-          ${entry.id},
-          ${entry.prompt},
-          ${entry.createdAt},
-          ${entry.updatedAt},
-          ${sql.json(entry.routing)}
+          ${storedEntry.id},
+          ${storedEntry.prompt},
+          ${storedEntry.createdAt},
+          ${storedEntry.updatedAt},
+          ${storedEntry.promptCount ?? 1},
+          ${sql.json(storedEntry.relatedPrompts ?? [])},
+          ${sql.json(storedEntry.routing)}
         )
       `;
 
-      return entry;
+      return storedEntry;
     },
 
     async getHomeIntakeEntry(id: string) {

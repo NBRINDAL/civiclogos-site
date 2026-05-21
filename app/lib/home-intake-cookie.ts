@@ -3,6 +3,8 @@ import type { HomeIntakeRecord } from "./home-intake-types";
 export type HomeIntakeCookiePayload = {
   id: string;
   prompt: string;
+  promptCount?: number;
+  relatedPrompts?: HomeIntakeRecord["relatedPrompts"];
   routing: HomeIntakeRecord["routing"];
 };
 
@@ -24,6 +26,11 @@ export function serializeHomeIntakeCookie(entry: HomeIntakeRecord) {
   const payload: HomeIntakeCookiePayload = {
     id: entry.id,
     prompt: truncate(entry.prompt, 700) ?? "",
+    promptCount: entry.promptCount,
+    relatedPrompts: entry.relatedPrompts?.slice(-6).map((item) => ({
+      ...item,
+      prompt: truncate(item.prompt, 240) ?? item.prompt,
+    })),
     routing: {
       ...entry.routing,
       fitSummary: truncate(entry.routing.fitSummary, 420),

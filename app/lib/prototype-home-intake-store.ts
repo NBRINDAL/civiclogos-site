@@ -4,6 +4,11 @@ import path from "node:path";
 import { access, mkdir, readFile, writeFile } from "node:fs/promises";
 import seedStore from "@/data/prototype-home-intakes.seed.json";
 import { buildHomeIntakeRouting } from "./home-intake-ai";
+import {
+  appendPromptToCandidate,
+  buildNewCandidateRecord,
+  findMatchingRoomCandidate,
+} from "./home-intake-candidates";
 import type {
   HomeIntakeRecord,
   HomeIntakeRouteKind,
@@ -92,7 +97,6 @@ export async function createHomeIntakeEntry(prompt: string): Promise<HomeIntakeR
     const document = await readStoreDocument();
     const timestamp = new Date().toISOString();
     const routing = await buildHomeIntakeRouting(prompt);
-
     const entry: HomeIntakeRecord = {
       id: randomUUID(),
       prompt,
@@ -101,10 +105,36 @@ export async function createHomeIntakeEntry(prompt: string): Promise<HomeIntakeR
       routing,
     };
 
-    document.entries.push(entry);
+    if (routing.routeKind === "new-room-draft") {
+      const matchingEntry = findMatchingRoomCandidate(
+        prompt,
+        document.entries.filter((item) => item.routing.routeKind === "new-room-draft"),
+      );
+
+      if (matchingEntry) {
+        const updatedEntry = appendPromptToCandidate(
+          matchingEntry,
+          prompt,
+          timestamp,
+          routing,
+        );
+        document.entries = document.entries.map((item) =>
+          item.id === updatedEntry.id ? updatedEntry : item,
+        );
+        await writeStoreDocument(document);
+        return updatedEntry;
+      }
+    }
+
+    const storedEntry =
+      routing.routeKind === "new-room-draft"
+        ? buildNewCandidateRecord(entry, prompt, timestamp)
+        : entry;
+
+    document.entries.push(storedEntry);
     await writeStoreDocument(document);
 
-    return entry;
+    return storedEntry;
   });
 }
 

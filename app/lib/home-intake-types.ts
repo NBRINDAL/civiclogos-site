@@ -41,11 +41,19 @@ export type HomeIntakeRouting = {
   providers: ProviderHomeIntakeRouting[];
 };
 
+export type HomeIntakePromptTrace = {
+  id: string;
+  prompt: string;
+  createdAt: string;
+};
+
 export type HomeIntakeRecord = {
   id: string;
   prompt: string;
   createdAt: string;
   updatedAt: string;
+  promptCount?: number;
+  relatedPrompts?: HomeIntakePromptTrace[];
   routing: HomeIntakeRouting;
 };
 
