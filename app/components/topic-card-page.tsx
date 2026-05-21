@@ -202,6 +202,16 @@ function getTopicChatMessageHref(messageId: string) {
   return `?chatMessage=${encodeURIComponent(messageId)}#topic-chat-message-${messageId}`;
 }
 
+function getExactContributionLedgerHref(contribution: PublicContribution) {
+  return getContributionLedgerHref({
+    recordView: getContributionRecordView(contribution),
+    attachment: getContributionAttachmentFilter(contribution),
+    reviewStatus: getContributionStatusFilter(contribution.status),
+    origin: getContributionOrigin(contribution),
+    contributionId: contribution.id,
+  });
+}
+
 export default async function TopicCardPage({
   roomSlug,
   card,
@@ -479,10 +489,7 @@ export default async function TopicCardPage({
                         <strong>
                           <Link
                             className={styles.sourceLink}
-                            href={getContributionLedgerHref({
-                              attachment: "assumption",
-                              contributionId: item.id,
-                            })}
+                            href={getExactContributionLedgerHref(item)}
                           >
                             {item.review?.assignedToLabel ?? item.title}
                           </Link>
@@ -540,11 +547,9 @@ export default async function TopicCardPage({
                     <strong>
                       <Link
                         className={styles.sourceLink}
-                        href={getContributionLedgerHref({
-                          recordView: "changed-card",
-                          attachment: "objection",
-                          contributionId: contributorObjectionThatChangedCard.id,
-                        })}
+                        href={getExactContributionLedgerHref(
+                          contributorObjectionThatChangedCard,
+                        )}
                       >
                         {contributorObjectionThatChangedCard.title}
                       </Link>
@@ -567,10 +572,9 @@ export default async function TopicCardPage({
                     <strong>
                       <Link
                         className={styles.sourceLink}
-                        href={getContributionLedgerHref({
-                          attachment: "objection",
-                          contributionId: strongestLiveContributorObjection.id,
-                        })}
+                        href={getExactContributionLedgerHref(
+                          strongestLiveContributorObjection,
+                        )}
                       >
                         {strongestLiveContributorObjection.title}
                       </Link>
@@ -632,10 +636,7 @@ export default async function TopicCardPage({
                         <strong>
                           <Link
                             className={styles.sourceLink}
-                            href={getContributionLedgerHref({
-                              attachment: "evidence",
-                              contributionId: item.id,
-                            })}
+                            href={getExactContributionLedgerHref(item)}
                           >
                             {item.review?.assignedToLabel ?? item.title}
                           </Link>
@@ -708,10 +709,7 @@ export default async function TopicCardPage({
                             <strong>
                               <Link
                                 className={styles.sourceLink}
-                                href={getContributionLedgerHref({
-                                  recordView: "document-backed",
-                                  contributionId: item.id,
-                                })}
+                                href={getExactContributionLedgerHref(item)}
                               >
                                 {item.title}
                               </Link>
@@ -779,11 +777,7 @@ export default async function TopicCardPage({
                           <strong>
                             <Link
                               className={styles.sourceLink}
-                              href={getContributionLedgerHref({
-                                recordView: "changed-card",
-                                attachment: "assumption",
-                                contributionId: item.id,
-                              })}
+                              href={getExactContributionLedgerHref(item)}
                             >
                               {item.title}
                             </Link>
@@ -829,14 +823,7 @@ export default async function TopicCardPage({
                           <strong>
                             <Link
                               className={styles.sourceLink}
-                              href={getContributionLedgerHref({
-                                recordView: "changed-card",
-                                attachment:
-                                  item.review?.assignedToKind === "open-question"
-                                    ? "open-question"
-                                    : "evidence",
-                                contributionId: item.id,
-                              })}
+                              href={getExactContributionLedgerHref(item)}
                             >
                               {item.title}
                             </Link>
@@ -890,7 +877,14 @@ export default async function TopicCardPage({
                 {needsAttentionContributions.slice(0, 4).map((item) => (
                   <article className={styles.historyItem} key={item.id}>
                     <div>
-                      <strong>{item.title}</strong>
+                      <strong>
+                        <Link
+                          className={styles.sourceLink}
+                          href={getExactContributionLedgerHref(item)}
+                        >
+                          {item.title}
+                        </Link>
+                      </strong>
                       <span>{item.status}</span>
                     </div>
                     <p>
@@ -917,10 +911,7 @@ export default async function TopicCardPage({
                         <strong>
                           <Link
                             className={styles.sourceLink}
-                            href={getContributionLedgerHref({
-                              attachment: "open-question",
-                              contributionId: item.id,
-                            })}
+                            href={getExactContributionLedgerHref(item)}
                           >
                             {item.review?.assignedToLabel ?? item.title}
                           </Link>
@@ -1213,10 +1204,7 @@ export default async function TopicCardPage({
                         <strong>
                           <Link
                             className={styles.sourceLink}
-                            href={getContributionLedgerHref({
-                              recordView: "changed-card",
-                              contributionId: item.id,
-                            })}
+                            href={getExactContributionLedgerHref(item)}
                           >
                             {item.title}
                           </Link>
@@ -1261,10 +1249,7 @@ export default async function TopicCardPage({
                         <strong>
                           <Link
                             className={styles.sourceLink}
-                            href={getContributionLedgerHref({
-                              recordView: "needs-review",
-                              contributionId: item.id,
-                            })}
+                            href={getExactContributionLedgerHref(item)}
                           >
                             {item.title}
                           </Link>
@@ -1326,12 +1311,7 @@ export default async function TopicCardPage({
                         <strong>
                           <Link
                             className={styles.sourceLink}
-                            href={getContributionLedgerHref({
-                              recordView: "ai-assisted",
-                              origin: "ai-origin",
-                              attachment: getContributionAttachmentFilter(item),
-                              contributionId: item.id,
-                            })}
+                            href={getExactContributionLedgerHref(item)}
                           >
                             {item.title}
                           </Link>
