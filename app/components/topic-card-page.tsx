@@ -274,6 +274,20 @@ export default async function TopicCardPage({
   const assistedChangedContributions = assistedRecordContributions.filter(
     (item) => item.review?.changedSynthesis === true,
   );
+  const assistedStatusCounts = (
+    ["pending", "needs-review", "accepted", "incorporated", "rejected"] as const
+  )
+    .map((status) => ({
+      status,
+      label:
+        status === "needs-review"
+          ? "Needs review"
+          : status[0].toUpperCase() + status.slice(1),
+      count: assistedRecordContributions.filter(
+        (item) => getContributionStatusFilter(item.status) === status,
+      ).length,
+    }))
+    .filter((item) => item.count > 0);
   const assistedAttachmentCounts = (
     ["claim", "objection", "evidence", "assumption", "open-question", "none-yet"] as const
   )
@@ -1290,12 +1304,34 @@ export default async function TopicCardPage({
                     human decision and {assistedChangedContributions.length} already
                     marked as changing the card.
                   </p>
+                  <p className={styles.metaParagraph}>
+                    By review status:
+                  </p>
+                  <div className={styles.reviewPills}>
+                    {assistedStatusCounts.map((item) => (
+                      <Link
+                        className={styles.reviewPillLink}
+                        href={getContributionLedgerHref({
+                          recordView: "ai-assisted",
+                          origin: "ai-origin",
+                          reviewStatus: item.status,
+                        })}
+                        key={`assisted-status-${item.status}`}
+                      >
+                        {item.label} {item.count}
+                      </Link>
+                    ))}
+                  </div>
+                  <p className={styles.metaParagraph}>
+                    By attachment target:
+                  </p>
                   <div className={styles.reviewPills}>
                     {assistedAttachmentCounts.map((item) => (
                       <Link
                         className={styles.reviewPillLink}
                         href={getContributionLedgerHref({
                           recordView: "ai-assisted",
+                          origin: "ai-origin",
                           attachment: item.attachment,
                         })}
                         key={`assisted-target-${item.attachment}`}
