@@ -1,0 +1,243 @@
+.panel {
+  display: grid;
+  gap: 20px;
+  padding: 32px;
+  border: 1px solid rgba(18, 33, 39, 0.12);
+  border-radius: 30px;
+  background: rgba(255, 251, 245, 0.82);
+  box-shadow: 0 20px 44px rgba(18, 33, 39, 0.08);
+  backdrop-filter: blur(12px);
+}
+
+.header {
+  display: grid;
+  gap: 14px;
+}
+
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--signal);
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.eyebrow::before {
+  content: "";
+  width: 28px;
+  height: 1px;
+  background: currentColor;
+}
+
+.header h2 {
+  margin-top: 14px;
+  font-family: var(--font-serif), serif;
+  font-size: clamp(2rem, 3.8vw, 3rem);
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  line-height: 1.04;
+  text-wrap: balance;
+}
+
+.metaNote,
+.disclaimer,
+.answerBody,
+.issueItem {
+  color: var(--muted);
+  line-height: 1.72;
+}
+
+.field {
+  display: grid;
+  gap: 10px;
+}
+
+.field span {
+  color: var(--foreground);
+  font-size: 0.94rem;
+  font-weight: 700;
+}
+
+.field textarea {
+  width: 100%;
+  min-height: 160px;
+  padding: 18px 20px;
+  border: 1px solid rgba(18, 33, 39, 0.16);
+  border-radius: 24px;
+  background: rgba(255, 251, 245, 0.92);
+  color: var(--foreground);
+  font: inherit;
+  line-height: 1.64;
+  resize: vertical;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.primaryAction,
+.secondaryAction {
+  min-height: 52px;
+  padding: 0 20px;
+  border-radius: 999px;
+  font-size: 0.96rem;
+  font-weight: 700;
+  transition:
+    transform 180ms ease,
+    border-color 180ms ease,
+    background 180ms ease;
+}
+
+.primaryAction {
+  border: 1px solid transparent;
+  background: var(--foreground);
+  color: #fff7ee;
+}
+
+.secondaryAction {
+  border: 1px solid rgba(18, 33, 39, 0.14);
+  background: rgba(255, 251, 245, 0.88);
+  color: var(--foreground);
+}
+
+.primaryAction:disabled,
+.secondaryAction:disabled {
+  cursor: wait;
+  opacity: 0.7;
+}
+
+.errorState {
+  padding: 16px 18px;
+  border: 1px solid rgba(181, 94, 51, 0.18);
+  border-radius: 22px;
+  background: rgba(255, 244, 236, 0.92);
+}
+
+.resultBlock {
+  display: grid;
+  gap: 18px;
+}
+
+.answerGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.answerCard {
+  display: grid;
+  gap: 14px;
+  padding: 22px;
+  border: 1px solid rgba(18, 33, 39, 0.12);
+  border-radius: 24px;
+  background: rgba(255, 251, 245, 0.86);
+  box-shadow: 0 18px 36px rgba(18, 33, 39, 0.06);
+  backdrop-filter: blur(12px);
+}
+
+.answerHeader {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.answerHeader strong,
+.answerHeader span,
+.answerMeta dt,
+.answerMeta dd {
+  font-size: 0.92rem;
+}
+
+.answerHeader div {
+  display: grid;
+  gap: 4px;
+}
+
+.answerHeader strong {
+  color: var(--foreground);
+}
+
+.answerHeader span {
+  color: var(--muted);
+}
+
+.answerMeta {
+  display: grid;
+  gap: 10px;
+}
+
+.answerMeta div {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(18, 33, 39, 0.1);
+}
+
+.answerMeta dt {
+  color: var(--muted);
+}
+
+.answerMeta dd {
+  color: var(--foreground);
+  font-weight: 700;
+  text-transform: capitalize;
+}
+
+.issueList {
+  display: grid;
+  gap: 10px;
+}
+
+.issueItem {
+  padding: 14px 16px;
+  border: 1px solid rgba(18, 33, 39, 0.12);
+  border-radius: 18px;
+  background: rgba(255, 251, 245, 0.68);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .primaryAction:hover,
+  .secondaryAction:hover {
+    transform: translateY(-2px);
+  }
+
+  .primaryAction:hover {
+    background: #24363c;
+  }
+
+  .secondaryAction:hover {
+    border-color: rgba(18, 33, 39, 0.26);
+    background: rgba(255, 251, 245, 0.96);
+  }
+}
+
+@media (max-width: 960px) {
+  .answerGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 720px) {
+  .panel {
+    padding: 22px;
+    border-radius: 24px;
+  }
+
+  .actions {
+    flex-direction: column;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .primaryAction,
+  .secondaryAction {
+    transition: none;
+  }
+}

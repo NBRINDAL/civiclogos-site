@@ -67,17 +67,26 @@ export type TopicCardData = {
   };
   strongestSupport: string;
   strongestObjection: string;
+  anticipatedObjection?: string;
   whatWouldStrengthen: readonly string[];
   openQuestions: readonly string[];
   maturity: string;
   scorecard: readonly {
     label: string;
     value: number;
+    basis?: string;
   }[];
   aiPanels: readonly {
     role: string;
     confidence: string;
     summary: string;
+    provenance?: {
+      sourceLabel: string;
+      model?: string;
+      generatedAt: string;
+      promptCategory: string;
+      note?: string;
+    };
   }[];
   debatePrompts: readonly DebatePrompt[];
   revisionHistory: readonly {
@@ -1484,6 +1493,8 @@ export const topic001: TopicCardData = {
   },
   strongestSupport:
     "This topic is a credible first test because it targets a widely acknowledged source of waste without requiring the platform to pretend that one financing ideology has already won the healthcare debate.",
+  anticipatedObjection:
+    "The topic risks mistaking administrative optimization for system reform; if pricing power, reimbursement dynamics, and uneven provider capacity remain intact, the savings may disappoint while the implementation burden still lands.",
   strongestObjection:
     "The topic risks mistaking administrative optimization for system reform; if pricing power, reimbursement dynamics, and uneven provider capacity remain intact, the savings may disappoint while the implementation burden still lands.",
   whatWouldStrengthen: [
@@ -1499,12 +1510,42 @@ export const topic001: TopicCardData = {
   ],
   maturity: "Seed topic",
   scorecard: [
-    { label: "Novelty", value: 58 },
-    { label: "Coherence", value: 78 },
-    { label: "Feasibility", value: 62 },
-    { label: "Evidence quality", value: 54 },
-    { label: "Economic delta clarity", value: 41 },
-    { label: "Public value", value: 76 },
+    {
+      label: "Novelty",
+      value: 58,
+      basis:
+        "Provisional founder estimate. The topic is not ideologically novel on its face, but it becomes more distinct when administrative waste and AI triage are isolated into one inspectable object instead of being buried inside a total-system manifesto.",
+    },
+    {
+      label: "Coherence",
+      value: 78,
+      basis:
+        "Provisional founder estimate. The card has a visible problem statement, mechanism, assumptions, risks, and evidence burden, but it still needs a tighter bridge between workflow simplification and total-cost impact.",
+    },
+    {
+      label: "Feasibility",
+      value: 62,
+      basis:
+        "Provisional founder estimate. A bounded pilot seems plausible, especially for claims handling and intake routing, but the card still needs clearer transition design and provider-side implementation detail.",
+    },
+    {
+      label: "Evidence quality",
+      value: 54,
+      basis:
+        "Provisional founder estimate. The room has enough support to justify testing the topic, but the current evidence layer still mixes administrative-overhead signals with harder unanswered questions about realized savings.",
+    },
+    {
+      label: "Economic delta clarity",
+      value: 41,
+      basis:
+        "Provisional founder estimate. The card is still weak here because transition cost, workflow displacement, and the relationship between gross savings and redirected value remain under-modeled.",
+    },
+    {
+      label: "Public value",
+      value: 76,
+      basis:
+        "Provisional founder estimate. The topic is worth public reasoning because it touches cost, clinician time, patient friction, and AI safety boundaries all at once without requiring the room to settle the whole financing debate first.",
+    },
   ],
   aiPanels: [
     {
@@ -1512,24 +1553,48 @@ export const topic001: TopicCardData = {
       confidence: "Moderate",
       summary:
         "Converted a broad reform instinct into a testable object: problem, mechanism, assumptions, savings hypothesis, and risk surface are now explicit.",
+      provenance: {
+        sourceLabel: "Prototype seeded reader note",
+        generatedAt: "May 2026",
+        promptCategory: "Role-framed seed read",
+        note: "This is a seeded reader summary used to frame the card. Live model interaction appears in the Ask This Topic panel below.",
+      },
     },
     {
       role: "Steelman",
       confidence: "Moderate",
       summary:
         "The strongest case is that the topic attacks real waste, improves access friction, and gives the healthcare room a measurable first demonstration without forcing premature ideological closure.",
+      provenance: {
+        sourceLabel: "Prototype seeded reader note",
+        generatedAt: "May 2026",
+        promptCategory: "Role-framed seed read",
+        note: "This is a seeded reader summary used to frame the card. Live model interaction appears in the Ask This Topic panel below.",
+      },
     },
     {
       role: "Critic",
       confidence: "Moderate",
       summary:
         "The strongest critique is that this may streamline bureaucracy without confronting deeper price formation, incentive distortion, and uneven care capacity.",
+      provenance: {
+        sourceLabel: "Prototype seeded reader note",
+        generatedAt: "May 2026",
+        promptCategory: "Role-framed seed read",
+        note: "This is a seeded reader summary used to frame the card. Live model interaction appears in the Ask This Topic panel below.",
+      },
     },
     {
       role: "Economist",
       confidence: "Low",
       summary:
         "Possible upside exists, but the core uncertainty remains whether savings are large enough and durable enough to justify transition and oversight cost.",
+      provenance: {
+        sourceLabel: "Prototype seeded reader note",
+        generatedAt: "May 2026",
+        promptCategory: "Role-framed seed read",
+        note: "This is a seeded reader summary used to frame the card. Live model interaction appears in the Ask This Topic panel below.",
+      },
     },
   ],
   debatePrompts: [

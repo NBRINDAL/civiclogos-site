@@ -1,6 +1,8 @@
 import Link from "next/link";
 import TopicContributionLoop from "./topic-contribution-loop";
+import TopicAiPanel from "./topic-ai-panel";
 import type { IssueRoomSlug, TopicCardData } from "../lib/civic-logos";
+import { listPublicContributions } from "../lib/contribution-store";
 import styles from "../healthcare/proposal-001/page.module.css";
 
 type TopicCardLink = {
@@ -19,7 +21,7 @@ type TopicCardPageProps = {
   currentTopicIndex: number;
 };
 
-export default function TopicCardPage({
+export default async function TopicCardPage({
   roomSlug,
   card,
   brandSubtitle,
@@ -28,6 +30,17 @@ export default function TopicCardPage({
   roomCards,
   currentTopicIndex,
 }: TopicCardPageProps) {
+  const liveContributions = await listPublicContributions({
+    roomSlug,
+    topicId: card.id,
+    limit: 12,
+  });
+  const contributorObjectionThatChangedCard = liveContributions.find(
+    (item) => item.lane === "objection" && item.review?.changedSynthesis === true,
+  );
+  const strongestLiveContributorObjection = liveContributions.find(
+    (item) => item.lane === "objection",
+  );
   const previousCard =
     currentTopicIndex > 0 ? roomCards[currentTopicIndex - 1] : null;
   const nextCard =
@@ -110,8 +123,10 @@ export default function TopicCardPage({
           <article className={styles.scorePanel}>
             <span className={styles.eyebrow}>Current scorecard</span>
             <p>
-              These scores are an early read on whether the card is getting
-              sharper, not a declaration that the room has settled the question.
+              These scores are provisional founder estimates about whether the
+              card is getting sharper, not a declaration that the room has settled
+              the question. Each score should eventually be challengeable by a
+              visible rubric and review history.
             </p>
 
             <div className={styles.scoreList}>
@@ -124,6 +139,13 @@ export default function TopicCardPage({
                   <div className={styles.scoreTrack}>
                     <span style={{ width: `${item.value}%` }} />
                   </div>
+                  <details className={styles.scoreDetails}>
+                    <summary>How this was scored</summary>
+                    <p>
+                      {item.basis ??
+                        "Provisional founder estimate pending a public scoring rubric and challenge workflow."}
+                    </p>
+                  </details>
                 </div>
               ))}
             </div>
@@ -183,8 +205,41 @@ export default function TopicCardPage({
             </ul>
 
             <div className={styles.copyBlock}>
-              <h3>Strongest objection</h3>
-              <p>{card.strongestObjection}</p>
+              <h3>Anticipated objection</h3>
+              <p>{card.anticipatedObjection ?? card.strongestObjection}</p>
+            </div>
+
+            <div className={styles.copyBlock}>
+              <h3>Contributor objection that changed the card</h3>
+              {contributorObjectionThatChangedCard ? (
+                <>
+                  <p>
+                    <strong>{contributorObjectionThatChangedCard.title}.</strong>{" "}
+                    {contributorObjectionThatChangedCard.body}
+                  </p>
+                  {contributorObjectionThatChangedCard.review?.reviewerNote ? (
+                    <p className={styles.metaParagraph}>
+                      Human reviewer note:{" "}
+                      {contributorObjectionThatChangedCard.review.reviewerNote}
+                    </p>
+                  ) : null}
+                </>
+              ) : strongestLiveContributorObjection ? (
+                <>
+                  <p>
+                    No contributor objection has changed this card yet. The
+                    strongest live objection in the visible record is{" "}
+                    <strong>{strongestLiveContributorObjection.title}.</strong>
+                  </p>
+                  <p>{strongestLiveContributorObjection.body}</p>
+                </>
+              ) : (
+                <p>
+                  No contributor objection has changed this card yet. That field
+                  should only fill when a reviewed outside objection materially
+                  alters the public record.
+                </p>
+              )}
             </div>
 
             <div className={styles.copyBlock}>
@@ -226,10 +281,37 @@ export default function TopicCardPage({
                   <span>{item.confidence} confidence</span>
                 </div>
                 <p>{item.summary}</p>
+                {item.provenance ? (
+                  <dl className={styles.aiProvenance}>
+                    <div>
+                      <dt>Source</dt>
+                      <dd>{item.provenance.sourceLabel}</dd>
+                    </div>
+                    {item.provenance.model ? (
+                      <div>
+                        <dt>Model</dt>
+                        <dd>{item.provenance.model}</dd>
+                      </div>
+                    ) : null}
+                    <div>
+                      <dt>Stamped</dt>
+                      <dd>{item.provenance.generatedAt}</dd>
+                    </div>
+                    <div>
+                      <dt>Prompt class</dt>
+                      <dd>{item.provenance.promptCategory}</dd>
+                    </div>
+                  </dl>
+                ) : null}
+                {item.provenance?.note ? (
+                  <p className={styles.aiProvenanceNote}>{item.provenance.note}</p>
+                ) : null}
               </article>
             ))}
           </div>
         </section>
+
+        <TopicAiPanel roomSlug={roomSlug} topicId={card.id} topicTitle={card.title} />
 
         <TopicContributionLoop
           debatePrompts={card.debatePrompts}
