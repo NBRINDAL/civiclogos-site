@@ -141,6 +141,20 @@ function getContributionAttachmentLabel(filter: ContributionAttachmentFilter) {
   }
 }
 
+function getContributionAttachmentSummary(contribution: PublicContribution) {
+  const baseLabel = getContributionAttachmentLabel(
+    getContributionAttachmentFilter(contribution),
+  );
+  const specificLabel =
+    contribution.review?.assignedToLabel ?? contribution.aiIntake?.suggestedAssignmentLabel;
+
+  if (!specificLabel) {
+    return baseLabel;
+  }
+
+  return `${baseLabel} - ${specificLabel}`;
+}
+
 function getContributionOrigin(contribution: PublicContribution): ContributionOriginFilter {
   if (contribution.isSeedExample) {
     return "seed-example";
@@ -905,6 +919,28 @@ export default async function TopicCardPage({
                       {item.aiIntake?.reviewerNote ??
                         "Waiting on human placement, acceptance, or rejection."}
                     </p>
+                    <p className={styles.metaParagraph}>
+                      Current record target: {getContributionAttachmentSummary(item)}. Origin:{" "}
+                      {getContributionOriginLabel(getContributionOrigin(item))}.
+                    </p>
+                    {item.draftSource ? (
+                      <p className={styles.metaParagraph}>
+                        AI origin: {item.draftSource.providerLabel}
+                        {item.draftSource.model ? ` (${item.draftSource.model})` : ""} on{" "}
+                        {formatTimestamp(item.draftSource.generatedAt)}.
+                        {item.draftSource.messageId ? (
+                          <>
+                            {" "}
+                            <Link
+                              className={styles.sourceLink}
+                              href={getTopicChatMessageHref(item.draftSource.messageId)}
+                            >
+                              Open source AI turn
+                            </Link>
+                          </>
+                        ) : null}
+                      </p>
+                    ) : null}
                   </article>
                 ))}
               </div>
