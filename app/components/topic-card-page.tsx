@@ -265,6 +265,34 @@ export default async function TopicCardPage({
                 ))}
               </div>
             </div>
+
+            <div className={styles.copyBlock}>
+              <h3>Live review notes on the assumption layer</h3>
+              {incorporatedAssumptions.length ? (
+                <div className={styles.historyList}>
+                  {incorporatedAssumptions.slice(0, 3).map((item) => (
+                    <article className={styles.historyItem} key={`assumption-${item.id}`}>
+                      <div>
+                        <strong>{item.review?.assignedToLabel ?? item.title}</strong>
+                        <span>{item.title}</span>
+                      </div>
+                      <p>
+                        {getPublicContributionOutcomeNote(
+                          item.review?.decisionReason,
+                          item.review?.publicRecordNote,
+                          "A reviewed outside contribution was attached to this assumption layer.",
+                        )}
+                      </p>
+                    </article>
+                  ))}
+                </div>
+              ) : (
+                <p>
+                  No reviewed outside contribution has yet been attached to the
+                  card&apos;s assumption layer.
+                </p>
+              )}
+            </div>
           </article>
         </section>
 
@@ -340,6 +368,34 @@ export default async function TopicCardPage({
                   <p>{item.note}</p>
                 </article>
               ))}
+            </div>
+
+            <div className={styles.copyBlock}>
+              <h3>Live review notes on the evidence layer</h3>
+              {incorporatedEvidence.length ? (
+                <div className={styles.historyList}>
+                  {incorporatedEvidence.slice(0, 3).map((item) => (
+                    <article className={styles.historyItem} key={`evidence-${item.id}`}>
+                      <div>
+                        <strong>{item.review?.assignedToLabel ?? item.title}</strong>
+                        <span>{item.title}</span>
+                      </div>
+                      <p>
+                        {getPublicContributionOutcomeNote(
+                          item.review?.decisionReason,
+                          item.review?.publicRecordNote,
+                          "A reviewed outside contribution was attached to the evidence layer.",
+                        )}
+                      </p>
+                    </article>
+                  ))}
+                </div>
+              ) : (
+                <p>
+                  No reviewed outside contribution has yet been attached to the
+                  card&apos;s evidence layer.
+                </p>
+              )}
             </div>
           </article>
         </section>
@@ -443,6 +499,34 @@ export default async function TopicCardPage({
                 should appear here until a maintainer review resolves them.
               </p>
             )}
+
+            <div className={styles.copyBlock}>
+              <h3>Reviewed updates to the open-question layer</h3>
+              {incorporatedQuestions.length ? (
+                <div className={styles.historyList}>
+                  {incorporatedQuestions.slice(0, 3).map((item) => (
+                    <article className={styles.historyItem} key={`question-${item.id}`}>
+                      <div>
+                        <strong>{item.review?.assignedToLabel ?? item.title}</strong>
+                        <span>{item.title}</span>
+                      </div>
+                      <p>
+                        {getPublicContributionOutcomeNote(
+                          item.review?.decisionReason,
+                          item.review?.publicRecordNote,
+                          "A reviewed outside contribution was attached to the open-question layer.",
+                        )}
+                      </p>
+                    </article>
+                  ))}
+                </div>
+              ) : (
+                <p>
+                  No reviewed outside contribution has yet been attached to the
+                  card&apos;s open-question layer.
+                </p>
+              )}
+            </div>
           </article>
         </section>
 
