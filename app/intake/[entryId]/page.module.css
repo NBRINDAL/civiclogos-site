@@ -1,0 +1,280 @@
+.page {
+  position: relative;
+  min-height: 100vh;
+  padding: 24px;
+}
+
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background:
+    radial-gradient(circle at top left, rgba(181, 94, 51, 0.14), transparent 32%),
+    radial-gradient(circle at top right, rgba(91, 110, 69, 0.16), transparent 28%),
+    linear-gradient(180deg, rgba(255, 250, 243, 0.95), rgba(245, 239, 227, 0.93));
+}
+
+.header,
+.main {
+  width: min(1080px, 100%);
+  margin: 0 auto;
+}
+
+.header {
+  display: grid;
+  gap: 30px;
+  padding: 16px 0 38px;
+}
+
+.headerBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.brandMark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 18px;
+  background: linear-gradient(145deg, rgba(18, 33, 39, 0.96), rgba(47, 74, 63, 0.92));
+  color: #fff6ea;
+  font-family: var(--font-serif), serif;
+  font-size: 1.2rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+
+.brandText {
+  display: grid;
+  gap: 4px;
+}
+
+.brandText span:last-child,
+.nav {
+  color: var(--muted);
+}
+
+.nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px;
+}
+
+.hero,
+.providerGrid {
+  display: grid;
+  gap: 18px;
+}
+
+.hero {
+  grid-template-columns: minmax(0, 1.25fr) minmax(300px, 0.75fr);
+}
+
+.heroCopy,
+.heroPanel,
+.panel,
+.providerCard {
+  padding: 32px;
+  border: 1px solid rgba(18, 33, 39, 0.12);
+  border-radius: 30px;
+  background: rgba(255, 251, 245, 0.78);
+  box-shadow: 0 20px 44px rgba(18, 33, 39, 0.08);
+  backdrop-filter: blur(12px);
+}
+
+.heroCopy h1,
+.sectionHeading h2,
+.panel h2 {
+  margin-top: 14px;
+  font-family: var(--font-serif), serif;
+  font-size: clamp(2rem, 4vw, 3.35rem);
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  line-height: 1.02;
+  text-wrap: balance;
+}
+
+.eyebrow,
+.panelLabel,
+.providerMeta span,
+.questionCard span {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--signal);
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.eyebrow::before,
+.panelLabel::before {
+  content: "";
+  width: 30px;
+  height: 1px;
+  background: currentColor;
+}
+
+.summary,
+.heroPanel p,
+.questionCard p,
+.listBlock p,
+.providerCard p {
+  color: var(--muted);
+  line-height: 1.74;
+}
+
+.heroPanel {
+  display: grid;
+  gap: 16px;
+  background: linear-gradient(180deg, rgba(229, 235, 220, 0.82), rgba(255, 250, 243, 0.84));
+}
+
+.heroMeta {
+  display: grid;
+  gap: 12px;
+}
+
+.heroMeta div {
+  display: grid;
+  gap: 4px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(18, 33, 39, 0.1);
+}
+
+.heroMeta span {
+  color: var(--muted);
+}
+
+.heroMeta strong {
+  font-size: 1.08rem;
+}
+
+.main,
+.section {
+  display: grid;
+  gap: 22px;
+}
+
+.panel,
+.section {
+  scroll-margin-top: 24px;
+}
+
+.questionCard {
+  display: grid;
+  gap: 10px;
+  padding: 18px 20px;
+  border: 1px solid rgba(18, 33, 39, 0.1);
+  border-radius: 22px;
+  background: rgba(255, 251, 245, 0.9);
+}
+
+.listBlock {
+  display: grid;
+  gap: 10px;
+}
+
+.listBlock h3,
+.providerCard strong {
+  font-size: 1.12rem;
+}
+
+.listBlock ul {
+  display: grid;
+  gap: 10px;
+  padding-left: 20px;
+  line-height: 1.72;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.primaryAction,
+.secondaryAction {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 50px;
+  padding: 0 20px;
+  border-radius: 999px;
+  font-weight: 700;
+}
+
+.primaryAction {
+  background: var(--foreground);
+  color: #fff7ee;
+}
+
+.secondaryAction {
+  border: 1px solid rgba(18, 33, 39, 0.12);
+  background: rgba(255, 251, 245, 0.88);
+}
+
+.sectionHeading {
+  max-width: 780px;
+}
+
+.providerGrid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.providerCard {
+  display: grid;
+  gap: 14px;
+}
+
+.providerMeta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.providerMeta strong {
+  color: var(--accent-dark);
+  font-size: 0.95rem;
+  line-height: 1.4;
+}
+
+@media (max-width: 960px) {
+  .hero,
+  .providerGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 720px) {
+  .page {
+    padding: 16px;
+  }
+
+  .headerBar {
+    flex-direction: column;
+    align-items: start;
+  }
+
+  .heroCopy,
+  .heroPanel,
+  .panel,
+  .providerCard {
+    padding: 22px;
+    border-radius: 24px;
+  }
+}

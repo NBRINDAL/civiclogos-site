@@ -104,6 +104,12 @@
   align-items: stretch;
 }
 
+.heroAside {
+  display: grid;
+  gap: 18px;
+  align-content: start;
+}
+
 .heroCopy,
 .heroPanel,
 .splitCard,

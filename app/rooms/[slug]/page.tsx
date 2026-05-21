@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import IntakeRouteBanner from "../../components/intake-route-banner";
 import RelatedRooms from "../../components/related-rooms";
 import RoomGuide from "../../components/room-guide";
 import {
@@ -8,6 +9,7 @@ import {
   type IssueRoomData,
   type IssueRoomSlug,
 } from "../../lib/civic-logos";
+import { getHomeIntakeEntry } from "../../lib/prototype-home-intake-store";
 import styles from "../../healthcare/page.module.css";
 
 function ProposalTrack({
@@ -66,12 +68,25 @@ export function generateStaticParams() {
     .map((slug) => ({ slug }));
 }
 
+function getSingleSearchParam(
+  value: string | string[] | undefined,
+): string | undefined {
+  if (typeof value === "string") {
+    return value;
+  }
+
+  return Array.isArray(value) ? value[0] : undefined;
+}
+
 export default async function IssueRoomPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ slug: string }>;
+  searchParams: Promise<{ intake?: string | string[] }>;
 }) {
   const { slug } = await params;
+  const { intake } = await searchParams;
   const roomSlug = slug as IssueRoomSlug;
   const room = issueRooms[roomSlug] as IssueRoomData | undefined;
 
@@ -81,6 +96,9 @@ export default async function IssueRoomPage({
 
   const inspectableTopics = getInspectableTopics(room);
   const firstLiveCard = inspectableTopics[0];
+  const routeEntry = intake
+    ? await getHomeIntakeEntry(getSingleSearchParam(intake) ?? "")
+    : null;
 
   return (
     <div className={styles.page}>
@@ -158,6 +176,14 @@ export default async function IssueRoomPage({
       </header>
 
       <main className={styles.main}>
+        {routeEntry ? (
+          <IntakeRouteBanner
+            currentRoomHref={`/rooms/${roomSlug}`}
+            currentRoomSlug={roomSlug}
+            entry={routeEntry}
+          />
+        ) : null}
+
         <nav className={styles.sectionRail} aria-label={`${room.title} room map`}>
           <a href="#start-here">Start here</a>
           <a href="#current-read">Current read</a>

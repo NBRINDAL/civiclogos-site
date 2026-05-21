@@ -1,4 +1,5 @@
 import Link from "next/link";
+import IntakeRouteBanner from "../components/intake-route-banner";
 import RelatedRooms from "../components/related-rooms";
 import RoomGuide from "../components/room-guide";
 import {
@@ -6,6 +7,7 @@ import {
   healthcareIssueRoom,
   issueRoomQuestion,
 } from "../lib/civic-logos";
+import { getHomeIntakeEntry } from "../lib/prototype-home-intake-store";
 import styles from "./page.module.css";
 
 function ProposalTrack({
@@ -58,7 +60,25 @@ function ProposalTrack({
   );
 }
 
-export default function HealthcareIssueRoomPage() {
+function getSingleSearchParam(
+  value: string | string[] | undefined,
+): string | undefined {
+  if (typeof value === "string") {
+    return value;
+  }
+
+  return Array.isArray(value) ? value[0] : undefined;
+}
+
+export default async function HealthcareIssueRoomPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ intake?: string | string[] }>;
+}) {
+  const { intake } = await searchParams;
+  const routeEntry = intake
+    ? await getHomeIntakeEntry(getSingleSearchParam(intake) ?? "")
+    : null;
   const inspectableTopics = getInspectableTopics(healthcareIssueRoom);
   const firstLiveCard = inspectableTopics[0];
 
@@ -138,6 +158,14 @@ export default function HealthcareIssueRoomPage() {
       </header>
 
       <main className={styles.main}>
+        {routeEntry ? (
+          <IntakeRouteBanner
+            currentRoomHref="/healthcare"
+            currentRoomSlug="healthcare"
+            entry={routeEntry}
+          />
+        ) : null}
+
         <nav className={styles.sectionRail} aria-label="Healthcare room map">
           <a href="#start-here">Start here</a>
           <a href="#current-read">Current read</a>

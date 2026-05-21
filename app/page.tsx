@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ContactForm } from "./components/contact-form";
+import HomeIntake from "./components/home-intake";
 import { getLiveCardIndex, issueRoomQuestion, roomDirectory } from "./lib/civic-logos";
 import styles from "./page.module.css";
 
@@ -130,16 +131,20 @@ export default function Home() {
             </div>
           </div>
 
-          <aside className={styles.heroPanel}>
-            <p className={styles.panelEyebrow}>Now building</p>
-            <h2>A narrow first release with a clear job to do.</h2>
-            <ul className={styles.panelList}>
-              <li>Public homepage and concise founding manifesto.</li>
-              <li>Clear explanation of why ideas should outlast posts.</li>
-              <li>Healthcare as the first full structured issue room.</li>
-              <li>A seeded room library for harder domains like governance, housing, AI/labor, and institutional trust.</li>
-            </ul>
-          </aside>
+          <div className={styles.heroAside}>
+            <HomeIntake />
+
+            <aside className={styles.heroPanel}>
+              <p className={styles.panelEyebrow}>Now building</p>
+              <h2>A narrow first release with a clear job to do.</h2>
+              <ul className={styles.panelList}>
+                <li>Public homepage and concise founding manifesto.</li>
+                <li>Visible room routing from the homepage instead of a dead landing page.</li>
+                <li>Healthcare as the first full structured issue room.</li>
+                <li>AI-assisted intake that places ideas into living rooms and inspectable topic directions.</li>
+              </ul>
+            </aside>
+          </div>
         </div>
       </header>
 

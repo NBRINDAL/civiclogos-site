@@ -1,0 +1,191 @@
+import Link from "next/link";
+import { notFound } from "next/navigation";
+import {
+  getRoomHref,
+  getRoomTopicHref,
+} from "@/app/lib/civic-logos";
+import { getHomeIntakeEntry, getHomeIntakeStoreMetadata } from "@/app/lib/prototype-home-intake-store";
+import styles from "./page.module.css";
+
+export const dynamic = "force-dynamic";
+
+type ProviderLabel = "OpenAI" | "Claude";
+
+function getProviderLabel(provider: string): ProviderLabel {
+  return provider === "openai" ? "OpenAI" : "Claude";
+}
+
+export default async function IntakeEntryPage({
+  params,
+}: {
+  params: Promise<{ entryId: string }>;
+}) {
+  const { entryId } = await params;
+  const [entry, metadata] = await Promise.all([
+    getHomeIntakeEntry(entryId),
+    getHomeIntakeStoreMetadata(),
+  ]);
+
+  if (!entry) {
+    notFound();
+  }
+
+  const roomHref = entry.routing.roomSlug
+    ? getRoomHref(entry.routing.roomSlug)
+    : undefined;
+  const topicHref =
+    entry.routing.roomSlug && entry.routing.topicId
+      ? getRoomTopicHref(entry.routing.roomSlug, entry.routing.topicId)
+      : undefined;
+
+  return (
+    <div className={styles.page}>
+      <div className={styles.backdrop} aria-hidden="true" />
+
+      <header className={styles.header}>
+        <div className={styles.headerBar}>
+          <Link className={styles.brand} href="/">
+            <span className={styles.brandMark}>CL</span>
+            <span className={styles.brandText}>
+              <strong>Civic Logos</strong>
+              <span>AI intake result</span>
+            </span>
+          </Link>
+
+          <nav className={styles.nav}>
+            <Link href="/">Home</Link>
+            <Link href="/rooms">All rooms</Link>
+          </nav>
+        </div>
+
+        <div className={styles.hero}>
+          <div className={styles.heroCopy}>
+            <span className={styles.eyebrow}>
+              {entry.routing.routeKind === "existing-room"
+                ? "Routed to current room"
+                : "Provisional new-room draft"}
+            </span>
+            <h1>
+              {entry.routing.routeKind === "existing-room"
+                ? entry.routing.roomTitle ?? "Current room"
+                : entry.routing.suggestedTopicTitle ?? "New room draft"}
+            </h1>
+            <p className={styles.summary}>
+              {entry.routing.fitSummary ??
+                "The current room map produced a provisional routing result for this idea."}
+            </p>
+          </div>
+
+          <aside className={styles.heroPanel}>
+            <span className={styles.panelLabel}>Original prompt</span>
+            <p>{entry.prompt}</p>
+            <div className={styles.heroMeta}>
+              <div>
+                <span>Confidence</span>
+                <strong>{entry.routing.routeConfidence ?? "working draft"}</strong>
+              </div>
+              <div>
+                <span>Storage mode</span>
+                <strong>{metadata.prototype ? "Prototype" : "Persistent"}</strong>
+              </div>
+            </div>
+          </aside>
+        </div>
+      </header>
+
+      <main className={styles.main}>
+        <section className={styles.panel}>
+          <span className={styles.eyebrow}>What the intake engine saw</span>
+          <h2>
+            {entry.routing.routeKind === "existing-room"
+              ? "This idea fits a current room more cleanly than it needs a new one."
+              : "The current room map was treated as a weak fit, so Civic Logos opened a provisional draft instead."}
+          </h2>
+          <p>{entry.routing.suggestedTopicSummary}</p>
+
+          {entry.routing.suggestedCentralQuestion ? (
+            <div className={styles.questionCard}>
+              <span>Central question</span>
+              <p>{entry.routing.suggestedCentralQuestion}</p>
+            </div>
+          ) : null}
+
+          {entry.routing.suggestedFirstQuestions?.length ? (
+            <div className={styles.listBlock}>
+              <h3>Suggested first questions</h3>
+              <ul>
+                {entry.routing.suggestedFirstQuestions.map((item) => (
+                  <li key={item}>{item}</li>
+                ))}
+              </ul>
+            </div>
+          ) : null}
+
+          {entry.routing.routeKind === "new-room-draft" && entry.routing.whyNotExistingRooms ? (
+            <div className={styles.listBlock}>
+              <h3>Why this was not placed in a current room</h3>
+              <p>{entry.routing.whyNotExistingRooms}</p>
+            </div>
+          ) : null}
+
+          <div className={styles.actions}>
+            {roomHref ? (
+              <Link className={styles.primaryAction} href={`${roomHref}?intake=${entry.id}`}>
+                Open routed room
+              </Link>
+            ) : null}
+            {topicHref ? (
+              <Link className={styles.secondaryAction} href={topicHref}>
+                Open suggested live card
+              </Link>
+            ) : null}
+            <Link className={styles.secondaryAction} href="/rooms">
+              Back to room library
+            </Link>
+          </div>
+        </section>
+
+        <section className={styles.section}>
+          <div className={styles.sectionHeading}>
+            <span className={styles.eyebrow}>Parallel readers</span>
+            <h2>The public intake is stronger when both models stay visible as readers.</h2>
+          </div>
+
+          <div className={styles.providerGrid}>
+            {entry.routing.providers.map((provider) => (
+              <article className={styles.providerCard} key={provider.provider}>
+                <div className={styles.providerMeta}>
+                  <span>{getProviderLabel(provider.provider)}</span>
+                  <strong>{provider.model ?? "Unavailable"}</strong>
+                </div>
+
+                <p>
+                  {provider.state === "completed"
+                    ? provider.fitSummary
+                    : provider.errorMessage ??
+                      "This provider did not produce a routing read for this prompt."}
+                </p>
+
+                {provider.routeKind ? (
+                  <p>
+                    <strong>Route:</strong>{" "}
+                    {provider.routeKind === "existing-room"
+                      ? provider.roomTitle ?? "Current room"
+                      : "Provisional new-room draft"}
+                  </p>
+                ) : null}
+
+                {provider.topicTitle || provider.suggestedTopicTitle ? (
+                  <p>
+                    <strong>Suggested topic:</strong>{" "}
+                    {provider.topicTitle ?? provider.suggestedTopicTitle}
+                  </p>
+                ) : null}
+              </article>
+            ))}
+          </div>
+        </section>
+      </main>
+    </div>
+  );
+}

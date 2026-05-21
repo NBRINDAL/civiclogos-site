@@ -1,0 +1,170 @@
+.panel {
+  display: grid;
+  gap: 20px;
+  padding: 28px;
+  border: 1px solid rgba(18, 33, 39, 0.12);
+  border-radius: 32px;
+  background:
+    linear-gradient(180deg, rgba(243, 247, 237, 0.88), rgba(255, 250, 243, 0.82));
+  box-shadow: 0 24px 52px rgba(18, 33, 39, 0.08);
+  backdrop-filter: blur(14px);
+}
+
+.header {
+  display: grid;
+  gap: 10px;
+}
+
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--signal);
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.eyebrow::before {
+  content: "";
+  width: 30px;
+  height: 1px;
+  background: currentColor;
+}
+
+.header h2 {
+  font-family: var(--font-serif), serif;
+  font-size: clamp(1.75rem, 3vw, 2.4rem);
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  line-height: 1.04;
+  text-wrap: balance;
+}
+
+.header p,
+.field span,
+.help,
+.suggestedPrompt,
+.successState p,
+.errorState p {
+  line-height: 1.7;
+}
+
+.header p,
+.help {
+  color: var(--muted);
+}
+
+.form {
+  display: grid;
+  gap: 18px;
+}
+
+.field {
+  display: grid;
+  gap: 10px;
+}
+
+.field span {
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+.field textarea {
+  min-height: 170px;
+  resize: vertical;
+  padding: 18px;
+  border: 1px solid rgba(18, 33, 39, 0.14);
+  border-radius: 24px;
+  background: rgba(255, 251, 245, 0.92);
+  color: var(--foreground);
+  font: inherit;
+}
+
+.field textarea:focus {
+  outline: 2px solid rgba(91, 110, 69, 0.22);
+  outline-offset: 2px;
+}
+
+.suggestedRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.suggestedPrompt {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 42px;
+  padding: 10px 14px;
+  border: 1px solid rgba(91, 110, 69, 0.16);
+  border-radius: 999px;
+  background: rgba(255, 251, 245, 0.78);
+  color: var(--foreground);
+  font-size: 0.92rem;
+  text-align: left;
+}
+
+.footer {
+  display: grid;
+  gap: 12px;
+}
+
+.submitButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 52px;
+  padding: 0 22px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background: var(--foreground);
+  color: #fff7ee;
+  font-weight: 700;
+  box-shadow: 0 12px 28px rgba(18, 33, 39, 0.18);
+  transition:
+    transform 180ms ease,
+    background 180ms ease;
+}
+
+.submitButton:disabled {
+  cursor: wait;
+  opacity: 0.84;
+}
+
+.successState,
+.errorState {
+  padding: 16px 18px;
+  border-radius: 22px;
+}
+
+.successState {
+  border: 1px solid rgba(91, 110, 69, 0.18);
+  background: rgba(229, 235, 220, 0.52);
+}
+
+.errorState {
+  border: 1px solid rgba(181, 94, 51, 0.24);
+  background: rgba(255, 244, 236, 0.92);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .submitButton:hover:not(:disabled) {
+    transform: translateY(-2px);
+    background: #24363c;
+  }
+
+  .suggestedPrompt:hover {
+    border-color: rgba(91, 110, 69, 0.28);
+    background: rgba(255, 251, 245, 0.96);
+  }
+}
+
+@media (max-width: 720px) {
+  .panel {
+    padding: 22px;
+    border-radius: 24px;
+  }
+}
