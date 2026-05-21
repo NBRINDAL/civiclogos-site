@@ -133,6 +133,30 @@
   gap: 10px;
 }
 
+.sessionTargetMap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.sessionTargetLink {
+  display: inline-flex;
+  align-items: center;
+  min-height: 38px;
+  padding: 0 14px;
+  border: 1px solid rgba(18, 33, 39, 0.14);
+  border-radius: 999px;
+  background: rgba(255, 251, 245, 0.92);
+  color: var(--foreground);
+  font-size: 0.84rem;
+  font-weight: 700;
+  text-decoration: none;
+  transition:
+    transform 180ms ease,
+    border-color 180ms ease,
+    background 180ms ease;
+}
+
 .transcriptList {
   display: grid;
   gap: 14px;
@@ -488,7 +512,8 @@
   .secondaryAction:hover,
   .quickPrompt:hover,
   .answerAction:hover,
-  .promotionLink:hover {
+  .promotionLink:hover,
+  .sessionTargetLink:hover {
     transform: translateY(-2px);
   }
 
@@ -499,7 +524,8 @@
   .secondaryAction:hover,
   .quickPrompt:hover,
   .answerAction:hover,
-  .promotionLink:hover {
+  .promotionLink:hover,
+  .sessionTargetLink:hover {
     border-color: rgba(18, 33, 39, 0.26);
     background: rgba(255, 251, 245, 0.96);
   }
@@ -531,7 +557,10 @@
 @media (prefers-reduced-motion: reduce) {
   .primaryAction,
   .secondaryAction,
-  .answerAction {
+  .answerAction,
+  .promotionLink,
+  .sessionTargetLink,
+  .quickPrompt {
     transition: none;
   }
 }

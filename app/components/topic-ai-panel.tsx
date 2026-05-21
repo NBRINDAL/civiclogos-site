@@ -56,6 +56,14 @@ type TranscriptItem = {
   sourceQuestion?: string;
 };
 
+type PromotionAttachmentFilter =
+  | "claim"
+  | "objection"
+  | "evidence"
+  | "assumption"
+  | "open-question"
+  | "none-yet";
+
 const quickChallengePrompts = [
   "Which assumption is carrying the most hidden risk in this card right now?",
   "Steelman the strongest objection to this card from the current public record.",
@@ -114,6 +122,38 @@ function getPromotionAttachmentLabel(promotion: TopicChatPromotion) {
   }
 
   return `${kindLabel} - ${promotion.assignmentLabel}`;
+}
+
+function getPromotionAttachmentFilter(
+  promotion: TopicChatPromotion,
+): PromotionAttachmentFilter {
+  const normalizedKind = promotion.assignmentKind
+    ? normalizeReviewTargetKind(promotion.assignmentKind)
+    : null;
+
+  if (!normalizedKind || normalizedKind === "unclear") {
+    return "none-yet";
+  }
+
+  return normalizedKind;
+}
+
+function getPromotionAttachmentFilterLabel(filter: PromotionAttachmentFilter) {
+  switch (filter) {
+    case "claim":
+      return "Synthesis";
+    case "objection":
+      return "Objection";
+    case "evidence":
+      return "Evidence";
+    case "assumption":
+      return "Assumption";
+    case "open-question":
+      return "Open question";
+    case "none-yet":
+    default:
+      return "None yet";
+  }
 }
 
 function getContributionRecordHref(promotion: TopicChatPromotion) {
@@ -200,9 +240,15 @@ function getSessionImpact(messages: TopicChatMessage[]) {
   const promotedMessages = messages.filter(
     (message) => message.role === "assistant" && message.promotion,
   );
+  const recordAffectingMessages = promotedMessages.filter(
+    (message) =>
+      message.promotion?.state === "auto-recorded" ||
+      message.promotion?.state === "sent-to-review",
+  );
 
   return {
     promotedMessages,
+    recordAffectingMessages,
     autoRecordedCount: promotedMessages.filter(
       (message) => message.promotion?.state === "auto-recorded",
     ).length,
@@ -212,6 +258,19 @@ function getSessionImpact(messages: TopicChatMessage[]) {
     exploratoryCount: promotedMessages.filter(
       (message) => message.promotion?.state === "not-added",
     ).length,
+    attachmentCounts: (
+      ["claim", "objection", "evidence", "assumption", "open-question", "none-yet"] as const
+    )
+      .map((attachment) => ({
+        attachment,
+        label: getPromotionAttachmentFilterLabel(attachment),
+        count: recordAffectingMessages.filter(
+          (message) =>
+            message.promotion &&
+            getPromotionAttachmentFilter(message.promotion) === attachment,
+        ).length,
+      }))
+      .filter((item) => item.count > 0),
   };
 }
 
@@ -401,6 +460,22 @@ export default function TopicAiPanel({
         {sessionImpact.promotedMessages.length ? (
           <div className={styles.sessionImpactTrace}>
             <span className={styles.quickPromptLabel}>AI session impact</span>
+            {sessionImpact.attachmentCounts.length ? (
+              <div className={styles.sessionTargetMap}>
+                {sessionImpact.attachmentCounts.map((item) => (
+                  <a
+                    className={styles.sessionTargetLink}
+                    href={getRecordViewHref(
+                      "ai-assisted",
+                      item.attachment === "none-yet" ? undefined : item.attachment,
+                    )}
+                    key={`session-target-${item.attachment}`}
+                  >
+                    {item.label} {item.count}
+                  </a>
+                ))}
+              </div>
+            ) : null}
             <div className={styles.issueList}>
               {sessionImpact.promotedMessages.slice(-3).reverse().map((message) => (
                 <p className={styles.issueItem} key={`impact-${message.id}`}>
