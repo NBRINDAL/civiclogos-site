@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { ContactForm } from "./components/contact-form";
-import { issueRoomQuestion, roomDirectory } from "./lib/civic-logos";
+import { getLiveCardIndex, issueRoomQuestion, roomDirectory } from "./lib/civic-logos";
 import styles from "./page.module.css";
 
 const distinctions = [
@@ -80,6 +80,8 @@ const releaseItems = [
 ];
 
 export default function Home() {
+  const liveCardIndex = getLiveCardIndex();
+
   return (
     <div className={styles.page}>
       <div className={styles.backdrop} aria-hidden="true" />
@@ -97,6 +99,7 @@ export default function Home() {
           <div className={styles.navLinks}>
             <Link href="/rooms">Room library</Link>
             <Link href="/healthcare">Healthcare room</Link>
+            <a href="#live-cards">Live cards</a>
             <a href="#manifesto">Manifesto</a>
             <a href="#contact">Early access</a>
           </div>
@@ -170,6 +173,44 @@ export default function Home() {
               and public reasoning clearer than ordinary social media can.
             </p>
           </article>
+        </section>
+
+        <section className={`${styles.section} ${styles.reveal}`} id="live-cards">
+          <div className={styles.sectionIntro}>
+            <span className={styles.cardLabel}>Live Cards</span>
+            <h2>The most important thing to show is not just the theory, but the inspectable objects already in motion.</h2>
+            <p>
+              These are the live topic cards currently seeded across Civic
+              Logos. They are the places where a room stops being a mission
+              statement and starts becoming a public reasoning object.
+            </p>
+          </div>
+
+          <div className={styles.liveCardGrid}>
+            {liveCardIndex.map((card) => (
+              <article className={styles.liveCard} key={card.href}>
+                <div className={styles.liveCardMeta}>
+                  <span>{card.roomTitle}</span>
+                  <strong>{card.metric}</strong>
+                </div>
+
+                <h3>{card.title}</h3>
+                <p>{card.summary}</p>
+
+                <div className={styles.liveCardFooter}>
+                  <span>{card.roomStage}</span>
+                  <div className={styles.liveCardActions}>
+                    <Link className={styles.primaryAction} href={card.href!}>
+                      Open card
+                    </Link>
+                    <Link className={styles.secondaryAction} href={card.roomHref}>
+                      Open room
+                    </Link>
+                  </div>
+                </div>
+              </article>
+            ))}
+          </div>
         </section>
 
         <section className={`${styles.section} ${styles.reveal}`} id="manifesto">

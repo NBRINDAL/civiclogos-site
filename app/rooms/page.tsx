@@ -1,6 +1,7 @@
 import Link from "next/link";
 import {
   getInspectableTopics,
+  getLiveCardIndex,
   issueRooms,
   roomDirectory,
   type IssueRoomSlug,
@@ -8,18 +9,7 @@ import {
 import styles from "./page.module.css";
 
 export default function RoomsPage() {
-  const liveCardIndex = roomDirectory.flatMap((room) => {
-    const roomData = issueRooms[room.slug as IssueRoomSlug];
-    const inspectableTopics = getInspectableTopics(roomData);
-
-    return inspectableTopics.map((card) => ({
-      ...card,
-      roomHref: room.href,
-      roomTitle: room.title,
-      roomStage: room.stage,
-    }));
-  });
-
+  const liveCardIndex = getLiveCardIndex();
   const totalInspectableCards = roomDirectory.reduce((total, room) => {
     const roomData = issueRooms[room.slug as IssueRoomSlug];
     return total + getInspectableTopics(roomData).length;

@@ -121,6 +121,12 @@ export type RoomDirectoryItem = {
   href: string;
 };
 
+export type LiveCardIndexItem = ProposalSummary & {
+  roomHref: string;
+  roomStage: string;
+  roomTitle: string;
+};
+
 export const issueRoomQuestion =
   "What healthcare system best balances cost, access, quality, freedom, innovation, human dignity, public health, and long-term economic sustainability?";
 
@@ -1291,6 +1297,20 @@ export function getInspectableTopics(room: IssueRoomData): ProposalSummary[] {
   }
 
   return inspectableTopics;
+}
+
+export function getLiveCardIndex(): readonly LiveCardIndexItem[] {
+  return roomDirectory.flatMap((room) => {
+    const roomData = issueRooms[room.slug as IssueRoomSlug];
+    const inspectableTopics = getInspectableTopics(roomData);
+
+    return inspectableTopics.map((card) => ({
+      ...card,
+      roomHref: room.href,
+      roomStage: room.stage,
+      roomTitle: room.title,
+    }));
+  });
 }
 
 export const roomDirectory: readonly RoomDirectoryItem[] = [
