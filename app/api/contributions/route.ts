@@ -8,6 +8,7 @@ import {
   type IssueRoomSlug,
 } from "@/app/lib/civic-logos";
 import type { AssistedDraftSource } from "@/app/lib/contribution-types";
+import { topicCardVisibleContributionLimit } from "@/app/lib/contribution-constants";
 import { createContribution, getContributionStoreMetadata, listPublicContributions } from "@/app/lib/contribution-store";
 import { createEvidenceDocument } from "@/app/lib/evidence-document-store";
 import { sendContributionSubmittedNotification } from "@/app/lib/maintainer-notifications";
@@ -109,10 +110,12 @@ function revalidateTopicSurfaces(roomSlug: IssueRoomSlug, topicId: string) {
 export async function GET(request: NextRequest) {
   const roomSlug = request.nextUrl.searchParams.get("roomSlug")?.trim();
   const topicId = request.nextUrl.searchParams.get("topicId")?.trim();
-  const limitValue = Number(request.nextUrl.searchParams.get("limit") ?? "8");
+  const limitValue = Number(
+    request.nextUrl.searchParams.get("limit") ?? String(topicCardVisibleContributionLimit),
+  );
   const limit = Number.isFinite(limitValue)
     ? Math.min(Math.max(limitValue, 1), 20)
-    : 8;
+    : topicCardVisibleContributionLimit;
 
   if (roomSlug && !isRoomSlug(roomSlug)) {
     return NextResponse.json({ error: "Unknown room." }, { status: 400 });

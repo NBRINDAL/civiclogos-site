@@ -3,6 +3,7 @@
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import type { DebatePrompt, IssueRoomSlug } from "../lib/civic-logos";
+import { topicCardVisibleContributionLimit } from "../lib/contribution-constants";
 import type {
   AiProvider,
   ProviderContributionAiIntake,
@@ -314,7 +315,7 @@ export default function TopicContributionLoop({
     async function loadContributions() {
       try {
         const response = await fetch(
-          `/api/contributions?roomSlug=${encodeURIComponent(roomSlug)}&topicId=${encodeURIComponent(topicId)}&limit=8`,
+          `/api/contributions?roomSlug=${encodeURIComponent(roomSlug)}&topicId=${encodeURIComponent(topicId)}&limit=${topicCardVisibleContributionLimit}`,
         );
         const payload = (await response.json()) as ContributionResponse;
 
@@ -503,7 +504,9 @@ export default function TopicContributionLoop({
           throw new Error(payload.error ?? "Contribution could not be submitted.");
         }
 
-        setContributions((current) => [payload.contribution!, ...current].slice(0, 8));
+        setContributions((current) =>
+          [payload.contribution!, ...current].slice(0, topicCardVisibleContributionLimit),
+        );
         resetContributionFields();
         setDraftState(null);
         setSubmissionState({

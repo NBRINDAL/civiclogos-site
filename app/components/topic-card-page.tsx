@@ -3,6 +3,7 @@ import Link from "next/link";
 import TopicContributionLoop from "./topic-contribution-loop";
 import TopicAiPanel from "./topic-ai-panel";
 import type { IssueRoomSlug, TopicCardData } from "../lib/civic-logos";
+import { topicCardVisibleContributionLimit } from "../lib/contribution-constants";
 import type { PublicContribution } from "../lib/contribution-types";
 import {
   getContributionStoreMetadata,
@@ -79,7 +80,7 @@ export default async function TopicCardPage({
     listPublicContributions({
       roomSlug,
       topicId: card.id,
-      limit: 12,
+      limit: topicCardVisibleContributionLimit,
     }),
     getContributionStoreMetadata(),
     topicChatSessionId
