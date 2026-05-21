@@ -1139,6 +1139,7 @@ export const institutionalTrustIssueRoom = {
         "Treats corrections, reversals, and admissions as durable institutional memory instead of PR cleanup.",
       label: "Most novel",
       metric: "Memory-first accountability",
+      href: "/rooms/institutional-trust/topic-003",
     },
     {
       title: "Astroturf Detection and Labeling Layer",
@@ -3475,12 +3476,205 @@ export const institutionalTrustTopic002: TopicCardData = {
   ],
 };
 
+export const institutionalTrustTopic003: TopicCardData = {
+  id: "topic-003",
+  title: "Public Correction Ledger Model",
+  subtitle:
+    "A third institutional-trust topic card for making revision, retraction, and institutional learning durable instead of disposable",
+  draftNote:
+    "This topic card is intentionally early because correction culture sits at the boundary between truth-seeking and reputation management. It is meant to test a narrower claim: trust improves when institutions have to carry visible memory of what they changed, what they got wrong, and how they responded, instead of relying on quiet edits or one-cycle PR cleanup.",
+  thesis:
+    "High-impact institutions should maintain a public correction ledger that records revisions, reversals, retractions, contested claims, and material admissions in structured form, so institutional learning and non-correction become visible over time rather than disappearing into versionless messaging.",
+  currentRead:
+    "This topic card feels strong because it gives the trust room a direct mechanism for distinguishing honest correction from narrative laundering. It feels weak wherever a ledger risks becoming procedural theater: a place where institutions log minor edits while avoiding deeper accountability for what was omitted, delayed, or strategically reframed. The card is useful because it turns trust from a branding problem into a memory problem.",
+  problemStatement:
+    "Institutions often correct themselves quietly, partially, or only after external pressure. Public statements, reports, policies, and research outputs can change materially without ordinary readers being able to see what moved, why it moved, whether the change was voluntary, and what earlier claims or harms remain unresolved. This erodes trust because the public cannot tell the difference between real learning, reluctant concession, and strategic cleanup.",
+  proposedSolution:
+    "Create a public correction ledger for high-impact institutional outputs: a structured record of revisions, withdrawals, factual corrections, model updates, conflict disclosures, and challenge outcomes, paired with timestamps, reasons, linked source objects, and materiality labels. The goal is not to punish every change, but to make institutional memory durable enough that trust can track real correction behavior over time.",
+  mechanism: [
+    "Define which events belong in the ledger: factual corrections, policy reversals, major claim updates, retractions, conflict disclosures, and challenge outcomes that materially change the public object.",
+    "Require each ledger entry to include the prior claim or output, the revised position, the reason for change, the trigger for correction, and any unresolved dispute that remains live.",
+    "Link correction entries back to the original speech, report, topic, or institutional claim so readers can move between the current object and its correction history.",
+    "Distinguish levels of materiality so the ledger does not flatten typo fixes, substantive reversals, and delayed admissions into the same event type.",
+  ],
+  benefits: [
+    "The public gains a way to judge institutions by how they revise, not only by how confidently they speak.",
+    "Honest correction becomes easier to distinguish from quiet narrative management or stealth editing.",
+    "Civic Logos gets a concrete repair mechanism for one of its core claims: institutional memory should be visible enough to pressure better behavior over time.",
+    "Institutional trust can become more proportional because readers can see whether a body learns, stonewalls, or only concedes under extreme pressure.",
+  ],
+  risks: [
+    "A ledger can become a compliance ritual where institutions record low-stakes edits while hiding the most consequential acts of reframing or omission.",
+    "If every revision is treated as weakness, institutions may become more defensive and less willing to correct openly.",
+    "The system could reward performative self-flagellation without materially improving truth or accountability.",
+    "Heavy correction infrastructure may burden smaller institutions that lack dedicated communications or legal teams.",
+  ],
+  assumptions: [
+    "Public trust depends not only on current statements, but on whether institutions visibly carry and learn from their own correction history.",
+    "Readers can interpret revision logs meaningfully if the entries are structured, linked, and labeled by materiality.",
+    "Institutions can be pushed toward healthier correction norms without turning every update into a punishment regime.",
+    "Correction memory is a core civic object, not merely an internal process or PR concern.",
+  ],
+  stakeholders: [
+    "Citizens and readers",
+    "Newsrooms and editors",
+    "Government agencies and public officials",
+    "Research institutions and universities",
+    "Corporations and public-facing nonprofits",
+    "Watchdogs and auditors",
+    "Whistleblowers and challenge submitters",
+    "Smaller institutions with lighter operational capacity",
+  ],
+  evidence: [
+    {
+      title: "Visible correction practices affect long-run trust judgments",
+      status: "Useful but uneven",
+      note: "Supports the idea that institutions are judged partly by how they revise, not just by what they originally claim.",
+    },
+    {
+      title: "Quiet edits and buried corrections are common in public-facing institutions",
+      status: "Strong evidence",
+      note: "This is the core behavioral pattern the ledger is meant to pressure directly.",
+    },
+    {
+      title: "Versioned public records reduce confusion in other knowledge systems",
+      status: "Strong evidence",
+      note: "Suggests that visible revision history can improve legibility when the interface and event model are clear.",
+    },
+    {
+      title: "Public correction ledgers improve accountability without increasing institutional defensiveness",
+      status: "Needs verification",
+      note: "This is central to the optimistic case and still depends heavily on implementation and cultural uptake.",
+    },
+  ] satisfies EvidenceSummary[],
+  economicDelta: {
+    summary:
+      "Estimated Economic Delta: Indirect but meaningful if better correction memory reduces repeated misinformation, bad procurement, legal churn, reputational distortion, and duplicated investigative effort. Main costs include governance, interface design, dispute handling, and the operational burden of maintaining structured institutional memory. Confidence remains moderate-to-low because the value depends on whether the ledger changes behavior rather than merely documenting it.",
+    metrics: [
+      "Possible trust-value gain: high if correction behavior becomes genuinely legible",
+      "Implementation cost: moderate because the hard part is event design and governance, not storage alone",
+      "Institutional resistance: likely high where revision history threatens narrative control",
+      "Behavior-change potential: meaningful if public legitimacy begins tracking correction quality",
+      "Economic-delta confidence: low to moderate until live pilots show whether the ledger changes incentives",
+    ],
+  },
+  strongestSupport:
+    "This topic card gives the trust room a concrete answer to one of its most important repair questions: if institutions are going to be fallible, the public needs durable memory of how they correct, not just fresh messaging after the fact.",
+  strongestObjection:
+    "A correction ledger can still be gamed. Institutions may over-document cosmetic revisions, under-document real reversals, and learn to look self-aware without actually becoming more accountable.",
+  whatWouldStrengthen: [
+    "A sharper event taxonomy that distinguishes typo fixes, factual corrections, policy reversals, delayed admissions, and unresolved challenge responses.",
+    "A visible interface example showing how a correction ledger could be readable to ordinary people instead of only specialists.",
+    "Examples from journalism, science, regulation, or open-source systems where revision history improved accountability rather than just adding noise.",
+  ],
+  openQuestions: [
+    "Which institutional outputs should be required to maintain a public correction ledger?",
+    "How should the system distinguish good-faith learning from late-stage reputation management?",
+    "Who decides whether an omitted or buried correction should itself become a ledger event?",
+    "How can smaller institutions comply without being drowned in procedural overhead?",
+  ],
+  maturity: "Seed topic",
+  scorecard: [
+    { label: "Novelty", value: 81 },
+    { label: "Coherence", value: 87 },
+    { label: "Feasibility", value: 63 },
+    { label: "Evidence quality", value: 59 },
+    { label: "Economic delta clarity", value: 52 },
+    { label: "Public value", value: 90 },
+  ],
+  aiPanels: [
+    {
+      role: "Structurer",
+      confidence: "Moderate",
+      summary:
+        "The topic card turns trust repair into a visible memory system: correction events, reasons, triggers, and materiality all stay attached to the public object.",
+    },
+    {
+      role: "Steelman",
+      confidence: "Moderate",
+      summary:
+        "If institutions know their correction history will remain legible, they may become easier to judge by learning quality instead of by narrative confidence alone.",
+    },
+    {
+      role: "Critic",
+      confidence: "Moderate",
+      summary:
+        "The ledger could become a sophisticated reputation shield if event definitions and omission rules are weak enough to let institutions perform transparency without carrying real memory.",
+    },
+    {
+      role: "Institutionalist",
+      confidence: "Low",
+      summary:
+        "The strongest version likely needs challenge rights, external dispute pathways, and visible materiality standards so the correction record is not fully self-authored by the institution being judged.",
+    },
+  ],
+  debatePrompts: [
+    {
+      title: "Support",
+      description: "Add the strongest argument for why visible correction memory would improve trust more than current PR-style corrections do.",
+    },
+    {
+      title: "Objection",
+      description: "Surface the strongest reason a correction ledger could become cosmetic self-documentation rather than real accountability.",
+    },
+    {
+      title: "Evidence",
+      description: "Add examples, studies, or systems that strengthen or weaken the case for structured public correction memory.",
+    },
+    {
+      title: "Correction",
+      description: "Identify conceptual, governance, or event-model errors in the current card.",
+    },
+    {
+      title: "Nuance",
+      description: "Improve the topic by exposing a missing tradeoff between transparency, punishment, learning, and institutional burden.",
+    },
+    {
+      title: "Implementation concern",
+      description: "Identify how institutions could satisfy the ledger formally while still hiding the most consequential acts of revision or omission.",
+    },
+    {
+      title: "Economic assumption challenge",
+      description: "Question whether better correction memory creates enough public value to justify the governance and operational overhead.",
+    },
+    {
+      title: "Alternate topic",
+      description: "Offer a better way to make institutional correction behavior durable and legible without relying on a public ledger model.",
+    },
+    {
+      title: "Stakeholder perspective",
+      description: "Add the likely view of a journalist, regulator, citizen reader, communications team, or whistleblower interacting with a correction ledger.",
+    },
+  ] satisfies DebatePrompt[],
+  revisionHistory: [
+    {
+      version: "v0.1",
+      date: "May 2026",
+      note: "Initial seed topic card created to turn correction memory into a real inspectable object inside the trust room.",
+    },
+    {
+      version: "v0.2",
+      date: "May 2026",
+      note: "Materiality, trigger conditions, and the difference between learning and reputation management were raised to first-order visibility.",
+    },
+    {
+      version: "v0.3",
+      date: "May 2026",
+      note: "The card was sharpened around durable institutional memory so it reads as a public reasoning mechanism rather than generic transparency rhetoric.",
+    },
+  ],
+};
+
 export const roomTopicCards = {
   healthcare: [topic001, topic002, topic003],
   governance: [governanceTopic001, governanceTopic002],
   housing: [housingTopic001, housingTopic002],
   "ai-labor": [aiTopic001, aiTopic002],
-  "institutional-trust": [institutionalTrustTopic001, institutionalTrustTopic002],
+  "institutional-trust": [
+    institutionalTrustTopic001,
+    institutionalTrustTopic002,
+    institutionalTrustTopic003,
+  ],
 } satisfies Record<IssueRoomSlug, readonly TopicCardData[]>;
 
 export function getRoomTopicCards(roomSlug: IssueRoomSlug): readonly TopicCardData[] {
