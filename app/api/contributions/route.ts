@@ -7,6 +7,7 @@ import {
   issueRooms,
   type IssueRoomSlug,
 } from "@/app/lib/civic-logos";
+import type { AssistedDraftSource } from "@/app/lib/contribution-types";
 import { createContribution, getContributionStoreMetadata, listPublicContributions } from "@/app/lib/contribution-store";
 import { sendContributionSubmittedNotification } from "@/app/lib/maintainer-notifications";
 import { normalizeDebateLane } from "@/app/lib/reasoning-types";
@@ -24,6 +25,7 @@ type ContributionPayload = {
   name?: unknown;
   email?: unknown;
   expertise?: unknown;
+  draftSource?: unknown;
   website?: unknown;
 };
 
@@ -50,6 +52,35 @@ function isValidHttpUrl(value: string) {
 
 function isRoomSlug(value: string): value is IssueRoomSlug {
   return value in issueRooms;
+}
+
+function parseDraftSource(value: unknown): AssistedDraftSource | undefined {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    return undefined;
+  }
+
+  const source = value as Record<string, unknown>;
+
+  if (
+    typeof source.provider !== "string" ||
+    typeof source.providerLabel !== "string" ||
+    typeof source.model !== "string" ||
+    typeof source.question !== "string" ||
+    typeof source.generatedAt !== "string"
+  ) {
+    return undefined;
+  }
+
+  return {
+    provider:
+      source.provider === "openai" || source.provider === "anthropic"
+        ? source.provider
+        : "openai",
+    providerLabel: source.providerLabel.trim(),
+    model: source.model.trim(),
+    question: source.question.trim(),
+    generatedAt: source.generatedAt.trim(),
+  };
 }
 
 function revalidateTopicSurfaces(roomSlug: IssueRoomSlug, topicId: string) {
@@ -111,6 +142,7 @@ export async function POST(request: NextRequest) {
   const name = asTrimmedString(payload.name);
   const email = asTrimmedString(payload.email);
   const expertise = asTrimmedString(payload.expertise);
+  const draftSource = parseDraftSource(payload.draftSource);
   const website = asTrimmedString(payload.website);
 
   if (website) {
@@ -180,6 +212,7 @@ export async function POST(request: NextRequest) {
       email: email || undefined,
       expertise: expertise || undefined,
     },
+    draftSource,
   });
 
   void sendContributionSubmittedNotification({

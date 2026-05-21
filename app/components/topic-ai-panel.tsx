@@ -145,6 +145,7 @@ export default function TopicAiPanel({
       provider: answer.provider,
       providerLabel: getProviderLabel(answer.provider),
       model: answer.model,
+      generatedAt: answer.generatedAt,
       question: lastAskedQuestion,
       response: answer.response,
       suggestedLane,

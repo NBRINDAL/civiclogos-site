@@ -9,6 +9,7 @@ export type TopicAiDraftDetail = {
   provider: AiProvider;
   providerLabel: string;
   model: string;
+  generatedAt: string;
   question: string;
   response: string;
   suggestedLane?: DebateLane;

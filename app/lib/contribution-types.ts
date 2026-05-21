@@ -20,6 +20,14 @@ export type ContributionAuthor = {
   expertise?: string;
 };
 
+export type AssistedDraftSource = {
+  provider: AiProvider;
+  providerLabel: string;
+  model: string;
+  question: string;
+  generatedAt: string;
+};
+
 export type ProviderContributionAiIntake = {
   provider: AiProvider;
   state: "completed" | "unavailable" | "error";
@@ -61,6 +69,7 @@ export type Contribution = TopicCardReference & {
   body: string;
   evidenceSource?: EvidenceSource | null;
   author: ContributionAuthor;
+  draftSource?: AssistedDraftSource;
   status: ReviewStatus;
   createdAt: string;
   updatedAt: string;
@@ -75,6 +84,7 @@ export type CreateContributionInput = TopicCardReference & {
   body: string;
   evidenceSource?: EvidenceSource | null;
   author: ContributionAuthor;
+  draftSource?: AssistedDraftSource;
 };
 
 export type ReviewContributionInput = {

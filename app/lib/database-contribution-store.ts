@@ -30,6 +30,7 @@ type ContributionRow = {
   body: string;
   evidence_source: Contribution["evidenceSource"] | null;
   author: Contribution["author"];
+  draft_source: Contribution["draftSource"] | null;
   status: Contribution["status"];
   created_at: string | Date;
   updated_at: string | Date;
@@ -111,6 +112,7 @@ async function ensureContributionTable() {
           body text not null,
           evidence_source jsonb,
           author jsonb not null,
+          draft_source jsonb,
           status text not null,
           created_at timestamptz not null,
           updated_at timestamptz not null,
@@ -214,6 +216,7 @@ function rowToContribution(row: ContributionRow): Contribution {
     body: row.body,
     evidenceSource: row.evidence_source ?? undefined,
     author: row.author,
+    draftSource: row.draft_source ?? undefined,
     status: row.status,
     createdAt: normalizeDate(row.created_at),
     updatedAt: normalizeDate(row.updated_at),
@@ -305,6 +308,7 @@ export function createDatabaseContributionStore(): DatabaseContributionStore {
           body,
           evidence_source,
           author,
+          draft_source,
           status,
           created_at,
           updated_at,
@@ -321,6 +325,7 @@ export function createDatabaseContributionStore(): DatabaseContributionStore {
           ${contribution.body},
           ${sql.json(contribution.evidenceSource ?? null)},
           ${sql.json(contribution.author)},
+          ${sql.json(contribution.draftSource ?? null)},
           ${contribution.status},
           ${contribution.createdAt},
           ${contribution.updatedAt},

@@ -1,6 +1,12 @@
+import { cookies } from "next/headers";
 import Link from "next/link";
 import LiveCardBrowser from "../components/live-card-browser";
+import {
+  getHomeIntakeCookieName,
+  parseHomeIntakeCookie,
+} from "../lib/home-intake-cookie";
 import { listHomeIntakeEntries } from "../lib/home-intake-store";
+import type { HomeIntakeRecord } from "../lib/home-intake-types";
 import {
   getInspectableTopics,
   getLiveCardIndex,
@@ -12,6 +18,21 @@ import styles from "./page.module.css";
 
 export const dynamic = "force-dynamic";
 
+function mergeLatestCookieCandidate(
+  roomCandidates: HomeIntakeRecord[],
+  cookieCandidate: HomeIntakeRecord | null,
+) {
+  if (!cookieCandidate) {
+    return roomCandidates;
+  }
+
+  if (roomCandidates.some((item) => item.id === cookieCandidate.id)) {
+    return roomCandidates;
+  }
+
+  return [cookieCandidate, ...roomCandidates].slice(0, 6);
+}
+
 export default async function RoomsPage({
   searchParams,
 }: {
@@ -21,6 +42,10 @@ export default async function RoomsPage({
   }>;
 }) {
   const resolvedSearchParams = await searchParams;
+  const cookieStore = await cookies();
+  const latestCookieIntake = parseHomeIntakeCookie(
+    cookieStore.get(getHomeIntakeCookieName())?.value,
+  );
   const initialRoom = Array.isArray(resolvedSearchParams.room)
     ? resolvedSearchParams.room[0]
     : resolvedSearchParams.room;
@@ -34,6 +59,20 @@ export default async function RoomsPage({
       limit: 6,
     }),
   ]);
+  const cookieCandidate =
+    latestCookieIntake?.routing.routeKind === "new-room-draft"
+      ? ({
+          id: latestCookieIntake.id,
+          prompt: latestCookieIntake.prompt,
+          createdAt: "",
+          updatedAt: "",
+          routing: latestCookieIntake.routing,
+        } satisfies HomeIntakeRecord)
+      : null;
+  const visibleRoomCandidates = mergeLatestCookieCandidate(
+    roomCandidates,
+    cookieCandidate,
+  );
   const totalInspectableCards = roomDirectory.reduce((total, room) => {
     const roomData = issueRooms[room.slug as IssueRoomSlug];
     return total + getInspectableTopics(roomData).length;
@@ -91,7 +130,7 @@ export default async function RoomsPage({
                 <span>live topic cards</span>
               </div>
               <div>
-                <strong>{roomCandidates.length}</strong>
+                <strong>{visibleRoomCandidates.length}</strong>
                 <span>room candidates on deck</span>
               </div>
             </div>
@@ -180,9 +219,9 @@ export default async function RoomsPage({
             </p>
           </div>
 
-          {roomCandidates.length ? (
+          {visibleRoomCandidates.length ? (
             <div className={styles.roomGrid}>
-              {roomCandidates.map((entry) => (
+              {visibleRoomCandidates.map((entry) => (
                 <article className={styles.roomCard} key={entry.id}>
                   <div className={styles.roomMeta}>
                     <span>{entry.routing.routeConfidence ?? "working draft"}</span>
@@ -209,12 +248,13 @@ export default async function RoomsPage({
 
                   <div className={styles.roomFooter}>
                     <span>
-                      Created{" "}
-                      {new Date(entry.createdAt).toLocaleDateString("en-US", {
-                        month: "short",
-                        day: "numeric",
-                        year: "numeric",
-                      })}
+                      {entry.createdAt
+                        ? `Created ${new Date(entry.createdAt).toLocaleDateString("en-US", {
+                            month: "short",
+                            day: "numeric",
+                            year: "numeric",
+                          })}`
+                        : "Current browser-session candidate"}
                     </span>
 
                     <div className={styles.roomActions}>
