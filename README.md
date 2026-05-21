@@ -84,6 +84,11 @@ If no database connection string is configured, or if the database is
 temporarily unavailable, the site falls back to the existing local prototype
 store so the healthcare room continues to function.
 
+The homepage intake now uses the same database-backed pattern for routed prompts
+and provisional draft pages. If a database connection string is configured, weak
+fits and routed ideas are stored persistently instead of only in the prototype
+runtime file.
+
 If you want AI-assisted intake on submitted contributions, add one or both of:
 
 - `OPENAI_API_KEY`

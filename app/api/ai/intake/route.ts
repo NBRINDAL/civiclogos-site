@@ -4,7 +4,7 @@ import {
   getHomeIntakeCookieName,
   serializeHomeIntakeCookie,
 } from "@/app/lib/home-intake-cookie";
-import { createHomeIntakeEntry, getHomeIntakeStoreMetadata } from "@/app/lib/prototype-home-intake-store";
+import { createHomeIntakeEntry, getHomeIntakeStoreMetadata } from "@/app/lib/home-intake-store";
 
 export const runtime = "nodejs";
 

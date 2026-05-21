@@ -55,3 +55,10 @@ export type HomeIntakeStoreDocument = {
   updatedAt: string;
   entries: HomeIntakeRecord[];
 };
+
+export type HomeIntakeStoreMetadata = {
+  prototype: boolean;
+  mode: "prototype" | "database" | "fallback";
+  note: string;
+  storePath?: string;
+};

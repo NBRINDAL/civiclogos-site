@@ -12,7 +12,7 @@ import {
   getHomeIntakeCookieName,
   parseHomeIntakeCookie,
 } from "../lib/home-intake-cookie";
-import { getHomeIntakeEntry } from "../lib/prototype-home-intake-store";
+import { getHomeIntakeEntry } from "../lib/home-intake-store";
 import styles from "./page.module.css";
 
 function ProposalTrack({

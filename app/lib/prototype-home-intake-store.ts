@@ -75,6 +75,7 @@ export async function getHomeIntakeStoreMetadata() {
   const storePath = await resolveStorePath();
   return {
     prototype: true as const,
+    mode: "prototype" as const,
     storePath,
     note: seedDocument.note,
   };

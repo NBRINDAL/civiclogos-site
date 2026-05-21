@@ -9,7 +9,7 @@ import {
   getHomeIntakeCookieName,
   parseHomeIntakeCookie,
 } from "@/app/lib/home-intake-cookie";
-import { getHomeIntakeEntry, getHomeIntakeStoreMetadata } from "@/app/lib/prototype-home-intake-store";
+import { getHomeIntakeEntry, getHomeIntakeStoreMetadata } from "@/app/lib/home-intake-store";
 import styles from "./page.module.css";
 
 export const dynamic = "force-dynamic";
@@ -18,6 +18,18 @@ type ProviderLabel = "OpenAI" | "Claude";
 
 function getProviderLabel(provider: string): ProviderLabel {
   return provider === "openai" ? "OpenAI" : "Claude";
+}
+
+function getStorageModeLabel(mode: "prototype" | "database" | "fallback") {
+  if (mode === "database") {
+    return "Persistent database";
+  }
+
+  if (mode === "fallback") {
+    return "Fallback prototype";
+  }
+
+  return "Prototype";
 }
 
 export default async function IntakeEntryPage({
@@ -105,7 +117,7 @@ export default async function IntakeEntryPage({
               </div>
               <div>
                 <span>Storage mode</span>
-                <strong>{metadata.prototype ? "Prototype" : "Persistent"}</strong>
+                <strong>{getStorageModeLabel(metadata.mode)}</strong>
               </div>
             </div>
           </aside>
