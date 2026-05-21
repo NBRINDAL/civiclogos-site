@@ -130,7 +130,7 @@ export default async function IntakeEntryPage({
           <h2>
             {entry.routing.routeKind === "existing-room"
               ? "This idea fits a current room more cleanly than it needs a new one."
-              : "The current room map was treated as a weak fit, so Civic Logos opened a room candidate instead."}
+              : "The current room map is still incomplete for this issue, so Civic Logos opened a room candidate instead."}
           </h2>
           <p>{entry.routing.suggestedTopicSummary}</p>
 

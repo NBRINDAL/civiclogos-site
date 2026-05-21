@@ -159,6 +159,16 @@ const roomKeywordMap: Record<IssueRoomSlug, readonly string[]> = {
     "local",
     "bureaucracy",
     "govern",
+    "tax",
+    "taxes",
+    "taxation",
+    "income",
+    "earners",
+    "irs",
+    "fiscal",
+    "redistribution",
+    "budget",
+    "budgets",
   ],
   housing: [
     "housing",
@@ -222,8 +232,42 @@ const roomKeywordMap: Record<IssueRoomSlug, readonly string[]> = {
     "reputation",
     "repair",
     "propaganda",
+    "epstein",
+    "blackmail",
+    "coverup",
+    "coverups",
+    "trafficking",
+    "elite",
+    "elites",
+    "abuse",
+    "power-network",
+    "network",
   ],
 };
+
+const highSalienceKeywords = new Set([
+  "epstein",
+  "blackmail",
+  "coverup",
+  "coverups",
+  "trafficking",
+  "elite",
+  "elites",
+  "abuse",
+  "corruption",
+  "scandal",
+  "tax",
+  "taxes",
+  "taxation",
+  "income",
+  "earners",
+  "irs",
+  "fiscal",
+  "redistribution",
+  "poverty",
+  "wealth",
+  "inequality",
+]);
 
 const intakeSchema = {
   type: "object",
@@ -371,6 +415,10 @@ function buildFallbackTopicSummary(prompt: string) {
   return `This room candidate was opened because the current room map did not cleanly absorb the question: ${summarizePrompt(prompt, 170)}`;
 }
 
+function isHighSaliencePrompt(promptTokens: readonly string[]) {
+  return promptTokens.some((token) => highSalienceKeywords.has(token));
+}
+
 function buildHeuristicRouting(prompt: string): RoutingDraft {
   const promptTokens = tokenize(prompt);
   const roomMatches = roomDirectory.map((room): RoomHeuristicMatch => {
@@ -438,6 +486,7 @@ function buildHeuristicRouting(prompt: string): RoutingDraft {
   const [bestRoom, secondRoom] = [...roomMatches].sort((left, right) => right.score - left.score);
   const bestScore = bestRoom?.score ?? 0;
   const secondScore = secondRoom?.score ?? 0;
+  const highSalience = isHighSaliencePrompt(promptTokens);
   const promptCoverage =
     bestRoom && promptTokens.length
       ? bestRoom.matchedTokenCount / promptTokens.length
@@ -467,8 +516,9 @@ function buildHeuristicRouting(prompt: string): RoutingDraft {
       routeKind: "new-room-draft",
       roomTitle: "Room candidate",
       routeConfidence: bestScore >= 3 ? "medium" : "low",
-      fitSummary:
-        "The current room map does not cleanly absorb this question yet, so Civic Logos is opening a room candidate instead of forcing a weak fit.",
+      fitSummary: highSalience
+        ? "This looks like a real public issue, but the current room map does not yet hold it cleanly. Civic Logos is opening a room candidate instead of minimizing it with a forced fit."
+        : "The current room map does not cleanly absorb this question yet, so Civic Logos is opening a room candidate instead of forcing a weak fit.",
       suggestedCentralQuestion: prompt.trim().endsWith("?")
         ? summarizePrompt(prompt.trim(), 180)
         : `${summarizePrompt(prompt.trim(), 176)}?`,
@@ -477,9 +527,13 @@ function buildHeuristicRouting(prompt: string): RoutingDraft {
       suggestedFirstQuestions: [
         "What is the core public question here?",
         "Which stakeholders and tradeoffs would this room have to hold together?",
-        "What current institutions, incentives, or technologies are driving the issue?",
+        highSalience
+          ? "What institutions, incentives, or power relationships may be distorting this issue?"
+          : "What current institutions, incentives, or technologies are driving the issue?",
       ],
-      whyNotExistingRooms: closestRoom,
+      whyNotExistingRooms: highSalience
+        ? `${closestRoom} This does not mean the issue is minor. It means the current room map is still incomplete for this kind of question.`
+        : closestRoom,
     };
   }
 
