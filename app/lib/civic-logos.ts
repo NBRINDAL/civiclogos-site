@@ -669,6 +669,7 @@ export const housingIssueRoom = {
         "Links upzoning and infrastructure gains to public reinvestment rather than pure private windfall.",
       label: "Most novel",
       metric: "High incentive-design complexity",
+      href: "/rooms/housing/topic-002",
     },
   ],
   economicDeltaLeaders: [
@@ -2310,6 +2311,195 @@ export const housingTopic001: TopicCardData = {
   ],
 };
 
+export const housingTopic002: TopicCardData = {
+  id: "topic-002",
+  title: "Land Value Recapture Model",
+  subtitle:
+    "A second housing topic card for testing whether upzoning gains and public investment should flow back into shared housing benefit",
+  draftNote:
+    "This topic card is intentionally unfinished because it sits right at the political fault line of housing reform: if legal changes create land-value gains, who should capture them? The card is meant to make that fight inspectable instead of letting it hide inside a generic pro- or anti-development posture.",
+  thesis:
+    "When public action such as upzoning, infrastructure spending, or entitlement reform creates large private land-value gains, a meaningful share of that upside should be recaptured for public infrastructure, affordability, tenant protection, or community benefit rather than flowing entirely into private windfall.",
+  currentRead:
+    "This topic card feels strongest because it answers one of the clearest political objections to housing reform directly: many people will support more capacity only if they believe the upside does not become pure speculative gain. It feels weakest wherever recapture tools are treated as costless or frictionless, since badly designed extraction can freeze projects, reduce supply, or simply shift value into more complex avoidance behavior. The card is useful because it forces the room to ask not only whether more housing gets built, but who benefits when policy makes that possible.",
+  problemStatement:
+    "Housing reform often raises legal capacity, public infrastructure value, or development opportunity in ways that increase underlying land value. If those gains are captured almost entirely by landowners or sophisticated developers, the politics of abundance become much harder to sustain, and the public may reasonably feel that zoning reform socializes disruption while privatizing the reward. The room needs a clearer answer to how new value should be shared if housing reform is going to remain both effective and legitimate.",
+  proposedSolution:
+    "Pair major land-use and capacity reforms with structured value-recapture tools such as impact frameworks, linkage fees, land-value taxation variants, infrastructure benefit capture, affordability contributions, or district-level reinvestment rules so that housing growth creates visible public return instead of only private uplift.",
+  mechanism: [
+    "Identify where public action, zoning reform, or infrastructure spending is creating significant land-value appreciation rather than treating all price movement as ordinary market drift.",
+    "Use bounded recapture tools that redirect part of the gain into infrastructure, affordability, tenant protection, or place-quality improvements without making delivery impossible.",
+    "Tie recaptured value visibly to the communities and systems absorbing growth so the public can see what housing reform is funding, not just what it is permitting.",
+    "Review recapture rates and exemptions carefully so the policy does not choke off supply, overreward incumbents, or create purely symbolic redistribution that fails to change conditions on the ground.",
+  ],
+  benefits: [
+    "Makes housing reform politically stronger by showing how public action can create shared return rather than pure private windfall.",
+    "Can fund infrastructure, affordability support, tenant stabilization, or public realm improvements that make growth more legitimate and workable.",
+    "Clarifies one of the room's deepest moral questions: not just whether more housing arrives, but who captures the value created by collective decisions.",
+    "Helps Civic Logos compare abundance models with more explicit distribution logic instead of forcing a false choice between supply and fairness.",
+  ],
+  risks: [
+    "If recapture is too aggressive or badly timed, projects may stall, shrink, or never pencil out in the first place.",
+    "Sophisticated actors may avoid or arbitrage the system while smaller builders bear a disproportionate compliance burden.",
+    "Public-benefit promises can become symbolic if funds are poorly governed, delayed, or disconnected from the neighborhoods and systems carrying the change.",
+    "The model can become a political compromise that sounds fair while leaving both supply delivery and redistribution weaker than advertised.",
+  ],
+  assumptions: [
+    "A meaningful share of housing reform's upside is policy-created and therefore legitimately available for partial public recapture.",
+    "Recapture tools can be designed precisely enough that they do not crush supply while still creating visible public benefit.",
+    "Communities are more likely to accept change when the gains are legible and not captured entirely by incumbents or large developers.",
+    "Public reinvestment funded by housing-value gains can materially improve infrastructure, affordability, or place quality rather than just disappearing into generic budgets.",
+  ],
+  stakeholders: [
+    "Renters and future households",
+    "Longtime homeowners and landowners",
+    "Developers and smaller builders",
+    "Cities, transit agencies, and utilities",
+    "Tenant advocates and anti-displacement groups",
+    "Taxpayers and local service systems",
+    "Neighborhood groups absorbing growth",
+    "Public officials designing land-use and finance rules",
+  ],
+  evidence: [
+    {
+      title: "Public action and zoning changes can create large private land-value gains",
+      status: "Strong evidence",
+      note: "Supports the core intuition that at least part of the upside is socially generated rather than purely entrepreneurial.",
+    },
+    {
+      title: "Poorly designed fees and exactions can suppress production or distort project mix",
+      status: "Strong evidence",
+      note: "This is the clearest warning that recapture has to be calibrated rather than treated as free redistribution.",
+    },
+    {
+      title: "Benefit-capture and reinvestment tools can fund infrastructure and public improvements in growth areas",
+      status: "Useful but uneven",
+      note: "Suggests the model can work in practice, though outcomes vary sharply by governance quality and market conditions.",
+    },
+    {
+      title: "Value recapture can preserve legitimacy without meaningfully slowing supply overall",
+      status: "Needs verification",
+      note: "This is the key unresolved design claim and probably the most important thing a live housing room would have to test.",
+    },
+  ] satisfies EvidenceSummary[],
+  economicDelta: {
+    summary:
+      "Estimated Economic Delta: Potentially meaningful if value recapture improves the political durability of housing reform and funds infrastructure or affordability without materially slowing supply. Main costs include project friction, administrative complexity, legal design, and the risk of reducing delivery if extraction outruns feasibility. Confidence remains moderate-to-low because the correct recapture rate is deeply context dependent.",
+    metrics: [
+      "Possible public-benefit gain: high if captured value is visibly reinvested well",
+      "Supply risk: moderate to high if recapture tools are blunt or excessive",
+      "Implementation cost: moderate because legal and fiscal design matter a lot",
+      "Political legitimacy upside: potentially strong if gains are clearly shared",
+      "Avoidance risk: elevated where sophisticated actors can route around the rules",
+    ],
+  },
+  strongestSupport:
+    "This topic card answers a real fairness problem in housing politics: if collective decisions create large private upside, the public needs a clearer share of the return or abundance can look like extraction in another form.",
+  strongestObjection:
+    "Value recapture can easily become a satisfying-sounding tax on development that weakens supply, empowers incumbents, or produces token public benefits while the underlying housing shortage remains severe.",
+  whatWouldStrengthen: [
+    "A clearer typology of which recapture tools work best in which market conditions instead of one generic public-benefit formula.",
+    "Case evidence showing when recapture preserved public legitimacy without choking production or overcomplicating delivery.",
+    "More specific rules for how captured value would be governed, geographically tied, and publicly tracked once collected.",
+  ],
+  openQuestions: [
+    "How much of zoning or infrastructure-driven value gain should be considered public in the first place?",
+    "What recapture rate preserves project feasibility while still creating visible social return?",
+    "Which benefits should be prioritized first: infrastructure, affordability, tenant protection, or general revenue support?",
+    "How should smaller builders and marginal projects be treated differently from large institutional actors?",
+  ],
+  maturity: "Seed topic",
+  scorecard: [
+    { label: "Novelty", value: 69 },
+    { label: "Coherence", value: 82 },
+    { label: "Feasibility", value: 55 },
+    { label: "Evidence quality", value: 57 },
+    { label: "Economic delta clarity", value: 52 },
+    { label: "Public value", value: 84 },
+  ],
+  aiPanels: [
+    {
+      role: "Structurer",
+      confidence: "Moderate",
+      summary:
+        "The topic makes a hidden housing question explicit: whether the gains created by public action should remain private by default or be shared through visible recapture rules.",
+    },
+    {
+      role: "Steelman",
+      confidence: "Moderate",
+      summary:
+        "A strong recapture design could make abundance more politically durable by ensuring growth funds the very infrastructure and protections that make growth livable.",
+    },
+    {
+      role: "Critic",
+      confidence: "Moderate",
+      summary:
+        "The model risks becoming a well-intentioned drag on supply if every public-benefit instinct is loaded onto the same projects that are already struggling to get built.",
+    },
+    {
+      role: "Institutionalist",
+      confidence: "Low",
+      summary:
+        "The idea is strongest when treated as a calibration problem inside broader housing reform, not as a moral tax lever that substitutes for production discipline.",
+    },
+  ],
+  debatePrompts: [
+    {
+      title: "Support",
+      description: "Add the strongest argument for why housing reform should visibly recapture some of the gains created by public action and legal capacity changes.",
+    },
+    {
+      title: "Objection",
+      description: "Surface the strongest reason recapture tools could suppress supply, distort projects, or become symbolic politics.",
+    },
+    {
+      title: "Evidence",
+      description: "Add cases, finance data, or policy comparisons that support or weaken land-value recapture as part of housing reform.",
+    },
+    {
+      title: "Correction",
+      description: "Identify conceptual, fiscal, or implementation errors in the current card.",
+    },
+    {
+      title: "Nuance",
+      description: "Improve the topic by exposing a missing tradeoff between fairness, feasibility, legitimacy, and production.",
+    },
+    {
+      title: "Implementation concern",
+      description: "Identify how fee design, governance, legal structure, or market conditions could quietly break the model in practice.",
+    },
+    {
+      title: "Economic assumption challenge",
+      description: "Question whether the legitimacy and public-benefit gains are large enough to justify the risk of weaker delivery.",
+    },
+    {
+      title: "Alternate topic",
+      description: "Offer a better way to share the gains of housing reform without creating the same project-friction and avoidance risks.",
+    },
+    {
+      title: "Stakeholder perspective",
+      description: "Add the likely view of a renter, landowner, builder, planner, or neighborhood resident living through this kind of recapture regime.",
+    },
+  ] satisfies DebatePrompt[],
+  revisionHistory: [
+    {
+      version: "v0.1",
+      date: "May 2026",
+      note: "Initial seed topic card created to turn the value-capture question into a real inspectable housing object rather than leaving it as a side caveat to abundance.",
+    },
+    {
+      version: "v0.2",
+      date: "May 2026",
+      note: "Supply-suppression and symbolic-benefit risks were raised to first-order visibility instead of being treated as downstream technical details.",
+    },
+    {
+      version: "v0.3",
+      date: "May 2026",
+      note: "The card was sharpened around political durability, public-benefit legitimacy, and calibration so it reads as incentive design rather than generic anti-developer sentiment.",
+    },
+  ],
+};
+
 export const aiTopic001: TopicCardData = {
   id: "topic-001",
   title: "AI as Public Reasoning Infrastructure",
@@ -3069,7 +3259,7 @@ export const institutionalTrustTopic002: TopicCardData = {
 export const roomTopicCards = {
   healthcare: [topic001, topic002],
   governance: [governanceTopic001, governanceTopic002],
-  housing: [housingTopic001],
+  housing: [housingTopic001, housingTopic002],
   "ai-labor": [aiTopic001, aiTopic002],
   "institutional-trust": [institutionalTrustTopic001, institutionalTrustTopic002],
 } satisfies Record<IssueRoomSlug, readonly TopicCardData[]>;
