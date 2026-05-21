@@ -5,6 +5,7 @@ import {
   getRoomHref,
   getRoomTopicHref,
 } from "@/app/lib/civic-logos";
+import { buildHomeIntakeBrief } from "@/app/lib/home-intake-brief";
 import {
   getHomeIntakeCookieName,
   parseHomeIntakeCookie,
@@ -68,6 +69,10 @@ export default async function IntakeEntryPage({
     entry.routing.roomSlug && entry.routing.topicId
       ? getRoomTopicHref(entry.routing.roomSlug, entry.routing.topicId)
       : undefined;
+  const issueDevelopment =
+    entry.routing.routeKind === "new-room-draft"
+      ? await buildHomeIntakeBrief(entry)
+      : null;
 
   return (
     <div className={styles.page}>
@@ -181,10 +186,62 @@ export default async function IntakeEntryPage({
           </div>
         </section>
 
+        {issueDevelopment ? (
+          <section className={styles.section}>
+            <div className={styles.sectionHeading}>
+              <span className={styles.eyebrow}>Issue development</span>
+              <h2>A room candidate should begin mapping the issue from multiple perspectives.</h2>
+              <p className={styles.summary}>{issueDevelopment.disclaimer}</p>
+            </div>
+
+            {issueDevelopment.answers.length ? (
+              <div className={styles.providerGrid}>
+                {issueDevelopment.answers.map((answer) => (
+                  <article className={styles.providerCard} key={`${answer.provider}-${answer.generatedAt}`}>
+                    <div className={styles.providerMeta}>
+                      <span>{getProviderLabel(answer.provider)}</span>
+                      <strong>{answer.model}</strong>
+                    </div>
+                    <p className={styles.devStamp}>
+                      Generated {new Intl.DateTimeFormat("en-US", {
+                        dateStyle: "medium",
+                        timeStyle: "short",
+                      }).format(new Date(answer.generatedAt))}
+                    </p>
+                    <div className={styles.longformAnswer}>
+                      {answer.response.split(/\n{2,}/).map((block) => (
+                        <p key={block}>{block}</p>
+                      ))}
+                    </div>
+                  </article>
+                ))}
+              </div>
+            ) : null}
+
+            {issueDevelopment.issues.length ? (
+              <div className={styles.providerGrid}>
+                {issueDevelopment.issues.map((issue) => (
+                  <article className={styles.providerCard} key={`${issue.provider}-${issue.model ?? "issue"}`}>
+                    <div className={styles.providerMeta}>
+                      <span>{getProviderLabel(issue.provider)}</span>
+                      <strong>{issue.model ?? "Unavailable"}</strong>
+                    </div>
+                    <p>{issue.message}</p>
+                  </article>
+                ))}
+              </div>
+            ) : null}
+          </section>
+        ) : null}
+
         <section className={styles.section}>
           <div className={styles.sectionHeading}>
-            <span className={styles.eyebrow}>Parallel readers</span>
-            <h2>The public intake is stronger when both models stay visible as readers.</h2>
+            <span className={styles.eyebrow}>Routing readers</span>
+            <h2>The intake engine is stronger when both models stay visible as readers.</h2>
+            <p className={styles.summary}>
+              These model outputs explain how Civic Logos tried to place the issue in the current map.
+              They do not replace the issue-development pass above.
+            </p>
           </div>
 
           <div className={styles.providerGrid}>
@@ -207,7 +264,7 @@ export default async function IntakeEntryPage({
                     <strong>Route:</strong>{" "}
                     {provider.routeKind === "existing-room"
                       ? provider.roomTitle ?? "Current room"
-                      : "Provisional new-room draft"}
+                      : "Room candidate"}
                   </p>
                 ) : null}
 

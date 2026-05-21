@@ -234,6 +234,21 @@
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
+.devStamp {
+  color: var(--signal);
+  font-size: 0.88rem;
+}
+
+.longformAnswer {
+  display: grid;
+  gap: 12px;
+}
+
+.longformAnswer p {
+  color: var(--muted);
+  line-height: 1.74;
+}
+
 .providerCard {
   display: grid;
   gap: 14px;
