@@ -175,13 +175,7 @@ function getContributionRecordHref(promotion: TopicChatPromotion) {
     searchParams.set("recordView", "ai-assisted");
   }
 
-  const normalizedKind = promotion.assignmentKind
-    ? normalizeReviewTargetKind(promotion.assignmentKind)
-    : null;
-
-  if (normalizedKind && normalizedKind !== "unclear") {
-    searchParams.set("attachment", normalizedKind);
-  }
+  searchParams.set("attachment", getPromotionAttachmentFilter(promotion));
 
   return `?${searchParams.toString()}#contribution-${promotion.contributionId}`;
 }
@@ -205,16 +199,14 @@ function getReviewQueueHref(
 
 function getRecordViewHref(
   filter: "needs-review" | "ai-assisted",
-  attachment?: TopicChatPromotion["assignmentKind"],
+  attachment?: PromotionAttachmentFilter,
 ) {
   const searchParams = new URLSearchParams({
     recordView: filter,
   });
 
-  const normalizedKind = attachment ? normalizeReviewTargetKind(attachment) : null;
-
-  if (normalizedKind && normalizedKind !== "unclear") {
-    searchParams.set("attachment", normalizedKind);
+  if (attachment) {
+    searchParams.set("attachment", attachment);
   }
 
   return `?${searchParams.toString()}#contribution-record`;
@@ -467,7 +459,7 @@ export default function TopicAiPanel({
                     className={styles.sessionTargetLink}
                     href={getRecordViewHref(
                       "ai-assisted",
-                      item.attachment === "none-yet" ? undefined : item.attachment,
+                      item.attachment,
                     )}
                     key={`session-target-${item.attachment}`}
                   >
