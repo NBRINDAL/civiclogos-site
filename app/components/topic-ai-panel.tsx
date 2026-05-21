@@ -65,6 +65,13 @@ type PromotionAttachmentFilter =
   | "open-question"
   | "none-yet";
 
+type ContributionStatusFilter =
+  | "pending"
+  | "needs-review"
+  | "accepted"
+  | "incorporated"
+  | "rejected";
+
 const quickChallengePrompts = [
   "Which assumption is carrying the most hidden risk in this card right now?",
   "Steelman the strongest objection to this card from the current public record.",
@@ -173,6 +180,16 @@ function getAttachmentCounts(messages: TopicChatMessage[]) {
     .filter((item) => item.count > 0);
 }
 
+function getPromotionContributionStatusFilter(
+  status?: TopicChatPromotion["contributionStatus"],
+): ContributionStatusFilter | undefined {
+  if (!status) {
+    return undefined;
+  }
+
+  return status === "needs review" ? "needs-review" : status;
+}
+
 function getContributionRecordHref(promotion: TopicChatPromotion) {
   if (!promotion.contributionId) {
     return "#contribution-record";
@@ -190,6 +207,16 @@ function getContributionRecordHref(promotion: TopicChatPromotion) {
     searchParams.set("recordView", "changed-card");
   } else {
     searchParams.set("recordView", "ai-assisted");
+  }
+
+  searchParams.set("origin", "ai-origin");
+
+  const contributionStatusFilter = getPromotionContributionStatusFilter(
+    promotion.contributionStatus,
+  );
+
+  if (contributionStatusFilter) {
+    searchParams.set("reviewStatus", contributionStatusFilter);
   }
 
   searchParams.set("attachment", getPromotionAttachmentFilter(promotion));
@@ -217,13 +244,19 @@ function getReviewQueueHref(
 function getRecordViewHref(
   filter: "needs-review" | "ai-assisted",
   attachment?: PromotionAttachmentFilter,
+  reviewStatus?: ContributionStatusFilter,
 ) {
   const searchParams = new URLSearchParams({
     recordView: filter,
+    origin: "ai-origin",
   });
 
   if (attachment) {
     searchParams.set("attachment", attachment);
+  }
+
+  if (reviewStatus) {
+    searchParams.set("reviewStatus", reviewStatus);
   }
 
   return `?${searchParams.toString()}#contribution-record`;
