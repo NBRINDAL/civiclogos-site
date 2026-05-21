@@ -1,9 +1,14 @@
+import { cookies } from "next/headers";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import {
   getRoomHref,
   getRoomTopicHref,
 } from "@/app/lib/civic-logos";
+import {
+  getHomeIntakeCookieName,
+  parseHomeIntakeCookie,
+} from "@/app/lib/home-intake-cookie";
 import { getHomeIntakeEntry, getHomeIntakeStoreMetadata } from "@/app/lib/prototype-home-intake-store";
 import styles from "./page.module.css";
 
@@ -21,10 +26,24 @@ export default async function IntakeEntryPage({
   params: Promise<{ entryId: string }>;
 }) {
   const { entryId } = await params;
-  const [entry, metadata] = await Promise.all([
+  const cookieStore = await cookies();
+  const cookieEntry = parseHomeIntakeCookie(
+    cookieStore.get(getHomeIntakeCookieName())?.value,
+  );
+  const [storedEntry, metadata] = await Promise.all([
     getHomeIntakeEntry(entryId),
     getHomeIntakeStoreMetadata(),
   ]);
+  const entry =
+    cookieEntry?.id === entryId
+      ? {
+          id: cookieEntry.id,
+          prompt: cookieEntry.prompt,
+          createdAt: "",
+          updatedAt: "",
+          routing: cookieEntry.routing,
+        }
+      : storedEntry;
 
   if (!entry) {
     notFound();

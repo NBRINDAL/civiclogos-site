@@ -1,5 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getRoomHref } from "@/app/lib/civic-logos";
+import {
+  getHomeIntakeCookieName,
+  serializeHomeIntakeCookie,
+} from "@/app/lib/home-intake-cookie";
 import { createHomeIntakeEntry, getHomeIntakeStoreMetadata } from "@/app/lib/prototype-home-intake-store";
 
 export const runtime = "nodejs";
@@ -68,7 +72,7 @@ export async function POST(request: NextRequest) {
       ? `${roomHref}?intake=${entry.id}`
       : `/intake/${entry.id}`;
 
-  return NextResponse.json({
+  const response = NextResponse.json({
     prototype: metadata.prototype,
     note: metadata.note,
     entryId: entry.id,
@@ -79,4 +83,14 @@ export async function POST(request: NextRequest) {
     fitSummary: entry.routing.fitSummary,
     routeConfidence: entry.routing.routeConfidence,
   });
+
+  response.cookies.set(getHomeIntakeCookieName(), serializeHomeIntakeCookie(entry), {
+    httpOnly: true,
+    maxAge: 60 * 20,
+    path: "/",
+    sameSite: "lax",
+    secure: true,
+  });
+
+  return response;
 }

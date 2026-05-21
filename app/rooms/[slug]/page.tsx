@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
 import IntakeRouteBanner from "../../components/intake-route-banner";
 import RelatedRooms from "../../components/related-rooms";
@@ -9,6 +10,10 @@ import {
   type IssueRoomData,
   type IssueRoomSlug,
 } from "../../lib/civic-logos";
+import {
+  getHomeIntakeCookieName,
+  parseHomeIntakeCookie,
+} from "../../lib/home-intake-cookie";
 import { getHomeIntakeEntry } from "../../lib/prototype-home-intake-store";
 import styles from "../../healthcare/page.module.css";
 
@@ -96,9 +101,23 @@ export default async function IssueRoomPage({
 
   const inspectableTopics = getInspectableTopics(room);
   const firstLiveCard = inspectableTopics[0];
-  const routeEntry = intake
-    ? await getHomeIntakeEntry(getSingleSearchParam(intake) ?? "")
-    : null;
+  const intakeId = getSingleSearchParam(intake);
+  const cookieStore = await cookies();
+  const cookieEntry = parseHomeIntakeCookie(
+    cookieStore.get(getHomeIntakeCookieName())?.value,
+  );
+  const routeEntry =
+    intakeId && cookieEntry?.id === intakeId
+      ? {
+          id: cookieEntry.id,
+          prompt: cookieEntry.prompt,
+          createdAt: "",
+          updatedAt: "",
+          routing: cookieEntry.routing,
+        }
+      : intakeId
+        ? await getHomeIntakeEntry(intakeId)
+        : null;
 
   return (
     <div className={styles.page}>
