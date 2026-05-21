@@ -93,31 +93,52 @@ export default function RoomsPage() {
           </div>
 
           <div className={styles.roomGrid}>
-            {roomDirectory.map((room) => (
-              <article className={styles.roomCard} key={room.slug}>
-                <div className={styles.roomMeta}>
-                  <span>{room.domain}</span>
-                  <strong>{room.complexity}</strong>
-                </div>
+            {roomDirectory.map((room) => {
+              const inspectableTopics = getInspectableTopics(
+                issueRooms[room.slug as IssueRoomSlug],
+              );
+              const firstLiveCard = inspectableTopics[0];
 
-                <h3>{room.title}</h3>
-                <p>{room.summary}</p>
+              return (
+                <article className={styles.roomCard} key={room.slug}>
+                  <div className={styles.roomMeta}>
+                    <span>{room.domain}</span>
+                    <strong>{room.complexity}</strong>
+                  </div>
 
-                <div className={styles.roomFooter}>
-                  <span>
-                    {room.stage} ·{" "}
-                    {getInspectableTopics(issueRooms[room.slug as IssueRoomSlug]).length}{" "}
-                    live topic
-                    {getInspectableTopics(issueRooms[room.slug as IssueRoomSlug]).length === 1
-                      ? " card"
-                      : " cards"}
-                  </span>
-                  <Link className={styles.roomLink} href={room.href}>
-                    Open room
-                  </Link>
-                </div>
-              </article>
-            ))}
+                  <h3>{room.title}</h3>
+                  <p>{room.summary}</p>
+
+                  {firstLiveCard ? (
+                    <div className={styles.liveCardNote}>
+                      <span>First live card</span>
+                      <strong>{firstLiveCard.title}</strong>
+                    </div>
+                  ) : null}
+
+                  <div className={styles.roomFooter}>
+                    <span>
+                      {room.stage} · {inspectableTopics.length} live topic
+                      {inspectableTopics.length === 1 ? " card" : " cards"}
+                    </span>
+
+                    <div className={styles.roomActions}>
+                      <Link className={styles.roomLink} href={room.href}>
+                        Open room
+                      </Link>
+                      {firstLiveCard ? (
+                        <Link
+                          className={styles.roomSubLink}
+                          href={firstLiveCard.href!}
+                        >
+                          Open live card
+                        </Link>
+                      ) : null}
+                    </div>
+                  </div>
+                </article>
+              );
+            })}
           </div>
         </section>
       </main>

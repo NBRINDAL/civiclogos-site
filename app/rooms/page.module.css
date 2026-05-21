@@ -205,6 +205,30 @@
   gap: 16px;
 }
 
+.liveCardNote {
+  display: grid;
+  gap: 6px;
+  padding: 16px 18px;
+  border: 1px solid rgba(18, 33, 39, 0.1);
+  border-radius: 20px;
+  background: rgba(245, 239, 227, 0.7);
+}
+
+.liveCardNote span {
+  color: var(--signal);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.liveCardNote strong {
+  font-family: var(--font-serif), serif;
+  font-size: 1.1rem;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
 .roomMeta {
   display: flex;
   flex-wrap: wrap;
@@ -234,6 +258,12 @@
   border-top: 1px solid rgba(18, 33, 39, 0.1);
 }
 
+.roomActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
 .roomLink {
   display: inline-flex;
   align-items: center;
@@ -250,10 +280,33 @@
     background 180ms ease;
 }
 
+.roomSubLink {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  padding: 0 18px;
+  border: 1px solid rgba(18, 33, 39, 0.14);
+  border-radius: 999px;
+  background: rgba(255, 251, 245, 0.88);
+  color: var(--foreground);
+  font-weight: 700;
+  transition:
+    transform 180ms ease,
+    border-color 180ms ease,
+    background 180ms ease;
+}
+
 @media (hover: hover) and (pointer: fine) {
   .roomLink:hover {
     transform: translateY(-1px);
     background: #24363c;
+  }
+
+  .roomSubLink:hover {
+    transform: translateY(-1px);
+    border-color: rgba(18, 33, 39, 0.28);
+    background: rgba(255, 251, 245, 1);
   }
 }
 
@@ -283,7 +336,8 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .roomLink {
+  .roomLink,
+  .roomSubLink {
     transition: none;
   }
 }

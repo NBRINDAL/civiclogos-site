@@ -59,6 +59,7 @@ function ProposalTrack({
 
 export default function HealthcareIssueRoomPage() {
   const inspectableTopics = getInspectableTopics(healthcareIssueRoom);
+  const firstLiveCard = inspectableTopics[0];
 
   return (
     <div className={styles.page}>
@@ -89,7 +90,16 @@ export default function HealthcareIssueRoomPage() {
             <p className={styles.summary}>{healthcareIssueRoom.currentSynthesis}</p>
 
             <div className={styles.heroActions}>
-              <a className={styles.primaryAction} href="#topic-field">
+              {firstLiveCard ? (
+                <Link className={styles.primaryAction} href={firstLiveCard.href!}>
+                  Open first live card
+                </Link>
+              ) : (
+                <a className={styles.primaryAction} href="#topic-field">
+                  Scan room topics
+                </a>
+              )}
+              <a className={styles.secondaryAction} href="#topic-field">
                 Scan room topics
               </a>
               <a className={styles.secondaryAction} href="#working-materials">
@@ -110,16 +120,16 @@ export default function HealthcareIssueRoomPage() {
 
             <div className={styles.heroStats}>
               <div>
-                <strong>1</strong>
-                <span>first issue room</span>
+                <strong>{inspectableTopics.length}</strong>
+                <span>live topic card{inspectableTopics.length === 1 ? "" : "s"}</span>
               </div>
               <div>
-                <strong>10</strong>
-                <span>topic families in view</span>
+                <strong>{healthcareIssueRoom.topProposals.length}</strong>
+                <span>anchor topics in focus</span>
               </div>
               <div>
-                <strong>9</strong>
-                <span>debate lanes already named</span>
+                <strong>{healthcareIssueRoom.openQuestions.length}</strong>
+                <span>open questions still active</span>
               </div>
             </div>
           </aside>
@@ -401,9 +411,11 @@ export default function HealthcareIssueRoomPage() {
             </p>
           </div>
 
-          <Link className={styles.primaryAction} href="/healthcare/topic-001">
-            Open one topic card
-          </Link>
+          {firstLiveCard ? (
+            <Link className={styles.primaryAction} href={firstLiveCard.href!}>
+              Open first live card
+            </Link>
+          ) : null}
         </section>
       </main>
     </div>

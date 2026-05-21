@@ -78,6 +78,7 @@ export default async function IssueRoomPage({
   }
 
   const inspectableTopics = getInspectableTopics(room);
+  const firstLiveCard = inspectableTopics[0];
 
   return (
     <div className={styles.page}>
@@ -108,12 +109,21 @@ export default async function IssueRoomPage({
             <p className={styles.summary}>{room.currentSynthesis}</p>
 
             <div className={styles.heroActions}>
-              <Link className={styles.primaryAction} href="/rooms">
-                Back to room library
-              </Link>
+              {firstLiveCard ? (
+                <Link className={styles.primaryAction} href={firstLiveCard.href!}>
+                  Open first live card
+                </Link>
+              ) : (
+                <Link className={styles.primaryAction} href="/rooms">
+                  Back to room library
+                </Link>
+              )}
               <a className={styles.secondaryAction} href="#topic-field">
                 See room topics
               </a>
+              <Link className={styles.secondaryAction} href="/rooms">
+                Back to room library
+              </Link>
             </div>
           </div>
 
@@ -129,8 +139,8 @@ export default async function IssueRoomPage({
 
             <div className={styles.heroStats}>
               <div>
-                <strong>{room.topProposals.length}</strong>
-                <span>anchor topics</span>
+                <strong>{inspectableTopics.length}</strong>
+                <span>live topic card{inspectableTopics.length === 1 ? "" : "s"}</span>
               </div>
               <div>
                 <strong>{room.stakeholders.length}</strong>
@@ -416,9 +426,15 @@ export default async function IssueRoomPage({
             </p>
           </div>
 
-          <Link className={styles.primaryAction} href="/rooms">
-            Explore all rooms
-          </Link>
+          {firstLiveCard ? (
+            <Link className={styles.primaryAction} href={firstLiveCard.href!}>
+              Open first live card
+            </Link>
+          ) : (
+            <Link className={styles.primaryAction} href="/rooms">
+              Explore all rooms
+            </Link>
+          )}
         </section>
       </main>
     </div>
