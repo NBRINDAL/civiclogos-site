@@ -119,6 +119,28 @@ function getContributionAttachmentLabel(filter: ContributionAttachmentFilter) {
   }
 }
 
+function getContributionRecordView(contribution: PublicContribution):
+  | ContributionRecordView
+  | undefined {
+  if (contribution.draftSource) {
+    return "ai-assisted";
+  }
+
+  if (contribution.review?.changedSynthesis === true) {
+    return "changed-card";
+  }
+
+  if (contribution.evidenceDocument) {
+    return "document-backed";
+  }
+
+  if (contribution.status === "pending" || contribution.status === "needs review") {
+    return "needs-review";
+  }
+
+  return undefined;
+}
+
 function formatTimestamp(value: string) {
   return new Intl.DateTimeFormat("en-US", {
     dateStyle: "medium",
@@ -1302,7 +1324,18 @@ export default async function TopicCardPage({
                   {reviewedContributions.slice(0, 4).map((item) => (
                     <article className={styles.historyItem} key={`review-${item.id}`}>
                       <div>
-                        <strong>{item.title}</strong>
+                        <strong>
+                          <Link
+                            className={styles.sourceLink}
+                            href={getContributionLedgerHref({
+                              recordView: getContributionRecordView(item),
+                              attachment: getContributionAttachmentFilter(item),
+                              contributionId: item.id,
+                            })}
+                          >
+                            {item.title}
+                          </Link>
+                        </strong>
                         <span>
                           {item.status} · {debateLaneLabels[item.lane]} ·{" "}
                           {item.review?.reviewedAt
@@ -1320,6 +1353,41 @@ export default async function TopicCardPage({
                           "Human review resolved this contribution without a public note yet.",
                         )}
                       </p>
+                      <p className={styles.metaParagraph}>
+                        Public record target:{" "}
+                        {getContributionAttachmentLabel(getContributionAttachmentFilter(item))}
+                        .{" "}
+                        <Link
+                          className={styles.sourceLink}
+                          href={getContributionLedgerHref({
+                            recordView: getContributionRecordView(item),
+                            attachment: getContributionAttachmentFilter(item),
+                            contributionId: item.id,
+                          })}
+                        >
+                          Open public record entry
+                        </Link>
+                      </p>
+                      {item.draftSource ? (
+                        <p className={styles.metaParagraph}>
+                          AI origin: {item.draftSource.providerLabel}
+                          {item.draftSource.model
+                            ? ` (${item.draftSource.model})`
+                            : ""}{" "}
+                          on {formatTimestamp(item.draftSource.generatedAt)}.
+                          {item.draftSource.messageId ? (
+                            <>
+                              {" "}
+                              <Link
+                                className={styles.sourceLink}
+                                href={getTopicChatMessageHref(item.draftSource.messageId)}
+                              >
+                                Open source AI turn
+                              </Link>
+                            </>
+                          ) : null}
+                        </p>
+                      ) : null}
                     </article>
                   ))}
                 </div>
