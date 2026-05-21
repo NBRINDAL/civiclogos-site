@@ -148,6 +148,12 @@
     background 180ms ease;
 }
 
+.answerActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
 .primaryAction {
   border: 1px solid transparent;
   background: var(--foreground);

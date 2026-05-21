@@ -37,6 +37,7 @@ type DraftState = {
   providerLabel: string;
   model: string;
   question: string;
+  suggestedLane: FormLane;
 } | null;
 
 type ContributionResponse = {
@@ -253,7 +254,7 @@ export default function TopicContributionLoop({
 
       setFormState((current) => ({
         ...current,
-        lane: "",
+        lane: detail.suggestedLane ?? "",
         title: nextTitle,
         body: nextBody,
       }));
@@ -261,6 +262,7 @@ export default function TopicContributionLoop({
         providerLabel: detail.providerLabel,
         model: detail.model,
         question: trimmedQuestion,
+        suggestedLane: detail.suggestedLane ?? "",
       });
       setSubmissionState({ kind: "idle" });
 
@@ -444,6 +446,13 @@ export default function TopicContributionLoop({
                   contribution from the question:
                 </p>
                 <p className={styles.draftQuestion}>{draftState.question}</p>
+                {draftState.suggestedLane ? (
+                  <p>
+                    Suggested lane:{" "}
+                    <strong>{getDebateLaneLabel(draftState.suggestedLane)}</strong>.
+                    Change it if another lane fits the public record better.
+                  </p>
+                ) : null}
                 <p>
                   Choose the lane deliberately, revise the text in your own voice,
                   and submit it only if it improves the public record.

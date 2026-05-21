@@ -1,4 +1,5 @@
 import type { AiProvider } from "./contribution-types";
+import type { DebateLane } from "./reasoning-types";
 
 export const topicAiDraftEventName = "civiclogos:topic-ai-draft";
 
@@ -10,4 +11,5 @@ export type TopicAiDraftDetail = {
   model: string;
   question: string;
   response: string;
+  suggestedLane?: DebateLane;
 };

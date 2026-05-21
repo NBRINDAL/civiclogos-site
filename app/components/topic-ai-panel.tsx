@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import type { IssueRoomSlug } from "../lib/civic-logos";
+import type { DebateLane } from "../lib/reasoning-types";
 import { topicAiDraftEventName, type TopicAiDraftDetail } from "../lib/topic-ai-draft";
 import styles from "./topic-ai-panel.module.css";
 
@@ -53,6 +54,15 @@ function formatTimestamp(value: string) {
 function getProviderLabel(provider: TopicAiAnswer["provider"] | TopicAiIssue["provider"]) {
   return provider === "openai" ? "GPT assisted reader" : "Claude assisted reader";
 }
+
+const draftLaneOptions: Array<{
+  lane: DebateLane;
+  label: string;
+}> = [
+  { lane: "objection", label: "Draft as objection" },
+  { lane: "evidence", label: "Draft as evidence" },
+  { lane: "nuance", label: "Draft as nuance" },
+];
 
 export default function TopicAiPanel({
   roomSlug,
@@ -124,7 +134,7 @@ export default function TopicAiPanel({
     submitQuestion("all", prompt);
   }
 
-  function sendToContributionDraft(answer: TopicAiAnswer) {
+  function sendToContributionDraft(answer: TopicAiAnswer, suggestedLane?: DebateLane) {
     if (!lastAskedQuestion) {
       return;
     }
@@ -137,6 +147,7 @@ export default function TopicAiPanel({
       model: answer.model,
       question: lastAskedQuestion,
       response: answer.response,
+      suggestedLane,
     };
 
     window.dispatchEvent(
@@ -247,13 +258,18 @@ export default function TopicAiPanel({
                       <dd>Assisted reader output</dd>
                     </div>
                   </dl>
-                  <button
-                    className={styles.answerAction}
-                    onClick={() => sendToContributionDraft(item)}
-                    type="button"
-                  >
-                    Use as contribution draft
-                  </button>
+                  <div className={styles.answerActions}>
+                    {draftLaneOptions.map((option) => (
+                      <button
+                        className={styles.answerAction}
+                        key={option.lane}
+                        onClick={() => sendToContributionDraft(item, option.lane)}
+                        type="button"
+                      >
+                        {option.label}
+                      </button>
+                    ))}
+                  </div>
                 </article>
               ))}
             </div>
