@@ -45,6 +45,12 @@ type ContributionRecordView =
   | "document-backed";
 
 type ContributionAttachmentFilter = Exclude<ReviewTargetKind, "unclear"> | "none-yet";
+type ContributionStatusFilter =
+  | "pending"
+  | "needs-review"
+  | "accepted"
+  | "incorporated"
+  | "rejected";
 type ContributionOriginFilter =
   | "human-submitted"
   | "ai-origin"
@@ -71,11 +77,13 @@ function getPublicContributionOutcomeNote(
 function getContributionLedgerHref({
   recordView,
   attachment,
+  reviewStatus,
   origin,
   contributionId,
 }: {
   recordView?: ContributionRecordView;
   attachment?: ContributionAttachmentFilter;
+  reviewStatus?: ContributionStatusFilter;
   origin?: ContributionOriginFilter;
   contributionId?: string;
 }) {
@@ -87,6 +95,10 @@ function getContributionLedgerHref({
 
   if (attachment) {
     params.set("attachment", attachment);
+  }
+
+  if (reviewStatus) {
+    params.set("reviewStatus", reviewStatus);
   }
 
   if (origin) {
@@ -151,6 +163,10 @@ function getContributionOriginLabel(origin: ContributionOriginFilter) {
     default:
       return "Public submission";
   }
+}
+
+function getContributionStatusFilter(status: PublicContribution["status"]): ContributionStatusFilter {
+  return status === "needs review" ? "needs-review" : status;
 }
 
 function getContributionRecordView(contribution: PublicContribution):
@@ -1084,21 +1100,36 @@ export default async function TopicCardPage({
             <div className={styles.copyBlock}>
               <h3>Review status breakdown</h3>
               <div className={styles.reviewPills}>
-                <span className={styles.reviewPill}>
+                <Link
+                  className={styles.reviewPillLink}
+                  href={getContributionLedgerHref({ reviewStatus: "pending" })}
+                >
                   Pending {contributionStatusCounts.pending}
-                </span>
-                <span className={styles.reviewPill}>
+                </Link>
+                <Link
+                  className={styles.reviewPillLink}
+                  href={getContributionLedgerHref({ reviewStatus: "needs-review" })}
+                >
                   Needs review {contributionStatusCounts.needsReview}
-                </span>
-                <span className={styles.reviewPill}>
+                </Link>
+                <Link
+                  className={styles.reviewPillLink}
+                  href={getContributionLedgerHref({ reviewStatus: "accepted" })}
+                >
                   Accepted {contributionStatusCounts.accepted}
-                </span>
-                <span className={styles.reviewPill}>
+                </Link>
+                <Link
+                  className={styles.reviewPillLink}
+                  href={getContributionLedgerHref({ reviewStatus: "incorporated" })}
+                >
                   Incorporated {contributionStatusCounts.incorporated}
-                </span>
-                <span className={styles.reviewPill}>
+                </Link>
+                <Link
+                  className={styles.reviewPillLink}
+                  href={getContributionLedgerHref({ reviewStatus: "rejected" })}
+                >
                   Rejected {contributionStatusCounts.rejected}
-                </span>
+                </Link>
               </div>
             </div>
 
@@ -1397,6 +1428,7 @@ export default async function TopicCardPage({
                             href={getContributionLedgerHref({
                               recordView: getContributionRecordView(item),
                               origin: getContributionOrigin(item),
+                              reviewStatus: getContributionStatusFilter(item.status),
                               attachment: getContributionAttachmentFilter(item),
                               contributionId: item.id,
                             })}
@@ -1430,6 +1462,7 @@ export default async function TopicCardPage({
                           href={getContributionLedgerHref({
                             recordView: getContributionRecordView(item),
                             origin: getContributionOrigin(item),
+                            reviewStatus: getContributionStatusFilter(item.status),
                             attachment: getContributionAttachmentFilter(item),
                             contributionId: item.id,
                           })}

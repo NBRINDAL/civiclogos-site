@@ -72,6 +72,14 @@ type ContributionOriginFilter =
   | "ai-origin"
   | "seed-example";
 
+type ContributionStatusFilter =
+  | "all-statuses"
+  | "pending"
+  | "needs-review"
+  | "accepted"
+  | "incorporated"
+  | "rejected";
+
 type ContributionAttachmentFilter =
   | "all-targets"
   | Exclude<ReviewTargetKind, "unclear">
@@ -139,6 +147,15 @@ const contributionOriginFilterLabels: Record<ContributionOriginFilter, string> =
   "seed-example": "Prototype example",
 };
 
+const contributionStatusFilterLabels: Record<ContributionStatusFilter, string> = {
+  "all-statuses": "All statuses",
+  pending: "Pending",
+  "needs-review": "Needs review",
+  accepted: "Accepted",
+  incorporated: "Incorporated",
+  rejected: "Rejected",
+};
+
 function normalizeContributionFilter(value: string | null | undefined): ContributionFilter {
   if (
     value === "all" ||
@@ -184,6 +201,23 @@ function normalizeContributionOriginFilter(
   }
 
   return "all-origins";
+}
+
+function normalizeContributionStatusFilter(
+  value: string | null | undefined,
+): ContributionStatusFilter {
+  if (
+    value === "all-statuses" ||
+    value === "pending" ||
+    value === "needs-review" ||
+    value === "accepted" ||
+    value === "incorporated" ||
+    value === "rejected"
+  ) {
+    return value;
+  }
+
+  return "all-statuses";
 }
 
 function formatTimestamp(value: string) {
@@ -244,6 +278,10 @@ function getContributionOrigin(contribution: PublicContribution): ContributionOr
   }
 
   return "human-submitted";
+}
+
+function getContributionStatusFilter(status: ReviewStatus): ContributionStatusFilter {
+  return status === "needs review" ? "needs-review" : status;
 }
 
 function getAiReaderLabel(provider: AiProvider) {
@@ -380,6 +418,10 @@ export default function TopicContributionLoop({
     () => normalizeContributionOriginFilter(searchParams.get("origin")),
     [searchParams],
   );
+  const activeStatusFilter = useMemo(
+    () => normalizeContributionStatusFilter(searchParams.get("reviewStatus")),
+    [searchParams],
+  );
   const recordFilteredContributions = useMemo(
     () =>
       (() => {
@@ -401,36 +443,60 @@ export default function TopicContributionLoop({
       })(),
     [activeFilter, contributions],
   );
-  const attachmentFilteredContributions = useMemo(() => {
-    if (activeAttachmentFilter === "all-targets") {
+  const statusFilteredContributions = useMemo(() => {
+    if (activeStatusFilter === "all-statuses") {
       return recordFilteredContributions;
     }
 
     return recordFilteredContributions.filter(
+      (item) => getContributionStatusFilter(item.status) === activeStatusFilter,
+    );
+  }, [activeStatusFilter, recordFilteredContributions]);
+  const attachmentFilteredContributions = useMemo(() => {
+    if (activeAttachmentFilter === "all-targets") {
+      return statusFilteredContributions;
+    }
+
+    return statusFilteredContributions.filter(
       (item) => getVisibleAttachmentFilter(item) === activeAttachmentFilter,
     );
-  }, [activeAttachmentFilter, recordFilteredContributions]);
+  }, [activeAttachmentFilter, statusFilteredContributions]);
   const attachmentFilterCounts = useMemo(
     () => ({
-      "all-targets": recordFilteredContributions.length,
-      claim: recordFilteredContributions.filter(
+      "all-targets": statusFilteredContributions.length,
+      claim: statusFilteredContributions.filter(
         (item) => getVisibleAttachmentFilter(item) === "claim",
       ).length,
-      objection: recordFilteredContributions.filter(
+      objection: statusFilteredContributions.filter(
         (item) => getVisibleAttachmentFilter(item) === "objection",
       ).length,
-      evidence: recordFilteredContributions.filter(
+      evidence: statusFilteredContributions.filter(
         (item) => getVisibleAttachmentFilter(item) === "evidence",
       ).length,
-      assumption: recordFilteredContributions.filter(
+      assumption: statusFilteredContributions.filter(
         (item) => getVisibleAttachmentFilter(item) === "assumption",
       ).length,
-      "open-question": recordFilteredContributions.filter(
+      "open-question": statusFilteredContributions.filter(
         (item) => getVisibleAttachmentFilter(item) === "open-question",
       ).length,
-      "none-yet": recordFilteredContributions.filter(
+      "none-yet": statusFilteredContributions.filter(
         (item) => getVisibleAttachmentFilter(item) === "none-yet",
       ).length,
+    }),
+    [statusFilteredContributions],
+  );
+  const statusFilterCounts = useMemo(
+    () => ({
+      "all-statuses": recordFilteredContributions.length,
+      pending: recordFilteredContributions.filter((item) => item.status === "pending").length,
+      "needs-review": recordFilteredContributions.filter(
+        (item) => item.status === "needs review",
+      ).length,
+      accepted: recordFilteredContributions.filter((item) => item.status === "accepted").length,
+      incorporated: recordFilteredContributions.filter(
+        (item) => item.status === "incorporated",
+      ).length,
+      rejected: recordFilteredContributions.filter((item) => item.status === "rejected").length,
     }),
     [recordFilteredContributions],
   );
@@ -460,6 +526,7 @@ export default function TopicContributionLoop({
   }, [activeOriginFilter, attachmentFilteredContributions]);
   const hasActiveLedgerFilters =
     activeFilter !== "all" ||
+    activeStatusFilter !== "all-statuses" ||
     activeAttachmentFilter !== "all-targets" ||
     activeOriginFilter !== "all-origins";
   const activeLedgerSliceLabel = useMemo(() => {
@@ -473,6 +540,10 @@ export default function TopicContributionLoop({
       labels.push(contributionAttachmentFilterLabels[activeAttachmentFilter]);
     }
 
+    if (activeStatusFilter !== "all-statuses") {
+      labels.push(contributionStatusFilterLabels[activeStatusFilter]);
+    }
+
     if (activeOriginFilter !== "all-origins") {
       labels.push(contributionOriginFilterLabels[activeOriginFilter]);
     }
@@ -482,7 +553,7 @@ export default function TopicContributionLoop({
     }
 
     return labels.join(" · ");
-  }, [activeAttachmentFilter, activeFilter, activeOriginFilter]);
+  }, [activeAttachmentFilter, activeFilter, activeOriginFilter, activeStatusFilter]);
 
   function handleFilterPick(filter: ContributionFilter) {
     const nextSearchParams = new URLSearchParams(searchParams.toString());
@@ -505,6 +576,7 @@ export default function TopicContributionLoop({
   function resetLedgerFilters() {
     const nextSearchParams = new URLSearchParams(searchParams.toString());
     nextSearchParams.delete("recordView");
+    nextSearchParams.delete("reviewStatus");
     nextSearchParams.delete("attachment");
     nextSearchParams.delete("origin");
 
@@ -524,6 +596,24 @@ export default function TopicContributionLoop({
       nextSearchParams.delete("attachment");
     } else {
       nextSearchParams.set("attachment", filter);
+    }
+
+    const nextQuery = nextSearchParams.toString();
+    router.replace(
+      `${pathname}${nextQuery ? `?${nextQuery}` : ""}#contribution-record`,
+      {
+        scroll: false,
+      },
+    );
+  }
+
+  function handleStatusFilterPick(filter: ContributionStatusFilter) {
+    const nextSearchParams = new URLSearchParams(searchParams.toString());
+
+    if (filter === "all-statuses") {
+      nextSearchParams.delete("reviewStatus");
+    } else {
+      nextSearchParams.set("reviewStatus", filter);
     }
 
     const nextQuery = nextSearchParams.toString();
@@ -1078,6 +1168,27 @@ export default function TopicContributionLoop({
             </div>
           </div>
           <div className={styles.filterSection}>
+            <span className={styles.sectionLabel}>Review status</span>
+            <div className={styles.filterList}>
+              {(Object.keys(contributionStatusFilterLabels) as ContributionStatusFilter[]).map(
+                (filter) => (
+                  <button
+                    className={
+                      activeStatusFilter === filter
+                        ? styles.activeFilterChip
+                        : styles.filterChip
+                    }
+                    key={filter}
+                    onClick={() => handleStatusFilterPick(filter)}
+                    type="button"
+                  >
+                    {contributionStatusFilterLabels[filter]} {statusFilterCounts[filter]}
+                  </button>
+                ),
+              )}
+            </div>
+          </div>
+          <div className={styles.filterSection}>
             <span className={styles.sectionLabel}>Contribution origin</span>
             <div className={styles.filterList}>
               {(Object.keys(contributionOriginFilterLabels) as ContributionOriginFilter[]).map(
@@ -1100,8 +1211,8 @@ export default function TopicContributionLoop({
           </div>
           <p className={styles.filterNote}>
             Showing {filteredContributions.length} of {attachmentFilteredContributions.length} visible
-            contribution{attachmentFilteredContributions.length === 1 ? "" : "s"} in the{" "}
-            <strong>{contributionFilterLabels[activeFilter]}</strong> record view.
+            contribution{attachmentFilteredContributions.length === 1 ? "" : "s"} in the current
+            record scope.
           </p>
           <div className={styles.filterSummaryRow}>
             <p className={styles.filterSummary}>
