@@ -32,6 +32,7 @@ export default async function HealthcareTopicPage({
       brandSubtitle={getRoomTopicBrandSubtitle("healthcare")}
       card={card}
       currentTopicIndex={currentTopicIndex}
+      roomSlug="healthcare"
       roomHref={getRoomHref("healthcare")}
       roomCards={roomCards.map((item) => ({
         id: item.id,

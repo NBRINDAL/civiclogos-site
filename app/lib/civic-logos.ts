@@ -1,3 +1,5 @@
+import type { DebateLane } from "./reasoning-types";
+
 export type ProposalSummary = {
   title: string;
   summary: string;
@@ -24,6 +26,7 @@ export type ClaimAtom = {
 };
 
 export type DebatePrompt = {
+  id?: DebateLane;
   title: string;
   description: string;
 };
@@ -1531,38 +1534,47 @@ export const topic001: TopicCardData = {
   ],
   debatePrompts: [
     {
+      id: "support",
       title: "Support",
       description: "Add the best argument for why this topic might work better than existing structures.",
     },
     {
+      id: "objection",
       title: "Objection",
       description: "Surface the strongest reason this topic could fail or misfire.",
     },
     {
+      id: "evidence",
       title: "Evidence",
       description: "Add supporting or challenging data, case studies, or implementation examples.",
     },
     {
+      id: "correction",
       title: "Correction",
       description: "Identify factual, numeric, definitional, or citation errors in the current card.",
     },
     {
+      id: "nuance",
       title: "Nuance",
       description: "Improve the topic by exposing a missing condition or tradeoff without fully rejecting it.",
     },
     {
+      id: "implementation-concern",
       title: "Implementation concern",
       description: "Identify the practical barrier between theory and reality.",
     },
     {
+      id: "economic-assumption-challenge",
       title: "Economic assumption challenge",
       description: "Question whether projected savings, costs, or incentives are being handled honestly.",
     },
     {
+      id: "alternate-topic",
       title: "Alternate topic",
       description: "Offer a structurally different route that solves the same problem better.",
     },
     {
+      id: "personal-perspective",
       title: "Personal perspective",
       description: "Add lived experience that reveals a blind spot in the current synthesis.",
     },

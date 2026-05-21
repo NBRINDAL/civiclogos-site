@@ -1,0 +1,219 @@
+import Link from "next/link";
+import { getRoomTopicHref } from "@/app/lib/civic-logos";
+import { getContributionStoreMetadata, listAllContributions } from "@/app/lib/prototype-contribution-store";
+import {
+  debateLaneLabels,
+  reviewStatusOptions,
+  reviewTargetKindOptions,
+} from "@/app/lib/reasoning-types";
+import { updateContributionReview } from "./actions";
+import styles from "./page.module.css";
+
+export const dynamic = "force-dynamic";
+
+export default async function ContributionReviewPage() {
+  const [contributions, metadata] = await Promise.all([
+    listAllContributions(),
+    getContributionStoreMetadata(),
+  ]);
+
+  return (
+    <div className={styles.page}>
+      <div className={styles.shell}>
+        <section className={styles.hero}>
+          <span className={styles.eyebrow}>Maintainer review</span>
+          <h1>Review the contribution queue like a reasoning object, not a comment inbox.</h1>
+          <p>
+            This prototype surface is where pending submissions can be assigned to
+            claims, objections, evidence, assumptions, and open questions before
+            they visibly affect a living topic card.
+          </p>
+          <p className={styles.meta}>{metadata.note}</p>
+        </section>
+
+        <section className={styles.panel}>
+          <h2 className={styles.sectionTitle}>Contribution queue</h2>
+          <div className={styles.list}>
+            {contributions.map((item) => (
+              <article className={styles.contribution} key={item.id}>
+                <div className={styles.statusBar}>
+                  <span className={styles.badge}>{item.status}</span>
+                  <span className={styles.badge}>{debateLaneLabels[item.lane]}</span>
+                  {item.isSeedExample ? <span className={styles.seed}>Seed example</span> : null}
+                  <Link
+                    className={styles.topicLink}
+                    href={getRoomTopicHref(item.roomSlug, item.topicId)}
+                  >
+                    Open topic card
+                  </Link>
+                </div>
+
+                <div className={styles.meta}>
+                  <h2>{item.title}</h2>
+                  <p>{item.body}</p>
+                  <p>
+                    <strong>{item.topicTitle}</strong> · {item.roomSlug} · created{" "}
+                    {new Date(item.createdAt).toLocaleString("en-US", {
+                      dateStyle: "medium",
+                      timeStyle: "short",
+                    })}
+                  </p>
+                  {item.author.name || item.author.email || item.author.expertise ? (
+                    <p>
+                      Contributor:{" "}
+                      {[item.author.name, item.author.email, item.author.expertise]
+                        .filter(Boolean)
+                        .join(" · ")}
+                    </p>
+                  ) : null}
+                  {item.evidenceSource?.url ? (
+                    <p>
+                      Source:{" "}
+                      <a href={item.evidenceSource.url} rel="noreferrer" target="_blank">
+                        {item.evidenceSource.label || item.evidenceSource.url}
+                      </a>
+                    </p>
+                  ) : null}
+                </div>
+
+                <div className={styles.providerList}>
+                  {item.aiIntake?.providers.length ? (
+                    item.aiIntake.providers.map((provider) => (
+                      <div className={styles.providerCard} key={provider.provider}>
+                        <strong>
+                          {provider.provider === "openai" ? "OpenAI intake" : "Claude intake"}
+                        </strong>
+                        <p>Status: {provider.state}</p>
+                        {provider.model ? <p>Model: {provider.model}</p> : null}
+                        {provider.summary ? <p>{provider.summary}</p> : null}
+                        {provider.suggestedAssignmentLabel ? (
+                          <p>
+                            Suggested placement:{" "}
+                            {provider.suggestedAssignmentKind
+                              ? `${provider.suggestedAssignmentKind} — `
+                              : ""}
+                            {provider.suggestedAssignmentLabel}
+                          </p>
+                        ) : null}
+                        {provider.reviewerNote ? <p>{provider.reviewerNote}</p> : null}
+                        {provider.errorMessage ? <p>{provider.errorMessage}</p> : null}
+                      </div>
+                    ))
+                  ) : (
+                    <div className={styles.providerCard}>
+                      <strong>AI intake</strong>
+                      <p>No provider output is attached to this contribution yet.</p>
+                    </div>
+                  )}
+
+                  {item.review ? (
+                    <div className={styles.reviewSummary}>
+                      <strong>Current review record</strong>
+                      {item.review.assignedToKind || item.review.assignedToLabel ? (
+                        <p>
+                          Assigned to:{" "}
+                          {[item.review.assignedToKind, item.review.assignedToLabel]
+                            .filter(Boolean)
+                            .join(" — ")}
+                        </p>
+                      ) : null}
+                      {typeof item.review.changedSynthesis === "boolean" ? (
+                        <p>
+                          Changed synthesis: {item.review.changedSynthesis ? "yes" : "no"}
+                        </p>
+                      ) : null}
+                      {item.review.decisionReason ? <p>{item.review.decisionReason}</p> : null}
+                      {item.review.reviewerNote ? <p>{item.review.reviewerNote}</p> : null}
+                    </div>
+                  ) : null}
+                </div>
+
+                <form action={updateContributionReview} className={styles.reviewForm}>
+                  <input name="id" type="hidden" value={item.id} />
+                  <h3>Review decision</h3>
+
+                  <div className={styles.reviewFields}>
+                    <label className={styles.field}>
+                      <span>Status</span>
+                      <select defaultValue={item.status} name="status">
+                        {reviewStatusOptions.map((status) => (
+                          <option key={status} value={status}>
+                            {status}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+
+                    <label className={styles.field}>
+                      <span>Assign to</span>
+                      <select
+                        defaultValue={item.review?.assignedToKind ?? ""}
+                        name="assignedToKind"
+                      >
+                        <option value="">Not assigned yet</option>
+                        {reviewTargetKindOptions.map((kind) => (
+                          <option key={kind} value={kind}>
+                            {kind}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+
+                    <label className={styles.field}>
+                      <span>Assignment label</span>
+                      <input
+                        defaultValue={item.review?.assignedToLabel ?? ""}
+                        name="assignedToLabel"
+                        placeholder="Claim, objection, evidence item, assumption, or question"
+                      />
+                    </label>
+
+                    <label className={styles.field}>
+                      <span>Changed synthesis?</span>
+                      <select
+                        defaultValue={
+                          item.review?.changedSynthesis === true
+                            ? "yes"
+                            : item.review?.changedSynthesis === false
+                              ? "no"
+                              : "undecided"
+                        }
+                        name="changedSynthesis"
+                      >
+                        <option value="undecided">Undecided</option>
+                        <option value="yes">Yes</option>
+                        <option value="no">No</option>
+                      </select>
+                    </label>
+                  </div>
+
+                  <label className={styles.field}>
+                    <span>Decision reason</span>
+                    <textarea
+                      defaultValue={item.review?.decisionReason ?? ""}
+                      name="decisionReason"
+                      placeholder="Explain why this contribution was accepted, incorporated, held for review, or rejected."
+                    />
+                  </label>
+
+                  <label className={styles.field}>
+                    <span>Reviewer note</span>
+                    <textarea
+                      defaultValue={item.review?.reviewerNote ?? ""}
+                      name="reviewerNote"
+                      placeholder="Optional maintainer note for follow-up or room placement."
+                    />
+                  </label>
+
+                  <button className={styles.submitButton} type="submit">
+                    Save review state
+                  </button>
+                </form>
+              </article>
+            ))}
+          </div>
+        </section>
+      </div>
+    </div>
+  );
+}

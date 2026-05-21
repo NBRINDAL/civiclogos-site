@@ -1,0 +1,413 @@
+.gridSection {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+}
+
+.panel {
+  display: grid;
+  gap: 18px;
+  padding: 32px;
+  border: 1px solid rgba(18, 33, 39, 0.12);
+  border-radius: 30px;
+  background: rgba(255, 251, 245, 0.78);
+  box-shadow: 0 20px 44px rgba(18, 33, 39, 0.08);
+  backdrop-filter: blur(12px);
+}
+
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--signal);
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.eyebrow::before {
+  content: "";
+  width: 28px;
+  height: 1px;
+  background: currentColor;
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.sectionHeader h2,
+.formHeader h3,
+.contributionCard h3,
+.copyBlock h3,
+.debateCard h3 {
+  font-family: var(--font-serif), serif;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  line-height: 1.04;
+  text-wrap: balance;
+}
+
+.sectionHeader h2 {
+  margin-top: 14px;
+  font-size: clamp(2rem, 3.8vw, 3rem);
+}
+
+.metaNote,
+.loadingNote,
+.debateCard p,
+.formNote,
+.field span,
+.formHelp,
+.contributionBody,
+.contributorMeta,
+.aiIntake p,
+.reviewNote p,
+.copyBlock li {
+  color: var(--muted);
+  line-height: 1.72;
+}
+
+.metaNote {
+  max-width: 320px;
+  font-size: 0.95rem;
+}
+
+.debateGrid,
+.fieldGrid,
+.contributionList {
+  display: grid;
+  gap: 16px;
+}
+
+.debateGrid,
+.fieldGrid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.debateCard,
+.contributionCard {
+  padding: 22px;
+  border: 1px solid rgba(18, 33, 39, 0.12);
+  border-radius: 24px;
+  background: rgba(255, 251, 245, 0.8);
+  box-shadow: 0 18px 36px rgba(18, 33, 39, 0.06);
+}
+
+.debateCardHeader {
+  display: grid;
+  gap: 16px;
+}
+
+.debateCard h3 {
+  font-size: 1.18rem;
+}
+
+.laneButton,
+.activeLaneButton,
+.submitButton,
+.sourceLink {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 0 16px;
+  border-radius: 999px;
+  font-weight: 700;
+  transition:
+    transform 180ms ease,
+    border-color 180ms ease,
+    background 180ms ease;
+}
+
+.laneButton,
+.sourceLink {
+  border: 1px solid rgba(18, 33, 39, 0.14);
+  background: rgba(255, 251, 245, 0.9);
+  color: var(--foreground);
+}
+
+.activeLaneButton,
+.submitButton {
+  border: 1px solid transparent;
+  background: var(--foreground);
+  color: #fff7ee;
+}
+
+.form {
+  display: grid;
+  gap: 18px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(18, 33, 39, 0.08);
+}
+
+.formHeader {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.formHeader h3 {
+  margin-top: 12px;
+  font-size: 1.5rem;
+}
+
+.formNote {
+  max-width: 280px;
+  font-size: 0.92rem;
+}
+
+.field {
+  display: grid;
+  gap: 10px;
+}
+
+.field span {
+  color: var(--foreground);
+  font-size: 0.92rem;
+  font-weight: 700;
+}
+
+.field input,
+.field select,
+.field textarea {
+  width: 100%;
+  padding: 14px 16px;
+  border: 1px solid rgba(18, 33, 39, 0.14);
+  border-radius: 18px;
+  background: rgba(255, 252, 247, 0.94);
+  color: var(--foreground);
+}
+
+.field input:focus,
+.field select:focus,
+.field textarea:focus {
+  outline: 2px solid rgba(181, 94, 51, 0.18);
+  border-color: rgba(181, 94, 51, 0.52);
+}
+
+.field textarea {
+  resize: vertical;
+  min-height: 180px;
+}
+
+.honeypot {
+  position: absolute;
+  left: -9999px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.formFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.submitButton:disabled {
+  cursor: wait;
+  opacity: 0.84;
+}
+
+.formHelp {
+  max-width: 360px;
+  font-size: 0.92rem;
+}
+
+.successState,
+.errorState,
+.aiIntake,
+.reviewNote {
+  padding: 16px 18px;
+  border-radius: 20px;
+}
+
+.successState {
+  border: 1px solid rgba(91, 110, 69, 0.2);
+  background: rgba(91, 110, 69, 0.1);
+  color: var(--foreground);
+}
+
+.errorState {
+  border: 1px solid rgba(181, 94, 51, 0.22);
+  background: rgba(181, 94, 51, 0.1);
+  color: var(--foreground);
+}
+
+.copyBlock {
+  display: grid;
+  gap: 12px;
+}
+
+.copyBlock h3 {
+  font-size: 1.35rem;
+}
+
+.bulletList {
+  display: grid;
+  gap: 14px;
+  padding-left: 20px;
+  line-height: 1.72;
+}
+
+.contributionList {
+  margin-top: 4px;
+}
+
+.contributionMeta,
+.contributionFooter,
+.contributorMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 12px;
+}
+
+.contributionMeta {
+  align-items: center;
+}
+
+.laneLabel,
+.statusPending,
+.statusAccepted,
+.statusNeedsReview,
+.statusIncorporated,
+.statusRejected,
+.seedLabel {
+  display: inline-flex;
+  align-items: center;
+  min-height: 30px;
+  padding: 0 12px;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.laneLabel {
+  border: 1px solid rgba(18, 33, 39, 0.12);
+  background: rgba(18, 33, 39, 0.05);
+  color: var(--foreground);
+}
+
+.statusPending,
+.statusNeedsReview {
+  border: 1px solid rgba(181, 94, 51, 0.22);
+  background: rgba(181, 94, 51, 0.1);
+  color: var(--accent-dark);
+}
+
+.statusAccepted,
+.statusIncorporated {
+  border: 1px solid rgba(91, 110, 69, 0.22);
+  background: rgba(91, 110, 69, 0.1);
+  color: var(--signal);
+}
+
+.statusRejected {
+  border: 1px solid rgba(18, 33, 39, 0.16);
+  background: rgba(18, 33, 39, 0.08);
+  color: var(--muted);
+}
+
+.seedLabel {
+  border: 1px solid rgba(18, 33, 39, 0.14);
+  background: rgba(255, 251, 245, 0.94);
+  color: var(--foreground);
+}
+
+.contributionCard h3 {
+  margin-top: 14px;
+  font-size: 1.3rem;
+}
+
+.contributionBody {
+  margin-top: 12px;
+}
+
+.contributionFooter {
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(18, 33, 39, 0.08);
+}
+
+.contributorMeta {
+  font-size: 0.9rem;
+}
+
+.aiIntake,
+.reviewNote {
+  margin-top: 14px;
+  border: 1px solid rgba(18, 33, 39, 0.1);
+  background: rgba(255, 251, 245, 0.9);
+}
+
+.aiIntake strong,
+.reviewNote strong {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 0.9rem;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .laneButton:hover,
+  .activeLaneButton:hover,
+  .submitButton:hover,
+  .sourceLink:hover {
+    transform: translateY(-1px);
+  }
+
+  .laneButton:hover,
+  .sourceLink:hover {
+    border-color: rgba(18, 33, 39, 0.24);
+    background: rgba(255, 251, 245, 0.96);
+  }
+
+  .activeLaneButton:hover,
+  .submitButton:hover {
+    background: #24363c;
+  }
+}
+
+@media (max-width: 1100px) {
+  .gridSection,
+  .debateGrid,
+  .fieldGrid,
+  .sectionHeader,
+  .formHeader,
+  .formFooter {
+    grid-template-columns: 1fr;
+  }
+
+  .sectionHeader,
+  .formHeader,
+  .formFooter {
+    display: grid;
+  }
+}
+
+@media (max-width: 720px) {
+  .panel,
+  .debateCard,
+  .contributionCard {
+    padding: 22px;
+    border-radius: 24px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .laneButton,
+  .activeLaneButton,
+  .submitButton,
+  .sourceLink {
+    transition: none;
+  }
+}

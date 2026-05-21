@@ -1,5 +1,6 @@
 import Link from "next/link";
-import type { TopicCardData } from "../lib/civic-logos";
+import TopicContributionLoop from "./topic-contribution-loop";
+import type { IssueRoomSlug, TopicCardData } from "../lib/civic-logos";
 import styles from "../healthcare/proposal-001/page.module.css";
 
 type TopicCardLink = {
@@ -9,6 +10,7 @@ type TopicCardLink = {
 };
 
 type TopicCardPageProps = {
+  roomSlug: IssueRoomSlug;
   card: TopicCardData;
   brandSubtitle: string;
   roomHref: string;
@@ -18,6 +20,7 @@ type TopicCardPageProps = {
 };
 
 export default function TopicCardPage({
+  roomSlug,
   card,
   brandSubtitle,
   roomHref,
@@ -228,43 +231,14 @@ export default function TopicCardPage({
           </div>
         </section>
 
-        <section className={styles.gridSection} id="debate">
-          <article className={styles.panel}>
-            <span className={styles.eyebrow}>Debate lanes</span>
-            <h2>The point is not to react. It is to improve the object.</h2>
-            <div className={styles.debateGrid}>
-              {card.debatePrompts.map((item) => (
-                <article className={styles.debateCard} key={item.title}>
-                  <h3>{item.title}</h3>
-                  <p>{item.description}</p>
-                </article>
-              ))}
-            </div>
-          </article>
-
-          <article className={styles.panel}>
-            <span className={styles.eyebrow}>What this card needs next</span>
-            <h2>The most useful updates are the ones that reduce ambiguity.</h2>
-
-            <div className={styles.copyBlock}>
-              <h3>Open questions</h3>
-              <ul className={styles.bulletList}>
-                {card.openQuestions.map((item) => (
-                  <li key={item}>{item}</li>
-                ))}
-              </ul>
-            </div>
-
-            <div className={styles.copyBlock}>
-              <h3>What would strengthen it</h3>
-              <ul className={styles.bulletList}>
-                {card.whatWouldStrengthen.map((item) => (
-                  <li key={item}>{item}</li>
-                ))}
-              </ul>
-            </div>
-          </article>
-        </section>
+        <TopicContributionLoop
+          debatePrompts={card.debatePrompts}
+          openQuestions={card.openQuestions}
+          roomSlug={roomSlug}
+          topicId={card.id}
+          topicTitle={card.title}
+          whatWouldStrengthen={card.whatWouldStrengthen}
+        />
 
         <section className={styles.gridSection} id="room-context">
           <article className={styles.panel}>

@@ -47,6 +47,7 @@ export default async function IssueRoomTopicPage({
       brandSubtitle={getRoomTopicBrandSubtitle(roomSlug)}
       card={card}
       currentTopicIndex={currentTopicIndex}
+      roomSlug={roomSlug}
       roomHref={getRoomHref(roomSlug)}
       roomCards={roomCards.map((item) => ({
         id: item.id,

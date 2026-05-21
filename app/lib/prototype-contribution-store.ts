@@ -1,0 +1,210 @@
+import { randomUUID } from "node:crypto";
+import { tmpdir } from "node:os";
+import path from "node:path";
+import { access, mkdir, readFile, writeFile } from "node:fs/promises";
+import seedStore from "@/data/prototype-contributions.seed.json";
+import type {
+  Contribution,
+  ContributionStoreDocument,
+  CreateContributionInput,
+  PublicContribution,
+  ReviewContributionInput,
+} from "./contribution-types";
+import { buildContributionAiIntake } from "./contribution-ai";
+import type { IssueRoomSlug } from "./civic-logos";
+
+type ListContributionFilters = {
+  roomSlug?: IssueRoomSlug;
+  topicId?: string;
+  limit?: number;
+  status?: string;
+};
+
+const seedDocument = seedStore as ContributionStoreDocument;
+
+let storePathPromise: Promise<string> | null = null;
+let writeQueue = Promise.resolve();
+
+async function ensureStoreFile(filePath: string) {
+  await mkdir(path.dirname(filePath), { recursive: true });
+
+  try {
+    await access(filePath);
+  } catch {
+    await writeFile(filePath, JSON.stringify(seedDocument, null, 2), "utf8");
+  }
+}
+
+async function resolveStorePath() {
+  if (!storePathPromise) {
+    storePathPromise = (async () => {
+      const preferredPath = path.join(
+        /* turbopackIgnore: true */ process.cwd(),
+        "data",
+        "prototype-contributions.runtime.json",
+      );
+
+      try {
+        await ensureStoreFile(preferredPath);
+        return preferredPath;
+      } catch {
+        const fallbackPath = path.join(
+          tmpdir(),
+          "civiclogos-prototype-contributions.runtime.json",
+        );
+        await ensureStoreFile(fallbackPath);
+        return fallbackPath;
+      }
+    })();
+  }
+
+  return storePathPromise;
+}
+
+async function readStoreDocument() {
+  const storePath = await resolveStorePath();
+  const raw = await readFile(storePath, "utf8");
+  return JSON.parse(raw) as ContributionStoreDocument;
+}
+
+async function writeStoreDocument(document: ContributionStoreDocument) {
+  const storePath = await resolveStorePath();
+  document.updatedAt = new Date().toISOString();
+  await writeFile(storePath, JSON.stringify(document, null, 2), "utf8");
+}
+
+function enqueueWrite<T>(task: () => Promise<T>) {
+  const result = writeQueue.then(task, task);
+  writeQueue = result.then(
+    () => undefined,
+    () => undefined,
+  );
+  return result;
+}
+
+function sortNewestFirst<T extends { createdAt: string }>(items: readonly T[]) {
+  return [...items].sort(
+    (left, right) =>
+      new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime(),
+  );
+}
+
+function toPublicContribution(item: Contribution): PublicContribution {
+  return {
+    ...item,
+    author: {
+      name: item.author.name,
+      expertise: item.author.expertise,
+    },
+  };
+}
+
+export async function getContributionStoreMetadata() {
+  const storePath = await resolveStorePath();
+  return {
+    prototype: true as const,
+    storePath,
+    note: seedDocument.note,
+  };
+}
+
+export async function listPublicContributions(filters: ListContributionFilters = {}) {
+  const document = await readStoreDocument();
+
+  return sortNewestFirst(document.contributions)
+    .filter((item) => {
+      if (filters.roomSlug && item.roomSlug !== filters.roomSlug) {
+        return false;
+      }
+
+      if (filters.topicId && item.topicId !== filters.topicId) {
+        return false;
+      }
+
+      if (filters.status && item.status !== filters.status) {
+        return false;
+      }
+
+      return true;
+    })
+    .slice(0, filters.limit ?? 12)
+    .map(toPublicContribution);
+}
+
+export async function listAllContributions(filters: ListContributionFilters = {}) {
+  const document = await readStoreDocument();
+
+  return sortNewestFirst(document.contributions).filter((item) => {
+    if (filters.roomSlug && item.roomSlug !== filters.roomSlug) {
+      return false;
+    }
+
+    if (filters.topicId && item.topicId !== filters.topicId) {
+      return false;
+    }
+
+    if (filters.status && item.status !== filters.status) {
+      return false;
+    }
+
+    return true;
+  });
+}
+
+export async function createContribution(input: CreateContributionInput) {
+  return enqueueWrite(async () => {
+    const document = await readStoreDocument();
+    const timestamp = new Date().toISOString();
+    const aiIntake = await buildContributionAiIntake(input);
+
+    const contribution: Contribution = {
+      id: randomUUID(),
+      roomSlug: input.roomSlug,
+      topicId: input.topicId,
+      topicTitle: input.topicTitle,
+      lane: input.lane,
+      title: input.title,
+      body: input.body,
+      evidenceSource: input.evidenceSource ?? undefined,
+      author: input.author,
+      status: "pending",
+      createdAt: timestamp,
+      updatedAt: timestamp,
+      aiIntake,
+    };
+
+    document.contributions.push(contribution);
+    await writeStoreDocument(document);
+
+    return toPublicContribution(contribution);
+  });
+}
+
+export async function reviewContribution(
+  id: string,
+  input: ReviewContributionInput,
+) {
+  return enqueueWrite(async () => {
+    const document = await readStoreDocument();
+    const existing = document.contributions.find((item) => item.id === id);
+
+    if (!existing) {
+      return null;
+    }
+
+    existing.status = input.status;
+    existing.updatedAt = new Date().toISOString();
+    existing.review = {
+      assignedToKind: input.assignedToKind,
+      assignedToLabel: input.assignedToLabel,
+      changedSynthesis: input.changedSynthesis ?? null,
+      decisionReason: input.decisionReason,
+      reviewerNote: input.reviewerNote,
+      reviewedAt: new Date().toISOString(),
+    };
+
+    await writeStoreDocument(document);
+
+    return existing;
+  });
+}
