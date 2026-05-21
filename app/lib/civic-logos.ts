@@ -2499,6 +2499,13 @@ export function getRoomHref(roomSlug: IssueRoomSlug): string {
   return roomSlug === "healthcare" ? "/healthcare" : `/rooms/${roomSlug}`;
 }
 
+export function getRoomTopicHref(
+  roomSlug: IssueRoomSlug,
+  topicId: string,
+): string {
+  return `${getRoomHref(roomSlug)}/${topicId}`;
+}
+
 export function getRoomTopicBrandSubtitle(roomSlug: IssueRoomSlug): string {
   switch (roomSlug) {
     case "healthcare":

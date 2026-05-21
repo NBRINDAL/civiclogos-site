@@ -2,11 +2,19 @@ import Link from "next/link";
 import type { TopicCardData } from "../lib/civic-logos";
 import styles from "../healthcare/proposal-001/page.module.css";
 
+type TopicCardLink = {
+  id: string;
+  title: string;
+  href: string;
+};
+
 type TopicCardPageProps = {
   card: TopicCardData;
   brandSubtitle: string;
   roomHref: string;
   roomLabel: string;
+  roomCards: readonly TopicCardLink[];
+  currentTopicIndex: number;
 };
 
 export default function TopicCardPage({
@@ -14,7 +22,17 @@ export default function TopicCardPage({
   brandSubtitle,
   roomHref,
   roomLabel,
+  roomCards,
+  currentTopicIndex,
 }: TopicCardPageProps) {
+  const previousCard =
+    currentTopicIndex > 0 ? roomCards[currentTopicIndex - 1] : null;
+  const nextCard =
+    currentTopicIndex < roomCards.length - 1
+      ? roomCards[currentTopicIndex + 1]
+      : null;
+  const siblingCards = roomCards.filter((item) => item.id !== card.id);
+
   return (
     <div className={styles.page}>
       <div className={styles.backdrop} aria-hidden="true" />
@@ -32,6 +50,7 @@ export default function TopicCardPage({
           <nav className={styles.nav}>
             <Link href="/">Home</Link>
             <Link href={roomHref}>{roomLabel}</Link>
+            <a href="#room-context">Room context</a>
             <a href="#debate">Debate lanes</a>
           </nav>
         </div>
@@ -244,6 +263,55 @@ export default function TopicCardPage({
                 ))}
               </ul>
             </div>
+          </article>
+        </section>
+
+        <section className={styles.gridSection} id="room-context">
+          <article className={styles.panel}>
+            <span className={styles.eyebrow}>Room context</span>
+            <h2>This card should feel like one live object inside a room, not a detached essay.</h2>
+            <p>
+              {roomLabel} currently has {roomCards.length} live topic
+              {roomCards.length === 1 ? " card" : " cards"} in view. This card is{" "}
+              {currentTopicIndex + 1} of {roomCards.length}.
+            </p>
+
+            <div className={styles.roomActions}>
+              <Link className={styles.roomActionPrimary} href={roomHref}>
+                Return to room
+              </Link>
+              {previousCard ? (
+                <Link className={styles.roomActionSecondary} href={previousCard.href}>
+                  Previous card
+                </Link>
+              ) : null}
+              {nextCard ? (
+                <Link className={styles.roomActionSecondary} href={nextCard.href}>
+                  Next card
+                </Link>
+              ) : null}
+            </div>
+          </article>
+
+          <article className={styles.panel}>
+            <span className={styles.eyebrow}>Other live cards</span>
+            <h2>The room gets stronger when multiple inspectable directions stay visible.</h2>
+            {siblingCards.length ? (
+              <div className={styles.relatedCardList}>
+                {siblingCards.map((item) => (
+                  <Link className={styles.relatedCardItem} href={item.href} key={item.id}>
+                    <span>{item.id.replace("topic-", "Topic ")}</span>
+                    <strong>{item.title}</strong>
+                  </Link>
+                ))}
+              </div>
+            ) : (
+              <p>
+                This is currently the only live card in the room. The next step is
+                not to make this card do everything, but to open more competing
+                directions beside it.
+              </p>
+            )}
           </article>
         </section>
 

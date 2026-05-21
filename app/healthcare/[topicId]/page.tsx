@@ -4,6 +4,7 @@ import {
   getRoomHref,
   getRoomTopicBrandSubtitle,
   getRoomTopicCard,
+  getRoomTopicHref,
   getRoomTopicCards,
   getRoomTopicLabel,
 } from "../../lib/civic-logos";
@@ -19,8 +20,10 @@ export default async function HealthcareTopicPage({
 }) {
   const { topicId } = await params;
   const card = getRoomTopicCard("healthcare", topicId);
+  const roomCards = getRoomTopicCards("healthcare");
+  const currentTopicIndex = roomCards.findIndex((item) => item.id === topicId);
 
-  if (!card) {
+  if (!card || currentTopicIndex === -1) {
     notFound();
   }
 
@@ -28,7 +31,13 @@ export default async function HealthcareTopicPage({
     <TopicCardPage
       brandSubtitle={getRoomTopicBrandSubtitle("healthcare")}
       card={card}
+      currentTopicIndex={currentTopicIndex}
       roomHref={getRoomHref("healthcare")}
+      roomCards={roomCards.map((item) => ({
+        id: item.id,
+        title: item.title,
+        href: getRoomTopicHref("healthcare", item.id),
+      }))}
       roomLabel={getRoomTopicLabel("healthcare")}
     />
   );

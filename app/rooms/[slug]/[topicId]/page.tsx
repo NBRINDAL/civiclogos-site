@@ -4,6 +4,7 @@ import {
   getRoomHref,
   getRoomTopicBrandSubtitle,
   getRoomTopicCard,
+  getRoomTopicHref,
   getRoomTopicCards,
   getRoomTopicLabel,
   issueRooms,
@@ -34,8 +35,10 @@ export default async function IssueRoomTopicPage({
   }
 
   const card = getRoomTopicCard(roomSlug, topicId);
+  const roomCards = getRoomTopicCards(roomSlug);
+  const currentTopicIndex = roomCards.findIndex((item) => item.id === topicId);
 
-  if (!card) {
+  if (!card || currentTopicIndex === -1) {
     notFound();
   }
 
@@ -43,7 +46,13 @@ export default async function IssueRoomTopicPage({
     <TopicCardPage
       brandSubtitle={getRoomTopicBrandSubtitle(roomSlug)}
       card={card}
+      currentTopicIndex={currentTopicIndex}
       roomHref={getRoomHref(roomSlug)}
+      roomCards={roomCards.map((item) => ({
+        id: item.id,
+        title: item.title,
+        href: getRoomTopicHref(roomSlug, item.id),
+      }))}
       roomLabel={getRoomTopicLabel(roomSlug)}
     />
   );
