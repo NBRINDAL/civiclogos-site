@@ -415,6 +415,22 @@ export default async function ContributionReviewPage({
                         dateStyle: "medium",
                         timeStyle: "short",
                       })}
+                      {item.draftSource.messageId ? (
+                        <>
+                          {" "}·{" "}
+                          <Link
+                            className={styles.topicLink}
+                            href={`${getRoomTopicHref(
+                              item.roomSlug,
+                              item.topicId,
+                            )}?chatMessage=${encodeURIComponent(
+                              item.draftSource.messageId,
+                            )}#topic-chat-message-${item.draftSource.messageId}`}
+                          >
+                            Open source AI turn
+                          </Link>
+                        </>
+                      ) : null}
                     </p>
                   ) : null}
                   {item.author.name || item.author.email || item.author.expertise ? (

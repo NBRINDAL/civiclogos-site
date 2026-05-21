@@ -1,5 +1,6 @@
 "use client";
 
+import { useSearchParams } from "next/navigation";
 import { useMemo, useState, useTransition } from "react";
 import type { IssueRoomSlug } from "../lib/civic-logos";
 import {
@@ -288,8 +289,10 @@ export default function TopicAiPanel({
   );
   const [storeNote, setStoreNote] = useState(initialStoreNote);
   const [isPending, startTransition] = useTransition();
+  const searchParams = useSearchParams();
   const transcript = useMemo(() => buildTranscript(messages), [messages]);
   const sessionImpact = useMemo(() => getSessionImpact(messages), [messages]);
+  const highlightedMessageId = searchParams.get("chatMessage")?.trim() ?? "";
 
   function submitQuestion(provider: ProviderRequest, nextQuestion?: string) {
     const prompt = nextQuestion ?? question;
@@ -364,6 +367,7 @@ export default function TopicAiPanel({
     const detail: TopicAiDraftDetail = {
       roomSlug,
       topicId,
+      messageId: message.id,
       provider: message.provider,
       providerLabel: getProviderLabel(message.provider),
       model: message.model,
@@ -381,7 +385,7 @@ export default function TopicAiPanel({
   }
 
   return (
-    <section className={styles.panel}>
+    <section className={styles.panel} id="topic-ai-transcript">
       <div className={styles.header}>
         <div>
           <span className={styles.eyebrow}>Chat this topic</span>
@@ -505,7 +509,10 @@ export default function TopicAiPanel({
                   item.message.role === "user"
                     ? styles.userMessage
                     : styles.assistantMessage
+                } ${
+                  highlightedMessageId === item.message.id ? styles.highlightedMessage : ""
                 }`}
+                id={`topic-chat-message-${item.message.id}`}
                 key={item.message.id}
               >
                 <div className={styles.transcriptMeta}>

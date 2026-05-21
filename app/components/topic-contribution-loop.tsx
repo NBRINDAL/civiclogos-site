@@ -41,6 +41,7 @@ type SubmissionState = {
 };
 
 type DraftState = {
+  messageId: string;
   provider: AiProvider;
   providerLabel: string;
   model: string;
@@ -233,6 +234,17 @@ function getChangedCardLabel(value: boolean | null | undefined) {
   }
 
   return "Not decided yet";
+}
+
+function getSourceAiTurnHref(
+  pathname: string,
+  searchParams: { toString(): string },
+  messageId: string,
+) {
+  const nextSearchParams = new URLSearchParams(searchParams.toString());
+  nextSearchParams.set("chatMessage", messageId);
+
+  return `${pathname}?${nextSearchParams.toString()}#topic-chat-message-${messageId}`;
 }
 
 function formatBytes(value: number) {
@@ -512,6 +524,7 @@ export default function TopicContributionLoop({
         body: nextBody,
       }));
       setDraftState({
+        messageId: detail.messageId,
         provider: detail.provider,
         providerLabel: detail.providerLabel,
         model: detail.model,
@@ -612,6 +625,7 @@ export default function TopicContributionLoop({
               formData.set(
                 "draftSource",
                 JSON.stringify({
+                  messageId: draftState.messageId,
                   provider: draftState.provider,
                   providerLabel: draftState.providerLabel,
                   model: draftState.model,
@@ -1030,6 +1044,21 @@ export default function TopicContributionLoop({
                       Assisted draft source: {item.draftSource.providerLabel} (
                       {item.draftSource.model}) on{" "}
                       {formatTimestamp(item.draftSource.generatedAt)}.
+                      {item.draftSource.messageId ? (
+                        <>
+                          {" "}
+                          <a
+                            className={styles.sourceLink}
+                            href={getSourceAiTurnHref(
+                              pathname,
+                              searchParams,
+                              item.draftSource.messageId,
+                            )}
+                          >
+                            Open source AI turn
+                          </a>
+                        </>
+                      ) : null}
                     </p>
                   ) : null}
                   <p className={styles.contributionBody}>{item.body}</p>

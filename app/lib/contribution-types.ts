@@ -21,6 +21,7 @@ export type ContributionAuthor = {
 };
 
 export type AssistedDraftSource = {
+  messageId?: string;
   provider: AiProvider;
   providerLabel: string;
   model: string;

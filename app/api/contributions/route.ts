@@ -90,6 +90,8 @@ function parseDraftSource(value: unknown): AssistedDraftSource | undefined {
   }
 
   return {
+    messageId:
+      typeof source.messageId === "string" ? source.messageId.trim() : undefined,
     provider:
       source.provider === "openai" || source.provider === "anthropic"
         ? source.provider

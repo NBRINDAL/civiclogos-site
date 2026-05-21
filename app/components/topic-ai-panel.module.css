@@ -168,6 +168,7 @@
   padding: 18px;
   border-radius: 22px;
   border: 1px solid rgba(18, 33, 39, 0.1);
+  scroll-margin-top: 96px;
 }
 
 .userMessage {
@@ -176,6 +177,11 @@
 
 .assistantMessage {
   background: rgba(255, 251, 245, 0.9);
+}
+
+.highlightedMessage {
+  border-color: rgba(var(--brand-blue-rgb), 0.32);
+  box-shadow: 0 0 0 3px rgba(var(--brand-blue-rgb), 0.08);
 }
 
 .transcriptMeta {

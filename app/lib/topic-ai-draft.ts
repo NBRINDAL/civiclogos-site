@@ -6,6 +6,7 @@ export const topicAiDraftEventName = "civiclogos:topic-ai-draft";
 export type TopicAiDraftDetail = {
   roomSlug: string;
   topicId: string;
+  messageId: string;
   provider: AiProvider;
   providerLabel: string;
   model: string;
