@@ -221,11 +221,12 @@ export const healthcareIssueRoom = {
       href: "/healthcare/topic-001",
     },
     {
-      title: "Public Option Model",
+      title: "Employer-Independent Coverage Transition Model",
       summary:
-        "Adds a public insurance option while preserving private insurance, aiming for competitive pressure without full system replacement.",
-      label: "Core topic",
-      metric: "Moderate implementation disruption",
+        "Separates healthcare security from employment by moving toward portable coverage, public exchange pathways, and clearer household-level entitlement.",
+      label: "Topic in focus",
+      metric: "High structural leverage, major transition complexity",
+      href: "/healthcare/topic-002",
     },
     {
       title: "Single-Payer Model",
@@ -277,9 +278,9 @@ export const healthcareIssueRoom = {
       metric: "High dispute over real-world behavior",
     },
     {
-      title: "Employer-Based Reform",
+      title: "Employer-Linked Coverage Preservation",
       summary:
-        "Builds on existing coverage structures, but raises questions about labor mobility, fragmentation, and whether incrementalism can solve structural cost pressure.",
+        "Preserves the employment link while trying to stabilize coverage and cost, raising the question of whether the core distortion is being managed or simply retained.",
       label: "Most debated",
       metric: "Politically familiar, structurally contested",
     },
@@ -1531,6 +1532,195 @@ export const topic001: TopicCardData = {
   ],
 };
 
+export const topic002: TopicCardData = {
+  id: "topic-002",
+  title: "Employer-Independent Coverage Transition Model",
+  subtitle:
+    "A second healthcare topic card for testing whether medical security should be separated from employment",
+  draftNote:
+    "This topic card is intentionally unfinished because it touches one of the deepest structural choices in the healthcare room. It is not trying to settle the whole public-versus-private argument; it is trying to make one question explicit: should access to medical security depend so heavily on where and whether a person works?",
+  thesis:
+    "Healthcare security should become more portable and less tied to employment, using public exchange pathways, predictable household-level coverage rules, and a staged transition away from job-linked medical dependence.",
+  currentRead:
+    "This topic card feels strong because it targets a real distortion in the current system: labor mobility, household security, and employer burden are all bent around the employment link. It feels weak wherever advocates imply that portability alone solves cost, provider reimbursement, or rural access. The card is useful because it isolates one structural choice without pretending that every downstream problem disappears with it.",
+  problemStatement:
+    "Employer-based coverage often ties medical security to job status, which can distort compensation, reduce worker mobility, burden small businesses, and create coverage instability during layoffs, career changes, family transitions, or periods of illness. It also makes healthcare reform harder to reason about because wages, benefits, tax treatment, and labor-market incentives are braided into the insurance structure itself.",
+  proposedSolution:
+    "Build a staged transition toward employer-independent coverage: preserve continuity during the shift, give households clearer access to portable plans or public exchange pathways, reduce the administrative role of employers over time, and make the cost of healthcare more visible at the household and public-system level instead of hiding it inside employment status.",
+  mechanism: [
+    "Create portable coverage pathways that do not disappear when employment changes, including public exchange, pooled-plan, or baseline entitlement options.",
+    "Shift employer spending and tax treatment gradually so compensation, contribution, and transition burdens are visible rather than abruptly broken.",
+    "Protect continuity of care during job changes, layoffs, or family transitions so portability is real in practice and not just formal on paper.",
+    "Measure labor mobility, small-business burden, coverage churn, household security, and net fiscal effects rather than assuming detachment from employment is automatically better.",
+  ],
+  benefits: [
+    "Workers gain more freedom to change jobs, start firms, reduce hours, or leave unstable employment without immediate medical insecurity.",
+    "Small employers face less pressure to function as healthcare administrators or benefit gatekeepers.",
+    "The healthcare system becomes easier to evaluate because coverage rules are less entangled with labor-market status.",
+    "Public debate gains a clearer line between healthcare design and employment design rather than forcing both into one inherited structure.",
+  ],
+  risks: [
+    "Transition could be politically and operationally chaotic if wage adjustments, tax treatment, and household costs are not handled clearly.",
+    "Portability may improve security while still leaving underlying healthcare prices and provider power largely untouched.",
+    "Large employers and unionized workers may resist if they fear losing negotiated benefit quality or leverage.",
+    "A badly designed transition could create new administrative layers instead of actually simplifying the system.",
+  ],
+  assumptions: [
+    "The employment link is a real structural distortion rather than merely a familiar financing channel with manageable side effects.",
+    "Portable coverage can be designed clearly enough that households do not simply inherit a more confusing system at a different access point.",
+    "Compensation, tax policy, and transition support can be reworked without producing politically fatal disruption.",
+    "Detaching healthcare from employment creates meaningful gains in labor mobility, resilience, and public legibility even if it does not solve every cost problem.",
+  ],
+  stakeholders: [
+    "Workers and job seekers",
+    "Families with unstable coverage histories",
+    "Small businesses and employers",
+    "Large employers and unions",
+    "Insurers and exchange operators",
+    "Governments and tax systems",
+    "Providers and hospital systems",
+    "People with chronic conditions who face continuity risk",
+  ],
+  evidence: [
+    {
+      title: "Job lock and labor-mobility research",
+      status: "Strong evidence",
+      note: "Useful for testing whether workers stay in suboptimal jobs because they fear losing coverage or continuity of care.",
+    },
+    {
+      title: "Coverage churn data during layoffs and job transitions",
+      status: "Strong evidence",
+      note: "Important for seeing how often employment-linked coverage creates instability at moments of household vulnerability.",
+    },
+    {
+      title: "Small-business benefit burden and administrative complexity",
+      status: "Useful but uneven",
+      note: "Supports the employer-burden case, though business size and sector create large differences in experience.",
+    },
+    {
+      title: "Portable coverage systems reduce total healthcare distortion overall",
+      status: "Needs verification",
+      note: "This is a central hope of the model, but it depends heavily on transition design and what replaces the employer link in practice.",
+    },
+  ] satisfies EvidenceSummary[],
+  economicDelta: {
+    summary:
+      "Estimated Economic Delta: Potentially meaningful if labor mobility, entrepreneurship, household stability, and employer efficiency improve, but highly sensitive to transition design. Main costs include tax restructuring, benefit conversion, political resistance, continuity protections, and whatever public or exchange architecture replaces employer administration. Confidence remains moderate-to-low until a transition pathway is modeled more concretely.",
+    metrics: [
+      "Possible labor-market gain: positive if job lock falls materially",
+      "Employer burden reduction: potentially high for smaller firms",
+      "Transition cost: high because wages, benefits, and tax treatment all move together",
+      "Household clarity: positive only if the new coverage path is simpler in practice",
+      "Underlying healthcare-price effect: uncertain unless paired with deeper cost reform",
+    ],
+  },
+  strongestSupport:
+    "This topic card makes visible one of the healthcare room's cleanest structural questions: a system that ties medical security to employment may be distorting both healthcare and work at the same time.",
+  strongestObjection:
+    "Detaching coverage from employment can sound elegant while simply moving complexity elsewhere. If replacement pathways are confusing, underfunded, or politically unstable, households may lose familiar protections without gaining real security.",
+  whatWouldStrengthen: [
+    "A clearer phased transition showing what happens to wages, employer contributions, tax treatment, and coverage continuity year by year.",
+    "Better evidence on how much labor mobility, entrepreneurship, and household resilience actually improve when medical security becomes more portable.",
+    "Sharper comparison with public-option and single-payer pathways so portability is not treated as an isolated abstraction.",
+  ],
+  openQuestions: [
+    "What is the least disruptive path to reducing the employment link without throwing households into coverage churn?",
+    "How should employer contributions be converted or reallocated during transition?",
+    "Would portable coverage improve freedom while still preserving provider networks and continuity of care for high-need patients?",
+    "How much of the current system's cost and complexity is caused by the employment link versus larger pricing and institutional problems?",
+  ],
+  maturity: "Seed topic",
+  scorecard: [
+    { label: "Novelty", value: 71 },
+    { label: "Coherence", value: 84 },
+    { label: "Feasibility", value: 53 },
+    { label: "Evidence quality", value: 61 },
+    { label: "Economic delta clarity", value: 58 },
+    { label: "Public value", value: 86 },
+  ],
+  aiPanels: [
+    {
+      role: "Structurer",
+      confidence: "Moderate",
+      summary:
+        "The topic card sharpens the employer-burden frame into a specific structural question and keeps labor mobility, household security, and transition design in one object.",
+    },
+    {
+      role: "Steelman",
+      confidence: "Moderate",
+      summary:
+        "If healthcare becomes more portable, the system may reduce job lock, improve entrepreneurial freedom, and make public reasoning about healthcare financing much cleaner.",
+    },
+    {
+      role: "Critic",
+      confidence: "Moderate",
+      summary:
+        "The model risks sounding cleaner than it is because portability does not automatically fix prices, provider incentives, or the politics of replacement architecture.",
+    },
+    {
+      role: "Institutionalist",
+      confidence: "Low",
+      summary:
+        "The hardest part is not conceptual but transitional: employers, unions, insurers, and governments all need a credible reallocation path before the room can treat this as more than a structural critique.",
+    },
+  ],
+  debatePrompts: [
+    {
+      title: "Support",
+      description: "Add the strongest argument for why healthcare should become more portable and less dependent on employment status.",
+    },
+    {
+      title: "Objection",
+      description: "Surface the strongest reason detaching coverage from employment could worsen instability, complexity, or political viability.",
+    },
+    {
+      title: "Evidence",
+      description: "Add labor-mobility, coverage-churn, or employer-burden evidence that strengthens or weakens the card.",
+    },
+    {
+      title: "Correction",
+      description: "Identify conceptual, fiscal, or transition-design errors in the current card.",
+    },
+    {
+      title: "Nuance",
+      description: "Improve the topic by exposing a missing tradeoff between portability, continuity, cost control, and political feasibility.",
+    },
+    {
+      title: "Implementation concern",
+      description: "Identify how employers, unions, exchanges, or governments could make a transition fail even if the structural case is good.",
+    },
+    {
+      title: "Economic assumption challenge",
+      description: "Question whether labor-market and household gains are large enough to justify the transition cost and redesign overhead.",
+    },
+    {
+      title: "Alternate topic",
+      description: "Offer a better way to reduce job lock and employer burden without fully detaching healthcare security from work.",
+    },
+    {
+      title: "Stakeholder perspective",
+      description: "Add the view of a worker, small employer, union negotiator, insurer, or chronic-care patient affected by the employment link.",
+    },
+  ] satisfies DebatePrompt[],
+  revisionHistory: [
+    {
+      version: "v0.1",
+      date: "May 2026",
+      note: "Initial seed topic card created to turn the employment-link question into a full inspectable healthcare object rather than leaving it at the frame level.",
+    },
+    {
+      version: "v0.2",
+      date: "May 2026",
+      note: "Transition cost, wage conversion, and continuity-of-care concerns were raised to first-order visibility instead of being treated as downstream details.",
+    },
+    {
+      version: "v0.3",
+      date: "May 2026",
+      note: "The card was sharpened around portability, employer burden, and labor mobility so the structural choice is easier to compare against other healthcare directions.",
+    },
+  ],
+};
+
 export const governanceTopic001: TopicCardData = {
   id: "topic-001",
   title: "Subsidiarity-First Governance Model",
@@ -2477,7 +2667,7 @@ export const institutionalTrustTopic001: TopicCardData = {
 };
 
 export const roomTopicCards = {
-  healthcare: [topic001],
+  healthcare: [topic001, topic002],
   governance: [governanceTopic001],
   housing: [housingTopic001],
   "ai-labor": [aiTopic001, aiTopic002],
