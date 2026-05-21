@@ -47,6 +47,18 @@ export default async function TopicCardPage({
   const strongestLiveContributorObjection = liveContributions.find(
     (item) => item.lane === "objection",
   );
+  const incorporatedContributions = liveContributions.filter(
+    (item) => item.review?.changedSynthesis === true,
+  );
+  const incorporatedAssumptions = incorporatedContributions.filter(
+    (item) => item.review?.assignedToKind === "assumption",
+  );
+  const incorporatedEvidence = incorporatedContributions.filter(
+    (item) => item.review?.assignedToKind === "evidence",
+  );
+  const incorporatedQuestions = incorporatedContributions.filter(
+    (item) => item.review?.assignedToKind === "open-question",
+  );
   const needsAttentionContributions = liveContributions.filter(
     (item) => item.status === "pending" || item.status === "needs review",
   );
@@ -286,6 +298,102 @@ export default async function TopicCardPage({
                 </article>
               ))}
             </div>
+          </article>
+        </section>
+
+        <section className={styles.gridSection}>
+          <article className={styles.panel}>
+            <span className={styles.eyebrow}>Review-driven record</span>
+            <h2>Human review should change the visible object, not just the queue.</h2>
+            <p>
+              These are the reviewed outside contributions that have already been
+              marked as changing the card&apos;s public reasoning record.
+            </p>
+
+            <div className={styles.copyBlock}>
+              <h3>Assumptions now under live pressure</h3>
+              {incorporatedAssumptions.length ? (
+                <div className={styles.historyList}>
+                  {incorporatedAssumptions.slice(0, 3).map((item) => (
+                    <article className={styles.historyItem} key={item.id}>
+                      <div>
+                        <strong>{item.title}</strong>
+                        <span>{item.review?.assignedToLabel ?? "Assumption shift"}</span>
+                      </div>
+                      <p>
+                        {item.review?.decisionReason ??
+                          "This reviewed contribution was marked as changing an assumption on the card."}
+                      </p>
+                    </article>
+                  ))}
+                </div>
+              ) : (
+                <p>
+                  No reviewed contribution has yet changed the card&apos;s assumption
+                  layer. When that happens, it should surface here rather than
+                  disappearing into the review backend.
+                </p>
+              )}
+            </div>
+
+            <div className={styles.copyBlock}>
+              <h3>Evidence and question updates already carried forward</h3>
+              {incorporatedEvidence.length || incorporatedQuestions.length ? (
+                <div className={styles.historyList}>
+                  {[...incorporatedEvidence, ...incorporatedQuestions]
+                    .slice(0, 4)
+                    .map((item) => (
+                      <article className={styles.historyItem} key={item.id}>
+                        <div>
+                          <strong>{item.title}</strong>
+                          <span>{item.review?.assignedToLabel ?? "Reviewed update"}</span>
+                        </div>
+                        <p>
+                          {item.review?.decisionReason ??
+                            "This reviewed contribution was marked as changing the card's visible record."}
+                        </p>
+                      </article>
+                    ))}
+                </div>
+              ) : (
+                <p>
+                  No reviewed evidence or open-question contribution has yet been
+                  marked as changing the visible record.
+                </p>
+              )}
+            </div>
+          </article>
+
+          <article className={styles.panel}>
+            <span className={styles.eyebrow}>Open pressure</span>
+            <h2>The object should also show what is still unresolved.</h2>
+            <p>
+              A living idea is not only the record of what survived review. It is
+              also the record of what still needs a human decision before the
+              synthesis can move.
+            </p>
+
+            {needsAttentionContributions.length ? (
+              <div className={styles.historyList}>
+                {needsAttentionContributions.slice(0, 4).map((item) => (
+                  <article className={styles.historyItem} key={item.id}>
+                    <div>
+                      <strong>{item.title}</strong>
+                      <span>{item.status}</span>
+                    </div>
+                    <p>
+                      {item.aiIntake?.reviewerNote ??
+                        "Waiting on human placement, acceptance, or rejection."}
+                    </p>
+                  </article>
+                ))}
+              </div>
+            ) : (
+              <p>
+                Nothing is currently unresolved on this card. New submissions
+                should appear here until a maintainer review resolves them.
+              </p>
+            )}
           </article>
         </section>
 
