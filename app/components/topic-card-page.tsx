@@ -119,6 +119,17 @@ function getContributionAttachmentLabel(filter: ContributionAttachmentFilter) {
   }
 }
 
+function formatTimestamp(value: string) {
+  return new Intl.DateTimeFormat("en-US", {
+    dateStyle: "medium",
+    timeStyle: "short",
+  }).format(new Date(value));
+}
+
+function getTopicChatMessageHref(messageId: string) {
+  return `?chatMessage=${encodeURIComponent(messageId)}#topic-chat-message-${messageId}`;
+}
+
 export default async function TopicCardPage({
   roomSlug,
   card,
@@ -1225,9 +1236,41 @@ export default async function TopicCardPage({
                               : "This AI-assisted topic-chat suggestion has been resolved in the public record.",
                           )}
                         </p>
+                        <dl className={styles.aiProvenance}>
+                          <div>
+                            <dt>Source AI</dt>
+                            <dd>
+                              {item.draftSource?.providerLabel}
+                              {item.draftSource?.model
+                                ? ` (${item.draftSource.model})`
+                                : ""}
+                            </dd>
+                          </div>
+                          <div>
+                            <dt>Generated</dt>
+                            <dd>
+                              {item.draftSource?.generatedAt
+                                ? formatTimestamp(item.draftSource.generatedAt)
+                                : "Unknown"}
+                            </dd>
+                          </div>
+                          {item.draftSource?.messageId ? (
+                            <div>
+                              <dt>Source AI turn</dt>
+                              <dd>
+                                <Link
+                                  className={styles.sourceLink}
+                                  href={getTopicChatMessageHref(item.draftSource.messageId)}
+                                >
+                                  Open source AI turn
+                                </Link>
+                              </dd>
+                            </div>
+                          ) : null}
+                        </dl>
                         {item.draftSource?.question ? (
-                          <p className={styles.metaParagraph}>
-                            Prompt that generated the draft: {item.draftSource.question}
+                          <p className={styles.aiProvenanceNote}>
+                            Originating prompt: {item.draftSource.question}
                           </p>
                         ) : null}
                       </article>

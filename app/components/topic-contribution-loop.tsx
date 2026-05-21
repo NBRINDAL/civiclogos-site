@@ -1040,26 +1040,44 @@ export default function TopicContributionLoop({
 
                   <h3>{item.title}</h3>
                   {item.draftSource ? (
-                    <p className={styles.assistedDraftNote}>
-                      Assisted draft source: {item.draftSource.providerLabel} (
-                      {item.draftSource.model}) on{" "}
-                      {formatTimestamp(item.draftSource.generatedAt)}.
-                      {item.draftSource.messageId ? (
-                        <>
-                          {" "}
-                          <a
-                            className={styles.sourceLink}
-                            href={getSourceAiTurnHref(
-                              pathname,
-                              searchParams,
-                              item.draftSource.messageId,
-                            )}
-                          >
-                            Open source AI turn
-                          </a>
-                        </>
-                      ) : null}
-                    </p>
+                    <div className={styles.recordSection}>
+                      <span className={styles.sectionLabel}>AI provenance</span>
+                      <dl className={styles.recordGrid}>
+                        <div className={styles.recordRow}>
+                          <dt>Source AI</dt>
+                          <dd>
+                            {item.draftSource.providerLabel} ({item.draftSource.model})
+                          </dd>
+                        </div>
+                        <div className={styles.recordRow}>
+                          <dt>Generated</dt>
+                          <dd>{formatTimestamp(item.draftSource.generatedAt)}</dd>
+                        </div>
+                        {item.draftSource.messageId ? (
+                          <div className={styles.recordRow}>
+                            <dt>Source AI turn</dt>
+                            <dd>
+                              <a
+                                className={styles.sourceLink}
+                                href={getSourceAiTurnHref(
+                                  pathname,
+                                  searchParams,
+                                  item.draftSource.messageId,
+                                )}
+                              >
+                                Open source AI turn
+                              </a>
+                            </dd>
+                          </div>
+                        ) : null}
+                        {item.draftSource.question ? (
+                          <div className={styles.recordRow}>
+                            <dt>Originating prompt</dt>
+                            <dd>{item.draftSource.question}</dd>
+                          </div>
+                        ) : null}
+                      </dl>
+                    </div>
                   ) : null}
                   <p className={styles.contributionBody}>{item.body}</p>
 
