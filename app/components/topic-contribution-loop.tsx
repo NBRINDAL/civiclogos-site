@@ -66,6 +66,12 @@ type ContributionFilter =
   | "ai-assisted"
   | "document-backed";
 
+type ContributionOriginFilter =
+  | "all-origins"
+  | "human-submitted"
+  | "ai-origin"
+  | "seed-example";
+
 type ContributionAttachmentFilter =
   | "all-targets"
   | Exclude<ReviewTargetKind, "unclear">
@@ -126,6 +132,13 @@ const contributionAttachmentFilterLabels: Record<ContributionAttachmentFilter, s
   "none-yet": "None yet",
 };
 
+const contributionOriginFilterLabels: Record<ContributionOriginFilter, string> = {
+  "all-origins": "All origins",
+  "human-submitted": "Public submission",
+  "ai-origin": "AI-origin",
+  "seed-example": "Prototype example",
+};
+
 function normalizeContributionFilter(value: string | null | undefined): ContributionFilter {
   if (
     value === "all" ||
@@ -156,6 +169,21 @@ function normalizeContributionAttachmentFilter(
   }
 
   return "all-targets";
+}
+
+function normalizeContributionOriginFilter(
+  value: string | null | undefined,
+): ContributionOriginFilter {
+  if (
+    value === "all-origins" ||
+    value === "human-submitted" ||
+    value === "ai-origin" ||
+    value === "seed-example"
+  ) {
+    return value;
+  }
+
+  return "all-origins";
 }
 
 function formatTimestamp(value: string) {
@@ -204,6 +232,18 @@ function getVisibleAttachmentFilter(contribution: PublicContribution): Contribut
   }
 
   return normalizedKind;
+}
+
+function getContributionOrigin(contribution: PublicContribution): ContributionOriginFilter {
+  if (contribution.isSeedExample) {
+    return "seed-example";
+  }
+
+  if (contribution.draftSource) {
+    return "ai-origin";
+  }
+
+  return "human-submitted";
 }
 
 function getAiReaderLabel(provider: AiProvider) {
@@ -336,6 +376,10 @@ export default function TopicContributionLoop({
     () => normalizeContributionAttachmentFilter(searchParams.get("attachment")),
     [searchParams],
   );
+  const activeOriginFilter = useMemo(
+    () => normalizeContributionOriginFilter(searchParams.get("origin")),
+    [searchParams],
+  );
   const recordFilteredContributions = useMemo(
     () =>
       (() => {
@@ -357,6 +401,15 @@ export default function TopicContributionLoop({
       })(),
     [activeFilter, contributions],
   );
+  const attachmentFilteredContributions = useMemo(() => {
+    if (activeAttachmentFilter === "all-targets") {
+      return recordFilteredContributions;
+    }
+
+    return recordFilteredContributions.filter(
+      (item) => getVisibleAttachmentFilter(item) === activeAttachmentFilter,
+    );
+  }, [activeAttachmentFilter, recordFilteredContributions]);
   const attachmentFilterCounts = useMemo(
     () => ({
       "all-targets": recordFilteredContributions.length,
@@ -381,30 +434,55 @@ export default function TopicContributionLoop({
     }),
     [recordFilteredContributions],
   );
+  const originFilterCounts = useMemo(
+    () => ({
+      "all-origins": attachmentFilteredContributions.length,
+      "human-submitted": attachmentFilteredContributions.filter(
+        (item) => getContributionOrigin(item) === "human-submitted",
+      ).length,
+      "ai-origin": attachmentFilteredContributions.filter(
+        (item) => getContributionOrigin(item) === "ai-origin",
+      ).length,
+      "seed-example": attachmentFilteredContributions.filter(
+        (item) => getContributionOrigin(item) === "seed-example",
+      ).length,
+    }),
+    [attachmentFilteredContributions],
+  );
   const filteredContributions = useMemo(() => {
-
-    if (activeAttachmentFilter === "all-targets") {
-      return recordFilteredContributions;
+    if (activeOriginFilter === "all-origins") {
+      return attachmentFilteredContributions;
     }
 
-    return recordFilteredContributions.filter(
-      (item) => getVisibleAttachmentFilter(item) === activeAttachmentFilter,
+    return attachmentFilteredContributions.filter(
+      (item) => getContributionOrigin(item) === activeOriginFilter,
     );
-  }, [activeAttachmentFilter, recordFilteredContributions]);
+  }, [activeOriginFilter, attachmentFilteredContributions]);
   const hasActiveLedgerFilters =
-    activeFilter !== "all" || activeAttachmentFilter !== "all-targets";
+    activeFilter !== "all" ||
+    activeAttachmentFilter !== "all-targets" ||
+    activeOriginFilter !== "all-origins";
   const activeLedgerSliceLabel = useMemo(() => {
-    const labels = [
-      contributionFilterLabels[activeFilter],
-      contributionAttachmentFilterLabels[activeAttachmentFilter],
-    ];
+    const labels = [];
 
-    if (activeFilter === "all" && activeAttachmentFilter === "all-targets") {
+    if (activeFilter !== "all") {
+      labels.push(contributionFilterLabels[activeFilter]);
+    }
+
+    if (activeAttachmentFilter !== "all-targets") {
+      labels.push(contributionAttachmentFilterLabels[activeAttachmentFilter]);
+    }
+
+    if (activeOriginFilter !== "all-origins") {
+      labels.push(contributionOriginFilterLabels[activeOriginFilter]);
+    }
+
+    if (!labels.length) {
       return "All visible contributions";
     }
 
     return labels.join(" · ");
-  }, [activeAttachmentFilter, activeFilter]);
+  }, [activeAttachmentFilter, activeFilter, activeOriginFilter]);
 
   function handleFilterPick(filter: ContributionFilter) {
     const nextSearchParams = new URLSearchParams(searchParams.toString());
@@ -428,6 +506,7 @@ export default function TopicContributionLoop({
     const nextSearchParams = new URLSearchParams(searchParams.toString());
     nextSearchParams.delete("recordView");
     nextSearchParams.delete("attachment");
+    nextSearchParams.delete("origin");
 
     const nextQuery = nextSearchParams.toString();
     router.replace(
@@ -445,6 +524,24 @@ export default function TopicContributionLoop({
       nextSearchParams.delete("attachment");
     } else {
       nextSearchParams.set("attachment", filter);
+    }
+
+    const nextQuery = nextSearchParams.toString();
+    router.replace(
+      `${pathname}${nextQuery ? `?${nextQuery}` : ""}#contribution-record`,
+      {
+        scroll: false,
+      },
+    );
+  }
+
+  function handleOriginFilterPick(filter: ContributionOriginFilter) {
+    const nextSearchParams = new URLSearchParams(searchParams.toString());
+
+    if (filter === "all-origins") {
+      nextSearchParams.delete("origin");
+    } else {
+      nextSearchParams.set("origin", filter);
     }
 
     const nextQuery = nextSearchParams.toString();
@@ -980,9 +1077,30 @@ export default function TopicContributionLoop({
               ))}
             </div>
           </div>
+          <div className={styles.filterSection}>
+            <span className={styles.sectionLabel}>Contribution origin</span>
+            <div className={styles.filterList}>
+              {(Object.keys(contributionOriginFilterLabels) as ContributionOriginFilter[]).map(
+                (filter) => (
+                  <button
+                    className={
+                      activeOriginFilter === filter
+                        ? styles.activeFilterChip
+                        : styles.filterChip
+                    }
+                    key={filter}
+                    onClick={() => handleOriginFilterPick(filter)}
+                    type="button"
+                  >
+                    {contributionOriginFilterLabels[filter]} {originFilterCounts[filter]}
+                  </button>
+                ),
+              )}
+            </div>
+          </div>
           <p className={styles.filterNote}>
-            Showing {filteredContributions.length} of {recordFilteredContributions.length} visible
-            contribution{recordFilteredContributions.length === 1 ? "" : "s"} in the{" "}
+            Showing {filteredContributions.length} of {attachmentFilteredContributions.length} visible
+            contribution{attachmentFilteredContributions.length === 1 ? "" : "s"} in the{" "}
             <strong>{contributionFilterLabels[activeFilter]}</strong> record view.
           </p>
           <div className={styles.filterSummaryRow}>
@@ -1029,7 +1147,11 @@ export default function TopicContributionLoop({
                   <div className={styles.contributionMeta}>
                     {item.isSeedExample ? (
                       <span className={styles.seedLabel}>Prototype example</span>
-                    ) : null}
+                    ) : (
+                      <span className={styles.originLabel}>
+                        {contributionOriginFilterLabels[getContributionOrigin(item)]}
+                      </span>
+                    )}
                     <span className={styles.laneLabel}>
                       {getDebateLaneLabel(item.lane)}
                     </span>
@@ -1087,6 +1209,10 @@ export default function TopicContributionLoop({
                       <div className={styles.recordRow}>
                         <dt>Recorded</dt>
                         <dd>{formatTimestamp(item.createdAt)}</dd>
+                      </div>
+                      <div className={styles.recordRow}>
+                        <dt>Contribution origin</dt>
+                        <dd>{contributionOriginFilterLabels[getContributionOrigin(item)]}</dd>
                       </div>
                       <div className={styles.recordRow}>
                         <dt>Attachment target</dt>

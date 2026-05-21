@@ -386,6 +386,7 @@
 }
 
 .laneLabel,
+.originLabel,
 .statusPending,
 .statusAccepted,
 .statusNeedsReview,
@@ -407,6 +408,12 @@
   border: 1px solid rgba(18, 33, 39, 0.12);
   background: rgba(18, 33, 39, 0.05);
   color: var(--foreground);
+}
+
+.originLabel {
+  border: 1px solid rgba(var(--brand-blue-rgb), 0.2);
+  background: rgba(var(--brand-blue-rgb), 0.08);
+  color: var(--accent-dark);
 }
 
 .statusPending,
