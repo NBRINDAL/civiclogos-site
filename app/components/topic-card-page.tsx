@@ -50,6 +50,12 @@ function getPublicContributionOutcomeNote(
   return publicRecordNote ?? decisionReason ?? fallback;
 }
 
+function getRecordViewHref(
+  filter: "needs-review" | "changed-card" | "ai-assisted" | "document-backed",
+) {
+  return `?recordView=${encodeURIComponent(filter)}#contribution-record`;
+}
+
 export default async function TopicCardPage({
   roomSlug,
   card,
@@ -438,59 +444,69 @@ export default async function TopicCardPage({
             <div className={styles.copyBlock}>
               <h3>Uploaded documents in the visible evidence record</h3>
               {documentBackedContributions.length ? (
-                <div className={styles.historyList}>
-                  {documentBackedContributions.slice(0, 4).map((item) => {
-                    const document = item.evidenceDocument;
+                <>
+                  <div className={styles.historyList}>
+                    {documentBackedContributions.slice(0, 4).map((item) => {
+                      const document = item.evidenceDocument;
 
-                    if (!document) {
-                      return null;
-                    }
+                      if (!document) {
+                        return null;
+                      }
 
-                    const isPendingDocument =
-                      item.status === "pending" || item.status === "needs review";
+                      const isPendingDocument =
+                        item.status === "pending" || item.status === "needs review";
 
-                    return (
-                      <article className={styles.historyItem} key={`document-${item.id}`}>
-                        <div>
-                          <strong>
-                            <a
-                              className={styles.sourceLink}
-                              href={document.downloadHref}
-                              rel="noreferrer"
-                              target="_blank"
-                            >
-                              {document.fileName}
-                            </a>
-                          </strong>
-                          <span>
-                            {item.status} · {document.mimeType}
-                            {item.review?.assignedToLabel
-                              ? ` · ${item.review.assignedToLabel}`
-                              : ""}
-                          </span>
-                        </div>
-                        <p>
-                          Attached through <strong>{item.title}</strong>.
-                          {item.review?.publicRecordNote
-                            ? ` ${item.review.publicRecordNote}`
-                            : isPendingDocument
-                              ? " This document-backed contribution is still waiting on a full human review decision."
-                              : " This document is visible in the record even if its full synthesis impact is still being clarified."}
-                        </p>
-                        {document.extraction.note ? (
-                          <p className={styles.metaParagraph}>
-                            {document.extraction.note}
+                      return (
+                        <article className={styles.historyItem} key={`document-${item.id}`}>
+                          <div>
+                            <strong>
+                              <a
+                                className={styles.sourceLink}
+                                href={document.downloadHref}
+                                rel="noreferrer"
+                                target="_blank"
+                              >
+                                {document.fileName}
+                              </a>
+                            </strong>
+                            <span>
+                              {item.status} · {document.mimeType}
+                              {item.review?.assignedToLabel
+                                ? ` · ${item.review.assignedToLabel}`
+                                : ""}
+                            </span>
+                          </div>
+                          <p>
+                            Attached through <strong>{item.title}</strong>.
+                            {item.review?.publicRecordNote
+                              ? ` ${item.review.publicRecordNote}`
+                              : isPendingDocument
+                                ? " This document-backed contribution is still waiting on a full human review decision."
+                                : " This document is visible in the record even if its full synthesis impact is still being clarified."}
                           </p>
-                        ) : null}
-                        {document.extraction.excerpt ? (
-                          <p className={styles.metaParagraph}>
-                            {document.extraction.excerpt}
-                          </p>
-                        ) : null}
-                      </article>
-                    );
-                  })}
-                </div>
+                          {document.extraction.note ? (
+                            <p className={styles.metaParagraph}>
+                              {document.extraction.note}
+                            </p>
+                          ) : null}
+                          {document.extraction.excerpt ? (
+                            <p className={styles.metaParagraph}>
+                              {document.extraction.excerpt}
+                            </p>
+                          ) : null}
+                        </article>
+                      );
+                    })}
+                  </div>
+                  <div className={styles.roomActions}>
+                    <Link
+                      className={styles.roomActionSecondary}
+                      href={getRecordViewHref("document-backed")}
+                    >
+                      View document-backed contributions
+                    </Link>
+                  </div>
+                </>
               ) : (
                 <p>
                   No uploaded paper or document is visible on this topic card
@@ -823,21 +839,31 @@ export default async function TopicCardPage({
             </p>
 
             {changedCardContributions.length ? (
-              <div className={styles.copyBlock}>
-                <h3>Most recent contributor-driven card changes</h3>
-                <ul className={styles.bulletList}>
-                  {changedCardContributions.slice(0, 3).map((item) => (
-                    <li key={item.id}>
-                      <strong>{item.title}.</strong>{" "}
-                      {getPublicContributionOutcomeNote(
-                        item.review?.decisionReason,
-                        item.review?.publicRecordNote,
-                        "Marked as changing the card.",
-                      )}
-                    </li>
-                  ))}
-                </ul>
-              </div>
+              <>
+                <div className={styles.copyBlock}>
+                  <h3>Most recent contributor-driven card changes</h3>
+                  <ul className={styles.bulletList}>
+                    {changedCardContributions.slice(0, 3).map((item) => (
+                      <li key={item.id}>
+                        <strong>{item.title}.</strong>{" "}
+                        {getPublicContributionOutcomeNote(
+                          item.review?.decisionReason,
+                          item.review?.publicRecordNote,
+                          "Marked as changing the card.",
+                        )}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                <div className={styles.roomActions}>
+                  <Link
+                    className={styles.roomActionSecondary}
+                    href={getRecordViewHref("changed-card")}
+                  >
+                    View changed-card contributions
+                  </Link>
+                </div>
+              </>
             ) : (
               <div className={styles.copyBlock}>
                 <h3>No contributor-driven card change yet</h3>
@@ -852,15 +878,25 @@ export default async function TopicCardPage({
             <div className={styles.copyBlock}>
               <h3>Needs maintainer attention</h3>
               {needsAttentionContributions.length ? (
-                <ul className={styles.bulletList}>
-                  {needsAttentionContributions.slice(0, 3).map((item) => (
-                    <li key={item.id}>
-                      <strong>{item.title}.</strong>{" "}
-                      {item.aiIntake?.reviewerNote ??
-                        "Awaiting clearer human placement, acceptance, or rejection."}
-                    </li>
-                  ))}
-                </ul>
+                <>
+                  <ul className={styles.bulletList}>
+                    {needsAttentionContributions.slice(0, 3).map((item) => (
+                      <li key={item.id}>
+                        <strong>{item.title}.</strong>{" "}
+                        {item.aiIntake?.reviewerNote ??
+                          "Awaiting clearer human placement, acceptance, or rejection."}
+                      </li>
+                    ))}
+                  </ul>
+                  <div className={styles.roomActions}>
+                    <Link
+                      className={styles.roomActionSecondary}
+                      href={getRecordViewHref("needs-review")}
+                    >
+                      View needs-review contributions
+                    </Link>
+                  </div>
+                </>
               ) : (
                 <p>
                   Nothing is currently waiting on a maintainer decision for this
@@ -910,6 +946,14 @@ export default async function TopicCardPage({
                         ) : null}
                       </article>
                     ))}
+                  </div>
+                  <div className={styles.roomActions}>
+                    <Link
+                      className={styles.roomActionSecondary}
+                      href={getRecordViewHref("ai-assisted")}
+                    >
+                      View AI-assisted contributions
+                    </Link>
                   </div>
                 </>
               ) : (

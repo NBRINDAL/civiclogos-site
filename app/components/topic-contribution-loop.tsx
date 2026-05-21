@@ -106,6 +106,20 @@ const contributionFilterLabels: Record<ContributionFilter, string> = {
   "document-backed": "Document-backed",
 };
 
+function normalizeContributionFilter(value: string | null | undefined): ContributionFilter {
+  if (
+    value === "all" ||
+    value === "needs-review" ||
+    value === "changed-card" ||
+    value === "ai-assisted" ||
+    value === "document-backed"
+  ) {
+    return value;
+  }
+
+  return "all";
+}
+
 function formatTimestamp(value: string) {
   return new Intl.DateTimeFormat("en-US", {
     dateStyle: "medium",
@@ -203,7 +217,14 @@ export default function TopicContributionLoop({
   const [contributions, setContributions] = useState<PublicContribution[]>(initialContributions);
   const [storeMode, setStoreMode] = useState(initialStoreMode);
   const [storeNote, setStoreNote] = useState(initialStoreNote);
-  const [activeFilter, setActiveFilter] = useState<ContributionFilter>("all");
+  const [activeFilter, setActiveFilter] = useState<ContributionFilter>(() => {
+    if (typeof window === "undefined") {
+      return "all";
+    }
+
+    const searchParams = new URLSearchParams(window.location.search);
+    return normalizeContributionFilter(searchParams.get("recordView"));
+  });
   const [isPending, startTransition] = useTransition();
   const titleRef = useRef<HTMLInputElement>(null);
 
@@ -268,6 +289,18 @@ export default function TopicContributionLoop({
         return contributions;
     }
   }, [activeFilter, contributions]);
+
+  useEffect(() => {
+    const currentUrl = new URL(window.location.href);
+
+    if (activeFilter === "all") {
+      currentUrl.searchParams.delete("recordView");
+    } else {
+      currentUrl.searchParams.set("recordView", activeFilter);
+    }
+
+    window.history.replaceState({}, "", `${currentUrl.pathname}${currentUrl.search}${currentUrl.hash}`);
+  }, [activeFilter]);
 
   useEffect(() => {
     let isCancelled = false;
@@ -738,7 +771,7 @@ export default function TopicContributionLoop({
         </article>
       </section>
 
-      <section className={styles.panel}>
+      <section className={styles.panel} id="contribution-record">
         <div className={styles.sectionHeader}>
           <div>
             <span className={styles.eyebrow}>Recent contributions</span>
