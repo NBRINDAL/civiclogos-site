@@ -31,6 +31,7 @@ type RoomHeuristicMatch = {
   score: number;
   topicMatch: TopicHeuristicMatch;
   matchedKeywords: string[];
+  matchedTokenCount: number;
 };
 
 type RoutingSchemaResult = {
@@ -376,6 +377,7 @@ function buildHeuristicRouting(prompt: string): RoutingDraft {
     const roomSlug = room.slug as IssueRoomSlug;
     const roomData = issueRooms[roomSlug];
     const topicField = getInspectableTopics(roomData);
+    const keywordTokens = roomKeywordMap[roomSlug].flatMap((item) => normalizeToken(item));
     const topicMatch = topicField.reduce<TopicHeuristicMatch>(
       (best, item) => {
         const topicTokens = tokenize(
@@ -411,9 +413,16 @@ function buildHeuristicRouting(prompt: string): RoutingDraft {
     );
     const keywordHits = scoreKeywordHits(promptTokens, roomKeywordMap[roomSlug]);
     const overlap = scoreCorpusOverlap(promptTokens, roomTokens);
-    const matchedKeywords = promptTokens.filter((token) =>
-      roomKeywordMap[roomSlug].flatMap((item) => normalizeToken(item)).includes(token),
+    const matchedKeywords = promptTokens.filter((token) => keywordTokens.includes(token));
+    const topicTokens = topicField.flatMap((item) =>
+      tokenize([item.title, item.summary, item.metric, item.label].join(" ")),
     );
+    const matchedTokenCount = promptTokens.filter(
+      (token) =>
+        roomTokens.includes(token) ||
+        keywordTokens.includes(token) ||
+        topicTokens.includes(token),
+    ).length;
 
     return {
       roomSlug,
@@ -422,21 +431,30 @@ function buildHeuristicRouting(prompt: string): RoutingDraft {
       score: keywordHits * 3 + overlap * 2 + topicMatch.score,
       topicMatch,
       matchedKeywords,
+      matchedTokenCount,
     };
   });
 
   const [bestRoom, secondRoom] = [...roomMatches].sort((left, right) => right.score - left.score);
   const bestScore = bestRoom?.score ?? 0;
   const secondScore = secondRoom?.score ?? 0;
+  const promptCoverage =
+    bestRoom && promptTokens.length
+      ? bestRoom.matchedTokenCount / promptTokens.length
+      : 0;
   const useExistingRoom =
     Boolean(bestRoom) &&
     (
-      bestScore >= 10 ||
+      (bestScore >= 10 && bestRoom.matchedTokenCount >= 2) ||
       (bestScore >= 6 &&
-        (bestRoom.topicMatch.score >= 2 || bestRoom.matchedKeywords.length >= 2)) ||
+        (bestRoom.topicMatch.score >= 2 || bestRoom.matchedKeywords.length >= 2) &&
+        bestRoom.matchedTokenCount >= 2 &&
+        promptCoverage >= 0.22) ||
       (bestScore >= 4 &&
         bestScore >= secondScore + 2 &&
-        (bestRoom.topicMatch.score >= 4 || bestRoom.matchedKeywords.length >= 3))
+        (bestRoom.topicMatch.score >= 4 || bestRoom.matchedKeywords.length >= 3) &&
+        bestRoom.matchedTokenCount >= 2 &&
+        promptCoverage >= 0.28)
     );
 
   if (!bestRoom || !useExistingRoom) {
