@@ -12,12 +12,14 @@ import type {
 } from "./contribution-types";
 import { buildContributionAiIntake } from "./contribution-ai";
 import type { IssueRoomSlug } from "./civic-logos";
+import type { DebateLane } from "./reasoning-types";
 
 type ListContributionFilters = {
   roomSlug?: IssueRoomSlug;
   topicId?: string;
   limit?: number;
   status?: string;
+  lane?: DebateLane;
 };
 
 const seedDocument = seedStore as ContributionStoreDocument;
@@ -125,6 +127,10 @@ export async function listPublicContributions(filters: ListContributionFilters =
         return false;
       }
 
+      if (filters.lane && item.lane !== filters.lane) {
+        return false;
+      }
+
       return true;
     })
     .slice(0, filters.limit ?? 12)
@@ -144,6 +150,10 @@ export async function listAllContributions(filters: ListContributionFilters = {}
     }
 
     if (filters.status && item.status !== filters.status) {
+      return false;
+    }
+
+    if (filters.lane && item.lane !== filters.lane) {
       return false;
     }
 

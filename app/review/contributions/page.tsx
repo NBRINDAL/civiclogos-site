@@ -7,9 +7,11 @@ import {
 } from "@/app/lib/civic-logos";
 import { getContributionStoreMetadata, listAllContributions } from "@/app/lib/contribution-store";
 import {
+  debateLaneOptions,
   debateLaneLabels,
   reviewStatusOptions,
   reviewTargetKindOptions,
+  type DebateLane,
 } from "@/app/lib/reasoning-types";
 import { updateContributionReview } from "./actions";
 import styles from "./page.module.css";
@@ -20,6 +22,18 @@ function isRoomSlug(value: string): value is IssueRoomSlug {
   return value in issueRooms;
 }
 
+function isDebateLane(value: string): value is DebateLane {
+  return debateLaneOptions.includes(value as DebateLane);
+}
+
+const reviewStatusPriority: Record<string, number> = {
+  pending: 0,
+  "needs review": 1,
+  accepted: 2,
+  incorporated: 3,
+  rejected: 4,
+};
+
 export default async function ContributionReviewPage({
   searchParams,
 }: {
@@ -27,31 +41,48 @@ export default async function ContributionReviewPage({
     roomSlug?: string;
     topicId?: string;
     status?: string;
+    lane?: string;
   }>;
 }) {
   const params = await searchParams;
   const roomSlug = params.roomSlug?.trim() ?? "";
   const topicId = params.topicId?.trim() ?? "";
   const status = params.status?.trim() ?? "";
+  const lane = params.lane?.trim() ?? "";
   const scopedRoomSlug = isRoomSlug(roomSlug) ? roomSlug : undefined;
   const scopedTopicId =
     scopedRoomSlug && topicId && getRoomTopicCard(scopedRoomSlug, topicId)
       ? topicId
       : undefined;
+  const scopedLane = isDebateLane(lane) ? lane : undefined;
   const [contributions, metadata] = await Promise.all([
     listAllContributions({
       roomSlug: scopedRoomSlug,
       topicId: scopedTopicId,
       status: status || undefined,
+      lane: scopedLane,
     }),
     getContributionStoreMetadata(),
   ]);
+  const sortedContributions = [...contributions].sort((left, right) => {
+    const statusDelta =
+      (reviewStatusPriority[left.status] ?? 99) -
+      (reviewStatusPriority[right.status] ?? 99);
+
+    if (statusDelta !== 0) {
+      return statusDelta;
+    }
+
+    return (
+      new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime()
+    );
+  });
   const summary = {
-    pending: contributions.filter((item) => item.status === "pending").length,
-    needsReview: contributions.filter((item) => item.status === "needs review").length,
-    accepted: contributions.filter((item) => item.status === "accepted").length,
-    incorporated: contributions.filter((item) => item.status === "incorporated").length,
-    rejected: contributions.filter((item) => item.status === "rejected").length,
+    pending: sortedContributions.filter((item) => item.status === "pending").length,
+    needsReview: sortedContributions.filter((item) => item.status === "needs review").length,
+    accepted: sortedContributions.filter((item) => item.status === "accepted").length,
+    incorporated: sortedContributions.filter((item) => item.status === "incorporated").length,
+    rejected: sortedContributions.filter((item) => item.status === "rejected").length,
   };
   const scopeLabel =
     scopedRoomSlug && scopedTopicId
@@ -78,6 +109,54 @@ export default async function ContributionReviewPage({
         </section>
 
         <section className={styles.panel}>
+          <form className={styles.filterForm} method="get">
+            {scopedRoomSlug ? (
+              <input name="roomSlug" type="hidden" value={scopedRoomSlug} />
+            ) : null}
+            {scopedTopicId ? (
+              <input name="topicId" type="hidden" value={scopedTopicId} />
+            ) : null}
+            <label className={styles.filterField}>
+              <span>Status filter</span>
+              <select defaultValue={status} name="status">
+                <option value="">All statuses</option>
+                {reviewStatusOptions.map((item) => (
+                  <option key={item} value={item}>
+                    {item}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className={styles.filterField}>
+              <span>Lane filter</span>
+              <select defaultValue={scopedLane ?? ""} name="lane">
+                <option value="">All lanes</option>
+                {debateLaneOptions.map((item) => (
+                  <option key={item} value={item}>
+                    {debateLaneLabels[item]}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <button className={styles.filterButton} type="submit">
+              Apply filters
+            </button>
+            <Link
+              className={styles.filterReset}
+              href={
+                scopedRoomSlug && scopedTopicId
+                  ? `/review/contributions?roomSlug=${encodeURIComponent(
+                      scopedRoomSlug,
+                    )}&topicId=${encodeURIComponent(scopedTopicId)}`
+                  : scopedRoomSlug
+                    ? `/review/contributions?roomSlug=${encodeURIComponent(scopedRoomSlug)}`
+                    : "/review/contributions"
+              }
+            >
+              Clear filters
+            </Link>
+          </form>
+
           <div className={styles.summaryRow}>
             <div className={styles.summaryCard}>
               <span>Pending</span>
@@ -103,7 +182,7 @@ export default async function ContributionReviewPage({
 
           <h2 className={styles.sectionTitle}>Contribution queue</h2>
           <div className={styles.list}>
-            {contributions.map((item) => (
+            {sortedContributions.map((item) => (
               <article className={styles.contribution} key={item.id}>
                 <div className={styles.statusBar}>
                   <span className={styles.badge}>{item.status}</span>

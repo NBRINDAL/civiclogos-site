@@ -5,6 +5,7 @@ import type {
   ReviewContributionInput,
 } from "./contribution-types";
 import type { IssueRoomSlug } from "./civic-logos";
+import type { DebateLane } from "./reasoning-types";
 import {
   createDatabaseContributionStore,
   isDatabaseContributionStoreConfigured,
@@ -22,6 +23,7 @@ type ListContributionFilters = {
   topicId?: string;
   limit?: number;
   status?: string;
+  lane?: DebateLane;
 };
 
 export type ContributionStoreMetadata = {

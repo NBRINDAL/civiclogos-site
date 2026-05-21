@@ -47,6 +47,9 @@ export default async function TopicCardPage({
   const strongestLiveContributorObjection = liveContributions.find(
     (item) => item.lane === "objection",
   );
+  const needsAttentionContributions = liveContributions.filter(
+    (item) => item.status === "pending" || item.status === "needs review",
+  );
   const contributionStatusCounts = {
     pending: liveContributions.filter((item) => item.status === "pending").length,
     needsReview: liveContributions.filter((item) => item.status === "needs review").length,
@@ -411,6 +414,27 @@ export default async function TopicCardPage({
               </div>
             )}
 
+            <div className={styles.copyBlock}>
+              <h3>Needs maintainer attention</h3>
+              {needsAttentionContributions.length ? (
+                <ul className={styles.bulletList}>
+                  {needsAttentionContributions.slice(0, 3).map((item) => (
+                    <li key={item.id}>
+                      <strong>{item.title}.</strong>{" "}
+                      {item.aiIntake?.reviewerNote ??
+                        "Awaiting clearer human placement, acceptance, or rejection."}
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p>
+                  Nothing is currently waiting on a maintainer decision for this
+                  card. New submissions should appear here until a human review
+                  resolves them.
+                </p>
+              )}
+            </div>
+
             <div className={styles.roomActions}>
               <Link
                 className={styles.roomActionPrimary}
@@ -419,6 +443,26 @@ export default async function TopicCardPage({
                 )}&topicId=${encodeURIComponent(card.id)}`}
               >
                 Open review queue for this card
+              </Link>
+              <Link
+                className={styles.roomActionSecondary}
+                href={`/review/contributions?roomSlug=${encodeURIComponent(
+                  roomSlug,
+                )}&topicId=${encodeURIComponent(card.id)}&status=${encodeURIComponent(
+                  "pending",
+                )}`}
+              >
+                Pending only
+              </Link>
+              <Link
+                className={styles.roomActionSecondary}
+                href={`/review/contributions?roomSlug=${encodeURIComponent(
+                  roomSlug,
+                )}&topicId=${encodeURIComponent(card.id)}&status=${encodeURIComponent(
+                  "needs review",
+                )}`}
+              >
+                Needs review only
               </Link>
             </div>
           </article>

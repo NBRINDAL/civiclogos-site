@@ -10,12 +10,14 @@ import type {
 } from "./contribution-types";
 import { buildContributionAiIntake } from "./contribution-ai";
 import type { IssueRoomSlug } from "./civic-logos";
+import type { DebateLane } from "./reasoning-types";
 
 type ListContributionFilters = {
   roomSlug?: IssueRoomSlug;
   topicId?: string;
   limit?: number;
   status?: string;
+  lane?: DebateLane;
 };
 
 type ContributionRow = {
@@ -225,6 +227,7 @@ async function listRows(filters: ListContributionFilters = {}) {
     where (${filters.roomSlug ?? null}::text is null or room_slug = ${filters.roomSlug ?? null})
       and (${filters.topicId ?? null}::text is null or topic_id = ${filters.topicId ?? null})
       and (${filters.status ?? null}::text is null or status = ${filters.status ?? null})
+      and (${filters.lane ?? null}::text is null or lane = ${filters.lane ?? null})
     order by created_at desc
     limit ${limit}
   `;

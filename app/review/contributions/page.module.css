@@ -81,6 +81,57 @@
   gap: 18px;
 }
 
+.filterForm {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.filterField {
+  display: grid;
+  gap: 10px;
+}
+
+.filterField span {
+  color: var(--foreground);
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.filterField select {
+  width: 100%;
+  padding: 14px 16px;
+  border: 1px solid rgba(18, 33, 39, 0.14);
+  border-radius: 18px;
+  background: rgba(255, 252, 247, 0.94);
+  color: var(--muted);
+}
+
+.filterButton,
+.filterReset {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  padding: 0 18px;
+  border-radius: 999px;
+  font-weight: 700;
+}
+
+.filterButton {
+  align-self: end;
+  border: 1px solid transparent;
+  background: var(--foreground);
+  color: #fff7ee;
+}
+
+.filterReset {
+  align-self: end;
+  border: 1px solid rgba(18, 33, 39, 0.14);
+  background: rgba(255, 251, 245, 0.88);
+  color: var(--foreground);
+}
+
 .summaryRow {
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
@@ -242,6 +293,7 @@
 }
 
 @media (max-width: 960px) {
+  .filterForm,
   .statusBar,
   .providerList,
   .reviewFields,
