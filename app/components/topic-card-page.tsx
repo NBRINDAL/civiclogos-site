@@ -759,6 +759,12 @@ export default async function TopicCardPage({
                 <span className={styles.snapshotLabel}>Live record</span>
                 <strong>{liveContributions.length}</strong>
                 <p>Visible contributions currently attached to this topic card.</p>
+                <Link
+                  className={styles.roomActionSecondary}
+                  href="#contribution-record"
+                >
+                  Open contribution ledger
+                </Link>
               </article>
               <article className={styles.snapshotCard}>
                 <span className={styles.snapshotLabel}>Pending review</span>
@@ -766,11 +772,23 @@ export default async function TopicCardPage({
                   {contributionStatusCounts.pending + contributionStatusCounts.needsReview}
                 </strong>
                 <p>Items still waiting on a clear maintainer decision.</p>
+                <Link
+                  className={styles.roomActionSecondary}
+                  href={getRecordViewHref("needs-review")}
+                >
+                  Open needs-review slice
+                </Link>
               </article>
               <article className={styles.snapshotCard}>
                 <span className={styles.snapshotLabel}>Changed card</span>
                 <strong>{changedCardContributions.length}</strong>
                 <p>Contributions whose human review says they altered the public record.</p>
+                <Link
+                  className={styles.roomActionSecondary}
+                  href={getRecordViewHref("changed-card")}
+                >
+                  Open changed-card slice
+                </Link>
               </article>
               <article className={styles.snapshotCard}>
                 <span className={styles.snapshotLabel}>Uploaded evidence</span>
@@ -780,6 +798,12 @@ export default async function TopicCardPage({
                   with {pendingDocumentContributions.length} still awaiting a
                   full human decision.
                 </p>
+                <Link
+                  className={styles.roomActionSecondary}
+                  href={getRecordViewHref("document-backed")}
+                >
+                  Open document-backed slice
+                </Link>
               </article>
             </div>
 
