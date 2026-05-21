@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { healthcareIssueRoom, topic001 } from "../lib/civic-logos";
+import type { IssueRoomData, ProposalSummary } from "../lib/civic-logos";
 import styles from "./room-guide.module.css";
 
 type RoomAnswer = {
@@ -18,6 +18,13 @@ type ChatMessage =
   | { id: string; role: "user"; text: string }
   | { id: string; role: "assistant"; answer: RoomAnswer };
 
+type RoomGuideProps = {
+  room: IssueRoomData;
+  roomHref: string;
+  inspectableTopics: readonly ProposalSummary[];
+  sectionId?: string;
+};
+
 const starterPrompts = [
   "What is the current synthesis?",
   "Which topic is most developed right now?",
@@ -27,14 +34,24 @@ const starterPrompts = [
   "What would move the room forward?",
 ] as const;
 
-function buildDefaultAnswer(): RoomAnswer {
+function createId() {
+  return `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+}
+
+function buildDefaultAnswer(
+  room: IssueRoomData,
+  inspectableTopics: readonly ProposalSummary[],
+): RoomAnswer {
+  const firstLiveCard = inspectableTopics[0];
+
   return {
     title: "Ask the room, not a blank chatbot",
-    intro:
-      "This early guide reads from the current healthcare room. It can summarize where the room leans, surface objections, point to topic families, and show where the uncertainty still lives.",
+    intro: `This early guide reads from the current ${room.title.toLowerCase()} room. It can summarize where the room leans, surface objections, point to live topic cards, and show where the uncertainty still lives.`,
     bullets: [
       "Ask for the current synthesis if you want the room-level view.",
-      "Ask about the administrative simplification topic if you want the most developed seed card.",
+      firstLiveCard
+        ? `Ask which topic is most developed if you want the clearest live object in the room: ${firstLiveCard.title}.`
+        : "Ask which topic is most developed if you want the clearest live object in the room.",
       "Ask about objections, evidence, stakeholders, or what could move the synthesis.",
     ],
     sources: [
@@ -43,33 +60,44 @@ function buildDefaultAnswer(): RoomAnswer {
       "Evidence library",
       "Objection library",
     ],
-    ctaHref: "/healthcare/topic-001",
-    ctaLabel: "Open topic card",
+    ctaHref: firstLiveCard?.href,
+    ctaLabel: firstLiveCard ? "Open first live card" : undefined,
   };
 }
 
-function buildAnswer(question: string): RoomAnswer {
+function buildAnswer(
+  question: string,
+  room: IssueRoomData,
+  roomHref: string,
+  inspectableTopics: readonly ProposalSummary[],
+): RoomAnswer {
   const normalized = question.toLowerCase();
+  const firstLiveCard = inspectableTopics[0];
 
   if (
-    normalized.includes("proposal") ||
-    normalized.includes("001") ||
-    normalized.includes("triage") ||
-    normalized.includes("administrative")
+    normalized.includes("topic") ||
+    normalized.includes("card") ||
+    normalized.includes("developed") ||
+    normalized.includes("most detailed") ||
+    normalized.includes("most developed")
   ) {
-    return {
-      title: "Most developed topic in the room",
-      intro:
-        "Administrative simplification and AI-assisted triage is currently the clearest demonstration object because it narrows the healthcare debate to one testable reform path instead of trying to solve everything at once.",
-      bullets: [
-        topic001.currentRead,
-        topic001.strongestSupport,
-        `Main open question: ${topic001.openQuestions[0]}`,
-      ],
-      sources: ["Topic card current read", "Strongest support", "Open questions"],
-      ctaHref: "/healthcare/topic-001",
-      ctaLabel: "Open the full topic card",
-    };
+    if (firstLiveCard) {
+      return {
+        title: "Most developed live topic",
+        intro:
+          "The room currently has one topic card doing the most structural work. It is the easiest way to move from room framing into one inspectable line of reasoning.",
+        bullets: [
+          `${firstLiveCard.title}: ${firstLiveCard.summary}`,
+          `Current signal: ${firstLiveCard.metric}.`,
+          `The room now has ${inspectableTopics.length} live topic card${
+            inspectableTopics.length === 1 ? "" : "s"
+          } in view.`,
+        ],
+        sources: ["Inspectable card layer", "Topic field"],
+        ctaHref: firstLiveCard.href,
+        ctaLabel: "Open the live topic card",
+      };
+    }
   }
 
   if (
@@ -81,8 +109,8 @@ function buildAnswer(question: string): RoomAnswer {
     return {
       title: "What evidence is currently doing the most work",
       intro:
-        "Right now the room leans most heavily on administrative-cost evidence, coverage data, and edge-case access evidence like rural hospital resilience.",
-      bullets: healthcareIssueRoom.evidenceLibrary.map(
+        "Right now the room leans on a small set of evidence-bearing materials. They do not settle the room, but they are carrying the current structure.",
+      bullets: room.evidenceLibrary.map(
         (item) => `${item.title}: ${item.note}`,
       ),
       sources: ["Evidence library"],
@@ -99,9 +127,9 @@ function buildAnswer(question: string): RoomAnswer {
     return {
       title: "Strongest visible objections",
       intro:
-        "The room is already surfacing a few recurring pressure points that any serious healthcare synthesis will have to survive.",
-      bullets: healthcareIssueRoom.objectionLibrary,
-      sources: ["Objection library", "Topic card risk surface"],
+        "The room already has a few recurring pressure points that any serious synthesis will have to survive.",
+      bullets: room.objectionLibrary,
+      sources: ["Objection library", "Topic-card risk surfaces"],
     };
   }
 
@@ -115,11 +143,11 @@ function buildAnswer(question: string): RoomAnswer {
     return {
       title: "Who is inside the blast radius",
       intro:
-        "The room is trying to make clear that healthcare reform is not one tradeoff but a stack of overlapping burdens and benefits across different groups.",
+        "The room is trying to keep clear that this is not one tradeoff. Different groups bear different burdens, risks, and upside.",
       bullets: [
-        `Core stakeholders: ${healthcareIssueRoom.stakeholders.slice(0, 5).join(", ")}.`,
-        healthcareIssueRoom.perspectives[0].thesis,
-        healthcareIssueRoom.perspectives[1].thesis,
+        `Core stakeholders: ${room.stakeholders.slice(0, 5).join(", ")}.`,
+        room.perspectives[0]?.thesis ?? "The room keeps public-facing perspectives visible.",
+        room.perspectives[1]?.thesis ?? "More perspectives are seeded as the room deepens.",
       ],
       sources: ["Stakeholder set", "Public perspectives"],
     };
@@ -135,8 +163,8 @@ function buildAnswer(question: string): RoomAnswer {
     return {
       title: "What would move the room forward",
       intro:
-        "The next useful step is not more generic discussion. It is better evidence that changes the shape of the current uncertainty.",
-      bullets: healthcareIssueRoom.whatCouldMoveTheRoom,
+        "The next useful step is not more generic discussion. It is better evidence or clearer structuring that changes the shape of the current uncertainty.",
+      bullets: room.whatCouldMoveTheRoom,
       sources: ["What could move the room"],
     };
   }
@@ -150,26 +178,25 @@ function buildAnswer(question: string): RoomAnswer {
     return {
       title: "Where the uncertainty still lives",
       intro:
-        "The room is intentionally keeping the unresolved parts visible instead of smoothing them over with a clean narrative.",
-      bullets: healthcareIssueRoom.openQuestions,
+        "The room is intentionally keeping unresolved questions visible instead of smoothing them over with a clean narrative.",
+      bullets: room.openQuestions,
       sources: ["Open questions"],
     };
   }
 
   if (
-    normalized.includes("why healthcare") ||
+    normalized.includes("why this room") ||
     normalized.includes("why start") ||
     normalized.includes("why this issue") ||
-    normalized.includes("first issue")
+    normalized.includes("why ")
   ) {
     return {
-      title: "Why healthcare is the first issue room",
-      intro: healthcareIssueRoom.whyItMatters,
-      bullets: [
-        healthcareIssueRoom.narrative[0],
-        healthcareIssueRoom.workingConclusions[0],
-      ],
-      sources: ["Why healthcare first", "Room narrative"],
+      title: "Why this room exists",
+      intro: room.whyItMatters,
+      bullets: [room.narrative[0], room.workingConclusions[0]],
+      sources: ["Why this room matters", "Room narrative"],
+      ctaHref: roomHref,
+      ctaLabel: "Return to room overview",
     };
   }
 
@@ -181,8 +208,8 @@ function buildAnswer(question: string): RoomAnswer {
   ) {
     return {
       title: "Current synthesis",
-      intro: healthcareIssueRoom.currentSynthesis,
-      bullets: healthcareIssueRoom.workingConclusions,
+      intro: room.currentSynthesis,
+      bullets: room.workingConclusions,
       sources: ["Current living synthesis", "Where the room currently leans"],
     };
   }
@@ -192,28 +219,31 @@ function buildAnswer(question: string): RoomAnswer {
     intro:
       "The room can already answer in a few grounded ways: it can summarize the current synthesis, compare topic families, surface objections, and point to what evidence would actually change the room.",
     bullets: [
-      "Try asking about the current synthesis, administrative simplification, objections, evidence, stakeholders, or what could move the room.",
-      `The most developed topic card right now is ${topic001.title}.`,
-      `The room is still openly uncertain about transition cost, rural access, and long-run household impact.`,
+      "Try asking about the current synthesis, live topic cards, objections, evidence, stakeholders, or what could move the room.",
+      firstLiveCard
+        ? `The clearest live card right now is ${firstLiveCard.title}.`
+        : "The room is still mostly operating at the room-framing level.",
+      `The room is still openly uncertain about ${room.openQuestions[0]?.toLowerCase() ?? "several unresolved structural questions"}.`,
     ],
     sources: ["Current synthesis", "Topic field", "Open questions"],
-    ctaHref: "/healthcare/topic-001",
-    ctaLabel: "Open topic card",
+    ctaHref: firstLiveCard?.href ?? roomHref,
+    ctaLabel: firstLiveCard ? "Open first live card" : "Return to room",
   };
 }
 
-function createId() {
-  return `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-}
-
-export default function RoomGuide({ sectionId }: { sectionId?: string }) {
-  return <RoomGuideContent sectionId={sectionId} />;
-}
-
-export function RoomGuideContent({ sectionId }: { sectionId?: string }) {
+export default function RoomGuide({
+  room,
+  roomHref,
+  inspectableTopics,
+  sectionId,
+}: RoomGuideProps) {
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState<ChatMessage[]>([
-    { id: createId(), role: "assistant", answer: buildDefaultAnswer() },
+    {
+      id: createId(),
+      role: "assistant",
+      answer: buildDefaultAnswer(room, inspectableTopics),
+    },
   ]);
 
   function submitQuestion(question: string) {
@@ -226,7 +256,11 @@ export function RoomGuideContent({ sectionId }: { sectionId?: string }) {
     setMessages((current) => [
       ...current,
       { id: createId(), role: "user", text: trimmed },
-      { id: createId(), role: "assistant", answer: buildAnswer(trimmed) },
+      {
+        id: createId(),
+        role: "assistant",
+        answer: buildAnswer(trimmed, room, roomHref, inspectableTopics),
+      },
     ]);
     setInput("");
   }
@@ -241,9 +275,9 @@ export function RoomGuideContent({ sectionId }: { sectionId?: string }) {
           </h2>
           <p>
             This is an early guide grounded in the room&apos;s current public
-            structure. It can summarize the healthcare synthesis, point to the
-            most developed topic card, surface objections, and show what evidence
-            could actually change the room.
+            structure. It can summarize the synthesis, point to live topic
+            cards, surface objections, and show what evidence could actually
+            change the room.
           </p>
         </div>
       </div>
@@ -305,14 +339,14 @@ export function RoomGuideContent({ sectionId }: { sectionId?: string }) {
       >
         <label className={styles.composerLabel} htmlFor="room-question">
           Ask about the current synthesis, evidence, objections, stakeholders, or
-          the administrative simplification topic
+          the strongest live topic card
         </label>
         <div className={styles.composerRow}>
           <input
             className={styles.input}
             id="room-question"
             onChange={(event) => setInput(event.target.value)}
-            placeholder="What are the strongest objections right now?"
+            placeholder="What would move the room forward right now?"
             type="text"
             value={input}
           />

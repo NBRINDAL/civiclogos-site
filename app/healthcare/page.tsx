@@ -239,7 +239,12 @@ export default function HealthcareIssueRoomPage() {
           ) : null}
         </section>
 
-        <RoomGuide sectionId="ask-room" />
+        <RoomGuide
+          inspectableTopics={inspectableTopics}
+          room={healthcareIssueRoom}
+          roomHref="/healthcare"
+          sectionId="ask-room"
+        />
 
         <section className={styles.section} id="topic-field">
           <div className={styles.sectionHeading}>

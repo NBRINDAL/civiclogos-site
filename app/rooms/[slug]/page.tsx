@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import RoomGuide from "../../components/room-guide";
 import {
   getInspectableTopics,
   issueRooms,
@@ -160,6 +161,7 @@ export default async function IssueRoomPage({
           <a href="#start-here">Start here</a>
           <a href="#current-read">Current read</a>
           <a href="#major-frames">Frames</a>
+          <a href="#ask-room">Ask room</a>
           <a href="#topic-field">Topics</a>
           {inspectableTopics.length ? (
             <a href="#inspectable-cards">Inspect cards</a>
@@ -261,6 +263,13 @@ export default async function IssueRoomPage({
             ) : null}
           </section>
         ) : null}
+
+        <RoomGuide
+          inspectableTopics={inspectableTopics}
+          room={room}
+          roomHref={`/rooms/${roomSlug}`}
+          sectionId="ask-room"
+        />
 
         <section className={styles.section} id="topic-field">
           <div className={styles.sectionHeading}>
