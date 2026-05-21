@@ -199,6 +199,8 @@ export default async function ContributionReviewPage({
 
                 <form action={updateContributionReview} className={styles.reviewForm}>
                   <input name="id" type="hidden" value={item.id} />
+                  <input name="roomSlug" type="hidden" value={item.roomSlug} />
+                  <input name="topicId" type="hidden" value={item.topicId} />
                   <h3>Review decision</h3>
 
                   <div className={styles.reviewFields}>

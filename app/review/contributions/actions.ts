@@ -1,14 +1,21 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { getRoomHref, getRoomTopicHref, type IssueRoomSlug } from "@/app/lib/civic-logos";
 import { reviewContribution } from "@/app/lib/contribution-store";
 import {
   normalizeReviewStatus,
   normalizeReviewTargetKind,
 } from "@/app/lib/reasoning-types";
 
+function isRoomSlug(value: string): value is IssueRoomSlug {
+  return value === "healthcare" || value === "governance" || value === "housing" || value === "ai-labor" || value === "institutional-trust";
+}
+
 export async function updateContributionReview(formData: FormData) {
   const id = String(formData.get("id") ?? "").trim();
+  const roomSlugRaw = String(formData.get("roomSlug") ?? "").trim();
+  const topicId = String(formData.get("topicId") ?? "").trim();
   const status = normalizeReviewStatus(String(formData.get("status") ?? ""));
   const assignedToKind = normalizeReviewTargetKind(
     String(formData.get("assignedToKind") ?? ""),
@@ -39,4 +46,9 @@ export async function updateContributionReview(formData: FormData) {
   });
 
   revalidatePath("/review/contributions");
+
+  if (isRoomSlug(roomSlugRaw) && topicId) {
+    revalidatePath(getRoomHref(roomSlugRaw));
+    revalidatePath(getRoomTopicHref(roomSlugRaw, topicId));
+  }
 }

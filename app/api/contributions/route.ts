@@ -1,5 +1,12 @@
+import { revalidatePath } from "next/cache";
 import { NextRequest, NextResponse } from "next/server";
-import { getRoomTopicCard, issueRooms, type IssueRoomSlug } from "@/app/lib/civic-logos";
+import {
+  getRoomHref,
+  getRoomTopicCard,
+  getRoomTopicHref,
+  issueRooms,
+  type IssueRoomSlug,
+} from "@/app/lib/civic-logos";
 import { createContribution, getContributionStoreMetadata, listPublicContributions } from "@/app/lib/contribution-store";
 import { normalizeDebateLane } from "@/app/lib/reasoning-types";
 
@@ -42,6 +49,12 @@ function isValidHttpUrl(value: string) {
 
 function isRoomSlug(value: string): value is IssueRoomSlug {
   return value in issueRooms;
+}
+
+function revalidateTopicSurfaces(roomSlug: IssueRoomSlug, topicId: string) {
+  revalidatePath(getRoomHref(roomSlug));
+  revalidatePath(getRoomTopicHref(roomSlug, topicId));
+  revalidatePath("/review/contributions");
 }
 
 export async function GET(request: NextRequest) {
@@ -167,6 +180,8 @@ export async function POST(request: NextRequest) {
       expertise: expertise || undefined,
     },
   });
+
+  revalidateTopicSurfaces(roomSlug, topicId);
 
   return NextResponse.json({
     message:
