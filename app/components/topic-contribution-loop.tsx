@@ -1,5 +1,6 @@
 "use client";
 
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import type { DebatePrompt, IssueRoomSlug } from "../lib/civic-logos";
 import type {
@@ -209,6 +210,9 @@ export default function TopicContributionLoop({
   initialStoreMode,
   initialStoreNote,
 }: TopicContributionLoopProps) {
+  const pathname = usePathname();
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const [formState, setFormState] = useState<FormState>(initialFormState);
   const [submissionState, setSubmissionState] = useState<SubmissionState>({
     kind: "idle",
@@ -217,14 +221,6 @@ export default function TopicContributionLoop({
   const [contributions, setContributions] = useState<PublicContribution[]>(initialContributions);
   const [storeMode, setStoreMode] = useState(initialStoreMode);
   const [storeNote, setStoreNote] = useState(initialStoreNote);
-  const [activeFilter, setActiveFilter] = useState<ContributionFilter>(() => {
-    if (typeof window === "undefined") {
-      return "all";
-    }
-
-    const searchParams = new URLSearchParams(window.location.search);
-    return normalizeContributionFilter(searchParams.get("recordView"));
-  });
   const [isPending, startTransition] = useTransition();
   const titleRef = useRef<HTMLInputElement>(null);
 
@@ -272,6 +268,10 @@ export default function TopicContributionLoop({
     }),
     [contributions],
   );
+  const activeFilter = useMemo(
+    () => normalizeContributionFilter(searchParams.get("recordView")),
+    [searchParams],
+  );
   const filteredContributions = useMemo(() => {
     switch (activeFilter) {
       case "needs-review":
@@ -290,17 +290,23 @@ export default function TopicContributionLoop({
     }
   }, [activeFilter, contributions]);
 
-  useEffect(() => {
-    const currentUrl = new URL(window.location.href);
+  function handleFilterPick(filter: ContributionFilter) {
+    const nextSearchParams = new URLSearchParams(searchParams.toString());
 
-    if (activeFilter === "all") {
-      currentUrl.searchParams.delete("recordView");
+    if (filter === "all") {
+      nextSearchParams.delete("recordView");
     } else {
-      currentUrl.searchParams.set("recordView", activeFilter);
+      nextSearchParams.set("recordView", filter);
     }
 
-    window.history.replaceState({}, "", `${currentUrl.pathname}${currentUrl.search}${currentUrl.hash}`);
-  }, [activeFilter]);
+    const nextQuery = nextSearchParams.toString();
+    router.replace(
+      `${pathname}${nextQuery ? `?${nextQuery}` : ""}#contribution-record`,
+      {
+        scroll: false,
+      },
+    );
+  }
 
   useEffect(() => {
     let isCancelled = false;
@@ -788,7 +794,7 @@ export default function TopicContributionLoop({
                   activeFilter === filter ? styles.activeFilterChip : styles.filterChip
                 }
                 key={filter}
-                onClick={() => setActiveFilter(filter)}
+                onClick={() => handleFilterPick(filter)}
                 type="button"
               >
                 {contributionFilterLabels[filter]} {filterCounts[filter]}
