@@ -270,6 +270,11 @@ export default async function ContributionReviewPage({
                           Changed synthesis: {item.review.changedSynthesis ? "yes" : "no"}
                         </p>
                       ) : null}
+                      {item.review.publicRecordNote ? (
+                        <p>
+                          Public record note: {item.review.publicRecordNote}
+                        </p>
+                      ) : null}
                       {item.review.decisionReason ? <p>{item.review.decisionReason}</p> : null}
                       {item.review.reviewerNote ? <p>{item.review.reviewerNote}</p> : null}
                     </div>
@@ -338,11 +343,20 @@ export default async function ContributionReviewPage({
                   </div>
 
                   <label className={styles.field}>
+                    <span>Public record note</span>
+                    <textarea
+                      defaultValue={item.review?.publicRecordNote ?? ""}
+                      name="publicRecordNote"
+                      placeholder="Short public-facing note for the topic card describing what changed or why this contribution matters."
+                    />
+                  </label>
+
+                  <label className={styles.field}>
                     <span>Decision reason</span>
                     <textarea
                       defaultValue={item.review?.decisionReason ?? ""}
                       name="decisionReason"
-                      placeholder="Explain why this contribution was accepted, incorporated, held for review, or rejected."
+                      placeholder="Internal maintainer rationale for the review decision."
                     />
                   </label>
 

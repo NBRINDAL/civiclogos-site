@@ -24,6 +24,14 @@ type TopicCardPageProps = {
   currentTopicIndex: number;
 };
 
+function getPublicContributionOutcomeNote(
+  decisionReason?: string,
+  publicRecordNote?: string,
+  fallback = "This contribution was marked as changing the card.",
+) {
+  return publicRecordNote ?? decisionReason ?? fallback;
+}
+
 export default async function TopicCardPage({
   roomSlug,
   card,
@@ -321,8 +329,11 @@ export default async function TopicCardPage({
                         <span>{item.review?.assignedToLabel ?? "Assumption shift"}</span>
                       </div>
                       <p>
-                        {item.review?.decisionReason ??
-                          "This reviewed contribution was marked as changing an assumption on the card."}
+                        {getPublicContributionOutcomeNote(
+                          item.review?.decisionReason,
+                          item.review?.publicRecordNote,
+                          "This reviewed contribution was marked as changing an assumption on the card.",
+                        )}
                       </p>
                     </article>
                   ))}
@@ -349,8 +360,11 @@ export default async function TopicCardPage({
                           <span>{item.review?.assignedToLabel ?? "Reviewed update"}</span>
                         </div>
                         <p>
-                          {item.review?.decisionReason ??
-                            "This reviewed contribution was marked as changing the card's visible record."}
+                          {getPublicContributionOutcomeNote(
+                            item.review?.decisionReason,
+                            item.review?.publicRecordNote,
+                            "This reviewed contribution was marked as changing the card's visible record.",
+                          )}
                         </p>
                       </article>
                     ))}
@@ -506,7 +520,11 @@ export default async function TopicCardPage({
                   {changedCardContributions.slice(0, 3).map((item) => (
                     <li key={item.id}>
                       <strong>{item.title}.</strong>{" "}
-                      {item.review?.decisionReason ?? "Marked as changing the card."}
+                      {getPublicContributionOutcomeNote(
+                        item.review?.decisionReason,
+                        item.review?.publicRecordNote,
+                        "Marked as changing the card.",
+                      )}
                     </li>
                   ))}
                 </ul>
@@ -669,8 +687,10 @@ export default async function TopicCardPage({
                       </span>
                     </div>
                     <p>
-                      {item.review?.decisionReason ??
-                        "This contribution was marked as changing the card."}
+                      {getPublicContributionOutcomeNote(
+                        item.review?.decisionReason,
+                        item.review?.publicRecordNote,
+                      )}
                     </p>
                   </article>
                 ))}

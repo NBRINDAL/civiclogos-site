@@ -23,6 +23,9 @@ type ListContributionFilters = {
 };
 
 const seedDocument = seedStore as ContributionStoreDocument;
+const seedContributionById = new Map(
+  seedDocument.contributions.map((item) => [item.id, item]),
+);
 
 let storePathPromise: Promise<string> | null = null;
 let writeQueue = Promise.resolve();
@@ -66,7 +69,24 @@ async function resolveStorePath() {
 async function readStoreDocument() {
   const storePath = await resolveStorePath();
   const raw = await readFile(storePath, "utf8");
-  return JSON.parse(raw) as ContributionStoreDocument;
+  const document = JSON.parse(raw) as ContributionStoreDocument;
+
+  for (const contribution of document.contributions) {
+    const seedContribution = seedContributionById.get(contribution.id);
+    if (!seedContribution?.review?.publicRecordNote) {
+      continue;
+    }
+
+    contribution.review = {
+      ...seedContribution.review,
+      ...contribution.review,
+      publicRecordNote:
+        contribution.review?.publicRecordNote ??
+        seedContribution.review.publicRecordNote,
+    };
+  }
+
+  return document;
 }
 
 async function writeStoreDocument(document: ContributionStoreDocument) {
@@ -208,6 +228,7 @@ export async function reviewContribution(
       assignedToKind: input.assignedToKind,
       assignedToLabel: input.assignedToLabel,
       changedSynthesis: input.changedSynthesis ?? null,
+      publicRecordNote: input.publicRecordNote,
       decisionReason: input.decisionReason,
       reviewerNote: input.reviewerNote,
       reviewedAt: new Date().toISOString(),

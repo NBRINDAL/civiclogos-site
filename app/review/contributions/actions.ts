@@ -21,6 +21,7 @@ export async function updateContributionReview(formData: FormData) {
     String(formData.get("assignedToKind") ?? ""),
   );
   const assignedToLabel = String(formData.get("assignedToLabel") ?? "").trim();
+  const publicRecordNote = String(formData.get("publicRecordNote") ?? "").trim();
   const decisionReason = String(formData.get("decisionReason") ?? "").trim();
   const reviewerNote = String(formData.get("reviewerNote") ?? "").trim();
   const changedSynthesisRaw = String(formData.get("changedSynthesis") ?? "").trim();
@@ -41,6 +42,7 @@ export async function updateContributionReview(formData: FormData) {
     assignedToKind: assignedToKind ?? undefined,
     assignedToLabel: assignedToLabel || undefined,
     changedSynthesis,
+    publicRecordNote: publicRecordNote || undefined,
     decisionReason: decisionReason || undefined,
     reviewerNote: reviewerNote || undefined,
   });

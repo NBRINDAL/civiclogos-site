@@ -659,6 +659,13 @@ export default function TopicContributionLoop({
                         </div>
                       </dl>
 
+                      {item.review.publicRecordNote ? (
+                        <div className={styles.reviewCopy}>
+                          <span className={styles.sectionLabel}>Public record note</span>
+                          <p>{item.review.publicRecordNote}</p>
+                        </div>
+                      ) : null}
+
                       {item.review.decisionReason ? (
                         <div className={styles.reviewCopy}>
                           <span className={styles.sectionLabel}>Decision rationale</span>

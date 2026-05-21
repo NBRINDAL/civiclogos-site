@@ -176,6 +176,23 @@ async function ensureContributionTable() {
           `;
         }
       }
+
+      for (const contribution of seedDocument.contributions) {
+        const publicRecordNote = contribution.review?.publicRecordNote;
+
+        if (!publicRecordNote) {
+          continue;
+        }
+
+        await sql`
+          update civiclogos_contributions
+          set review = coalesce(review, '{}'::jsonb) || ${sql.json({
+            publicRecordNote,
+          })}
+          where id = ${contribution.id}
+            and coalesce(review ->> 'publicRecordNote', '') = ''
+        `;
+      }
     })();
   }
 
@@ -324,6 +341,7 @@ export function createDatabaseContributionStore(): DatabaseContributionStore {
         assignedToKind: input.assignedToKind,
         assignedToLabel: input.assignedToLabel,
         changedSynthesis: input.changedSynthesis ?? null,
+        publicRecordNote: input.publicRecordNote,
         decisionReason: input.decisionReason,
         reviewerNote: input.reviewerNote,
         reviewedAt,

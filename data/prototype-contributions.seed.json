@@ -56,6 +56,7 @@
         "assignedToKind": "objection",
         "assignedToLabel": "Administrative simplification may not resolve hospital or pharmaceutical price leverage",
         "changedSynthesis": false,
+        "publicRecordNote": "Kept visible as a standing objection: lowering paperwork alone may not materially reduce costs if hospital and pharmaceutical pricing power remains untouched.",
         "decisionReason": "Accepted into the objection lane so the card does not overclaim cost relief from administrative reform alone.",
         "reviewerNote": "Keep tied to the main thesis until the room has a stronger answer on hospitals, specialist networks, and pharmaceuticals.",
         "reviewedAt": "2026-05-21T07:18:00.000Z"
@@ -118,6 +119,7 @@
         "assignedToKind": "evidence",
         "assignedToLabel": "Administrative overhead appears materially significant",
         "changedSynthesis": true,
+        "publicRecordNote": "Added to the evidence layer as baseline support that administrative overhead is large enough to justify direct simplification pilots.",
         "decisionReason": "Incorporated into the evidence layer because it strengthens the case that administrative waste is large enough to test directly.",
         "reviewerNote": "Use this as a baseline reference, but continue separating insurer overhead from provider workflow waste.",
         "reviewedAt": "2026-05-21T07:24:00.000Z"
@@ -176,6 +178,7 @@
         "assignedToKind": "assumption",
         "assignedToLabel": "Transition costs stay below early administrative savings",
         "changedSynthesis": null,
+        "publicRecordNote": "Holding open the question of whether transition costs could absorb early savings before the new model stabilizes.",
         "decisionReason": "Marked needs review because the challenge is strong, but the room still needs a comparable implementation model before changing the current read.",
         "reviewerNote": "Hold this against the economic-delta section until the card has a firmer transition-cost model.",
         "reviewedAt": "2026-05-21T07:28:00.000Z"
@@ -234,6 +237,7 @@
         "assignedToKind": "assumption",
         "assignedToLabel": "AI triage is safe only if escalation thresholds and human override paths are explicit",
         "changedSynthesis": true,
+        "publicRecordNote": "Changed the card by turning the AI triage layer into a bounded workflow that requires hard human-escalation thresholds.",
         "decisionReason": "Incorporated because it converts the AI layer from generic efficiency language into a bounded safety condition.",
         "reviewerNote": "Future revisions should specify escalation triggers, audit paths, and manual override ownership.",
         "reviewedAt": "2026-05-21T07:34:00.000Z"
@@ -292,6 +296,7 @@
         "assignedToKind": "open-question",
         "assignedToLabel": "How should the room measure whether simplification returns time to clinical care rather than to new compliance demands?",
         "changedSynthesis": null,
+        "publicRecordNote": "Keeping open the provider-side question of whether paperwork reduction actually returns measurable time to clinical care teams.",
         "decisionReason": "Left pending because the perspective is strong, but the card still needs a clearer measurement standard before the contribution can alter the current read.",
         "reviewerNote": "Keep in the visible record and ask the next provider-facing contribution to translate this into measurable time-back criteria.",
         "reviewedAt": "2026-05-21T07:38:00.000Z"

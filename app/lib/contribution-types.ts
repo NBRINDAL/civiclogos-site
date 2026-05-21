@@ -48,6 +48,7 @@ export type ContributionReview = {
   assignedToKind?: ReviewTargetKind;
   assignedToLabel?: string;
   changedSynthesis?: boolean | null;
+  publicRecordNote?: string;
   decisionReason?: string;
   reviewerNote?: string;
   reviewedAt?: string;
@@ -81,6 +82,7 @@ export type ReviewContributionInput = {
   assignedToKind?: ReviewTargetKind;
   assignedToLabel?: string;
   changedSynthesis?: boolean | null;
+  publicRecordNote?: string;
   decisionReason?: string;
   reviewerNote?: string;
 };
