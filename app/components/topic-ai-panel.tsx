@@ -92,8 +92,26 @@ function getPromotionLabel(state: TopicChatPromotionState) {
   return "Exploratory only";
 }
 
-function getContributionRecordHref(contributionId: string) {
-  return `#contribution-${contributionId}`;
+function getContributionRecordHref(promotion: TopicChatPromotion) {
+  if (!promotion.contributionId) {
+    return "#contribution-record";
+  }
+
+  const searchParams = new URLSearchParams();
+
+  if (
+    promotion.contributionStatus === "pending" ||
+    promotion.contributionStatus === "needs review" ||
+    promotion.state === "sent-to-review"
+  ) {
+    searchParams.set("recordView", "needs-review");
+  } else if (promotion.state === "auto-recorded" && promotion.changedSynthesis === true) {
+    searchParams.set("recordView", "changed-card");
+  } else {
+    searchParams.set("recordView", "ai-assisted");
+  }
+
+  return `?${searchParams.toString()}#contribution-${promotion.contributionId}`;
 }
 
 function getReviewQueueHref(
@@ -395,9 +413,7 @@ export default function TopicAiPanel({
                       <div className={styles.promotionActions}>
                         <a
                           className={styles.promotionLink}
-                          href={getContributionRecordHref(
-                            item.message.promotion.contributionId,
-                          )}
+                          href={getContributionRecordHref(item.message.promotion)}
                         >
                           View public record entry
                         </a>

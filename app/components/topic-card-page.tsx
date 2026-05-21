@@ -56,6 +56,13 @@ function getRecordViewHref(
   return `?recordView=${encodeURIComponent(filter)}#contribution-record`;
 }
 
+function getContributionRecordHref(
+  filter: "needs-review" | "changed-card" | "ai-assisted" | "document-backed",
+  contributionId: string,
+) {
+  return `?recordView=${encodeURIComponent(filter)}#contribution-${contributionId}`;
+}
+
 export default async function TopicCardPage({
   roomSlug,
   card,
@@ -477,7 +484,16 @@ export default async function TopicCardPage({
                             </span>
                           </div>
                           <p>
-                            Attached through <strong>{item.title}</strong>.
+                            Attached through{" "}
+                            <strong>
+                              <Link
+                                className={styles.sourceLink}
+                                href={getContributionRecordHref("document-backed", item.id)}
+                              >
+                                {item.title}
+                              </Link>
+                            </strong>
+                            .
                             {item.review?.publicRecordNote
                               ? ` ${item.review.publicRecordNote}`
                               : isPendingDocument
@@ -845,7 +861,15 @@ export default async function TopicCardPage({
                   <ul className={styles.bulletList}>
                     {changedCardContributions.slice(0, 3).map((item) => (
                       <li key={item.id}>
-                        <strong>{item.title}.</strong>{" "}
+                        <strong>
+                          <Link
+                            className={styles.sourceLink}
+                            href={getContributionRecordHref("changed-card", item.id)}
+                          >
+                            {item.title}
+                          </Link>
+                          .
+                        </strong>{" "}
                         {getPublicContributionOutcomeNote(
                           item.review?.decisionReason,
                           item.review?.publicRecordNote,
@@ -882,7 +906,15 @@ export default async function TopicCardPage({
                   <ul className={styles.bulletList}>
                     {needsAttentionContributions.slice(0, 3).map((item) => (
                       <li key={item.id}>
-                        <strong>{item.title}.</strong>{" "}
+                        <strong>
+                          <Link
+                            className={styles.sourceLink}
+                            href={getContributionRecordHref("needs-review", item.id)}
+                          >
+                            {item.title}
+                          </Link>
+                          .
+                        </strong>{" "}
                         {item.aiIntake?.reviewerNote ??
                           "Awaiting clearer human placement, acceptance, or rejection."}
                       </li>
@@ -922,7 +954,14 @@ export default async function TopicCardPage({
                     {assistedRecordContributions.slice(0, 4).map((item) => (
                       <article className={styles.historyItem} key={`assisted-${item.id}`}>
                         <div>
-                          <strong>{item.title}</strong>
+                          <strong>
+                            <Link
+                              className={styles.sourceLink}
+                              href={getContributionRecordHref("ai-assisted", item.id)}
+                            >
+                              {item.title}
+                            </Link>
+                          </strong>
                           <span>
                             {item.status} · {item.draftSource?.providerLabel}
                             {item.draftSource?.model
