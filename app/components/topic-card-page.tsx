@@ -256,6 +256,8 @@ function getTopicChatMessageHref(
   messageId: string,
   contribution?: PublicContribution,
   sourceSummary?: string,
+  sourceScoreLabel?: string,
+  sourceScoreSliceLabel?: string,
 ) {
   const params = new URLSearchParams({
     chatMessage: messageId,
@@ -284,6 +286,14 @@ function getTopicChatMessageHref(
     params.set("sourceSummary", sourceSummary);
   }
 
+  if (sourceScoreLabel) {
+    params.set("sourceScoreLabel", sourceScoreLabel);
+  }
+
+  if (sourceScoreSliceLabel) {
+    params.set("sourceScoreSlice", sourceScoreSliceLabel);
+  }
+
   return `?${params.toString()}#topic-chat-message-${messageId}`;
 }
 
@@ -298,6 +308,8 @@ function getSingleSearchParamValue(value: string | string[] | undefined) {
 function getExactContributionLedgerHref(
   contribution: PublicContribution,
   sourceSummary?: string,
+  sourceScoreLabel?: string,
+  sourceScoreSliceLabel?: string,
 ) {
   return getContributionLedgerHref({
     recordView: getContributionRecordView(contribution),
@@ -307,6 +319,8 @@ function getExactContributionLedgerHref(
     lane: contribution.lane,
     contributionId: contribution.id,
     sourceSummary,
+    sourceScoreLabel,
+    sourceScoreSliceLabel,
   });
 }
 
@@ -327,6 +341,33 @@ function getScoreAnchorId(label: string) {
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "")}`;
+}
+
+function getScoreAwareSummaryHref(
+  href: string,
+  sourceScoreLabel?: string,
+  sourceScoreSliceLabel?: string,
+) {
+  if (!sourceScoreLabel && !sourceScoreSliceLabel) {
+    return href;
+  }
+
+  const [pathAndQuery, hashFragment] = href.split("#");
+  const [path, query = ""] = pathAndQuery.split("?");
+  const nextSearchParams = new URLSearchParams(query);
+
+  if (sourceScoreLabel) {
+    nextSearchParams.set("scoreLabel", sourceScoreLabel);
+  }
+
+  if (sourceScoreSliceLabel) {
+    nextSearchParams.set("scoreSlice", sourceScoreSliceLabel);
+  }
+
+  const nextQuery = nextSearchParams.toString();
+  const nextHash = hashFragment ? `#${hashFragment}` : "";
+
+  return `${path}${nextQuery ? `?${nextQuery}` : ""}${nextHash}`;
 }
 
 function matchesContributionSlice(
@@ -503,9 +544,13 @@ function ContributionRecordContext({
 function ContributionAiOriginContext({
   contribution,
   sourceSummaryLabel,
+  sourceScoreLabel,
+  sourceScoreSliceLabel,
 }: {
   contribution: PublicContribution;
   sourceSummaryLabel?: string;
+  sourceScoreLabel?: string;
+  sourceScoreSliceLabel?: string;
 }) {
   if (!contribution.draftSource) {
     return null;
@@ -525,6 +570,8 @@ function ContributionAiOriginContext({
               contribution.draftSource.messageId,
               contribution,
               sourceSummaryLabel,
+              sourceScoreLabel,
+              sourceScoreSliceLabel,
             )}
           >
             Open source AI turn
@@ -557,6 +604,8 @@ function addContributionSummaryReference(
 function SummaryFocusNotice({
   activeSummaryLabel,
   activeSummaryRecordId,
+  activeScoreLabel,
+  activeScoreSliceLabel,
   contribution,
   ledgerHref,
   summaryReferences,
@@ -564,6 +613,8 @@ function SummaryFocusNotice({
 }: {
   activeSummaryLabel?: string;
   activeSummaryRecordId?: string;
+  activeScoreLabel?: string;
+  activeScoreSliceLabel?: string;
   contribution: null | PublicContribution;
   ledgerHref: string;
   summaryReferences: ContributionSummaryReference[];
@@ -607,7 +658,12 @@ function SummaryFocusNotice({
         <strong>
           <Link
             className={styles.sourceLink}
-            href={getExactContributionLedgerHref(contribution, summaryLabel)}
+            href={getExactContributionLedgerHref(
+              contribution,
+              summaryLabel,
+              activeScoreLabel,
+              activeScoreSliceLabel,
+            )}
           >
             {contribution.title}
           </Link>
@@ -622,13 +678,20 @@ function SummaryFocusNotice({
       <ContributionAiOriginContext
         contribution={contribution}
         sourceSummaryLabel={summaryLabel}
+        sourceScoreLabel={activeScoreLabel}
+        sourceScoreSliceLabel={activeScoreSliceLabel}
       />
       <div className={styles.summaryReferenceBlock}>
         <span className={styles.metaParagraph}>Public record</span>
         <div className={styles.summaryReferenceList}>
           <Link
             className={styles.summaryReferenceLink}
-            href={getExactContributionLedgerHref(contribution, summaryLabel)}
+            href={getExactContributionLedgerHref(
+              contribution,
+              summaryLabel,
+              activeScoreLabel,
+              activeScoreSliceLabel,
+            )}
           >
             Open exact ledger entry
           </Link>
@@ -641,7 +704,11 @@ function SummaryFocusNotice({
             {alternateSummaryReferences.map((reference) => (
               <Link
                 className={styles.summaryReferenceLink}
-                href={reference.href}
+                href={getScoreAwareSummaryHref(
+                  reference.href,
+                  activeScoreLabel,
+                  activeScoreSliceLabel,
+                )}
                 key={`${reference.href}-${reference.label}`}
               >
                 {reference.label}
@@ -983,6 +1050,8 @@ export default async function TopicCardPage({
               <SummaryFocusNotice
                 activeSummaryLabel={activeSummaryLabel}
                 activeSummaryRecordId={activeSummaryRecordId}
+                activeScoreLabel={activeScoreLabel}
+                activeScoreSliceLabel={activeScoreSliceLabel}
                 contribution={summaryFocusedContribution}
                 ledgerHref={summaryFocusLedgerHref}
                 summaryReferences={summaryFocusedReferences}
@@ -996,6 +1065,8 @@ export default async function TopicCardPage({
               <SummaryFocusNotice
                 activeSummaryLabel={activeSummaryLabel}
                 activeSummaryRecordId={activeSummaryRecordId}
+                activeScoreLabel={activeScoreLabel}
+                activeScoreSliceLabel={activeScoreSliceLabel}
                 contribution={summaryFocusedContribution}
                 ledgerHref={summaryFocusLedgerHref}
                 summaryReferences={summaryFocusedReferences}
@@ -1129,6 +1200,8 @@ export default async function TopicCardPage({
               <SummaryFocusNotice
                 activeSummaryLabel={activeSummaryLabel}
                 activeSummaryRecordId={activeSummaryRecordId}
+                activeScoreLabel={activeScoreLabel}
+                activeScoreSliceLabel={activeScoreSliceLabel}
                 contribution={summaryFocusedContribution}
                 ledgerHref={summaryFocusLedgerHref}
                 summaryReferences={summaryFocusedReferences}
@@ -1156,6 +1229,8 @@ export default async function TopicCardPage({
               <SummaryFocusNotice
                 activeSummaryLabel={activeSummaryLabel}
                 activeSummaryRecordId={activeSummaryRecordId}
+                activeScoreLabel={activeScoreLabel}
+                activeScoreSliceLabel={activeScoreSliceLabel}
                 contribution={summaryFocusedContribution}
                 ledgerHref={summaryFocusLedgerHref}
                 summaryReferences={summaryFocusedReferences}
@@ -1224,6 +1299,8 @@ export default async function TopicCardPage({
             <SummaryFocusNotice
               activeSummaryLabel={activeSummaryLabel}
               activeSummaryRecordId={activeSummaryRecordId}
+              activeScoreLabel={activeScoreLabel}
+              activeScoreSliceLabel={activeScoreSliceLabel}
               contribution={summaryFocusedContribution}
               ledgerHref={summaryFocusLedgerHref}
               summaryReferences={summaryFocusedReferences}
@@ -1240,6 +1317,8 @@ export default async function TopicCardPage({
               <SummaryFocusNotice
                 activeSummaryLabel={activeSummaryLabel}
                 activeSummaryRecordId={activeSummaryRecordId}
+                activeScoreLabel={activeScoreLabel}
+                activeScoreSliceLabel={activeScoreSliceLabel}
                 contribution={summaryFocusedContribution}
                 ledgerHref={summaryFocusLedgerHref}
                 summaryReferences={summaryFocusedReferences}
@@ -1496,6 +1575,8 @@ export default async function TopicCardPage({
             <SummaryFocusNotice
               activeSummaryLabel={activeSummaryLabel}
               activeSummaryRecordId={activeSummaryRecordId}
+              activeScoreLabel={activeScoreLabel}
+              activeScoreSliceLabel={activeScoreSliceLabel}
               contribution={summaryFocusedContribution}
               ledgerHref={summaryFocusLedgerHref}
               summaryReferences={summaryFocusedReferences}
@@ -1511,6 +1592,8 @@ export default async function TopicCardPage({
               <SummaryFocusNotice
                 activeSummaryLabel={activeSummaryLabel}
                 activeSummaryRecordId={activeSummaryRecordId}
+                activeScoreLabel={activeScoreLabel}
+                activeScoreSliceLabel={activeScoreSliceLabel}
                 contribution={summaryFocusedContribution}
                 ledgerHref={summaryFocusLedgerHref}
                 summaryReferences={summaryFocusedReferences}
@@ -2003,6 +2086,8 @@ export default async function TopicCardPage({
                   <SummaryFocusNotice
                     activeSummaryLabel={activeSummaryLabel}
                     activeSummaryRecordId={activeSummaryRecordId}
+                    activeScoreLabel={activeScoreLabel}
+                    activeScoreSliceLabel={activeScoreSliceLabel}
                     contribution={summaryFocusedContribution}
                     ledgerHref={summaryFocusLedgerHref}
                     summaryReferences={summaryFocusedReferences}
@@ -2056,6 +2141,8 @@ export default async function TopicCardPage({
               <SummaryFocusNotice
                 activeSummaryLabel={activeSummaryLabel}
                 activeSummaryRecordId={activeSummaryRecordId}
+                activeScoreLabel={activeScoreLabel}
+                activeScoreSliceLabel={activeScoreSliceLabel}
                 contribution={summaryFocusedContribution}
                 ledgerHref={summaryFocusLedgerHref}
                 summaryReferences={summaryFocusedReferences}
@@ -2109,6 +2196,8 @@ export default async function TopicCardPage({
               <SummaryFocusNotice
                 activeSummaryLabel={activeSummaryLabel}
                 activeSummaryRecordId={activeSummaryRecordId}
+                activeScoreLabel={activeScoreLabel}
+                activeScoreSliceLabel={activeScoreSliceLabel}
                 contribution={summaryFocusedContribution}
                 ledgerHref={summaryFocusLedgerHref}
                 summaryReferences={summaryFocusedReferences}
@@ -2283,6 +2372,8 @@ export default async function TopicCardPage({
               <SummaryFocusNotice
                 activeSummaryLabel={activeSummaryLabel}
                 activeSummaryRecordId={activeSummaryRecordId}
+                activeScoreLabel={activeScoreLabel}
+                activeScoreSliceLabel={activeScoreSliceLabel}
                 contribution={summaryFocusedContribution}
                 ledgerHref={summaryFocusLedgerHref}
                 summaryReferences={summaryFocusedReferences}
@@ -2480,6 +2571,8 @@ export default async function TopicCardPage({
             <SummaryFocusNotice
               activeSummaryLabel={activeSummaryLabel}
               activeSummaryRecordId={activeSummaryRecordId}
+              activeScoreLabel={activeScoreLabel}
+              activeScoreSliceLabel={activeScoreSliceLabel}
               contribution={summaryFocusedContribution}
               ledgerHref={summaryFocusLedgerHref}
               summaryReferences={summaryFocusedReferences}

@@ -308,6 +308,8 @@ function getSourceContributionRecordHref(searchParams: {
   const sourceOrigin = searchParams.get("sourceOrigin")?.trim();
   const sourceLane = searchParams.get("sourceLane")?.trim();
   const sourceSummary = searchParams.get("sourceSummary")?.trim();
+  const sourceScoreLabel = searchParams.get("sourceScoreLabel")?.trim();
+  const sourceScoreSlice = searchParams.get("sourceScoreSlice")?.trim();
 
   if (sourceRecordView) {
     nextSearchParams.set("recordView", sourceRecordView);
@@ -331,6 +333,14 @@ function getSourceContributionRecordHref(searchParams: {
 
   if (sourceSummary) {
     nextSearchParams.set("sourceSummary", sourceSummary);
+  }
+
+  if (sourceScoreLabel) {
+    nextSearchParams.set("scoreLabel", sourceScoreLabel);
+  }
+
+  if (sourceScoreSlice) {
+    nextSearchParams.set("scoreSlice", sourceScoreSlice);
   }
 
   return `?${nextSearchParams.toString()}#contribution-${contributionId}`;
@@ -407,6 +417,8 @@ export default function TopicAiPanel({
   const sourceContributionTitle = searchParams.get("sourceContributionTitle")?.trim() ?? "";
   const sourceAttachmentSummary =
     searchParams.get("sourceAttachmentSummary")?.trim() ?? "";
+  const sourceScoreLabel = searchParams.get("sourceScoreLabel")?.trim() ?? "";
+  const sourceScoreSliceLabel = searchParams.get("sourceScoreSlice")?.trim() ?? "";
   const sourceContributionContext = useMemo(() => {
     const sourceReviewStatus = searchParams.get("sourceReviewStatus")?.trim();
     const sourceAttachment = searchParams.get("sourceAttachment")?.trim();
@@ -618,6 +630,16 @@ export default function TopicAiPanel({
                       Summary: {sourceSummaryLabel}
                     </span>
                   ) : null}
+                  {sourceScoreLabel ? (
+                    <span className={styles.sourceContextChip}>
+                      Score: {sourceScoreLabel}
+                    </span>
+                  ) : null}
+                  {sourceScoreSliceLabel ? (
+                    <span className={styles.sourceContextChip}>
+                      Score slice: {sourceScoreSliceLabel}
+                    </span>
+                  ) : null}
                   {sourceContributionContext.lane ? (
                     <span className={styles.sourceContextChip}>
                       Lane: {sourceContributionContext.lane}
@@ -679,6 +701,16 @@ export default function TopicAiPanel({
                   {sourceSummaryLabel ? (
                     <span className={styles.sourceContextChip}>
                       Summary: {sourceSummaryLabel}
+                    </span>
+                  ) : null}
+                  {sourceScoreLabel ? (
+                    <span className={styles.sourceContextChip}>
+                      Score: {sourceScoreLabel}
+                    </span>
+                  ) : null}
+                  {sourceScoreSliceLabel ? (
+                    <span className={styles.sourceContextChip}>
+                      Score slice: {sourceScoreSliceLabel}
                     </span>
                   ) : null}
                   {sourceContributionContext.lane ? (
