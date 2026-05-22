@@ -1,7 +1,7 @@
 "use client";
 
 import { useSearchParams } from "next/navigation";
-import { useMemo, useState, useTransition } from "react";
+import { useEffect, useMemo, useState, useTransition } from "react";
 import type { IssueRoomSlug } from "../lib/civic-logos";
 import {
   getDebateLaneLabel,
@@ -326,6 +326,40 @@ export default function TopicAiPanel({
   const transcript = useMemo(() => buildTranscript(messages), [messages]);
   const sessionImpact = useMemo(() => getSessionImpact(messages), [messages]);
   const highlightedMessageId = searchParams.get("chatMessage")?.trim() ?? "";
+  const hasHighlightedMessageRequest = highlightedMessageId.length > 0;
+  const highlightedTranscriptItem = useMemo(
+    () =>
+      highlightedMessageId
+        ? transcript.find((item) => item.message.id === highlightedMessageId) ?? null
+        : null,
+    [highlightedMessageId, transcript],
+  );
+
+  useEffect(() => {
+    if (!hasHighlightedMessageRequest) {
+      return;
+    }
+
+    const targetId = highlightedTranscriptItem
+      ? `topic-chat-message-${highlightedTranscriptItem.message.id}`
+      : "topic-ai-transcript";
+    let firstFrame = 0;
+    let secondFrame = 0;
+
+    firstFrame = window.requestAnimationFrame(() => {
+      secondFrame = window.requestAnimationFrame(() => {
+        document.getElementById(targetId)?.scrollIntoView({
+          block: "start",
+          behavior: "smooth",
+        });
+      });
+    });
+
+    return () => {
+      window.cancelAnimationFrame(firstFrame);
+      window.cancelAnimationFrame(secondFrame);
+    };
+  }, [hasHighlightedMessageRequest, highlightedTranscriptItem]);
 
   function submitQuestion(provider: ProviderRequest, nextQuestion?: string) {
     const prompt = nextQuestion ?? question;
@@ -443,6 +477,41 @@ export default function TopicAiPanel({
             <p className={styles.disclaimer}>{disclaimer}</p>
           </div>
         </div>
+
+        {highlightedTranscriptItem ? (
+          <div className={styles.sourceTurnNotice}>
+            <div>
+              <span className={styles.sessionImpactLabel}>Source turn focus</span>
+              <p>
+                Showing the exact{" "}
+                <strong>
+                  {highlightedTranscriptItem.message.role === "assistant"
+                    ? getProviderLabel(highlightedTranscriptItem.message.provider ?? "openai")
+                    : "visitor"}
+                </strong>{" "}
+                turn linked from the public record, captured on{" "}
+                {formatTimestamp(highlightedTranscriptItem.message.createdAt)}.
+              </p>
+            </div>
+            {highlightedTranscriptItem.sourceQuestion ? (
+              <p className={styles.sourceTurnMeta}>
+                Originating question: {highlightedTranscriptItem.sourceQuestion}
+              </p>
+            ) : null}
+          </div>
+        ) : hasHighlightedMessageRequest ? (
+          <div className={`${styles.sourceTurnNotice} ${styles.sourceTurnMissing}`}>
+            <div>
+              <span className={styles.sessionImpactLabel}>Source turn unavailable</span>
+              <p>
+                This public-record entry points back to an AI-origin turn, but the
+                exact stored GPT/Claude transcript entry is not available in this
+                topic transcript right now. Civic Logos still preserves the AI
+                provenance attached to the record entry itself.
+              </p>
+            </div>
+          </div>
+        ) : null}
 
         <div className={styles.sessionImpactGrid}>
           <article className={styles.sessionImpactCard}>
