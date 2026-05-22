@@ -476,6 +476,40 @@ function getSummaryFocusLedgerHref(
   return `${query ? `?${query}` : ""}#contribution-record`;
 }
 
+function getScoreFocusHref(
+  searchParams?: Record<string, string | string[] | undefined>,
+) {
+  const scoreLabel = getSingleSearchParamValue(searchParams?.scoreLabel)?.trim();
+
+  if (!scoreLabel) {
+    return "";
+  }
+
+  const params = new URLSearchParams();
+
+  for (const [key, value] of Object.entries(searchParams ?? {})) {
+    if (key === "summaryRecord" || key === "summaryLabel") {
+      continue;
+    }
+
+    if (Array.isArray(value)) {
+      for (const item of value) {
+        if (item) {
+          params.append(key, item);
+        }
+      }
+      continue;
+    }
+
+    if (value) {
+      params.set(key, value);
+    }
+  }
+
+  const query = params.toString();
+  return `${query ? `?${query}` : ""}#${getScoreAnchorId(scoreLabel)}`;
+}
+
 function ContributionRecordContext({
   contribution,
   recordView,
@@ -608,6 +642,7 @@ function SummaryFocusNotice({
   activeScoreSliceLabel,
   contribution,
   ledgerHref,
+  scoreReturnHref,
   summaryReferences,
   summaryLabel,
 }: {
@@ -617,6 +652,7 @@ function SummaryFocusNotice({
   activeScoreSliceLabel?: string;
   contribution: null | PublicContribution;
   ledgerHref: string;
+  scoreReturnHref?: string;
   summaryReferences: ContributionSummaryReference[];
   summaryLabel: string;
 }) {
@@ -637,6 +673,23 @@ function SummaryFocusNotice({
           contribution is not in the current visible topic ledger right now.
           The summary is still shown below.
         </p>
+        {activeScoreLabel ? (
+          <div className={styles.summaryReferenceBlock}>
+            <span className={styles.metaParagraph}>Score context</span>
+            <div className={styles.summaryReferenceList}>
+              {scoreReturnHref ? (
+                <Link className={styles.summaryReferenceLink} href={scoreReturnHref}>
+                  Return to {activeScoreLabel}
+                </Link>
+              ) : null}
+              {activeScoreSliceLabel ? (
+                <Link className={styles.summaryReferenceLink} href={ledgerHref}>
+                  Return to {activeScoreSliceLabel}
+                </Link>
+              ) : null}
+            </div>
+          </div>
+        ) : null}
         <div className={styles.roomActions}>
           <Link className={styles.roomActionSecondary} href={ledgerHref}>
             Open contribution ledger
@@ -681,6 +734,27 @@ function SummaryFocusNotice({
         sourceScoreLabel={activeScoreLabel}
         sourceScoreSliceLabel={activeScoreSliceLabel}
       />
+      {activeScoreLabel ? (
+        <div className={styles.summaryReferenceBlock}>
+          <span className={styles.metaParagraph}>Score context</span>
+          <p className={styles.metaParagraph}>
+            Returned from scorecard: <strong>{activeScoreLabel}</strong>
+            {activeScoreSliceLabel ? ` · ${activeScoreSliceLabel}` : ""}.
+          </p>
+          <div className={styles.summaryReferenceList}>
+            {scoreReturnHref ? (
+              <Link className={styles.summaryReferenceLink} href={scoreReturnHref}>
+                Return to {activeScoreLabel}
+              </Link>
+            ) : null}
+            {activeScoreSliceLabel ? (
+              <Link className={styles.summaryReferenceLink} href={ledgerHref}>
+                Return to {activeScoreSliceLabel}
+              </Link>
+            ) : null}
+          </div>
+        </div>
+      ) : null}
       <div className={styles.summaryReferenceBlock}>
         <span className={styles.metaParagraph}>Public record</span>
         <div className={styles.summaryReferenceList}>
@@ -984,6 +1058,7 @@ export default async function TopicCardPage({
   const activeScoreLabel = getSingleSearchParamValue(searchParams?.scoreLabel)?.trim();
   const activeScoreSliceLabel = getSingleSearchParamValue(searchParams?.scoreSlice)?.trim();
   const summaryFocusLedgerHref = getSummaryFocusLedgerHref(searchParams);
+  const scoreFocusHref = getScoreFocusHref(searchParams);
   const summaryFocusedContribution =
     activeSummaryRecordId
       ? liveContributions.find((item) => item.id === activeSummaryRecordId) ?? null
@@ -1054,6 +1129,7 @@ export default async function TopicCardPage({
                 activeScoreSliceLabel={activeScoreSliceLabel}
                 contribution={summaryFocusedContribution}
                 ledgerHref={summaryFocusLedgerHref}
+                scoreReturnHref={scoreFocusHref}
                 summaryReferences={summaryFocusedReferences}
                 summaryLabel="Assumption layer"
               />
@@ -1069,6 +1145,7 @@ export default async function TopicCardPage({
                 activeScoreSliceLabel={activeScoreSliceLabel}
                 contribution={summaryFocusedContribution}
                 ledgerHref={summaryFocusLedgerHref}
+                scoreReturnHref={scoreFocusHref}
                 summaryReferences={summaryFocusedReferences}
                 summaryLabel="Objection layer"
               />
@@ -1204,6 +1281,7 @@ export default async function TopicCardPage({
                 activeScoreSliceLabel={activeScoreSliceLabel}
                 contribution={summaryFocusedContribution}
                 ledgerHref={summaryFocusLedgerHref}
+                scoreReturnHref={scoreFocusHref}
                 summaryReferences={summaryFocusedReferences}
                 summaryLabel="Evidence layer"
               />
@@ -1233,6 +1311,7 @@ export default async function TopicCardPage({
                 activeScoreSliceLabel={activeScoreSliceLabel}
                 contribution={summaryFocusedContribution}
                 ledgerHref={summaryFocusLedgerHref}
+                scoreReturnHref={scoreFocusHref}
                 summaryReferences={summaryFocusedReferences}
                 summaryLabel="Visible evidence record"
               />
@@ -1303,6 +1382,7 @@ export default async function TopicCardPage({
               activeScoreSliceLabel={activeScoreSliceLabel}
               contribution={summaryFocusedContribution}
               ledgerHref={summaryFocusLedgerHref}
+              scoreReturnHref={scoreFocusHref}
               summaryReferences={summaryFocusedReferences}
               summaryLabel="Review-driven record"
             />
@@ -1321,6 +1401,7 @@ export default async function TopicCardPage({
                 activeScoreSliceLabel={activeScoreSliceLabel}
                 contribution={summaryFocusedContribution}
                 ledgerHref={summaryFocusLedgerHref}
+                scoreReturnHref={scoreFocusHref}
                 summaryReferences={summaryFocusedReferences}
                 summaryLabel="Open-question layer"
               />
@@ -1579,6 +1660,7 @@ export default async function TopicCardPage({
               activeScoreSliceLabel={activeScoreSliceLabel}
               contribution={summaryFocusedContribution}
               ledgerHref={summaryFocusLedgerHref}
+              scoreReturnHref={scoreFocusHref}
               summaryReferences={summaryFocusedReferences}
               summaryLabel="Open pressure"
             />
@@ -1596,6 +1678,7 @@ export default async function TopicCardPage({
                 activeScoreSliceLabel={activeScoreSliceLabel}
                 contribution={summaryFocusedContribution}
                 ledgerHref={summaryFocusLedgerHref}
+                scoreReturnHref={scoreFocusHref}
                 summaryReferences={summaryFocusedReferences}
                 summaryLabel="Pressure by lane"
               />
@@ -2090,6 +2173,7 @@ export default async function TopicCardPage({
                     activeScoreSliceLabel={activeScoreSliceLabel}
                     contribution={summaryFocusedContribution}
                     ledgerHref={summaryFocusLedgerHref}
+                    scoreReturnHref={scoreFocusHref}
                     summaryReferences={summaryFocusedReferences}
                     summaryLabel="Manual cycle - Changed card"
                   />
@@ -2145,6 +2229,7 @@ export default async function TopicCardPage({
                 activeScoreSliceLabel={activeScoreSliceLabel}
                 contribution={summaryFocusedContribution}
                 ledgerHref={summaryFocusLedgerHref}
+                scoreReturnHref={scoreFocusHref}
                 summaryReferences={summaryFocusedReferences}
                 summaryLabel="Manual cycle - Needs attention"
               />
@@ -2200,6 +2285,7 @@ export default async function TopicCardPage({
                 activeScoreSliceLabel={activeScoreSliceLabel}
                 contribution={summaryFocusedContribution}
                 ledgerHref={summaryFocusLedgerHref}
+                scoreReturnHref={scoreFocusHref}
                 summaryReferences={summaryFocusedReferences}
                 summaryLabel="AI-assisted record activity"
               />
@@ -2376,6 +2462,7 @@ export default async function TopicCardPage({
                 activeScoreSliceLabel={activeScoreSliceLabel}
                 contribution={summaryFocusedContribution}
                 ledgerHref={summaryFocusLedgerHref}
+                scoreReturnHref={scoreFocusHref}
                 summaryReferences={summaryFocusedReferences}
                 summaryLabel="Recent human review decisions"
               />
@@ -2575,6 +2662,7 @@ export default async function TopicCardPage({
               activeScoreSliceLabel={activeScoreSliceLabel}
               contribution={summaryFocusedContribution}
               ledgerHref={summaryFocusLedgerHref}
+              scoreReturnHref={scoreFocusHref}
               summaryReferences={summaryFocusedReferences}
               summaryLabel="Contribution-driven trace"
             />
