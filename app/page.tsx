@@ -102,6 +102,9 @@ export default async function Home({
     sourceExactRecordTitle?: string | string[];
     sourceExactRecordState?: string | string[];
     sourceExactRecordPilotGrounding?: string | string[];
+    sourceExactRecordPublicUptakeLabel?: string | string[];
+    sourceExactRecordPublicUptakeNote?: string | string[];
+    sourceExactRecordPublicUptakeHref?: string | string[];
     sourceExactRecordOrigin?: string | string[];
     sourceExactRecordSlice?: string | string[];
     sourceExactRecordTarget?: string | string[];
@@ -152,6 +155,15 @@ export default async function Home({
   );
   const sourceExactRecordPilotGrounding = getFirstValue(
     resolvedSearchParams.sourceExactRecordPilotGrounding,
+  );
+  const sourceExactRecordPublicUptakeLabel = getFirstValue(
+    resolvedSearchParams.sourceExactRecordPublicUptakeLabel,
+  );
+  const sourceExactRecordPublicUptakeNote = getFirstValue(
+    resolvedSearchParams.sourceExactRecordPublicUptakeNote,
+  );
+  const sourceExactRecordPublicUptakeHref = getFirstValue(
+    resolvedSearchParams.sourceExactRecordPublicUptakeHref,
   );
   const sourceExactRecordOrigin = getFirstValue(
     resolvedSearchParams.sourceExactRecordOrigin,
@@ -276,6 +288,15 @@ export default async function Home({
     sourceExactRecordPilotGrounding
       ? { label: "Pilot grounding", value: sourceExactRecordPilotGrounding }
       : null,
+    sourceExactRecordPublicUptakeLabel
+      ? {
+          label: "Public uptake status",
+          value: sourceExactRecordPublicUptakeLabel,
+        }
+      : null,
+    sourceExactRecordPublicUptakeNote
+      ? { label: "Public uptake note", value: sourceExactRecordPublicUptakeNote }
+      : null,
     sourceExactRecordSlice
       ? { label: "Record slice", value: sourceExactRecordSlice }
       : null,
@@ -316,6 +337,9 @@ export default async function Home({
       : null,
     sourceExactRecordSourceTurnHref
       ? { label: "Open source AI turn", href: sourceExactRecordSourceTurnHref }
+      : null,
+    sourceExactRecordPublicUptakeHref
+      ? { label: "Open public uptake record", href: sourceExactRecordPublicUptakeHref }
       : null,
     ...sourceExactRecordSummaryLinks.map((item) => ({
       label: `Open ${item.label}`,
@@ -380,6 +404,12 @@ export default async function Home({
             : null,
           sourceExactRecordPilotGrounding
             ? `- Pilot grounding: ${sourceExactRecordPilotGrounding}`
+            : null,
+          sourceExactRecordPublicUptakeLabel
+            ? `- Public uptake status: ${sourceExactRecordPublicUptakeLabel}`
+            : null,
+          sourceExactRecordPublicUptakeNote
+            ? `- Public uptake note: ${sourceExactRecordPublicUptakeNote}`
             : null,
           sourceExactRecordSlice
             ? `- Record slice: ${sourceExactRecordSlice}`

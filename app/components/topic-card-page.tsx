@@ -112,6 +112,9 @@ type PilotRecordContext = {
   contribution: PublicContribution;
   sliceLabel: string;
   pilotGrounding: string;
+  publicUptakeLabel: string;
+  publicUptakeNote: string;
+  publicUptakeContribution: PublicContribution | null;
 };
 
 type TopicCardIntakeContext = {
@@ -210,6 +213,20 @@ function getPilotInquiryRecordContext({
   changedCardContributions: PublicContribution[];
   liveContributions: PublicContribution[];
 }): PilotRecordContext | null {
+  const getOriginNounPhrase = (contribution: PublicContribution) => {
+    const origin = getContributionOrigin(contribution);
+
+    if (origin === "ai-origin") {
+      return "AI-origin contribution";
+    }
+
+    if (origin === "human-submitted") {
+      return "public submission";
+    }
+
+    return "prototype example";
+  };
+
   const getPilotCandidateStrength = (contribution: PublicContribution) => {
     let score = 0;
 
@@ -265,9 +282,51 @@ function getPilotInquiryRecordContext({
     sliceLabel: string,
   ): PilotRecordContext => {
     const origin = getContributionOrigin(contribution);
+    const visibleNonSeedContributions = sortPilotCandidates(
+      liveContributions.filter(
+        (item) => getContributionOrigin(item) !== "seed-example",
+      ),
+    );
+    const reviewedNonSeedContributions = visibleNonSeedContributions.filter((item) =>
+      Boolean(item.review?.reviewedAt),
+    );
+    const strongestVisibleNonSeedContribution =
+      visibleNonSeedContributions[0] ?? null;
+    const strongestReviewedNonSeedContribution =
+      reviewedNonSeedContributions[0] ?? null;
     const hasReviewedNonSeedRecord = liveContributions.some(
       (item) => getContributionOrigin(item) !== "seed-example" && item.review?.reviewedAt,
     );
+    let publicUptakeLabel = "No public uptake yet";
+    let publicUptakeNote =
+      "The visible healthcare record is still entirely prototype-led; no public submission or AI-origin contribution is visible on this card yet.";
+    let publicUptakeContribution: PublicContribution | null = null;
+
+    if (origin !== "seed-example" && contribution.review?.reviewedAt) {
+      publicUptakeLabel = "Reviewed public uptake is visible";
+      publicUptakeNote = `This pilot-facing record is already being grounded by a reviewed ${getOriginNounPhrase(
+        contribution,
+      )}.`;
+      publicUptakeContribution = contribution;
+    } else if (origin !== "seed-example") {
+      publicUptakeLabel = "Visible public uptake is still awaiting review";
+      publicUptakeNote = `This pilot-facing record already comes from a visible ${getOriginNounPhrase(
+        contribution,
+      )}, but it still needs human review before it can count as reviewed public uptake.`;
+      publicUptakeContribution = contribution;
+    } else if (strongestReviewedNonSeedContribution) {
+      publicUptakeLabel = "Reviewed public uptake is visible elsewhere on this card";
+      publicUptakeNote = `A reviewed ${getOriginNounPhrase(
+        strongestReviewedNonSeedContribution,
+      )} is already visible on this card, but the current pilot-facing record is still prototype-led.`;
+      publicUptakeContribution = strongestReviewedNonSeedContribution;
+    } else if (strongestVisibleNonSeedContribution) {
+      publicUptakeLabel = "Visible public uptake is still awaiting review";
+      publicUptakeNote = `A ${getOriginNounPhrase(
+        strongestVisibleNonSeedContribution,
+      )} is already visible on this card, but no non-seed record has yet been reviewed into a stronger live object.`;
+      publicUptakeContribution = strongestVisibleNonSeedContribution;
+    }
 
     if (origin === "seed-example") {
       return {
@@ -276,6 +335,9 @@ function getPilotInquiryRecordContext({
         pilotGrounding: hasReviewedNonSeedRecord
           ? "A public-submission or AI-origin record is now visible, but this prototype example is still the strongest reviewed live object currently carrying the pilot handoff."
           : "The strongest visible pilot-facing record is still a prototype example because no public submission or AI-origin contribution has yet been reviewed into a stronger live object.",
+        publicUptakeLabel,
+        publicUptakeNote,
+        publicUptakeContribution,
       };
     }
 
@@ -285,6 +347,9 @@ function getPilotInquiryRecordContext({
         sliceLabel,
         pilotGrounding:
           "Selected as the strongest reviewed public-facing record currently visible on this card.",
+        publicUptakeLabel,
+        publicUptakeNote,
+        publicUptakeContribution,
       };
     }
 
@@ -293,6 +358,9 @@ function getPilotInquiryRecordContext({
       sliceLabel,
       pilotGrounding:
         "No reviewed public-facing record has overtaken this yet, so the pilot handoff is carrying the strongest visible live pressure still awaiting human review.",
+      publicUptakeLabel,
+      publicUptakeNote,
+      publicUptakeContribution,
     };
   };
 
@@ -1981,6 +2049,14 @@ export default async function TopicCardPage({
         institutionalPilotRecordContext.pilotGrounding,
       );
       params.set(
+        "sourceExactRecordPublicUptakeLabel",
+        institutionalPilotRecordContext.publicUptakeLabel,
+      );
+      params.set(
+        "sourceExactRecordPublicUptakeNote",
+        institutionalPilotRecordContext.publicUptakeNote,
+      );
+      params.set(
         "sourceExactRecordOrigin",
         getContributionOriginLabel(
           getContributionOrigin(institutionalPilotRecordContext.contribution),
@@ -2011,6 +2087,19 @@ export default async function TopicCardPage({
         params.set(
           "sourceExactRecordRead",
           institutionalPilotRecordInterpretation.label,
+        );
+      }
+
+      if (institutionalPilotRecordContext.publicUptakeContribution) {
+        params.set(
+          "sourceExactRecordPublicUptakeHref",
+          `${getRoomTopicHref(roomSlug, card.id)}${getExactContributionLedgerHref(
+            institutionalPilotRecordContext.publicUptakeContribution,
+            undefined,
+            activeScoreItem?.label,
+            institutionalPilotRecordContext.sliceLabel,
+            activeIntakeContextId,
+          )}`,
         );
       }
 
@@ -3306,6 +3395,34 @@ export default async function TopicCardPage({
                       Pilot grounding:{" "}
                       {institutionalPilotRecordContext.pilotGrounding}
                     </p>
+                    <div className={styles.scoreTransparency}>
+                      <span className={styles.scoreTransparencyLabel}>
+                        Public uptake status
+                      </span>
+                      <p>
+                        <strong>
+                          {institutionalPilotRecordContext.publicUptakeLabel}
+                        </strong>
+                        .{" "}
+                        {institutionalPilotRecordContext.publicUptakeNote}
+                      </p>
+                      {institutionalPilotRecordContext.publicUptakeContribution ? (
+                        <div className={styles.scoreSliceList}>
+                          <Link
+                            className={styles.scoreSliceLink}
+                            href={getExactContributionLedgerHref(
+                              institutionalPilotRecordContext.publicUptakeContribution,
+                              undefined,
+                              activeScoreItem?.label,
+                              institutionalPilotRecordContext.sliceLabel,
+                              activeIntakeContextId,
+                            )}
+                          >
+                            Open public uptake record
+                          </Link>
+                        </div>
+                      ) : null}
+                    </div>
                     {institutionalPilotRecordInterpretation ? (
                       <p className={styles.metaParagraph}>
                         {institutionalPilotRecordInterpretation.label}:{" "}
