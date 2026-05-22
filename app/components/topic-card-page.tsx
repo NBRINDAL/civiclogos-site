@@ -1394,7 +1394,7 @@ export default async function TopicCardPage({
                               attachment: getContributionAttachmentFilter(item),
                             })}
                           >
-                            {getContributionAttachmentLabel(getContributionAttachmentFilter(item))}
+                            {getContributionAttachmentSummary(item)}
                           </Link>
                           .
                         </p>
@@ -1469,7 +1469,7 @@ export default async function TopicCardPage({
                               attachment: getContributionAttachmentFilter(item),
                             })}
                           >
-                            {getContributionAttachmentLabel(getContributionAttachmentFilter(item))}
+                            {getContributionAttachmentSummary(item)}
                           </Link>
                           .
                         </p>
@@ -1577,7 +1577,7 @@ export default async function TopicCardPage({
                             {item.draftSource?.model
                               ? ` (${item.draftSource.model})`
                               : ""}{" "}
-                            · {getContributionAttachmentLabel(getContributionAttachmentFilter(item))}
+                            · {getContributionAttachmentSummary(item)}
                           </span>
                         </div>
                         <p>
@@ -1621,7 +1621,7 @@ export default async function TopicCardPage({
                               attachment: getContributionAttachmentFilter(item),
                             })}
                           >
-                            {getContributionAttachmentLabel(getContributionAttachmentFilter(item))}
+                            {getContributionAttachmentSummary(item)}
                           </Link>
                           .
                         </p>
@@ -1754,7 +1754,7 @@ export default async function TopicCardPage({
                             attachment: getContributionAttachmentFilter(item),
                           })}
                         >
-                          {getContributionAttachmentLabel(getContributionAttachmentFilter(item))}
+                          {getContributionAttachmentSummary(item)}
                         </Link>
                         .{" "}
                         <Link
