@@ -406,12 +406,14 @@ function SummaryFocusNotice({
   activeSummaryRecordId,
   contribution,
   ledgerHref,
+  summaryReferences,
   summaryLabel,
 }: {
   activeSummaryLabel?: string;
   activeSummaryRecordId?: string;
   contribution: null | PublicContribution;
   ledgerHref: string;
+  summaryReferences: ContributionSummaryReference[];
   summaryLabel: string;
 }) {
   if (activeSummaryLabel !== summaryLabel) {
@@ -440,6 +442,10 @@ function SummaryFocusNotice({
     );
   }
 
+  const alternateSummaryReferences = summaryReferences.filter(
+    (reference) => reference.label !== summaryLabel,
+  );
+
   return (
     <div className={styles.summaryFocusNotice}>
       <span className={styles.panelLabel}>Focused by exact record</span>
@@ -458,6 +464,22 @@ function SummaryFocusNotice({
         showReviewStatus
       />
       <ContributionAiOriginContext contribution={contribution} />
+      {alternateSummaryReferences.length ? (
+        <div className={styles.summaryReferenceBlock}>
+          <span className={styles.metaParagraph}>Also surfaced in</span>
+          <div className={styles.summaryReferenceList}>
+            {alternateSummaryReferences.map((reference) => (
+              <Link
+                className={styles.summaryReferenceLink}
+                href={reference.href}
+                key={`${reference.href}-${reference.label}`}
+              >
+                {reference.label}
+              </Link>
+            ))}
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }
@@ -727,6 +749,8 @@ export default async function TopicCardPage({
     activeSummaryRecordId
       ? liveContributions.find((item) => item.id === activeSummaryRecordId) ?? null
       : null;
+  const summaryFocusedReferences =
+    activeSummaryRecordId ? contributionSummaryReferences[activeSummaryRecordId] ?? [] : [];
 
   return (
     <div className={styles.page}>
@@ -789,6 +813,7 @@ export default async function TopicCardPage({
                 activeSummaryRecordId={activeSummaryRecordId}
                 contribution={summaryFocusedContribution}
                 ledgerHref={summaryFocusLedgerHref}
+                summaryReferences={summaryFocusedReferences}
                 summaryLabel="Assumption layer"
               />
               <p>{card.problemStatement}</p>
@@ -801,6 +826,7 @@ export default async function TopicCardPage({
                 activeSummaryRecordId={activeSummaryRecordId}
                 contribution={summaryFocusedContribution}
                 ledgerHref={summaryFocusLedgerHref}
+                summaryReferences={summaryFocusedReferences}
                 summaryLabel="Objection layer"
               />
               <p>{card.proposedSolution}</p>
@@ -856,6 +882,7 @@ export default async function TopicCardPage({
                 activeSummaryRecordId={activeSummaryRecordId}
                 contribution={summaryFocusedContribution}
                 ledgerHref={summaryFocusLedgerHref}
+                summaryReferences={summaryFocusedReferences}
                 summaryLabel="Evidence layer"
               />
               <ul className={styles.bulletList}>
@@ -882,6 +909,7 @@ export default async function TopicCardPage({
                 activeSummaryRecordId={activeSummaryRecordId}
                 contribution={summaryFocusedContribution}
                 ledgerHref={summaryFocusLedgerHref}
+                summaryReferences={summaryFocusedReferences}
                 summaryLabel="Visible evidence record"
               />
               <div className={styles.tagList}>
@@ -949,6 +977,7 @@ export default async function TopicCardPage({
               activeSummaryRecordId={activeSummaryRecordId}
               contribution={summaryFocusedContribution}
               ledgerHref={summaryFocusLedgerHref}
+              summaryReferences={summaryFocusedReferences}
               summaryLabel="Review-driven record"
             />
             <ul className={styles.bulletList}>
@@ -964,6 +993,7 @@ export default async function TopicCardPage({
                 activeSummaryRecordId={activeSummaryRecordId}
                 contribution={summaryFocusedContribution}
                 ledgerHref={summaryFocusLedgerHref}
+                summaryReferences={summaryFocusedReferences}
                 summaryLabel="Open-question layer"
               />
               <p>{card.anticipatedObjection ?? card.strongestObjection}</p>
@@ -1219,6 +1249,7 @@ export default async function TopicCardPage({
               activeSummaryRecordId={activeSummaryRecordId}
               contribution={summaryFocusedContribution}
               ledgerHref={summaryFocusLedgerHref}
+              summaryReferences={summaryFocusedReferences}
               summaryLabel="Open pressure"
             />
             <p>
@@ -1233,6 +1264,7 @@ export default async function TopicCardPage({
                 activeSummaryRecordId={activeSummaryRecordId}
                 contribution={summaryFocusedContribution}
                 ledgerHref={summaryFocusLedgerHref}
+                summaryReferences={summaryFocusedReferences}
                 summaryLabel="Pressure by lane"
               />
               {incorporatedAssumptions.length ? (
@@ -1724,6 +1756,7 @@ export default async function TopicCardPage({
                     activeSummaryRecordId={activeSummaryRecordId}
                     contribution={summaryFocusedContribution}
                     ledgerHref={summaryFocusLedgerHref}
+                    summaryReferences={summaryFocusedReferences}
                     summaryLabel="Manual cycle - Changed card"
                   />
                   <ul className={styles.bulletList}>
@@ -1776,6 +1809,7 @@ export default async function TopicCardPage({
                 activeSummaryRecordId={activeSummaryRecordId}
                 contribution={summaryFocusedContribution}
                 ledgerHref={summaryFocusLedgerHref}
+                summaryReferences={summaryFocusedReferences}
                 summaryLabel="Manual cycle - Needs attention"
               />
               {needsAttentionContributions.length ? (
@@ -1828,6 +1862,7 @@ export default async function TopicCardPage({
                 activeSummaryRecordId={activeSummaryRecordId}
                 contribution={summaryFocusedContribution}
                 ledgerHref={summaryFocusLedgerHref}
+                summaryReferences={summaryFocusedReferences}
                 summaryLabel="AI-assisted record activity"
               />
               {assistedRecordContributions.length ? (
@@ -1997,6 +2032,7 @@ export default async function TopicCardPage({
                 activeSummaryRecordId={activeSummaryRecordId}
                 contribution={summaryFocusedContribution}
                 ledgerHref={summaryFocusLedgerHref}
+                summaryReferences={summaryFocusedReferences}
                 summaryLabel="Recent human review decisions"
               />
               {reviewedContributions.length ? (
@@ -2193,6 +2229,7 @@ export default async function TopicCardPage({
               activeSummaryRecordId={activeSummaryRecordId}
               contribution={summaryFocusedContribution}
               ledgerHref={summaryFocusLedgerHref}
+              summaryReferences={summaryFocusedReferences}
               summaryLabel="Contribution-driven trace"
             />
             {changedCardContributions.length ? (
