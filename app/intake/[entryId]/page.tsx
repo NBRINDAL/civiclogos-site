@@ -84,10 +84,12 @@ export default async function IntakeEntryPage({
   const roomHref = entry.routing.roomSlug
     ? getRoomHref(entry.routing.roomSlug)
     : undefined;
+  const closestMapPath = getHomeIntakeClosestMapPath(entry.routing);
   const topicHref =
-    entry.routing.roomSlug && entry.routing.topicId
+    closestMapPath?.topicHref ??
+    (entry.routing.roomSlug && entry.routing.topicId
       ? getRoomTopicHref(entry.routing.roomSlug, entry.routing.topicId)
-      : undefined;
+      : undefined);
   const issueDevelopment =
     entry.routing.routeKind !== "existing-room"
       ? await buildHomeIntakeBrief(entry)
@@ -114,7 +116,6 @@ export default async function IntakeEntryPage({
     ? formatPromptDate(latestPrompt.createdAt)
     : undefined;
   const heldQuestions = getHomeIntakeHeldQuestions(entry.routing);
-  const closestMapPath = getHomeIntakeClosestMapPath(entry.routing);
   const routingConsensus = summarizeHomeIntakeRoutingConsensus(entry.routing);
 
   return (
@@ -232,6 +233,12 @@ export default async function IntakeEntryPage({
                       ? ` It is currently pressing on the live card ${entry.routing.topicTitle}, which still does not absorb the pressure cleanly enough.`
                       : " It still needs a cleaner live-card home before it becomes a full inspectable topic card."}
                   </p>
+                  {closestMapPath ? (
+                    <div className={styles.closestMapPath}>
+                      <span>Closest current map path</span>
+                      <p>{closestMapPath.detail}</p>
+                    </div>
+                  ) : null}
                   <div className={styles.actions}>
                     {roomHref ? (
                       <Link className={styles.primaryAction} href={`${roomHref}#draft-topics`}>

@@ -25,6 +25,7 @@ import {
   getPromptHistoryHref,
 } from "../../lib/home-intake-prompt-history";
 import { getHomeIntakeHeldQuestions } from "../../lib/home-intake-held-questions";
+import { getHomeIntakeClosestMapPath } from "../../lib/home-intake-map-path";
 import { summarizeHomeIntakeRoutingConsensus } from "../../lib/home-intake-routing-consensus";
 import { getHomeIntakeEntry, listHomeIntakeEntries } from "../../lib/home-intake-store";
 import type { HomeIntakeRecord } from "../../lib/home-intake-types";
@@ -423,6 +424,7 @@ export default async function IssueRoomPage({
                   entry.routing,
                   2,
                 );
+                const closestMapPath = getHomeIntakeClosestMapPath(entry.routing);
                 const routingConsensus = summarizeHomeIntakeRoutingConsensus(
                   entry.routing,
                 );
@@ -432,9 +434,11 @@ export default async function IssueRoomPage({
                 const earliestPromptDate = earliestPrompt
                   ? formatPromptDate(earliestPrompt.createdAt)
                   : undefined;
-                const closestLiveCardHref = entry.routing.topicId
-                  ? getRoomTopicHref(roomSlug, entry.routing.topicId)
-                  : undefined;
+                const closestLiveCardHref =
+                  closestMapPath?.topicHref ??
+                  (entry.routing.topicId
+                    ? getRoomTopicHref(roomSlug, entry.routing.topicId)
+                    : undefined);
 
                 return (
                   <article className={styles.trackItem} key={entry.id}>
@@ -463,6 +467,16 @@ export default async function IssueRoomPage({
                           : `Pressure inside ${room.title}, still waiting for a cleaner live-card home`}
                       </strong>
                     </div>
+
+                    {closestMapPath ? (
+                      <div className={styles.draftPromptNote}>
+                        <div className={styles.draftPromptMeta}>
+                          <span>Closest current map path</span>
+                          <strong>{closestMapPath.provenanceLabel}</strong>
+                        </div>
+                        <p>{closestMapPath.detail}</p>
+                      </div>
+                    ) : null}
 
                     {entry.routing.whyNotExistingRooms ? (
                       <div className={styles.draftPromptNote}>
@@ -498,20 +512,6 @@ export default async function IssueRoomPage({
                             </li>
                           ))}
                         </ul>
-                      </div>
-                    ) : null}
-
-                    {closestLiveCardHref && entry.routing.topicTitle ? (
-                      <div className={styles.promptPressureNote}>
-                        <div className={styles.promptPressureMeta}>
-                          <span>Closest current live card</span>
-                          <strong>Still under-modeling this pressure</strong>
-                        </div>
-                        <p>
-                          Civic Logos is holding this as a draft topic because the
-                          current live card <strong>{entry.routing.topicTitle}</strong>{" "}
-                          still does not absorb the intake pressure cleanly enough.
-                        </p>
                       </div>
                     ) : null}
 
