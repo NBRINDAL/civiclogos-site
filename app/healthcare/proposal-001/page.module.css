@@ -104,6 +104,23 @@
   box-shadow: 0 20px 44px rgba(18, 33, 39, 0.08);
 }
 
+.panel,
+.gridSection,
+.copyBlock,
+.lanePressureCard {
+  scroll-margin-top: 132px;
+}
+
+.panel,
+.copyBlock,
+.lanePressureCard {
+  transition:
+    transform 220ms ease,
+    border-color 220ms ease,
+    box-shadow 220ms ease,
+    background 220ms ease;
+}
+
 .eyebrow,
 .panelLabel,
 .evidenceCard span,
@@ -224,6 +241,33 @@
   display: grid;
   gap: 12px;
   margin-top: 24px;
+}
+
+.copyBlock:target {
+  padding: 18px 20px;
+  border: 1px solid rgba(var(--brand-blue-rgb), 0.26);
+  border-radius: 22px;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 251, 245, 0.96),
+    rgba(244, 250, 255, 0.94)
+  );
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.52),
+    0 18px 38px rgba(18, 33, 39, 0.06);
+  transform: translateY(-2px);
+}
+
+.gridSection:target > .panel {
+  border-color: rgba(var(--brand-blue-rgb), 0.28);
+  background: linear-gradient(
+    180deg,
+    rgba(255, 251, 245, 0.96),
+    rgba(244, 250, 255, 0.94)
+  );
+  box-shadow:
+    0 0 0 3px rgba(var(--brand-blue-rgb), 0.1),
+    0 22px 46px rgba(18, 33, 39, 0.1);
 }
 
 .copyBlock h3 {
