@@ -100,6 +100,7 @@ function getTopicChatMessageHref(item: {
   lane: string;
   review?: { assignedToKind?: string | null; changedSynthesis?: boolean | null };
   status: string;
+  title: string;
 }) {
   const messageId = item.draftSource?.messageId?.trim();
 
@@ -110,6 +111,7 @@ function getTopicChatMessageHref(item: {
   const params = new URLSearchParams({
     chatMessage: messageId,
     sourceContribution: item.id,
+    sourceContributionTitle: item.title,
     sourceOrigin: getContributionOrigin(item),
     sourceReviewStatus: getContributionStatusFilter(item.status),
     sourceAttachment: getContributionAttachmentFilter(item),

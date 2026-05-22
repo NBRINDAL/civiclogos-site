@@ -404,6 +404,7 @@ export default function TopicAiPanel({
     () => getSourceContributionRecordHref(searchParams),
     [searchParams],
   );
+  const sourceContributionTitle = searchParams.get("sourceContributionTitle")?.trim() ?? "";
   const sourceContributionContext = useMemo(() => {
     const sourceReviewStatus = searchParams.get("sourceReviewStatus")?.trim();
     const sourceAttachment = searchParams.get("sourceAttachment")?.trim();
@@ -597,6 +598,12 @@ export default function TopicAiPanel({
             {sourceContributionHref ? (
               <div className={styles.sourceTurnActions}>
                 <span className={styles.sessionImpactLabel}>Public record origin</span>
+                {sourceContributionTitle ? (
+                  <p className={styles.sourceRecordTitle}>
+                    Exact public record entry:{" "}
+                    <strong>{sourceContributionTitle}</strong>
+                  </p>
+                ) : null}
                 <div className={styles.sourceContextMap}>
                   {sourceSummaryLabel ? (
                     <span className={styles.sourceContextChip}>
@@ -648,6 +655,12 @@ export default function TopicAiPanel({
             {sourceContributionHref ? (
               <div className={styles.sourceTurnActions}>
                 <span className={styles.sessionImpactLabel}>Public record origin</span>
+                {sourceContributionTitle ? (
+                  <p className={styles.sourceRecordTitle}>
+                    Exact public record entry:{" "}
+                    <strong>{sourceContributionTitle}</strong>
+                  </p>
+                ) : null}
                 <div className={styles.sourceContextMap}>
                   {sourceSummaryLabel ? (
                     <span className={styles.sourceContextChip}>

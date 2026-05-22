@@ -242,6 +242,7 @@ function getTopicChatMessageHref(
 
   if (contribution) {
     params.set("sourceContribution", contribution.id);
+    params.set("sourceContributionTitle", contribution.title);
     params.set("sourceOrigin", getContributionOrigin(contribution));
     params.set("sourceReviewStatus", getContributionStatusFilter(contribution.status));
     params.set("sourceAttachment", getContributionAttachmentFilter(contribution));
@@ -2041,15 +2042,19 @@ export default async function TopicCardPage({
                             </dd>
                           </div>
                           {item.draftSource?.messageId ? (
-                            <div>
-                              <dt>Source AI turn</dt>
-                              <dd>
-                                <Link
-                                  className={styles.sourceLink}
-                                  href={getTopicChatMessageHref(item.draftSource.messageId)}
-                                >
-                                  Open source AI turn
-                                </Link>
+                          <div>
+                            <dt>Source AI turn</dt>
+                            <dd>
+                              <Link
+                                className={styles.sourceLink}
+                                href={getTopicChatMessageHref(
+                                  item.draftSource.messageId,
+                                  item,
+                                  "AI-assisted record activity",
+                                )}
+                              >
+                                Open source AI turn
+                              </Link>
                               </dd>
                             </div>
                           ) : null}
