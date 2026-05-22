@@ -320,6 +320,19 @@
   transform: translateY(-2px);
 }
 
+.panel:target {
+  border-color: rgba(var(--brand-blue-rgb), 0.28);
+  background: linear-gradient(
+    180deg,
+    rgba(255, 251, 245, 0.96),
+    rgba(244, 250, 255, 0.94)
+  );
+  box-shadow:
+    0 0 0 3px rgba(var(--brand-blue-rgb), 0.1),
+    0 22px 46px rgba(18, 33, 39, 0.1);
+  transform: translateY(-2px);
+}
+
 .gridSection:target > .panel {
   border-color: rgba(var(--brand-blue-rgb), 0.28);
   background: linear-gradient(

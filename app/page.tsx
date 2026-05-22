@@ -353,9 +353,16 @@ export default async function Home({
       ? { label: "Held questions", value: sourceIntakeHeldQuestionCount }
       : null,
   ].filter((item): item is { label: string; value: string } => Boolean(item));
+  const sourceTopicLinkLabel =
+    initialInterest === "Institutional pilot"
+      ? "Return to pilot-ready topic section"
+      : "Open current topic card";
   const contactContextLinks = [
     sourceExactRecordHref
       ? { label: "Open exact public record entry", href: sourceExactRecordHref }
+      : null,
+    sourceTopicHref
+      ? { label: sourceTopicLinkLabel, href: sourceTopicHref }
       : null,
     sourceExactRecordSourceTurnHref
       ? { label: "Open source AI turn", href: sourceExactRecordSourceTurnHref }
@@ -375,9 +382,6 @@ export default async function Home({
       label: `Open ${item.label}`,
       href: item.href,
     })),
-    sourceTopicHref
-      ? { label: "Open current topic card", href: sourceTopicHref }
-      : null,
     sourceIntakeExactArtifactHref
       ? { label: "Open exact held artifact", href: sourceIntakeExactArtifactHref }
       : null,

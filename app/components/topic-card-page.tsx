@@ -82,6 +82,8 @@ type ContributionOriginFilter =
   | "ai-origin"
   | "seed-example";
 
+const INSTITUTIONAL_PILOT_SECTION_ID = "institutional-pilot";
+
 type ContributionSliceDefinition = {
   label: string;
   recordView?: ContributionRecordView;
@@ -2021,7 +2023,9 @@ export default async function TopicCardPage({
       ? `#${getScoreAnchorId(activeScoreLabel)}`
       : activeIntakeContextId
         ? `#${HOME_INTAKE_TOPIC_CARD_PRESSURE_SECTION_ID}`
-        : "";
+        : showInstitutionalPilotCta
+          ? `#${INSTITUTIONAL_PILOT_SECTION_ID}`
+          : "";
 
     return `${baseHref}${query ? `?${query}` : ""}${hash}`;
   })();
@@ -3352,7 +3356,10 @@ export default async function TopicCardPage({
         </section>
 
         {showInstitutionalPilotCta ? (
-          <section className={styles.panel}>
+          <section
+            className={styles.panel}
+            id={INSTITUTIONAL_PILOT_SECTION_ID}
+          >
             <span className={styles.eyebrow}>Institutional pilot</span>
             <h2>
               {institutionalPilotCtaVariant === "healthcare"
