@@ -1239,11 +1239,42 @@ export default async function TopicCardPage({
                           <p className={styles.metaParagraph}>
                             Status: {item.latestUnresolved.status}. Current record target:{" "}
                             {getContributionAttachmentSummary(item.latestUnresolved)}. Origin:{" "}
-                            {getContributionOriginLabel(
-                              getContributionOrigin(item.latestUnresolved),
-                            )}
+                            <Link
+                              className={styles.sourceLink}
+                              href={getContributionLedgerHref({
+                                recordView: "needs-review",
+                                lane: item.lane,
+                                origin: getContributionOrigin(item.latestUnresolved),
+                              })}
+                            >
+                              {getContributionOriginLabel(
+                                getContributionOrigin(item.latestUnresolved),
+                              )}
+                            </Link>
                             .
                           </p>
+                          {item.latestUnresolved.draftSource ? (
+                            <p className={styles.metaParagraph}>
+                              AI origin: {item.latestUnresolved.draftSource.providerLabel}
+                              {item.latestUnresolved.draftSource.model
+                                ? ` (${item.latestUnresolved.draftSource.model})`
+                                : ""}{" "}
+                              on {formatTimestamp(item.latestUnresolved.draftSource.generatedAt)}.
+                              {item.latestUnresolved.draftSource.messageId ? (
+                                <>
+                                  {" "}
+                                  <Link
+                                    className={styles.sourceLink}
+                                    href={getTopicChatMessageHref(
+                                      item.latestUnresolved.draftSource.messageId,
+                                    )}
+                                  >
+                                    Open source AI turn
+                                  </Link>
+                                </>
+                              ) : null}
+                            </p>
+                          ) : null}
                         </>
                       ) : (
                         <p>
