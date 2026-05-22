@@ -100,6 +100,31 @@ function getPublicContributionOutcomeNote(
   return publicRecordNote ?? decisionReason ?? fallback;
 }
 
+function getScorePressureInterpretation(contribution: PublicContribution) {
+  if (contribution.review?.reviewedAt) {
+    return {
+      label: "Human review read",
+      note: getPublicContributionOutcomeNote(
+        contribution.review.decisionReason,
+        contribution.review.publicRecordNote,
+        "Human review resolved this contribution without a public note yet.",
+      ),
+    };
+  }
+
+  if (contribution.aiIntake?.reviewerNote || contribution.aiIntake?.summary) {
+    return {
+      label: "AI sorting read",
+      note:
+        contribution.aiIntake.reviewerNote ??
+        contribution.aiIntake.summary ??
+        "This contribution still needs a human review decision.",
+    };
+  }
+
+  return null;
+}
+
 function getContributionLedgerHref({
   recordView,
   attachment,
@@ -1387,6 +1412,11 @@ export default async function TopicCardPage({
                       latestScoreContribution.contribution.id
                     ] ?? [])
                   : [];
+                const latestScoreInterpretation = latestScoreContribution
+                  ? getScorePressureInterpretation(
+                      latestScoreContribution.contribution,
+                    )
+                  : null;
 
                 return (
                   <div
@@ -1498,6 +1528,14 @@ export default async function TopicCardPage({
                               latestScoreContribution.slice.label
                             }
                           />
+                          {latestScoreInterpretation ? (
+                            <div className={styles.scoreTransparency}>
+                              <span className={styles.scoreTransparencyLabel}>
+                                {latestScoreInterpretation.label}
+                              </span>
+                              <p>{latestScoreInterpretation.note}</p>
+                            </div>
+                          ) : null}
                           {latestScoreReferences.length ? (
                             <div className={styles.scoreTransparency}>
                               <span className={styles.scoreTransparencyLabel}>
