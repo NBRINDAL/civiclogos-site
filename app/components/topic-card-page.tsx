@@ -238,10 +238,12 @@ function ContributionRecordContext({
   contribution,
   recordView,
   targetLabel = "Public record target",
+  showReviewStatus = false,
 }: {
   contribution: PublicContribution;
   recordView?: ContributionRecordView;
   targetLabel?: string;
+  showReviewStatus?: boolean;
 }) {
   return (
     <p className={styles.metaParagraph}>
@@ -256,6 +258,20 @@ function ContributionRecordContext({
       >
         {debateLaneLabels[contribution.lane]}
       </Link>
+      {showReviewStatus ? (
+        <>
+          . Review status:{" "}
+          <Link
+            className={styles.sourceLink}
+            href={getContributionLedgerHref({
+              recordView,
+              reviewStatus: getContributionStatusFilter(contribution.status),
+            })}
+          >
+            {contribution.status}
+          </Link>
+        </>
+      ) : null}
       . Origin:{" "}
       <Link
         className={styles.sourceLink}
@@ -1040,48 +1056,12 @@ export default async function TopicCardPage({
                       {item.aiIntake?.reviewerNote ??
                         "Waiting on human placement, acceptance, or rejection."}
                     </p>
-                    <p className={styles.metaParagraph}>
-                      Lane:{" "}
-                      <Link
-                        className={styles.sourceLink}
-                        href={getContributionLedgerHref({
-                          recordView: "needs-review",
-                          lane: item.lane,
-                        })}
-                      >
-                        {debateLaneLabels[item.lane]}
-                      </Link>
-                      . Current record target: {getContributionAttachmentSummary(item)}. Origin:{" "}
-                      <Link
-                        className={styles.sourceLink}
-                        href={getContributionLedgerHref({
-                          recordView: "needs-review",
-                          lane: item.lane,
-                          origin: getContributionOrigin(item),
-                        })}
-                      >
-                        {getContributionOriginLabel(getContributionOrigin(item))}
-                      </Link>
-                      .
-                    </p>
-                    {item.draftSource ? (
-                      <p className={styles.metaParagraph}>
-                        AI origin: {item.draftSource.providerLabel}
-                        {item.draftSource.model ? ` (${item.draftSource.model})` : ""} on{" "}
-                        {formatTimestamp(item.draftSource.generatedAt)}.
-                        {item.draftSource.messageId ? (
-                          <>
-                            {" "}
-                            <Link
-                              className={styles.sourceLink}
-                              href={getTopicChatMessageHref(item.draftSource.messageId)}
-                            >
-                              Open source AI turn
-                            </Link>
-                          </>
-                        ) : null}
-                      </p>
-                    ) : null}
+                    <ContributionRecordContext
+                      contribution={item}
+                      recordView="needs-review"
+                      targetLabel="Current record target"
+                    />
+                    <ContributionAiOriginContext contribution={item} />
                   </article>
                 ))}
               </div>
@@ -1361,45 +1341,13 @@ export default async function TopicCardPage({
                             </Link>
                             .
                           </p>
-                          <p className={styles.metaParagraph}>
-                            Status: {item.latestUnresolved.status}. Current record target:{" "}
-                            {getContributionAttachmentSummary(item.latestUnresolved)}. Origin:{" "}
-                            <Link
-                              className={styles.sourceLink}
-                              href={getContributionLedgerHref({
-                                recordView: "needs-review",
-                                lane: item.lane,
-                                origin: getContributionOrigin(item.latestUnresolved),
-                              })}
-                            >
-                              {getContributionOriginLabel(
-                                getContributionOrigin(item.latestUnresolved),
-                              )}
-                            </Link>
-                            .
-                          </p>
-                          {item.latestUnresolved.draftSource ? (
-                            <p className={styles.metaParagraph}>
-                              AI origin: {item.latestUnresolved.draftSource.providerLabel}
-                              {item.latestUnresolved.draftSource.model
-                                ? ` (${item.latestUnresolved.draftSource.model})`
-                                : ""}{" "}
-                              on {formatTimestamp(item.latestUnresolved.draftSource.generatedAt)}.
-                              {item.latestUnresolved.draftSource.messageId ? (
-                                <>
-                                  {" "}
-                                  <Link
-                                    className={styles.sourceLink}
-                                    href={getTopicChatMessageHref(
-                                      item.latestUnresolved.draftSource.messageId,
-                                    )}
-                                  >
-                                    Open source AI turn
-                                  </Link>
-                                </>
-                              ) : null}
-                            </p>
-                          ) : null}
+                          <ContributionRecordContext
+                            contribution={item.latestUnresolved}
+                            recordView="needs-review"
+                            targetLabel="Current record target"
+                            showReviewStatus
+                          />
+                          <ContributionAiOriginContext contribution={item.latestUnresolved} />
                         </>
                       ) : (
                         <p>
@@ -1483,59 +1431,8 @@ export default async function TopicCardPage({
                           item.review?.publicRecordNote,
                           "Marked as changing the card.",
                         )}
-                        <p className={styles.metaParagraph}>
-                          Debate lane:{" "}
-                          <Link
-                            className={styles.sourceLink}
-                            href={getContributionLedgerHref({
-                              recordView: "changed-card",
-                              lane: item.lane,
-                            })}
-                          >
-                            {debateLaneLabels[item.lane]}
-                          </Link>
-                          . Origin:{" "}
-                          <Link
-                            className={styles.sourceLink}
-                            href={getContributionLedgerHref({
-                              recordView: "changed-card",
-                              origin: getContributionOrigin(item),
-                            })}
-                          >
-                            {getContributionOriginLabel(getContributionOrigin(item))}
-                          </Link>
-                          . Public record target:{" "}
-                          <Link
-                            className={styles.sourceLink}
-                            href={getContributionLedgerHref({
-                              recordView: "changed-card",
-                              attachment: getContributionAttachmentFilter(item),
-                            })}
-                          >
-                            {getContributionAttachmentSummary(item)}
-                          </Link>
-                          .
-                        </p>
-                        {item.draftSource ? (
-                          <p className={styles.metaParagraph}>
-                            AI origin: {item.draftSource.providerLabel}
-                            {item.draftSource.model
-                              ? ` (${item.draftSource.model})`
-                              : ""}{" "}
-                            on {formatTimestamp(item.draftSource.generatedAt)}.
-                            {item.draftSource.messageId ? (
-                              <>
-                                {" "}
-                                <Link
-                                  className={styles.sourceLink}
-                                  href={getTopicChatMessageHref(item.draftSource.messageId)}
-                                >
-                                  Open source AI turn
-                                </Link>
-                              </>
-                            ) : null}
-                          </p>
-                        ) : null}
+                        <ContributionRecordContext contribution={item} recordView="changed-card" />
+                        <ContributionAiOriginContext contribution={item} />
                       </li>
                     ))}
                   </ul>
@@ -1578,59 +1475,12 @@ export default async function TopicCardPage({
                         </strong>{" "}
                         {item.aiIntake?.reviewerNote ??
                           "Awaiting clearer human placement, acceptance, or rejection."}
-                        <p className={styles.metaParagraph}>
-                          Debate lane:{" "}
-                          <Link
-                            className={styles.sourceLink}
-                            href={getContributionLedgerHref({
-                              recordView: "needs-review",
-                              lane: item.lane,
-                            })}
-                          >
-                            {debateLaneLabels[item.lane]}
-                          </Link>
-                          . Origin:{" "}
-                          <Link
-                            className={styles.sourceLink}
-                            href={getContributionLedgerHref({
-                              recordView: "needs-review",
-                              origin: getContributionOrigin(item),
-                            })}
-                          >
-                            {getContributionOriginLabel(getContributionOrigin(item))}
-                          </Link>
-                          . Current record target:{" "}
-                          <Link
-                            className={styles.sourceLink}
-                            href={getContributionLedgerHref({
-                              recordView: "needs-review",
-                              attachment: getContributionAttachmentFilter(item),
-                            })}
-                          >
-                            {getContributionAttachmentSummary(item)}
-                          </Link>
-                          .
-                        </p>
-                        {item.draftSource ? (
-                          <p className={styles.metaParagraph}>
-                            AI origin: {item.draftSource.providerLabel}
-                            {item.draftSource.model
-                              ? ` (${item.draftSource.model})`
-                              : ""}{" "}
-                            on {formatTimestamp(item.draftSource.generatedAt)}.
-                            {item.draftSource.messageId ? (
-                              <>
-                                {" "}
-                                <Link
-                                  className={styles.sourceLink}
-                                  href={getTopicChatMessageHref(item.draftSource.messageId)}
-                                >
-                                  Open source AI turn
-                                </Link>
-                              </>
-                            ) : null}
-                          </p>
-                        ) : null}
+                        <ContributionRecordContext
+                          contribution={item}
+                          recordView="needs-review"
+                          targetLabel="Current record target"
+                        />
+                        <ContributionAiOriginContext contribution={item} />
                       </li>
                     ))}
                   </ul>
@@ -1747,42 +1597,11 @@ export default async function TopicCardPage({
                               : "This AI-assisted topic-chat suggestion has been resolved in the public record.",
                           )}
                         </p>
-                        <p className={styles.metaParagraph}>
-                          Debate lane:{" "}
-                          <Link
-                            className={styles.sourceLink}
-                            href={getContributionLedgerHref({
-                              recordView: "ai-assisted",
-                              origin: "ai-origin",
-                              lane: item.lane,
-                            })}
-                          >
-                            {debateLaneLabels[item.lane]}
-                          </Link>
-                          . Review status:{" "}
-                          <Link
-                            className={styles.sourceLink}
-                            href={getContributionLedgerHref({
-                              recordView: "ai-assisted",
-                              origin: "ai-origin",
-                              reviewStatus: getContributionStatusFilter(item.status),
-                            })}
-                          >
-                            {item.status}
-                          </Link>
-                          . Public record target:{" "}
-                          <Link
-                            className={styles.sourceLink}
-                            href={getContributionLedgerHref({
-                              recordView: "ai-assisted",
-                              origin: "ai-origin",
-                              attachment: getContributionAttachmentFilter(item),
-                            })}
-                          >
-                            {getContributionAttachmentSummary(item)}
-                          </Link>
-                          .
-                        </p>
+                        <ContributionRecordContext
+                          contribution={item}
+                          recordView="ai-assisted"
+                          showReviewStatus
+                        />
                         <dl className={styles.aiProvenance}>
                           <div>
                             <dt>Source AI</dt>
@@ -1883,38 +1702,12 @@ export default async function TopicCardPage({
                           "Human review resolved this contribution without a public note yet.",
                         )}
                       </p>
+                      <ContributionRecordContext
+                        contribution={item}
+                        recordView={getContributionRecordView(item)}
+                        showReviewStatus
+                      />
                       <p className={styles.metaParagraph}>
-                        Debate lane:{" "}
-                        <Link
-                          className={styles.sourceLink}
-                          href={getContributionLedgerHref({
-                            reviewStatus: getContributionStatusFilter(item.status),
-                            lane: item.lane,
-                          })}
-                        >
-                          {debateLaneLabels[item.lane]}
-                        </Link>
-                        . Origin:{" "}
-                        <Link
-                          className={styles.sourceLink}
-                          href={getContributionLedgerHref({
-                            reviewStatus: getContributionStatusFilter(item.status),
-                            origin: getContributionOrigin(item),
-                          })}
-                        >
-                          {getContributionOriginLabel(getContributionOrigin(item))}
-                        </Link>
-                        . Public record target:{" "}
-                        <Link
-                          className={styles.sourceLink}
-                          href={getContributionLedgerHref({
-                            reviewStatus: getContributionStatusFilter(item.status),
-                            attachment: getContributionAttachmentFilter(item),
-                          })}
-                        >
-                          {getContributionAttachmentSummary(item)}
-                        </Link>
-                        .{" "}
                         <Link
                           className={styles.sourceLink}
                           href={getContributionLedgerHref({
@@ -1928,26 +1721,7 @@ export default async function TopicCardPage({
                           Open public record entry
                         </Link>
                       </p>
-                      {item.draftSource ? (
-                        <p className={styles.metaParagraph}>
-                          AI origin: {item.draftSource.providerLabel}
-                          {item.draftSource.model
-                            ? ` (${item.draftSource.model})`
-                            : ""}{" "}
-                          on {formatTimestamp(item.draftSource.generatedAt)}.
-                          {item.draftSource.messageId ? (
-                            <>
-                              {" "}
-                              <Link
-                                className={styles.sourceLink}
-                                href={getTopicChatMessageHref(item.draftSource.messageId)}
-                              >
-                                Open source AI turn
-                              </Link>
-                            </>
-                          ) : null}
-                        </p>
-                      ) : null}
+                      <ContributionAiOriginContext contribution={item} />
                     </article>
                   ))}
                 </div>
@@ -2108,59 +1882,8 @@ export default async function TopicCardPage({
                         item.review?.publicRecordNote,
                       )}
                     </p>
-                    <p className={styles.metaParagraph}>
-                      Debate lane:{" "}
-                      <Link
-                        className={styles.sourceLink}
-                        href={getContributionLedgerHref({
-                          recordView: "changed-card",
-                          lane: item.lane,
-                        })}
-                      >
-                        {debateLaneLabels[item.lane]}
-                      </Link>
-                      . Origin:{" "}
-                      <Link
-                        className={styles.sourceLink}
-                        href={getContributionLedgerHref({
-                          recordView: "changed-card",
-                          origin: getContributionOrigin(item),
-                        })}
-                      >
-                        {getContributionOriginLabel(getContributionOrigin(item))}
-                      </Link>
-                      . Public record target:{" "}
-                      <Link
-                        className={styles.sourceLink}
-                        href={getContributionLedgerHref({
-                          recordView: "changed-card",
-                          attachment: getContributionAttachmentFilter(item),
-                        })}
-                      >
-                        {getContributionAttachmentSummary(item)}
-                      </Link>
-                      .
-                    </p>
-                    {item.draftSource ? (
-                      <p className={styles.metaParagraph}>
-                        AI origin: {item.draftSource.providerLabel}
-                        {item.draftSource.model
-                          ? ` (${item.draftSource.model})`
-                          : ""}{" "}
-                        on {formatTimestamp(item.draftSource.generatedAt)}.
-                        {item.draftSource.messageId ? (
-                          <>
-                            {" "}
-                            <Link
-                              className={styles.sourceLink}
-                              href={getTopicChatMessageHref(item.draftSource.messageId)}
-                            >
-                              Open source AI turn
-                            </Link>
-                          </>
-                        ) : null}
-                      </p>
-                    ) : null}
+                    <ContributionRecordContext contribution={item} recordView="changed-card" />
+                    <ContributionAiOriginContext contribution={item} />
                   </article>
                 ))}
               </div>
