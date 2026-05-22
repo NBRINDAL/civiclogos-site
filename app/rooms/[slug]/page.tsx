@@ -24,6 +24,7 @@ import {
   getPromptHistoryCount,
   getPromptHistoryHref,
 } from "../../lib/home-intake-prompt-history";
+import { summarizeHomeIntakeRoutingConsensus } from "../../lib/home-intake-routing-consensus";
 import { getHomeIntakeEntry, listHomeIntakeEntries } from "../../lib/home-intake-store";
 import type { HomeIntakeRecord } from "../../lib/home-intake-types";
 import styles from "../../healthcare/page.module.css";
@@ -417,6 +418,9 @@ export default async function IssueRoomPage({
                 const latestPrompt = getLatestAttachedPrompt(entry);
                 const earliestPrompt = getEarliestAttachedPrompt(entry);
                 const promptEvolution = getPromptEvolution(entry);
+                const routingConsensus = summarizeHomeIntakeRoutingConsensus(
+                  entry.routing,
+                );
                 const latestPromptDate = latestPrompt
                   ? formatPromptDate(latestPrompt.createdAt)
                   : undefined;
@@ -454,6 +458,16 @@ export default async function IssueRoomPage({
                           : `Pressure inside ${room.title}, still waiting for a cleaner live-card home`}
                       </strong>
                     </div>
+
+                    {routingConsensus ? (
+                      <div className={styles.draftPromptNote}>
+                        <div className={styles.draftPromptMeta}>
+                          <span>{routingConsensus.headline}</span>
+                          <strong>Model provenance</strong>
+                        </div>
+                        <p>{routingConsensus.detail}</p>
+                      </div>
+                    ) : null}
 
                     {closestLiveCardHref && entry.routing.topicTitle ? (
                       <div className={styles.promptPressureNote}>

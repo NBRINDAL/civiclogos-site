@@ -21,6 +21,7 @@ import {
   getPromptHistoryHref,
   getPromptTimestamp,
 } from "@/app/lib/home-intake-prompt-history";
+import { summarizeHomeIntakeRoutingConsensus } from "@/app/lib/home-intake-routing-consensus";
 import { getHomeIntakeEntry, getHomeIntakeStoreMetadata } from "@/app/lib/home-intake-store";
 import styles from "./page.module.css";
 
@@ -110,6 +111,7 @@ export default async function IntakeEntryPage({
   const latestPromptDate = latestPrompt
     ? formatPromptDate(latestPrompt.createdAt)
     : undefined;
+  const routingConsensus = summarizeHomeIntakeRoutingConsensus(entry.routing);
 
   return (
     <div className={styles.page}>
@@ -255,6 +257,16 @@ export default async function IntakeEntryPage({
                   </div>
                 </>
               )}
+            </div>
+          ) : null}
+
+          {routingConsensus ? (
+            <div className={styles.listBlock}>
+              <h3>Routing consensus</h3>
+              <p>
+                <strong>{routingConsensus.headline}.</strong>{" "}
+                {routingConsensus.detail}
+              </p>
             </div>
           ) : null}
 

@@ -14,6 +14,7 @@ import {
   getPromptHistoryCount,
   getPromptHistoryHref,
 } from "../lib/home-intake-prompt-history";
+import { summarizeHomeIntakeRoutingConsensus } from "../lib/home-intake-routing-consensus";
 import { listHomeIntakeEntries } from "../lib/home-intake-store";
 import type { HomeIntakeRecord } from "../lib/home-intake-types";
 import {
@@ -234,6 +235,9 @@ export default async function RoomsPage({
                 const latestPrompt = getLatestAttachedPrompt(entry);
                 const earliestPrompt = getEarliestAttachedPrompt(entry);
                 const promptEvolution = getPromptEvolution(entry);
+                const routingConsensus = summarizeHomeIntakeRoutingConsensus(
+                  entry.routing,
+                );
                 const latestPromptDate = latestPrompt
                   ? formatPromptDate(latestPrompt.createdAt)
                   : undefined;
@@ -267,6 +271,16 @@ export default async function RoomsPage({
                           : "Still outside the active room map"}
                       </strong>
                     </div>
+
+                    {routingConsensus ? (
+                      <div className={styles.promptPressureNote}>
+                        <div className={styles.promptPressureMeta}>
+                          <span>{routingConsensus.headline}</span>
+                          <strong>Model provenance</strong>
+                        </div>
+                        <p>{routingConsensus.detail}</p>
+                      </div>
+                    ) : null}
 
                     {entry.routing.suggestedCentralQuestion ? (
                       <div className={styles.liveCardNote}>
