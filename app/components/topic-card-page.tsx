@@ -1940,6 +1940,8 @@ export default async function TopicCardPage({
   const activeSummaryLabel = getSingleSearchParamValue(searchParams?.summaryLabel)?.trim();
   const activeScoreLabel = getSingleSearchParamValue(searchParams?.scoreLabel)?.trim();
   const activeScoreSliceLabel = getSingleSearchParamValue(searchParams?.scoreSlice)?.trim();
+  const activePilotInquiry =
+    getSingleSearchParamValue(searchParams?.pilotInquiry)?.trim() === "1";
   const activeScoreRelatedSlices = activeScoreLabel
     ? getScoreTransparencySlices(activeScoreLabel, liveContributions)
     : [];
@@ -2048,6 +2050,10 @@ export default async function TopicCardPage({
 
     if (activeScoreSliceLabel) {
       params.set("scoreSlice", activeScoreSliceLabel);
+    }
+
+    if (showInstitutionalPilotCta) {
+      params.set("pilotInquiry", "1");
     }
 
     const query = params.toString();
@@ -3436,6 +3442,39 @@ export default async function TopicCardPage({
                   document-backed contribution
                   {documentBackedContributions.length === 1 ? "" : "s"}.
                 </p>
+                {activePilotInquiry ? (
+                  <div className={styles.scoreTransparency}>
+                    <span className={styles.scoreTransparencyLabel}>
+                      Returned from institutional inquiry
+                    </span>
+                    <p>
+                      This section is the live review object currently grounding
+                      the active institutional pilot snapshot on the homepage.
+                    </p>
+                    <div className={styles.scoreSliceList}>
+                      <Link
+                        className={styles.scoreSliceLink}
+                        href={institutionalPilotInquiryHref}
+                      >
+                        Return to institutional inquiry snapshot
+                      </Link>
+                      {institutionalPilotRecordContext ? (
+                        <Link
+                          className={styles.scoreSliceLink}
+                          href={getExactContributionLedgerHref(
+                            institutionalPilotRecordContext.contribution,
+                            undefined,
+                            activeScoreItem?.label,
+                            institutionalPilotRecordContext.sliceLabel,
+                            activeIntakeContextId,
+                          )}
+                        >
+                          Open exact public record entry
+                        </Link>
+                      ) : null}
+                    </div>
+                  </div>
+                ) : null}
                 {institutionalPilotRecordContext ? (
                   <>
                     <span className={styles.scoreTransparencyLabel}>
