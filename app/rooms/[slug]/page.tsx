@@ -464,6 +464,16 @@ export default async function IssueRoomPage({
                       </strong>
                     </div>
 
+                    {entry.routing.whyNotExistingRooms ? (
+                      <div className={styles.draftPromptNote}>
+                        <div className={styles.draftPromptMeta}>
+                          <span>Why it is still held here</span>
+                          <strong>Still under-modeled</strong>
+                        </div>
+                        <p>{entry.routing.whyNotExistingRooms}</p>
+                      </div>
+                    ) : null}
+
                     {routingConsensus ? (
                       <div className={styles.draftPromptNote}>
                         <div className={styles.draftPromptMeta}>
@@ -554,6 +564,12 @@ export default async function IssueRoomPage({
                     <div className={styles.trackItemActions}>
                       <Link className={styles.trackItemLink} href={`/intake/${entry.id}`}>
                         Open draft topic
+                      </Link>
+                      <Link
+                        className={styles.trackItemSubLink}
+                        href={`/intake/${entry.id}#routing-ais`}
+                      >
+                        Open full routing read
                       </Link>
                       {closestLiveCardHref ? (
                         <Link className={styles.trackItemSubLink} href={closestLiveCardHref}>

@@ -277,6 +277,16 @@ export default async function RoomsPage({
                       </strong>
                     </div>
 
+                    {entry.routing.whyNotExistingRooms ? (
+                      <div className={styles.promptPressureNote}>
+                        <div className={styles.promptPressureMeta}>
+                          <span>Why it is still held here</span>
+                          <strong>Map gap</strong>
+                        </div>
+                        <p>{entry.routing.whyNotExistingRooms}</p>
+                      </div>
+                    ) : null}
+
                     {routingConsensus ? (
                       <div className={styles.promptPressureNote}>
                         <div className={styles.promptPressureMeta}>
@@ -380,6 +390,12 @@ export default async function RoomsPage({
                       <div className={styles.roomActions}>
                         <Link className={styles.roomLink} href={`/intake/${entry.id}`}>
                           Open candidate
+                        </Link>
+                        <Link
+                          className={styles.roomSubLink}
+                          href={`/intake/${entry.id}#routing-ais`}
+                        >
+                          Open full routing read
                         </Link>
                         <Link
                           className={styles.roomSubLink}

@@ -435,7 +435,7 @@ export default async function IntakeEntryPage({
           </section>
         ) : null}
 
-        <section className={styles.section}>
+        <section className={styles.section} id="routing-ais">
           <div className={styles.sectionHeading}>
             <span className={styles.eyebrow}>Routing AIs</span>
             <h2>The intake engine is stronger when both models stay visible as separate AIs.</h2>
