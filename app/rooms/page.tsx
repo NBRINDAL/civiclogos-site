@@ -6,6 +6,13 @@ import {
   getHomeIntakeCookieName,
   parseHomeIntakeCookie,
 } from "../lib/home-intake-cookie";
+import {
+  formatPromptDate,
+  getEarliestAttachedPrompt,
+  getLatestAttachedPrompt,
+  getPromptHistoryCount,
+  getPromptHistoryHref,
+} from "../lib/home-intake-prompt-history";
 import { listHomeIntakeEntries } from "../lib/home-intake-store";
 import type { HomeIntakeRecord } from "../lib/home-intake-types";
 import {
@@ -32,58 +39,6 @@ function mergeLatestCookieCandidate(
   }
 
   return [cookieCandidate, ...roomCandidates].slice(0, 6);
-}
-
-function getCandidatePromptCount(entry: HomeIntakeRecord) {
-  return entry.promptCount ?? entry.relatedPrompts?.length ?? 1;
-}
-
-function getPromptHistoryHref(entry: HomeIntakeRecord) {
-  return `/intake/${entry.id}#prompt-history`;
-}
-
-function getPromptTimestamp(value: string) {
-  const timestamp = Date.parse(value);
-  return Number.isNaN(timestamp) ? 0 : timestamp;
-}
-
-function formatPromptDate(value: string) {
-  if (!value || !getPromptTimestamp(value)) {
-    return undefined;
-  }
-
-  return new Date(value).toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  });
-}
-
-function getLatestAttachedPrompt(entry: HomeIntakeRecord) {
-  const promptHistory =
-    entry.relatedPrompts?.length
-      ? entry.relatedPrompts
-      : [
-          {
-            id: `${entry.id}-seed`,
-            prompt: entry.prompt,
-            createdAt: entry.updatedAt || entry.createdAt,
-          },
-        ];
-
-  return promptHistory.reduce<(typeof promptHistory)[number] | null>(
-    (latest, item) => {
-      if (!latest) {
-        return item;
-      }
-
-      return getPromptTimestamp(item.createdAt) >=
-        getPromptTimestamp(latest.createdAt)
-        ? item
-        : latest;
-    },
-    null,
-  );
 }
 
 export default async function RoomsPage({
@@ -274,10 +229,14 @@ export default async function RoomsPage({
           {visibleRoomCandidates.length ? (
             <div className={styles.roomGrid}>
               {visibleRoomCandidates.map((entry) => {
-                const promptCount = getCandidatePromptCount(entry);
+                const promptCount = getPromptHistoryCount(entry);
                 const latestPrompt = getLatestAttachedPrompt(entry);
+                const earliestPrompt = getEarliestAttachedPrompt(entry);
                 const latestPromptDate = latestPrompt
                   ? formatPromptDate(latestPrompt.createdAt)
+                  : undefined;
+                const earliestPromptDate = earliestPrompt
+                  ? formatPromptDate(earliestPrompt.createdAt)
                   : undefined;
 
                 return (
@@ -318,6 +277,25 @@ export default async function RoomsPage({
                         <p>{latestPrompt.prompt}</p>
                       </div>
                     ) : null}
+
+                    <div className={styles.promptTimeline}>
+                      {earliestPromptDate ? (
+                        <div className={styles.promptTimelineItem}>
+                          <span>First seen</span>
+                          <strong>{earliestPromptDate}</strong>
+                        </div>
+                      ) : null}
+                      <div className={styles.promptTimelineItem}>
+                        <span>
+                          {promptCount > 1 ? "Latest pressure" : "Current state"}
+                        </span>
+                        <strong>
+                          {promptCount > 1 && latestPromptDate
+                            ? latestPromptDate
+                            : "Single prompt so far"}
+                        </strong>
+                      </div>
+                    </div>
 
                     <div className={styles.roomFooter}>
                       <span>

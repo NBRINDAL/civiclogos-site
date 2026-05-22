@@ -11,8 +11,16 @@ import {
   getHomeIntakeCookieName,
   parseHomeIntakeCookie,
 } from "@/app/lib/home-intake-cookie";
+import {
+  formatPromptDate,
+  getEarliestAttachedPrompt,
+  getLatestAttachedPrompt,
+  getPromptHistory,
+  getPromptHistoryCount,
+  getPromptHistoryHref,
+  getPromptTimestamp,
+} from "@/app/lib/home-intake-prompt-history";
 import { getHomeIntakeEntry, getHomeIntakeStoreMetadata } from "@/app/lib/home-intake-store";
-import type { HomeIntakePromptTrace } from "@/app/lib/home-intake-types";
 import styles from "./page.module.css";
 
 export const dynamic = "force-dynamic";
@@ -33,43 +41,6 @@ function getStorageModeLabel(mode: "prototype" | "database" | "fallback") {
   }
 
   return "Prototype";
-}
-
-function getPromptHistoryCount(
-  entry: {
-    promptCount?: number;
-    relatedPrompts?: { prompt: string; createdAt: string }[];
-  },
-) {
-  return entry.promptCount ?? entry.relatedPrompts?.length ?? 1;
-}
-
-function getPromptTimestamp(value: string) {
-  const timestamp = Date.parse(value);
-  return Number.isNaN(timestamp) ? 0 : timestamp;
-}
-
-function getPromptHistory(entry: {
-  id: string;
-  prompt: string;
-  createdAt: string;
-  updatedAt: string;
-  relatedPrompts?: HomeIntakePromptTrace[];
-}) {
-  const promptHistory =
-    entry.relatedPrompts?.length
-      ? entry.relatedPrompts
-      : [
-          {
-            id: `${entry.id}-seed`,
-            prompt: entry.prompt,
-            createdAt: entry.updatedAt || entry.createdAt,
-          },
-        ];
-
-  return promptHistory
-    .slice()
-    .sort((left, right) => getPromptTimestamp(right.createdAt) - getPromptTimestamp(left.createdAt));
 }
 
 export default async function IntakeEntryPage({
@@ -120,6 +91,20 @@ export default async function IntakeEntryPage({
   const promptHistory =
     entry.routing.routeKind === "existing-room" ? [] : getPromptHistory(entry);
   const promptCount = getPromptHistoryCount(entry);
+  const earliestPrompt =
+    entry.routing.routeKind === "existing-room"
+      ? null
+      : getEarliestAttachedPrompt(entry);
+  const latestPrompt =
+    entry.routing.routeKind === "existing-room"
+      ? null
+      : getLatestAttachedPrompt(entry);
+  const earliestPromptDate = earliestPrompt
+    ? formatPromptDate(earliestPrompt.createdAt)
+    : undefined;
+  const latestPromptDate = latestPrompt
+    ? formatPromptDate(latestPrompt.createdAt)
+    : undefined;
 
   return (
     <div className={styles.page}>
@@ -233,6 +218,28 @@ export default async function IntakeEntryPage({
                   ? `This object is now holding ${promptCount} related prompts. The latest pressure appears first so the room map can show what kept the issue alive.`
                   : "This object is currently holding one public prompt. If more related prompts converge on the same issue, they will accumulate here instead of dissolving into separate routing receipts."}
               </p>
+              <div className={styles.promptHistoryMeta}>
+                {earliestPromptDate ? (
+                  <div className={styles.promptHistoryStat}>
+                    <span>First seen</span>
+                    <strong>{earliestPromptDate}</strong>
+                  </div>
+                ) : null}
+                <div className={styles.promptHistoryStat}>
+                  <span>{promptCount > 1 ? "Latest pressure" : "Current state"}</span>
+                  <strong>
+                    {promptCount > 1 && latestPromptDate
+                      ? latestPromptDate
+                      : "Single prompt so far"}
+                  </strong>
+                </div>
+                <div className={styles.promptHistoryStat}>
+                  <span>Pressure held</span>
+                  <strong>
+                    {promptCount} prompt{promptCount === 1 ? "" : "s"} attached
+                  </strong>
+                </div>
+              </div>
               <ul>
                 {promptHistory.slice(0, 5).map((item) => (
                   <li key={item.id}>
@@ -279,7 +286,10 @@ export default async function IntakeEntryPage({
               </Link>
             ) : null}
             {entry.routing.routeKind !== "existing-room" ? (
-              <Link className={styles.secondaryAction} href="#prompt-history">
+              <Link
+                className={styles.secondaryAction}
+                href={getPromptHistoryHref(entry)}
+              >
                 Open prompt history
               </Link>
             ) : null}

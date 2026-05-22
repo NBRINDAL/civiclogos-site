@@ -203,6 +203,35 @@
   line-height: 1.72;
 }
 
+.promptHistoryMeta {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.promptHistoryStat {
+  display: grid;
+  gap: 4px;
+  padding: 14px 16px;
+  border: 1px solid rgba(18, 33, 39, 0.08);
+  border-radius: 18px;
+  background: rgba(255, 251, 245, 0.86);
+}
+
+.promptHistoryStat span {
+  color: var(--signal);
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.promptHistoryStat strong {
+  color: var(--accent-dark);
+  font-size: 0.96rem;
+  line-height: 1.4;
+}
+
 .actions {
   display: flex;
   flex-wrap: wrap;
@@ -276,6 +305,10 @@
 @media (max-width: 960px) {
   .hero,
   .providerGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .promptHistoryMeta {
     grid-template-columns: 1fr;
   }
 }
