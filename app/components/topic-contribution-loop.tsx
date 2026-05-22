@@ -93,6 +93,15 @@ type ContributionAttachmentFilter =
   | Exclude<ReviewTargetKind, "unclear">
   | "none-yet";
 
+type ScoreContributionSlice = {
+  label: string;
+  count: number;
+  recordView?: ContributionFilter;
+  attachment?: ContributionAttachmentFilter;
+  origin?: ContributionOriginFilter;
+  lane?: DebateLane;
+};
+
 type FormState = {
   lane: FormLane;
   title: string;
@@ -390,6 +399,135 @@ function getContributionInterpretation(contribution: PublicContribution) {
   }
 
   return null;
+}
+
+function getScoreTransparencySliceDefinitions(
+  scoreLabel: string,
+): Array<Omit<ScoreContributionSlice, "count">> {
+  switch (scoreLabel) {
+    case "Novelty":
+      return [
+        { label: "Changed-card record", recordView: "changed-card" },
+        { label: "AI-origin record", origin: "ai-origin" },
+      ];
+    case "Coherence":
+      return [
+        { label: "Changed-card record", recordView: "changed-card" },
+        { label: "Open-question pressure", attachment: "open-question" },
+      ];
+    case "Feasibility":
+      return [
+        { label: "Assumption pressure", attachment: "assumption" },
+        { label: "Needs-review record", recordView: "needs-review" },
+      ];
+    case "Evidence quality":
+      return [
+        { label: "Evidence record", attachment: "evidence" },
+        { label: "Document-backed record", recordView: "document-backed" },
+      ];
+    case "Economic delta clarity":
+      return [
+        {
+          label: "Economic-challenge lane",
+          lane: "economic-assumption-challenge",
+        },
+        { label: "Open-question pressure", attachment: "open-question" },
+      ];
+    case "Public value":
+      return [
+        { label: "Public submissions", origin: "human-submitted" },
+        { label: "Changed-card record", recordView: "changed-card" },
+      ];
+    default:
+      return [];
+  }
+}
+
+function matchesScoreContributionSlice(
+  contribution: PublicContribution,
+  slice: Omit<ScoreContributionSlice, "count">,
+) {
+  if (
+    slice.recordView &&
+    getContributionRecordView(contribution) !== slice.recordView
+  ) {
+    return false;
+  }
+
+  if (
+    slice.attachment &&
+    getVisibleAttachmentFilter(contribution) !== slice.attachment
+  ) {
+    return false;
+  }
+
+  if (slice.origin && getContributionOrigin(contribution) !== slice.origin) {
+    return false;
+  }
+
+  if (slice.lane && contribution.lane !== slice.lane) {
+    return false;
+  }
+
+  return true;
+}
+
+function getScoreTransparencySlices(
+  scoreLabel: string,
+  contributions: readonly PublicContribution[],
+): ScoreContributionSlice[] {
+  return getScoreTransparencySliceDefinitions(scoreLabel).map((slice) => ({
+    ...slice,
+    count: contributions.filter((contribution) =>
+      matchesScoreContributionSlice(contribution, slice),
+    ).length,
+  }));
+}
+
+function getLatestScoreTransparencyContribution(
+  slices: readonly ScoreContributionSlice[],
+  contributions: readonly PublicContribution[],
+  matches: (contribution: PublicContribution) => boolean = () => true,
+) {
+  let bestMatch:
+    | {
+        slice: ScoreContributionSlice;
+        contribution: PublicContribution;
+      }
+    | null = null;
+
+  for (const slice of slices) {
+    const candidate = contributions
+      .filter(
+        (contribution) =>
+          matchesScoreContributionSlice(contribution, slice) &&
+          matches(contribution),
+      )
+      .sort(
+        (left, right) =>
+          Date.parse(right.updatedAt || right.createdAt) -
+          Date.parse(left.updatedAt || left.createdAt),
+      )[0];
+
+    if (!candidate) {
+      continue;
+    }
+
+    if (
+      !bestMatch ||
+      Date.parse(candidate.updatedAt || candidate.createdAt) >
+        Date.parse(
+          bestMatch.contribution.updatedAt || bestMatch.contribution.createdAt,
+        )
+    ) {
+      bestMatch = {
+        slice,
+        contribution: candidate,
+      };
+    }
+  }
+
+  return bestMatch;
 }
 
 function getSourceAiTurnHref(
@@ -825,6 +963,36 @@ export default function TopicContributionLoop({
     () => searchParams.get("scoreSlice")?.trim() || undefined,
     [searchParams],
   );
+  const activeScoreRelatedSlices = useMemo(
+    () =>
+      activeScoreLabel
+        ? getScoreTransparencySlices(activeScoreLabel, contributions)
+        : [],
+    [activeScoreLabel, contributions],
+  );
+  const activeScoreLatestVisibleContribution = useMemo(
+    () =>
+      activeScoreLabel
+        ? getLatestScoreTransparencyContribution(
+            activeScoreRelatedSlices,
+            contributions,
+          )
+        : null,
+    [activeScoreLabel, activeScoreRelatedSlices, contributions],
+  );
+  const activeScoreLatestUnresolvedContribution = useMemo(
+    () =>
+      activeScoreLabel
+        ? getLatestScoreTransparencyContribution(
+            activeScoreRelatedSlices,
+            contributions,
+            (contribution) =>
+              contribution.status === "pending" ||
+              contribution.status === "needs review",
+          )
+        : null,
+    [activeScoreLabel, activeScoreRelatedSlices, contributions],
+  );
   const highlightedSourceSummaryReference = useMemo(() => {
     if (!activeSourceSummaryLabel) {
       return null;
@@ -876,6 +1044,12 @@ export default function TopicContributionLoop({
 
     return `${pathname}${nextQuery ? `?${nextQuery}` : ""}#${getScoreAnchorId(activeScoreLabel)}`;
   }, [activeScoreLabel, pathname, searchParams]);
+  const activeScoreUnresolvedMatchesLatestVisible = Boolean(
+    activeScoreLatestUnresolvedContribution &&
+      activeScoreLatestVisibleContribution &&
+      activeScoreLatestUnresolvedContribution.contribution.id ===
+        activeScoreLatestVisibleContribution.contribution.id,
+  );
 
   function handleFilterPick(filter: ContributionFilter) {
     const nextSearchParams = new URLSearchParams(searchParams.toString());
@@ -1531,6 +1705,43 @@ export default function TopicContributionLoop({
                     Return to {activeScoreLabel}
                   </a>
                 </div>
+              </div>
+              <div className={styles.focusReferenceBlock}>
+                <span className={styles.sectionLabel}>Open review pressure</span>
+                {activeScoreLatestUnresolvedContribution ? (
+                  activeScoreUnresolvedMatchesLatestVisible ? (
+                    <p>
+                      The freshest visible record touching this score is still
+                      unresolved and could still move <strong>{activeScoreLabel}</strong>{" "}
+                      after human review.
+                    </p>
+                  ) : (
+                    <p>
+                      The newest unresolved public pressure that could still move{" "}
+                      <strong>{activeScoreLabel}</strong> is{" "}
+                      <a
+                        className={styles.summaryReferenceLink}
+                        href={getExactContributionLedgerHref(
+                          pathname,
+                          searchParams,
+                          activeScoreLatestUnresolvedContribution.contribution,
+                        )}
+                      >
+                        {activeScoreLatestUnresolvedContribution.contribution.title}
+                      </a>
+                      {" "}through{" "}
+                      <strong>
+                        {activeScoreLatestUnresolvedContribution.slice.label}
+                      </strong>
+                      .
+                    </p>
+                  )
+                ) : (
+                  <p>
+                    No unresolved public pressure is currently linked to{" "}
+                    <strong>{activeScoreLabel}</strong>.
+                  </p>
+                )}
               </div>
             </div>
           ) : null}
