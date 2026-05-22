@@ -686,6 +686,13 @@ export default async function TopicCardPage({
                       {contributorObjectionThatChangedCard.review.reviewerNote}
                     </p>
                   ) : null}
+                  <ContributionRecordContext
+                    contribution={contributorObjectionThatChangedCard}
+                    recordView="changed-card"
+                  />
+                  <ContributionAiOriginContext
+                    contribution={contributorObjectionThatChangedCard}
+                  />
                 </>
               ) : strongestLiveContributorObjection ? (
                 <>
@@ -705,6 +712,14 @@ export default async function TopicCardPage({
                     </strong>
                   </p>
                   <p>{strongestLiveContributorObjection.body}</p>
+                  <ContributionRecordContext
+                    contribution={strongestLiveContributorObjection}
+                    recordView={getContributionRecordView(strongestLiveContributorObjection)}
+                    targetLabel="Current record target"
+                  />
+                  <ContributionAiOriginContext
+                    contribution={strongestLiveContributorObjection}
+                  />
                 </>
               ) : (
                 <p>
