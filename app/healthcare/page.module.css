@@ -437,6 +437,21 @@
   background: rgba(var(--brand-red-rgb), 0.05);
 }
 
+.artifactFocusNotice {
+  display: grid;
+  gap: 10px;
+  margin-bottom: 18px;
+  padding: 16px 18px;
+  border: 1px solid rgba(var(--brand-blue-rgb), 0.18);
+  border-radius: 20px;
+  background: rgba(var(--brand-blue-rgb), 0.07);
+}
+
+.artifactFocusNotice p {
+  color: var(--foreground);
+  line-height: 1.65;
+}
+
 .draftPromptMeta {
   display: flex;
   flex-wrap: wrap;

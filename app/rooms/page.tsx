@@ -18,7 +18,7 @@ import { getHomeIntakeRoomCandidateAnchor } from "../lib/home-intake-artifact-li
 import { getHomeIntakeHeldQuestions } from "../lib/home-intake-held-questions";
 import { getHomeIntakeClosestMapPath } from "../lib/home-intake-map-path";
 import { summarizeHomeIntakeRoutingConsensus } from "../lib/home-intake-routing-consensus";
-import { listHomeIntakeEntries } from "../lib/home-intake-store";
+import { getHomeIntakeEntry, listHomeIntakeEntries } from "../lib/home-intake-store";
 import type { HomeIntakeRecord } from "../lib/home-intake-types";
 import {
   getInspectableTopics,
@@ -31,25 +31,36 @@ import styles from "./page.module.css";
 
 export const dynamic = "force-dynamic";
 
-function mergeLatestCookieCandidate(
-  roomCandidates: HomeIntakeRecord[],
-  cookieCandidate: HomeIntakeRecord | null,
+function getSingleSearchParam(
+  value: string | string[] | undefined,
 ) {
-  if (!cookieCandidate) {
+  if (typeof value === "string") {
+    return value;
+  }
+
+  return Array.isArray(value) ? value[0] : undefined;
+}
+
+function mergeVisibleRoomCandidate(
+  roomCandidates: HomeIntakeRecord[],
+  candidate: HomeIntakeRecord | null,
+) {
+  if (!candidate) {
     return roomCandidates;
   }
 
-  if (roomCandidates.some((item) => item.id === cookieCandidate.id)) {
+  if (roomCandidates.some((item) => item.id === candidate.id)) {
     return roomCandidates;
   }
 
-  return [cookieCandidate, ...roomCandidates].slice(0, 6);
+  return [candidate, ...roomCandidates].slice(0, 6);
 }
 
 export default async function RoomsPage({
   searchParams,
 }: {
   searchParams: Promise<{
+    intake?: string | string[];
     room?: string | string[];
     q?: string | string[];
   }>;
@@ -65,12 +76,16 @@ export default async function RoomsPage({
   const initialQuery = Array.isArray(resolvedSearchParams.q)
     ? resolvedSearchParams.q[0]
     : resolvedSearchParams.q;
-  const [liveCardIndex, roomCandidates] = await Promise.all([
+  const intakeId = getSingleSearchParam(resolvedSearchParams.intake);
+  const [liveCardIndex, roomCandidates, storedIntakeEntry] = await Promise.all([
     Promise.resolve(getLiveCardIndex()),
     listHomeIntakeEntries({
       routeKind: "new-room-draft",
       limit: 6,
     }),
+    intakeId && latestCookieIntake?.id !== intakeId
+      ? getHomeIntakeEntry(intakeId)
+      : Promise.resolve(null),
   ]);
   const cookieCandidate =
     latestCookieIntake?.routing.routeKind === "new-room-draft"
@@ -87,9 +102,17 @@ export default async function RoomsPage({
           routing: latestCookieIntake.routing,
         } satisfies HomeIntakeRecord)
       : null;
-  const visibleRoomCandidates = mergeLatestCookieCandidate(
-    roomCandidates,
-    cookieCandidate,
+  const routeEntryCandidate =
+    storedIntakeEntry?.routing.routeKind === "new-room-draft"
+      ? storedIntakeEntry
+      : null;
+  const focusedRoomCandidate =
+    intakeId && cookieCandidate?.id === intakeId
+      ? cookieCandidate
+      : routeEntryCandidate;
+  const visibleRoomCandidates = mergeVisibleRoomCandidate(
+    mergeVisibleRoomCandidate(roomCandidates, cookieCandidate),
+    focusedRoomCandidate,
   );
   const totalInspectableCards = roomDirectory.reduce((total, room) => {
     const roomData = issueRooms[room.slug as IssueRoomSlug];
@@ -259,6 +282,32 @@ export default async function RoomsPage({
                     id={getHomeIntakeRoomCandidateAnchor(entry.id)}
                     key={entry.id}
                   >
+                    {entry.id === intakeId ? (
+                      <div className={styles.artifactFocusNotice}>
+                        <div className={styles.artifactFocusMeta}>
+                          <span>Focused from intake artifact</span>
+                          <strong>Durable room candidate</strong>
+                        </div>
+                        <p>
+                          You arrived here from the intake record for this exact
+                          room candidate. Civic Logos is currently holding this
+                          issue here while the active room map stays too weak to
+                          absorb it cleanly.
+                        </p>
+                        <div className={styles.roomActions}>
+                          <Link className={styles.roomSubLink} href={`/intake/${entry.id}`}>
+                            Return to intake artifact
+                          </Link>
+                          <Link
+                            className={styles.roomSubLink}
+                            href={`/intake/${entry.id}#routing-ais`}
+                          >
+                            Open routing AIs
+                          </Link>
+                        </div>
+                      </div>
+                    ) : null}
+
                     <div className={styles.roomMeta}>
                       <span>{entry.routing.routeConfidence ?? "working draft"}</span>
                       <strong>Room candidate</strong>

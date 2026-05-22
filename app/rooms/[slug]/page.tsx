@@ -102,17 +102,17 @@ function getSingleSearchParam(
 
 function mergeCookieDraftTopic(
   drafts: HomeIntakeRecord[],
-  cookieDraft: HomeIntakeRecord | null,
+  draftTopic: HomeIntakeRecord | null,
 ) {
-  if (!cookieDraft) {
+  if (!draftTopic) {
     return drafts;
   }
 
-  if (drafts.some((item) => item.id === cookieDraft.id)) {
+  if (drafts.some((item) => item.id === draftTopic.id)) {
     return drafts;
   }
 
-  return [cookieDraft, ...drafts].slice(0, 6);
+  return [draftTopic, ...drafts].slice(0, 6);
 }
 
 export default async function IssueRoomPage({
@@ -172,7 +172,19 @@ export default async function IssueRoomPage({
           routing: cookieEntry.routing,
         } satisfies HomeIntakeRecord)
       : null;
-  const visibleDraftTopics = mergeCookieDraftTopic(draftTopics, cookieDraftTopic);
+  const routeDraftTopic =
+    routeEntry?.routing.routeKind === "room-topic-draft" &&
+    routeEntry.routing.roomSlug === roomSlug
+      ? routeEntry
+      : null;
+  const focusedDraftTopic =
+    intakeId && cookieDraftTopic?.id === intakeId
+      ? cookieDraftTopic
+      : routeDraftTopic;
+  const visibleDraftTopics = mergeCookieDraftTopic(
+    mergeCookieDraftTopic(draftTopics, cookieDraftTopic),
+    focusedDraftTopic,
+  );
 
   return (
     <div className={styles.page}>
@@ -449,6 +461,32 @@ export default async function IssueRoomPage({
                     id={getHomeIntakeDraftTopicAnchor(entry.id)}
                     key={entry.id}
                   >
+                    {entry.id === intakeId ? (
+                      <div className={styles.artifactFocusNotice}>
+                        <div className={styles.draftPromptMeta}>
+                          <span>Focused from intake artifact</span>
+                          <strong>Durable draft topic</strong>
+                        </div>
+                        <p>
+                          You arrived here from the intake record for this exact
+                          room-held draft topic. Civic Logos is currently
+                          storing the pressure here while the room still lacks a
+                          cleaner live-card path for it.
+                        </p>
+                        <div className={styles.trackItemActions}>
+                          <Link className={styles.trackItemSubLink} href={`/intake/${entry.id}`}>
+                            Return to intake artifact
+                          </Link>
+                          <Link
+                            className={styles.trackItemSubLink}
+                            href={`/intake/${entry.id}#routing-ais`}
+                          >
+                            Open routing AIs
+                          </Link>
+                        </div>
+                      </div>
+                    ) : null}
+
                     <div className={styles.trackMeta}>
                       <span>{entry.routing.routeConfidence ?? "working draft"}</span>
                       <strong>
