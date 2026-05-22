@@ -38,6 +38,54 @@ function getCandidatePromptCount(entry: HomeIntakeRecord) {
   return entry.promptCount ?? entry.relatedPrompts?.length ?? 1;
 }
 
+function getPromptHistoryHref(entry: HomeIntakeRecord) {
+  return `/intake/${entry.id}#prompt-history`;
+}
+
+function getPromptTimestamp(value: string) {
+  const timestamp = Date.parse(value);
+  return Number.isNaN(timestamp) ? 0 : timestamp;
+}
+
+function formatPromptDate(value: string) {
+  if (!value || !getPromptTimestamp(value)) {
+    return undefined;
+  }
+
+  return new Date(value).toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+}
+
+function getLatestAttachedPrompt(entry: HomeIntakeRecord) {
+  const promptHistory =
+    entry.relatedPrompts?.length
+      ? entry.relatedPrompts
+      : [
+          {
+            id: `${entry.id}-seed`,
+            prompt: entry.prompt,
+            createdAt: entry.updatedAt || entry.createdAt,
+          },
+        ];
+
+  return promptHistory.reduce<(typeof promptHistory)[number] | null>(
+    (latest, item) => {
+      if (!latest) {
+        return item;
+      }
+
+      return getPromptTimestamp(item.createdAt) >=
+        getPromptTimestamp(latest.createdAt)
+        ? item
+        : latest;
+    },
+    null,
+  );
+}
+
 export default async function RoomsPage({
   searchParams,
 }: {
@@ -225,60 +273,87 @@ export default async function RoomsPage({
 
           {visibleRoomCandidates.length ? (
             <div className={styles.roomGrid}>
-              {visibleRoomCandidates.map((entry) => (
-                <article className={styles.roomCard} key={entry.id}>
-                  <div className={styles.roomMeta}>
-                    <span>{entry.routing.routeConfidence ?? "working draft"}</span>
-                    <strong>Room candidate</strong>
-                  </div>
+              {visibleRoomCandidates.map((entry) => {
+                const promptCount = getCandidatePromptCount(entry);
+                const latestPrompt = getLatestAttachedPrompt(entry);
+                const latestPromptDate = latestPrompt
+                  ? formatPromptDate(latestPrompt.createdAt)
+                  : undefined;
 
-                  <h3>
-                    {entry.routing.suggestedTopicTitle ??
-                      entry.routing.suggestedCentralQuestion ??
-                      "Unmapped public question"}
-                  </h3>
-                  <p>
-                    {entry.routing.fitSummary ??
-                      entry.routing.suggestedTopicSummary ??
-                      "This candidate was opened because the current room map did not cleanly absorb the idea yet."}
-                  </p>
-
-                  {entry.routing.suggestedCentralQuestion ? (
-                    <div className={styles.liveCardNote}>
-                      <span>Central question</span>
-                      <strong>{entry.routing.suggestedCentralQuestion}</strong>
+                return (
+                  <article className={styles.roomCard} key={entry.id}>
+                    <div className={styles.roomMeta}>
+                      <span>{entry.routing.routeConfidence ?? "working draft"}</span>
+                      <strong>Room candidate</strong>
                     </div>
-                  ) : null}
 
-                  <div className={styles.roomFooter}>
-                    <span>
-                      {getCandidatePromptCount(entry)} prompt
-                      {getCandidatePromptCount(entry) === 1 ? "" : "s"} attached
-                    </span>
-                    <span>
-                      {entry.updatedAt
-                        ? `Updated ${new Date(entry.updatedAt).toLocaleDateString("en-US", {
-                            month: "short",
-                            day: "numeric",
-                            year: "numeric",
-                          })}`
-                        : entry.createdAt
-                          ? `Created ${new Date(entry.createdAt).toLocaleDateString("en-US", {
+                    <h3>
+                      {entry.routing.suggestedTopicTitle ??
+                        entry.routing.suggestedCentralQuestion ??
+                        "Unmapped public question"}
+                    </h3>
+                    <p>
+                      {entry.routing.fitSummary ??
+                        entry.routing.suggestedTopicSummary ??
+                        "This candidate was opened because the current room map did not cleanly absorb the idea yet."}
+                    </p>
+
+                    {entry.routing.suggestedCentralQuestion ? (
+                      <div className={styles.liveCardNote}>
+                        <span>Central question</span>
+                        <strong>{entry.routing.suggestedCentralQuestion}</strong>
+                      </div>
+                    ) : null}
+
+                    {latestPrompt ? (
+                      <div className={styles.promptPressureNote}>
+                        <div className={styles.promptPressureMeta}>
+                          <span>
+                            {promptCount > 1
+                              ? "Latest attached prompt"
+                              : "Current seed prompt"}
+                          </span>
+                          {latestPromptDate ? <strong>{latestPromptDate}</strong> : null}
+                        </div>
+                        <p>{latestPrompt.prompt}</p>
+                      </div>
+                    ) : null}
+
+                    <div className={styles.roomFooter}>
+                      <span>
+                        {promptCount} prompt{promptCount === 1 ? "" : "s"} attached
+                      </span>
+                      <span>
+                        {entry.updatedAt
+                          ? `Updated ${new Date(entry.updatedAt).toLocaleDateString("en-US", {
                               month: "short",
                               day: "numeric",
                               year: "numeric",
                             })}`
-                          : "Current browser-session candidate"}
-                    </span>
+                          : entry.createdAt
+                            ? `Created ${new Date(entry.createdAt).toLocaleDateString("en-US", {
+                                month: "short",
+                                day: "numeric",
+                                year: "numeric",
+                              })}`
+                            : "Current browser-session candidate"}
+                      </span>
 
-                    <div className={styles.roomActions}>
-                      <Link className={styles.roomLink} href={`/intake/${entry.id}`}>
-                        Open candidate
-                      </Link>
+                      <div className={styles.roomActions}>
+                        <Link className={styles.roomLink} href={`/intake/${entry.id}`}>
+                          Open candidate
+                        </Link>
+                        <Link
+                          className={styles.roomSubLink}
+                          href={getPromptHistoryHref(entry)}
+                        >
+                          Prompt history
+                        </Link>
+                      </div>
                     </div>
-                  </div>
-                </article>
-              ))}
+                  </article>
+                );
+              })}
             </div>
           ) : (
             <article className={styles.roomCard}>

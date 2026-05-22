@@ -187,6 +187,10 @@
   gap: 10px;
 }
 
+.listBlock[id] {
+  scroll-margin-top: 24px;
+}
+
 .listBlock h3,
 .providerCard strong {
   font-size: 1.12rem;

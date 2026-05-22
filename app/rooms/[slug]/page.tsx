@@ -104,6 +104,54 @@ function getPromptHistoryCount(entry: HomeIntakeRecord) {
   return entry.promptCount ?? entry.relatedPrompts?.length ?? 1;
 }
 
+function getPromptHistoryHref(entry: HomeIntakeRecord) {
+  return `/intake/${entry.id}#prompt-history`;
+}
+
+function getPromptTimestamp(value: string) {
+  const timestamp = Date.parse(value);
+  return Number.isNaN(timestamp) ? 0 : timestamp;
+}
+
+function formatPromptDate(value: string) {
+  if (!value || !getPromptTimestamp(value)) {
+    return undefined;
+  }
+
+  return new Date(value).toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+}
+
+function getLatestAttachedPrompt(entry: HomeIntakeRecord) {
+  const promptHistory =
+    entry.relatedPrompts?.length
+      ? entry.relatedPrompts
+      : [
+          {
+            id: `${entry.id}-seed`,
+            prompt: entry.prompt,
+            createdAt: entry.updatedAt || entry.createdAt,
+          },
+        ];
+
+  return promptHistory.reduce<(typeof promptHistory)[number] | null>(
+    (latest, item) => {
+      if (!latest) {
+        return item;
+      }
+
+      return getPromptTimestamp(item.createdAt) >=
+        getPromptTimestamp(latest.createdAt)
+        ? item
+        : latest;
+    },
+    null,
+  );
+}
+
 export default async function IssueRoomPage({
   params,
   searchParams,
@@ -407,27 +455,60 @@ export default async function IssueRoomPage({
             </div>
 
             <div className={styles.trackGrid}>
-              {visibleDraftTopics.map((entry) => (
-                <Link className={styles.trackItem} href={`/intake/${entry.id}`} key={entry.id}>
-                  <div className={styles.trackMeta}>
-                    <span>{entry.routing.routeConfidence ?? "working draft"}</span>
-                    <strong>
-                      {getPromptHistoryCount(entry)} prompt
-                      {getPromptHistoryCount(entry) === 1 ? "" : "s"} attached
-                    </strong>
-                  </div>
-                  <h3>
-                    {entry.routing.suggestedTopicTitle ??
-                      entry.routing.suggestedCentralQuestion ??
-                      "Draft topic"}
-                  </h3>
-                  <p>
-                    {entry.routing.suggestedTopicSummary ??
-                      entry.routing.fitSummary ??
-                      "This draft topic was opened because the room fit was clear but the current live cards did not absorb the idea cleanly yet."}
-                  </p>
-                </Link>
-              ))}
+              {visibleDraftTopics.map((entry) => {
+                const promptCount = getPromptHistoryCount(entry);
+                const latestPrompt = getLatestAttachedPrompt(entry);
+                const latestPromptDate = latestPrompt
+                  ? formatPromptDate(latestPrompt.createdAt)
+                  : undefined;
+
+                return (
+                  <article className={styles.trackItem} key={entry.id}>
+                    <div className={styles.trackMeta}>
+                      <span>{entry.routing.routeConfidence ?? "working draft"}</span>
+                      <strong>
+                        {promptCount} prompt{promptCount === 1 ? "" : "s"} attached
+                      </strong>
+                    </div>
+                    <h3>
+                      {entry.routing.suggestedTopicTitle ??
+                        entry.routing.suggestedCentralQuestion ??
+                        "Draft topic"}
+                    </h3>
+                    <p>
+                      {entry.routing.suggestedTopicSummary ??
+                        entry.routing.fitSummary ??
+                        "This draft topic was opened because the room fit was clear but the current live cards did not absorb the idea cleanly yet."}
+                    </p>
+
+                    {latestPrompt ? (
+                      <div className={styles.draftPromptNote}>
+                        <div className={styles.draftPromptMeta}>
+                          <span>
+                            {promptCount > 1
+                              ? "Latest attached prompt"
+                              : "Current seed prompt"}
+                          </span>
+                          {latestPromptDate ? <strong>{latestPromptDate}</strong> : null}
+                        </div>
+                        <p>{latestPrompt.prompt}</p>
+                      </div>
+                    ) : null}
+
+                    <div className={styles.trackItemActions}>
+                      <Link className={styles.trackItemLink} href={`/intake/${entry.id}`}>
+                        Open draft topic
+                      </Link>
+                      <Link
+                        className={styles.trackItemSubLink}
+                        href={getPromptHistoryHref(entry)}
+                      >
+                        Prompt history
+                      </Link>
+                    </div>
+                  </article>
+                );
+              })}
             </div>
           </section>
         ) : null}

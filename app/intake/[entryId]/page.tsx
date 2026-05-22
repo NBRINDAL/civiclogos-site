@@ -12,6 +12,7 @@ import {
   parseHomeIntakeCookie,
 } from "@/app/lib/home-intake-cookie";
 import { getHomeIntakeEntry, getHomeIntakeStoreMetadata } from "@/app/lib/home-intake-store";
+import type { HomeIntakePromptTrace } from "@/app/lib/home-intake-types";
 import styles from "./page.module.css";
 
 export const dynamic = "force-dynamic";
@@ -41,6 +42,34 @@ function getPromptHistoryCount(
   },
 ) {
   return entry.promptCount ?? entry.relatedPrompts?.length ?? 1;
+}
+
+function getPromptTimestamp(value: string) {
+  const timestamp = Date.parse(value);
+  return Number.isNaN(timestamp) ? 0 : timestamp;
+}
+
+function getPromptHistory(entry: {
+  id: string;
+  prompt: string;
+  createdAt: string;
+  updatedAt: string;
+  relatedPrompts?: HomeIntakePromptTrace[];
+}) {
+  const promptHistory =
+    entry.relatedPrompts?.length
+      ? entry.relatedPrompts
+      : [
+          {
+            id: `${entry.id}-seed`,
+            prompt: entry.prompt,
+            createdAt: entry.updatedAt || entry.createdAt,
+          },
+        ];
+
+  return promptHistory
+    .slice()
+    .sort((left, right) => getPromptTimestamp(right.createdAt) - getPromptTimestamp(left.createdAt));
 }
 
 export default async function IntakeEntryPage({
@@ -88,6 +117,9 @@ export default async function IntakeEntryPage({
     entry.routing.routeKind !== "existing-room"
       ? await buildHomeIntakeBrief(entry)
       : null;
+  const promptHistory =
+    entry.routing.routeKind === "existing-room" ? [] : getPromptHistory(entry);
+  const promptCount = getPromptHistoryCount(entry);
 
   return (
     <div className={styles.page}>
@@ -136,7 +168,7 @@ export default async function IntakeEntryPage({
               {entry.routing.routeKind !== "existing-room" ? (
                 <div>
                   <span>Attached prompts</span>
-                  <strong>{getPromptHistoryCount(entry)}</strong>
+                  <strong>{promptCount}</strong>
                 </div>
               ) : null}
               <div>
@@ -189,22 +221,22 @@ export default async function IntakeEntryPage({
             </div>
           ) : null}
 
-          {entry.routing.routeKind !== "existing-room" &&
-          entry.relatedPrompts &&
-          entry.relatedPrompts.length > 1 ? (
-            <div className={styles.listBlock}>
+          {entry.routing.routeKind !== "existing-room" && promptHistory.length ? (
+            <div className={styles.listBlock} id="prompt-history">
               <h3>
                 {entry.routing.routeKind === "room-topic-draft"
-                  ? "Supporting prompts already attached to this draft topic"
-                  : "Supporting prompts already attached to this candidate"}
+                  ? "Prompt history on this draft topic"
+                  : "Prompt history on this room candidate"}
               </h3>
+              <p>
+                {promptCount > 1
+                  ? `This object is now holding ${promptCount} related prompts. The latest pressure appears first so the room map can show what kept the issue alive.`
+                  : "This object is currently holding one public prompt. If more related prompts converge on the same issue, they will accumulate here instead of dissolving into separate routing receipts."}
+              </p>
               <ul>
-                {entry.relatedPrompts
-                  .slice()
-                  .reverse()
-                  .slice(0, 5)
-                  .map((item) => (
-                    <li key={item.id}>
+                {promptHistory.slice(0, 5).map((item) => (
+                  <li key={item.id}>
+                    {getPromptTimestamp(item.createdAt) ? (
                       <strong>
                         {new Date(item.createdAt).toLocaleDateString("en-US", {
                           month: "short",
@@ -212,10 +244,11 @@ export default async function IntakeEntryPage({
                           year: "numeric",
                         })}
                         :
-                      </strong>{" "}
-                      {item.prompt}
-                    </li>
-                  ))}
+                      </strong>
+                    ) : null}{" "}
+                    {item.prompt}
+                  </li>
+                ))}
               </ul>
             </div>
           ) : null}
@@ -243,6 +276,11 @@ export default async function IntakeEntryPage({
             {entry.routing.routeKind === "room-topic-draft" && roomHref ? (
               <Link className={styles.secondaryAction} href={`${roomHref}#draft-topics`}>
                 Open room draft topics
+              </Link>
+            ) : null}
+            {entry.routing.routeKind !== "existing-room" ? (
+              <Link className={styles.secondaryAction} href="#prompt-history">
+                Open prompt history
               </Link>
             ) : null}
             {topicHref ? (
