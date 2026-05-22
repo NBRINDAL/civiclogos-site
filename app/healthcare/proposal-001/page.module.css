@@ -409,6 +409,23 @@
   margin-top: 12px;
 }
 
+.scoreLatestRecord {
+  display: grid;
+  gap: 10px;
+  margin-top: 12px;
+  padding-top: 2px;
+}
+
+.scoreLatestRecord p {
+  color: var(--muted);
+  font-size: 0.94rem;
+  line-height: 1.68;
+}
+
+.scoreLatestRecord strong {
+  color: var(--foreground);
+}
+
 .scoreFocusNotice {
   display: grid;
   gap: 10px;

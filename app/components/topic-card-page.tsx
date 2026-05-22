@@ -71,6 +71,11 @@ type ContributionSliceDefinition = {
   lane?: DebateLane;
 };
 
+type ScoreTransparencySlice = ContributionSliceDefinition & {
+  count: number;
+  href: string;
+};
+
 type TopicCardPageProps = {
   roomSlug: IssueRoomSlug;
   card: TopicCardData;
@@ -406,6 +411,17 @@ function matchesContributionSlice(
   return true;
 }
 
+function getContributionActivityTimestamp(contribution: PublicContribution) {
+  const updatedTime = Date.parse(contribution.updatedAt);
+
+  if (!Number.isNaN(updatedTime) && updatedTime > 0) {
+    return updatedTime;
+  }
+
+  const createdTime = Date.parse(contribution.createdAt);
+  return Number.isNaN(createdTime) ? 0 : createdTime;
+}
+
 function getScoreTransparencySliceDefinitions(
   scoreLabel: string,
 ): ContributionSliceDefinition[] {
@@ -446,6 +462,64 @@ function getScoreTransparencySliceDefinitions(
     default:
       return [];
   }
+}
+
+function getScoreTransparencySlices(
+  scoreLabel: string,
+  liveContributions: readonly PublicContribution[],
+): ScoreTransparencySlice[] {
+  return getScoreTransparencySliceDefinitions(scoreLabel).map((slice) => ({
+    ...slice,
+    count: liveContributions.filter((contribution) =>
+      matchesContributionSlice(contribution, slice),
+    ).length,
+    href: getContributionLedgerHref({
+      recordView: slice.recordView,
+      attachment: slice.attachment,
+      reviewStatus: slice.reviewStatus,
+      origin: slice.origin,
+      lane: slice.lane,
+    }),
+  }));
+}
+
+function getLatestScoreTransparencyContribution(
+  slices: readonly ScoreTransparencySlice[],
+  liveContributions: readonly PublicContribution[],
+) {
+  let bestMatch:
+    | {
+        slice: ScoreTransparencySlice;
+        contribution: PublicContribution;
+      }
+    | null = null;
+
+  for (const slice of slices) {
+    const candidate = liveContributions
+      .filter((contribution) => matchesContributionSlice(contribution, slice))
+      .sort(
+        (left, right) =>
+          getContributionActivityTimestamp(right) -
+          getContributionActivityTimestamp(left),
+      )[0];
+
+    if (!candidate) {
+      continue;
+    }
+
+    if (
+      !bestMatch ||
+      getContributionActivityTimestamp(candidate) >
+        getContributionActivityTimestamp(bestMatch.contribution)
+    ) {
+      bestMatch = {
+        slice,
+        contribution: candidate,
+      };
+    }
+  }
+
+  return bestMatch;
 }
 
 function getSummaryFocusLedgerHref(
@@ -1165,21 +1239,15 @@ export default async function TopicCardPage({
             <div className={styles.scoreList}>
               {card.scorecard.map((item) => {
                 const isScoreFocused = activeScoreLabel === item.label;
-                const relatedSlices = getScoreTransparencySliceDefinitions(item.label).map(
-                  (slice) => ({
-                    ...slice,
-                    count: liveContributions.filter((contribution) =>
-                      matchesContributionSlice(contribution, slice),
-                    ).length,
-                    href: getContributionLedgerHref({
-                      recordView: slice.recordView,
-                      attachment: slice.attachment,
-                      reviewStatus: slice.reviewStatus,
-                      origin: slice.origin,
-                      lane: slice.lane,
-                    }),
-                  }),
+                const relatedSlices = getScoreTransparencySlices(
+                  item.label,
+                  liveContributions,
                 );
+                const latestScoreContribution =
+                  getLatestScoreTransparencyContribution(
+                    relatedSlices,
+                    liveContributions,
+                  );
 
                 return (
                   <div
@@ -1252,6 +1320,45 @@ export default async function TopicCardPage({
                               </Link>
                             ))}
                           </div>
+                        </div>
+                      ) : null}
+                      {latestScoreContribution ? (
+                        <div className={styles.scoreLatestRecord}>
+                          <span className={styles.scoreTransparencyLabel}>
+                            Latest visible pressure
+                          </span>
+                          <p>
+                            The freshest visible record touching this score is{" "}
+                            <strong>
+                              <Link
+                                className={styles.sourceLink}
+                                href={getExactContributionLedgerHref(
+                                  latestScoreContribution.contribution,
+                                  undefined,
+                                  item.label,
+                                  latestScoreContribution.slice.label,
+                                )}
+                              >
+                                {latestScoreContribution.contribution.title}
+                              </Link>
+                            </strong>
+                            {" "}through{" "}
+                            <strong>{latestScoreContribution.slice.label}</strong>.
+                          </p>
+                          <ContributionRecordContext
+                            contribution={latestScoreContribution.contribution}
+                            recordView={getContributionRecordView(
+                              latestScoreContribution.contribution,
+                            )}
+                            showReviewStatus
+                          />
+                          <ContributionAiOriginContext
+                            contribution={latestScoreContribution.contribution}
+                            sourceScoreLabel={item.label}
+                            sourceScoreSliceLabel={
+                              latestScoreContribution.slice.label
+                            }
+                          />
                         </div>
                       ) : null}
                     </details>
