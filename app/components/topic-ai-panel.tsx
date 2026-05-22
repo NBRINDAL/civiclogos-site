@@ -164,6 +164,36 @@ function getPromotionAttachmentFilterLabel(filter: PromotionAttachmentFilter) {
   }
 }
 
+function getContributionStatusLabel(filter: ContributionStatusFilter) {
+  switch (filter) {
+    case "needs-review":
+      return "Needs review";
+    case "pending":
+      return "Pending";
+    case "accepted":
+      return "Accepted";
+    case "incorporated":
+      return "Incorporated";
+    case "rejected":
+      return "Rejected";
+    default:
+      return filter;
+  }
+}
+
+function getContributionOriginLabel(origin: string) {
+  switch (origin) {
+    case "ai-origin":
+      return "AI-origin";
+    case "seed-example":
+      return "Prototype example";
+    case "human-submitted":
+      return "Public submission";
+    default:
+      return origin;
+  }
+}
+
 function getAttachmentCounts(messages: TopicChatMessage[]) {
   return (
     ["claim", "objection", "evidence", "assumption", "open-question", "none-yet"] as const
@@ -374,6 +404,23 @@ export default function TopicAiPanel({
     () => getSourceContributionRecordHref(searchParams),
     [searchParams],
   );
+  const sourceContributionContext = useMemo(() => {
+    const sourceReviewStatus = searchParams.get("sourceReviewStatus")?.trim();
+    const sourceAttachment = searchParams.get("sourceAttachment")?.trim();
+    const sourceOrigin = searchParams.get("sourceOrigin")?.trim();
+    const sourceLane = searchParams.get("sourceLane")?.trim();
+
+    return {
+      reviewStatus: sourceReviewStatus
+        ? getContributionStatusLabel(sourceReviewStatus as ContributionStatusFilter)
+        : null,
+      attachment: sourceAttachment
+        ? getPromotionAttachmentFilterLabel(sourceAttachment as PromotionAttachmentFilter)
+        : null,
+      origin: sourceOrigin ? getContributionOriginLabel(sourceOrigin) : null,
+      lane: sourceLane ? getDebateLaneLabel(sourceLane as DebateLane) : null,
+    };
+  }, [searchParams]);
   const sourceSummaryLabel = searchParams.get("sourceSummary")?.trim() ?? "";
   const hasHighlightedMessageRequest = highlightedMessageId.length > 0;
   const highlightedTranscriptItem = useMemo(
@@ -550,6 +597,33 @@ export default function TopicAiPanel({
             {sourceContributionHref ? (
               <div className={styles.sourceTurnActions}>
                 <span className={styles.sessionImpactLabel}>Public record origin</span>
+                <div className={styles.sourceContextMap}>
+                  {sourceSummaryLabel ? (
+                    <span className={styles.sourceContextChip}>
+                      Summary: {sourceSummaryLabel}
+                    </span>
+                  ) : null}
+                  {sourceContributionContext.lane ? (
+                    <span className={styles.sourceContextChip}>
+                      Lane: {sourceContributionContext.lane}
+                    </span>
+                  ) : null}
+                  {sourceContributionContext.reviewStatus ? (
+                    <span className={styles.sourceContextChip}>
+                      Status: {sourceContributionContext.reviewStatus}
+                    </span>
+                  ) : null}
+                  {sourceContributionContext.origin ? (
+                    <span className={styles.sourceContextChip}>
+                      Origin: {sourceContributionContext.origin}
+                    </span>
+                  ) : null}
+                  {sourceContributionContext.attachment ? (
+                    <span className={styles.sourceContextChip}>
+                      Target: {sourceContributionContext.attachment}
+                    </span>
+                  ) : null}
+                </div>
                 <div className={styles.sessionTargetMap}>
                   <a className={styles.sessionTargetLink} href={sourceContributionHref}>
                     {sourceSummaryLabel
@@ -574,6 +648,33 @@ export default function TopicAiPanel({
             {sourceContributionHref ? (
               <div className={styles.sourceTurnActions}>
                 <span className={styles.sessionImpactLabel}>Public record origin</span>
+                <div className={styles.sourceContextMap}>
+                  {sourceSummaryLabel ? (
+                    <span className={styles.sourceContextChip}>
+                      Summary: {sourceSummaryLabel}
+                    </span>
+                  ) : null}
+                  {sourceContributionContext.lane ? (
+                    <span className={styles.sourceContextChip}>
+                      Lane: {sourceContributionContext.lane}
+                    </span>
+                  ) : null}
+                  {sourceContributionContext.reviewStatus ? (
+                    <span className={styles.sourceContextChip}>
+                      Status: {sourceContributionContext.reviewStatus}
+                    </span>
+                  ) : null}
+                  {sourceContributionContext.origin ? (
+                    <span className={styles.sourceContextChip}>
+                      Origin: {sourceContributionContext.origin}
+                    </span>
+                  ) : null}
+                  {sourceContributionContext.attachment ? (
+                    <span className={styles.sourceContextChip}>
+                      Target: {sourceContributionContext.attachment}
+                    </span>
+                  ) : null}
+                </div>
                 <div className={styles.sessionTargetMap}>
                   <a className={styles.sessionTargetLink} href={sourceContributionHref}>
                     {sourceSummaryLabel
