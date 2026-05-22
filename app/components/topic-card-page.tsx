@@ -589,6 +589,42 @@ function getScoreFocusHref(
   return `${query ? `?${query}` : ""}#${getScoreAnchorId(scoreLabel)}`;
 }
 
+function getScoreItemHref(
+  scoreLabel: string,
+  scoreSliceLabel?: string,
+  searchParams?: Record<string, string | string[] | undefined>,
+) {
+  const params = new URLSearchParams();
+
+  for (const [key, value] of Object.entries(searchParams ?? {})) {
+    if (key === "scoreLabel" || key === "scoreSlice") {
+      continue;
+    }
+
+    if (Array.isArray(value)) {
+      for (const item of value) {
+        if (item) {
+          params.append(key, item);
+        }
+      }
+      continue;
+    }
+
+    if (value) {
+      params.set(key, value);
+    }
+  }
+
+  params.set("scoreLabel", scoreLabel);
+
+  if (scoreSliceLabel) {
+    params.set("scoreSlice", scoreSliceLabel);
+  }
+
+  const query = params.toString();
+  return `${query ? `?${query}` : ""}#${getScoreAnchorId(scoreLabel)}`;
+}
+
 function ContributionRecordContext({
   contribution,
   recordView,
@@ -745,6 +781,8 @@ function SummaryFocusNotice({
   contribution,
   ledgerHref,
   scoreReturnHref,
+  scoreReferences,
+  searchParams,
   summaryReferences,
   summaryLabel,
 }: {
@@ -755,6 +793,8 @@ function SummaryFocusNotice({
   contribution: null | PublicContribution;
   ledgerHref: string;
   scoreReturnHref?: string;
+  scoreReferences: ContributionScoreReference[];
+  searchParams?: Record<string, string | string[] | undefined>;
   summaryReferences: ContributionSummaryReference[];
   summaryLabel: string;
 }) {
@@ -803,6 +843,13 @@ function SummaryFocusNotice({
 
   const alternateSummaryReferences = summaryReferences.filter(
     (reference) => reference.label !== summaryLabel,
+  );
+  const alternateScoreReferences = scoreReferences.filter(
+    (reference) =>
+      !(
+        activeScoreLabel === reference.scoreLabel &&
+        activeScoreSliceLabel === reference.scoreSliceLabel
+      ),
   );
 
   return (
@@ -888,6 +935,30 @@ function SummaryFocusNotice({
                 key={`${reference.href}-${reference.label}`}
               >
                 {reference.label}
+              </Link>
+            ))}
+          </div>
+        </div>
+      ) : null}
+      {alternateScoreReferences.length ? (
+        <div className={styles.summaryReferenceBlock}>
+          <span className={styles.metaParagraph}>
+            {activeScoreLabel
+              ? "Also used by scorecard"
+              : "Scorecard items using this record"}
+          </span>
+          <div className={styles.summaryReferenceList}>
+            {alternateScoreReferences.map((reference) => (
+              <Link
+                className={styles.summaryReferenceLink}
+                href={getScoreItemHref(
+                  reference.scoreLabel,
+                  reference.scoreSliceLabel,
+                  searchParams,
+                )}
+                key={`${reference.scoreLabel}-${reference.scoreSliceLabel}`}
+              >
+                {reference.scoreLabel} · {reference.scoreSliceLabel}
               </Link>
             ))}
           </div>
@@ -1191,6 +1262,8 @@ export default async function TopicCardPage({
       : null;
   const summaryFocusedReferences =
     activeSummaryRecordId ? contributionSummaryReferences[activeSummaryRecordId] ?? [] : [];
+  const summaryFocusedScoreReferences =
+    activeSummaryRecordId ? contributionScoreReferences[activeSummaryRecordId] ?? [] : [];
 
   return (
     <div className={styles.page}>
@@ -1256,6 +1329,8 @@ export default async function TopicCardPage({
                 contribution={summaryFocusedContribution}
                 ledgerHref={summaryFocusLedgerHref}
                 scoreReturnHref={scoreFocusHref}
+                scoreReferences={summaryFocusedScoreReferences}
+                searchParams={searchParams}
                 summaryReferences={summaryFocusedReferences}
                 summaryLabel="Assumption layer"
               />
@@ -1272,6 +1347,8 @@ export default async function TopicCardPage({
                 contribution={summaryFocusedContribution}
                 ledgerHref={summaryFocusLedgerHref}
                 scoreReturnHref={scoreFocusHref}
+                scoreReferences={summaryFocusedScoreReferences}
+                searchParams={searchParams}
                 summaryReferences={summaryFocusedReferences}
                 summaryLabel="Objection layer"
               />
@@ -1441,6 +1518,8 @@ export default async function TopicCardPage({
                 contribution={summaryFocusedContribution}
                 ledgerHref={summaryFocusLedgerHref}
                 scoreReturnHref={scoreFocusHref}
+                scoreReferences={summaryFocusedScoreReferences}
+                searchParams={searchParams}
                 summaryReferences={summaryFocusedReferences}
                 summaryLabel="Evidence layer"
               />
@@ -1471,6 +1550,8 @@ export default async function TopicCardPage({
                 contribution={summaryFocusedContribution}
                 ledgerHref={summaryFocusLedgerHref}
                 scoreReturnHref={scoreFocusHref}
+                scoreReferences={summaryFocusedScoreReferences}
+                searchParams={searchParams}
                 summaryReferences={summaryFocusedReferences}
                 summaryLabel="Visible evidence record"
               />
@@ -1542,6 +1623,8 @@ export default async function TopicCardPage({
               contribution={summaryFocusedContribution}
               ledgerHref={summaryFocusLedgerHref}
               scoreReturnHref={scoreFocusHref}
+              scoreReferences={summaryFocusedScoreReferences}
+              searchParams={searchParams}
               summaryReferences={summaryFocusedReferences}
               summaryLabel="Review-driven record"
             />
@@ -1561,6 +1644,8 @@ export default async function TopicCardPage({
                 contribution={summaryFocusedContribution}
                 ledgerHref={summaryFocusLedgerHref}
                 scoreReturnHref={scoreFocusHref}
+                scoreReferences={summaryFocusedScoreReferences}
+                searchParams={searchParams}
                 summaryReferences={summaryFocusedReferences}
                 summaryLabel="Open-question layer"
               />
@@ -1820,6 +1905,8 @@ export default async function TopicCardPage({
               contribution={summaryFocusedContribution}
               ledgerHref={summaryFocusLedgerHref}
               scoreReturnHref={scoreFocusHref}
+              scoreReferences={summaryFocusedScoreReferences}
+              searchParams={searchParams}
               summaryReferences={summaryFocusedReferences}
               summaryLabel="Open pressure"
             />
@@ -1838,6 +1925,8 @@ export default async function TopicCardPage({
                 contribution={summaryFocusedContribution}
                 ledgerHref={summaryFocusLedgerHref}
                 scoreReturnHref={scoreFocusHref}
+                scoreReferences={summaryFocusedScoreReferences}
+                searchParams={searchParams}
                 summaryReferences={summaryFocusedReferences}
                 summaryLabel="Pressure by lane"
               />
@@ -2333,6 +2422,8 @@ export default async function TopicCardPage({
                     contribution={summaryFocusedContribution}
                     ledgerHref={summaryFocusLedgerHref}
                     scoreReturnHref={scoreFocusHref}
+                    scoreReferences={summaryFocusedScoreReferences}
+                    searchParams={searchParams}
                     summaryReferences={summaryFocusedReferences}
                     summaryLabel="Manual cycle - Changed card"
                   />
@@ -2389,6 +2480,8 @@ export default async function TopicCardPage({
                 contribution={summaryFocusedContribution}
                 ledgerHref={summaryFocusLedgerHref}
                 scoreReturnHref={scoreFocusHref}
+                scoreReferences={summaryFocusedScoreReferences}
+                searchParams={searchParams}
                 summaryReferences={summaryFocusedReferences}
                 summaryLabel="Manual cycle - Needs attention"
               />
@@ -2445,6 +2538,8 @@ export default async function TopicCardPage({
                 contribution={summaryFocusedContribution}
                 ledgerHref={summaryFocusLedgerHref}
                 scoreReturnHref={scoreFocusHref}
+                scoreReferences={summaryFocusedScoreReferences}
+                searchParams={searchParams}
                 summaryReferences={summaryFocusedReferences}
                 summaryLabel="AI-assisted record activity"
               />
@@ -2622,6 +2717,8 @@ export default async function TopicCardPage({
                 contribution={summaryFocusedContribution}
                 ledgerHref={summaryFocusLedgerHref}
                 scoreReturnHref={scoreFocusHref}
+                scoreReferences={summaryFocusedScoreReferences}
+                searchParams={searchParams}
                 summaryReferences={summaryFocusedReferences}
                 summaryLabel="Recent human review decisions"
               />
@@ -2823,6 +2920,8 @@ export default async function TopicCardPage({
               contribution={summaryFocusedContribution}
               ledgerHref={summaryFocusLedgerHref}
               scoreReturnHref={scoreFocusHref}
+              scoreReferences={summaryFocusedScoreReferences}
+              searchParams={searchParams}
               summaryReferences={summaryFocusedReferences}
               summaryLabel="Contribution-driven trace"
             />
