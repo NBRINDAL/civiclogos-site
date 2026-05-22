@@ -10,6 +10,7 @@ import {
   formatPromptDate,
   getEarliestAttachedPrompt,
   getLatestAttachedPrompt,
+  getPromptEvolution,
   getPromptHistoryCount,
   getPromptHistoryHref,
 } from "../lib/home-intake-prompt-history";
@@ -232,6 +233,7 @@ export default async function RoomsPage({
                 const promptCount = getPromptHistoryCount(entry);
                 const latestPrompt = getLatestAttachedPrompt(entry);
                 const earliestPrompt = getEarliestAttachedPrompt(entry);
+                const promptEvolution = getPromptEvolution(entry);
                 const latestPromptDate = latestPrompt
                   ? formatPromptDate(latestPrompt.createdAt)
                   : undefined;
@@ -296,6 +298,19 @@ export default async function RoomsPage({
                         </strong>
                       </div>
                     </div>
+
+                    {promptEvolution ? (
+                      <div className={styles.promptEvolution}>
+                        <div className={styles.promptEvolutionItem}>
+                          <span>Started with</span>
+                          <p>{promptEvolution.earliest.prompt}</p>
+                        </div>
+                        <div className={styles.promptEvolutionItem}>
+                          <span>Latest pressure</span>
+                          <p>{promptEvolution.latest.prompt}</p>
+                        </div>
+                      </div>
+                    ) : null}
 
                     <div className={styles.roomFooter}>
                       <span>

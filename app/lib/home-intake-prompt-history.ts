@@ -63,3 +63,21 @@ export function getEarliestAttachedPrompt(entry: HomeIntakePromptCarrier) {
   const promptHistory = getPromptHistory(entry);
   return promptHistory[promptHistory.length - 1] ?? null;
 }
+
+export function getPromptEvolution(entry: HomeIntakePromptCarrier) {
+  const earliest = getEarliestAttachedPrompt(entry);
+  const latest = getLatestAttachedPrompt(entry);
+
+  if (!earliest || !latest) {
+    return null;
+  }
+
+  const changed =
+    earliest.id !== latest.id || earliest.prompt !== latest.prompt;
+
+  if (!changed) {
+    return null;
+  }
+
+  return { earliest, latest };
+}

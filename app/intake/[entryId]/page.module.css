@@ -232,6 +232,33 @@
   line-height: 1.4;
 }
 
+.promptEvolution {
+  display: grid;
+  gap: 10px;
+}
+
+.promptEvolutionItem {
+  display: grid;
+  gap: 8px;
+  padding: 14px 16px;
+  border: 1px solid rgba(var(--brand-blue-rgb), 0.12);
+  border-radius: 18px;
+  background: rgba(var(--brand-blue-rgb), 0.05);
+}
+
+.promptEvolutionItem span {
+  color: var(--signal);
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.promptEvolutionItem p {
+  color: var(--foreground);
+  line-height: 1.65;
+}
+
 .actions {
   display: flex;
   flex-wrap: wrap;

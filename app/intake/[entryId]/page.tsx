@@ -15,6 +15,7 @@ import {
   formatPromptDate,
   getEarliestAttachedPrompt,
   getLatestAttachedPrompt,
+  getPromptEvolution,
   getPromptHistory,
   getPromptHistoryCount,
   getPromptHistoryHref,
@@ -99,6 +100,10 @@ export default async function IntakeEntryPage({
     entry.routing.routeKind === "existing-room"
       ? null
       : getLatestAttachedPrompt(entry);
+  const promptEvolution =
+    entry.routing.routeKind === "existing-room"
+      ? null
+      : getPromptEvolution(entry);
   const earliestPromptDate = earliestPrompt
     ? formatPromptDate(earliestPrompt.createdAt)
     : undefined;
@@ -240,6 +245,18 @@ export default async function IntakeEntryPage({
                   </strong>
                 </div>
               </div>
+              {promptEvolution ? (
+                <div className={styles.promptEvolution}>
+                  <div className={styles.promptEvolutionItem}>
+                    <span>Started with</span>
+                    <p>{promptEvolution.earliest.prompt}</p>
+                  </div>
+                  <div className={styles.promptEvolutionItem}>
+                    <span>Latest pressure</span>
+                    <p>{promptEvolution.latest.prompt}</p>
+                  </div>
+                </div>
+              ) : null}
               <ul>
                 {promptHistory.slice(0, 5).map((item) => (
                   <li key={item.id}>

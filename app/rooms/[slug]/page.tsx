@@ -19,6 +19,7 @@ import {
   formatPromptDate,
   getEarliestAttachedPrompt,
   getLatestAttachedPrompt,
+  getPromptEvolution,
   getPromptHistoryCount,
   getPromptHistoryHref,
 } from "../../lib/home-intake-prompt-history";
@@ -414,6 +415,7 @@ export default async function IssueRoomPage({
                 const promptCount = getPromptHistoryCount(entry);
                 const latestPrompt = getLatestAttachedPrompt(entry);
                 const earliestPrompt = getEarliestAttachedPrompt(entry);
+                const promptEvolution = getPromptEvolution(entry);
                 const latestPromptDate = latestPrompt
                   ? formatPromptDate(latestPrompt.createdAt)
                   : undefined;
@@ -472,6 +474,19 @@ export default async function IssueRoomPage({
                         </strong>
                       </div>
                     </div>
+
+                    {promptEvolution ? (
+                      <div className={styles.promptEvolution}>
+                        <div className={styles.promptEvolutionItem}>
+                          <span>Started with</span>
+                          <p>{promptEvolution.earliest.prompt}</p>
+                        </div>
+                        <div className={styles.promptEvolutionItem}>
+                          <span>Latest pressure</span>
+                          <p>{promptEvolution.latest.prompt}</p>
+                        </div>
+                      </div>
+                    ) : null}
 
                     <div className={styles.trackItemActions}>
                       <Link className={styles.trackItemLink} href={`/intake/${entry.id}`}>
