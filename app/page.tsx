@@ -101,6 +101,7 @@ export default async function Home({
     sourceScoreOpenPressure?: string | string[];
     sourceExactRecordTitle?: string | string[];
     sourceExactRecordState?: string | string[];
+    sourceExactRecordPilotGrounding?: string | string[];
     sourceExactRecordOrigin?: string | string[];
     sourceExactRecordSlice?: string | string[];
     sourceExactRecordTarget?: string | string[];
@@ -146,6 +147,9 @@ export default async function Home({
   );
   const sourceExactRecordState = getFirstValue(
     resolvedSearchParams.sourceExactRecordState,
+  );
+  const sourceExactRecordPilotGrounding = getFirstValue(
+    resolvedSearchParams.sourceExactRecordPilotGrounding,
   );
   const sourceExactRecordOrigin = getFirstValue(
     resolvedSearchParams.sourceExactRecordOrigin,
@@ -255,6 +259,9 @@ export default async function Home({
     sourceExactRecordOrigin
       ? { label: "Record origin", value: sourceExactRecordOrigin }
       : null,
+    sourceExactRecordPilotGrounding
+      ? { label: "Pilot grounding", value: sourceExactRecordPilotGrounding }
+      : null,
     sourceExactRecordSlice
       ? { label: "Record slice", value: sourceExactRecordSlice }
       : null,
@@ -337,6 +344,9 @@ export default async function Home({
             : null,
           sourceExactRecordOrigin
             ? `- Record origin: ${sourceExactRecordOrigin}`
+            : null,
+          sourceExactRecordPilotGrounding
+            ? `- Pilot grounding: ${sourceExactRecordPilotGrounding}`
             : null,
           sourceExactRecordSlice
             ? `- Record slice: ${sourceExactRecordSlice}`

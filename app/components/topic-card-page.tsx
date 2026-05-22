@@ -111,6 +111,7 @@ type ScorePressureContext = {
 type PilotRecordContext = {
   contribution: PublicContribution;
   sliceLabel: string;
+  pilotGrounding: string;
 };
 
 type TopicCardIntakeContext = {
@@ -209,41 +210,175 @@ function getPilotInquiryRecordContext({
   changedCardContributions: PublicContribution[];
   liveContributions: PublicContribution[];
 }): PilotRecordContext | null {
-  if (activeScoreLatestVisibleContribution) {
+  const getPilotCandidateStrength = (contribution: PublicContribution) => {
+    let score = 0;
+
+    if (contribution.review?.changedSynthesis === true) {
+      score += 4;
+    }
+
+    if (contribution.review?.assignedToKind === "evidence") {
+      score += 3;
+    } else if (contribution.review?.assignedToKind === "assumption") {
+      score += 2;
+    } else if (contribution.review?.assignedToKind === "open-question") {
+      score += 1;
+    }
+
+    if (contribution.evidenceDocument || contribution.evidenceSource) {
+      score += 2;
+    }
+
+    if (contribution.status === "incorporated") {
+      score += 2;
+    } else if (contribution.status === "accepted") {
+      score += 1;
+    }
+
+    return score;
+  };
+
+  const sortPilotCandidates = (contributions: PublicContribution[]) =>
+    [...contributions].sort((left, right) => {
+      const strengthDelta =
+        getPilotCandidateStrength(right) - getPilotCandidateStrength(left);
+
+      if (strengthDelta !== 0) {
+        return strengthDelta;
+      }
+
+      const reviewedDelta =
+        new Date(right.review?.reviewedAt ?? 0).getTime() -
+        new Date(left.review?.reviewedAt ?? 0).getTime();
+
+      if (reviewedDelta !== 0) {
+        return reviewedDelta;
+      }
+
+      return (
+        new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime()
+      );
+    });
+
+  const buildPilotRecordContext = (
+    contribution: PublicContribution,
+    sliceLabel: string,
+  ): PilotRecordContext => {
+    const origin = getContributionOrigin(contribution);
+    const hasReviewedNonSeedRecord = liveContributions.some(
+      (item) => getContributionOrigin(item) !== "seed-example" && item.review?.reviewedAt,
+    );
+
+    if (origin === "seed-example") {
+      return {
+        contribution,
+        sliceLabel,
+        pilotGrounding: hasReviewedNonSeedRecord
+          ? "A public-submission or AI-origin record is now visible, but this prototype example is still the strongest reviewed live object currently carrying the pilot handoff."
+          : "The strongest visible pilot-facing record is still a prototype example because no public submission or AI-origin contribution has yet been reviewed into a stronger live object.",
+      };
+    }
+
+    if (contribution.review?.reviewedAt) {
+      return {
+        contribution,
+        sliceLabel,
+        pilotGrounding:
+          "Selected as the strongest reviewed public-facing record currently visible on this card.",
+      };
+    }
+
     return {
-      contribution: activeScoreLatestVisibleContribution.contribution,
-      sliceLabel: activeScoreLatestVisibleContribution.slice.label,
+      contribution,
+      sliceLabel,
+      pilotGrounding:
+        "No reviewed public-facing record has overtaken this yet, so the pilot handoff is carrying the strongest visible live pressure still awaiting human review.",
     };
+  };
+
+  if (activeScoreLatestVisibleContribution) {
+    return buildPilotRecordContext(
+      activeScoreLatestVisibleContribution.contribution,
+      activeScoreLatestVisibleContribution.slice.label,
+    );
   }
 
   if (activeScoreLabel) {
     return null;
   }
 
-  const needsReviewContribution = liveContributions.find(
+  const needsReviewContributions = liveContributions.filter(
     (contribution) =>
       contribution.status === "pending" || contribution.status === "needs review",
   );
+  const reviewedChangedNonSeedContributions = changedCardContributions.filter(
+    (contribution) =>
+      getContributionOrigin(contribution) !== "seed-example" &&
+      Boolean(contribution.review?.reviewedAt),
+  );
+  const reviewedVisibleNonSeedContributions = liveContributions.filter(
+    (contribution) =>
+      getContributionOrigin(contribution) !== "seed-example" &&
+      Boolean(contribution.review?.reviewedAt),
+  );
+  const unresolvedNonSeedContributions = needsReviewContributions.filter(
+    (contribution) => getContributionOrigin(contribution) !== "seed-example",
+  );
+  const reviewedChangedContributions = changedCardContributions.filter((contribution) =>
+    Boolean(contribution.review?.reviewedAt),
+  );
+  const reviewedVisibleContributions = liveContributions.filter((contribution) =>
+    Boolean(contribution.review?.reviewedAt),
+  );
 
-  if (changedCardContributions[0]) {
-    return {
-      contribution: changedCardContributions[0],
-      sliceLabel: "Changed card",
-    };
+  const reviewedChangedNonSeedContribution = sortPilotCandidates(
+    reviewedChangedNonSeedContributions,
+  )[0];
+
+  if (reviewedChangedNonSeedContribution) {
+    return buildPilotRecordContext(reviewedChangedNonSeedContribution, "Changed card");
   }
 
+  const reviewedVisibleNonSeedContribution = sortPilotCandidates(
+    reviewedVisibleNonSeedContributions,
+  )[0];
+
+  if (reviewedVisibleNonSeedContribution) {
+    return buildPilotRecordContext(reviewedVisibleNonSeedContribution, "Visible record");
+  }
+
+  const unresolvedNonSeedContribution = sortPilotCandidates(
+    unresolvedNonSeedContributions,
+  )[0];
+
+  if (unresolvedNonSeedContribution) {
+    return buildPilotRecordContext(unresolvedNonSeedContribution, "Needs review");
+  }
+
+  const reviewedChangedContribution = sortPilotCandidates(
+    reviewedChangedContributions,
+  )[0];
+
+  if (reviewedChangedContribution) {
+    return buildPilotRecordContext(reviewedChangedContribution, "Changed card");
+  }
+
+  const reviewedVisibleContribution = sortPilotCandidates(
+    reviewedVisibleContributions,
+  )[0];
+
+  if (reviewedVisibleContribution) {
+    return buildPilotRecordContext(reviewedVisibleContribution, "Visible record");
+  }
+
+  const needsReviewContribution = sortPilotCandidates(needsReviewContributions)[0];
+
   if (needsReviewContribution) {
-    return {
-      contribution: needsReviewContribution,
-      sliceLabel: "Needs review",
-    };
+    return buildPilotRecordContext(needsReviewContribution, "Needs review");
   }
 
   if (liveContributions[0]) {
-    return {
-      contribution: liveContributions[0],
-      sliceLabel: "Visible record",
-    };
+    return buildPilotRecordContext(liveContributions[0], "Visible record");
   }
 
   return null;
@@ -1836,6 +1971,10 @@ export default async function TopicCardPage({
         institutionalPilotRecordContext.contribution.title,
       );
       params.set(
+        "sourceExactRecordPilotGrounding",
+        institutionalPilotRecordContext.pilotGrounding,
+      );
+      params.set(
         "sourceExactRecordOrigin",
         getContributionOriginLabel(
           getContributionOrigin(institutionalPilotRecordContext.contribution),
@@ -3142,6 +3281,10 @@ export default async function TopicCardPage({
                       )}
                       showReviewStatus
                     />
+                    <p className={styles.metaParagraph}>
+                      Pilot grounding:{" "}
+                      {institutionalPilotRecordContext.pilotGrounding}
+                    </p>
                     {institutionalPilotRecordInterpretation ? (
                       <p className={styles.metaParagraph}>
                         {institutionalPilotRecordInterpretation.label}:{" "}
