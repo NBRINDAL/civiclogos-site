@@ -1690,8 +1690,15 @@ export default async function TopicCardPage({
           ? "Held as a room candidate because the active map still does not absorb it cleanly enough."
           : "Still being read through a current intake route into the live room map."
       : null;
-  const showInstitutionalPilotCta =
-    roomSlug === "institutional-trust" && card.id === "topic-001";
+  const institutionalPilotCtaVariant =
+    card.id === "topic-001"
+      ? roomSlug === "institutional-trust"
+        ? "trust"
+        : roomSlug === "healthcare"
+          ? "healthcare"
+          : null
+      : null;
+  const showInstitutionalPilotCta = Boolean(institutionalPilotCtaVariant);
   const institutionalPilotSourceTopicHref = (() => {
     const baseHref = getRoomTopicHref(roomSlug, card.id);
     const params = new URLSearchParams();
@@ -2961,16 +2968,47 @@ export default async function TopicCardPage({
         {showInstitutionalPilotCta ? (
           <section className={styles.panel}>
             <span className={styles.eyebrow}>Institutional pilot</span>
-            <h2>Request an institutional review pilot.</h2>
+            <h2>
+              {institutionalPilotCtaVariant === "healthcare"
+                ? "Use this healthcare card as a Public Review Stake style pilot object."
+                : "Request an institutional review pilot."}
+            </h2>
             <p>
-              Civic Logos can use a room like this to structure a hard public or
-              institutional question into a living review object. Paying for the
-              pilot funds review capacity, evidence work, synthesis labor, and
-              public memory. It does not buy favorable conclusions.
+              {institutionalPilotCtaVariant === "healthcare"
+                ? "This live healthcare card already behaves like the kind of review object a pilot would need: visible contributions, pending review, AI-assisted sorting, uploaded evidence, and a revisable public record. A pilot here would fund reviewer time, evidence work, synthesis labor, and public memory without buying conclusions."
+                : "Civic Logos can use a room like this to structure a hard public or institutional question into a living review object. Paying for the pilot funds review capacity, evidence work, synthesis labor, and public memory. It does not buy favorable conclusions."}
             </p>
 
+            {institutionalPilotCtaVariant === "healthcare" ? (
+              <div className={styles.scoreFocusNotice}>
+                <span className={styles.scoreTransparencyLabel}>
+                  Why this card is pilot-ready
+                </span>
+                <p>
+                  The current live object shows{" "}
+                  <strong>{liveContributions.length}</strong> visible record
+                  entr{liveContributions.length === 1 ? "y" : "ies"},{" "}
+                  <strong>
+                    {contributionStatusCounts.pending +
+                      contributionStatusCounts.needsReview}
+                  </strong>{" "}
+                  still waiting on human review,{" "}
+                  <strong>{assistedRecordContributions.length}</strong> AI-origin
+                  contribution
+                  {assistedRecordContributions.length === 1 ? "" : "s"}, and{" "}
+                  <strong>{documentBackedContributions.length}</strong>{" "}
+                  document-backed contribution
+                  {documentBackedContributions.length === 1 ? "" : "s"}.
+                </p>
+              </div>
+            ) : null}
+
             <div className={styles.copyBlock}>
-              <h3>Revenue firewall</h3>
+              <h3>
+                {institutionalPilotCtaVariant === "healthcare"
+                  ? "Public Review Stake firewall"
+                  : "Revenue firewall"}
+              </h3>
               <ul className={styles.bulletList}>
                 <li>Paying funds review capacity, not authority over the synthesis.</li>
                 <li>Funder identity, relevant constraints, and review conditions must be disclosed.</li>
@@ -2990,7 +3028,9 @@ export default async function TopicCardPage({
                 className={styles.roomActionSecondary}
                 href="/rooms/institutional-trust"
               >
-                Return to trust room
+                {institutionalPilotCtaVariant === "healthcare"
+                  ? "Open Public Review Stake model"
+                  : "Return to trust room"}
               </Link>
             </div>
           </section>
