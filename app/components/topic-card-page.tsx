@@ -246,6 +246,10 @@ function getTopicChatMessageHref(
     params.set("sourceOrigin", getContributionOrigin(contribution));
     params.set("sourceReviewStatus", getContributionStatusFilter(contribution.status));
     params.set("sourceAttachment", getContributionAttachmentFilter(contribution));
+    params.set(
+      "sourceAttachmentSummary",
+      getContributionAttachmentSummary(contribution),
+    );
     params.set("sourceLane", contribution.lane);
 
     const recordView = getContributionRecordView(contribution);

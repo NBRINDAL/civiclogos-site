@@ -66,6 +66,41 @@ function getContributionAttachmentFilter(contribution: {
   return kind;
 }
 
+function getContributionAttachmentLabel(filter: string) {
+  switch (filter) {
+    case "claim":
+      return "Synthesis";
+    case "objection":
+      return "Objection";
+    case "evidence":
+      return "Evidence";
+    case "assumption":
+      return "Assumption";
+    case "open-question":
+      return "Open question";
+    case "none-yet":
+    default:
+      return "None yet";
+  }
+}
+
+function getContributionAttachmentSummary(contribution: {
+  aiIntake?: { suggestedAssignmentKind?: string | null; suggestedAssignmentLabel?: string | null };
+  review?: { assignedToKind?: string | null; assignedToLabel?: string | null };
+}) {
+  const baseLabel = getContributionAttachmentLabel(
+    getContributionAttachmentFilter(contribution),
+  );
+  const specificLabel =
+    contribution.review?.assignedToLabel ?? contribution.aiIntake?.suggestedAssignmentLabel;
+
+  if (!specificLabel) {
+    return baseLabel;
+  }
+
+  return `${baseLabel} - ${specificLabel}`;
+}
+
 function getContributionRecordView(contribution: {
   draftSource?: unknown;
   evidenceDocument?: unknown;
@@ -92,13 +127,20 @@ function getContributionRecordView(contribution: {
 }
 
 function getTopicChatMessageHref(item: {
-  aiIntake?: { suggestedAssignmentKind?: string | null };
+  aiIntake?: {
+    suggestedAssignmentKind?: string | null;
+    suggestedAssignmentLabel?: string | null;
+  };
   draftSource?: { messageId?: string | null };
   evidenceDocument?: unknown;
   id: string;
   isSeedExample?: boolean;
   lane: string;
-  review?: { assignedToKind?: string | null; changedSynthesis?: boolean | null };
+  review?: {
+    assignedToKind?: string | null;
+    assignedToLabel?: string | null;
+    changedSynthesis?: boolean | null;
+  };
   status: string;
   title: string;
 }) {
@@ -115,6 +157,7 @@ function getTopicChatMessageHref(item: {
     sourceOrigin: getContributionOrigin(item),
     sourceReviewStatus: getContributionStatusFilter(item.status),
     sourceAttachment: getContributionAttachmentFilter(item),
+    sourceAttachmentSummary: getContributionAttachmentSummary(item),
     sourceLane: item.lane,
   });
 

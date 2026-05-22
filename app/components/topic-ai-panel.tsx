@@ -405,6 +405,8 @@ export default function TopicAiPanel({
     [searchParams],
   );
   const sourceContributionTitle = searchParams.get("sourceContributionTitle")?.trim() ?? "";
+  const sourceAttachmentSummary =
+    searchParams.get("sourceAttachmentSummary")?.trim() ?? "";
   const sourceContributionContext = useMemo(() => {
     const sourceReviewStatus = searchParams.get("sourceReviewStatus")?.trim();
     const sourceAttachment = searchParams.get("sourceAttachment")?.trim();
@@ -604,6 +606,12 @@ export default function TopicAiPanel({
                     <strong>{sourceContributionTitle}</strong>
                   </p>
                 ) : null}
+                {sourceAttachmentSummary ? (
+                  <p className={styles.sourceRecordTitle}>
+                    Exact public record target:{" "}
+                    <strong>{sourceAttachmentSummary}</strong>
+                  </p>
+                ) : null}
                 <div className={styles.sourceContextMap}>
                   {sourceSummaryLabel ? (
                     <span className={styles.sourceContextChip}>
@@ -625,7 +633,7 @@ export default function TopicAiPanel({
                       Origin: {sourceContributionContext.origin}
                     </span>
                   ) : null}
-                  {sourceContributionContext.attachment ? (
+                  {sourceContributionContext.attachment && !sourceAttachmentSummary ? (
                     <span className={styles.sourceContextChip}>
                       Target: {sourceContributionContext.attachment}
                     </span>
@@ -661,6 +669,12 @@ export default function TopicAiPanel({
                     <strong>{sourceContributionTitle}</strong>
                   </p>
                 ) : null}
+                {sourceAttachmentSummary ? (
+                  <p className={styles.sourceRecordTitle}>
+                    Exact public record target:{" "}
+                    <strong>{sourceAttachmentSummary}</strong>
+                  </p>
+                ) : null}
                 <div className={styles.sourceContextMap}>
                   {sourceSummaryLabel ? (
                     <span className={styles.sourceContextChip}>
@@ -682,7 +696,7 @@ export default function TopicAiPanel({
                       Origin: {sourceContributionContext.origin}
                     </span>
                   ) : null}
-                  {sourceContributionContext.attachment ? (
+                  {sourceContributionContext.attachment && !sourceAttachmentSummary ? (
                     <span className={styles.sourceContextChip}>
                       Target: {sourceContributionContext.attachment}
                     </span>
