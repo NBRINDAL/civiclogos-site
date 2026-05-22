@@ -807,6 +807,8 @@ function SummaryFocusNotice({
   activeSummaryRecordId,
   activeScoreLabel,
   activeScoreSliceLabel,
+  activeScoreLatestVisibleContribution,
+  activeScoreLatestUnresolvedContribution,
   contribution,
   ledgerHref,
   scoreReturnHref,
@@ -819,6 +821,14 @@ function SummaryFocusNotice({
   activeSummaryRecordId?: string;
   activeScoreLabel?: string;
   activeScoreSliceLabel?: string;
+  activeScoreLatestVisibleContribution?: {
+    contribution: PublicContribution;
+    slice: ScoreTransparencySlice;
+  } | null;
+  activeScoreLatestUnresolvedContribution?: {
+    contribution: PublicContribution;
+    slice: ScoreTransparencySlice;
+  } | null;
   contribution: null | PublicContribution;
   ledgerHref: string;
   scoreReturnHref?: string;
@@ -884,6 +894,18 @@ function SummaryFocusNotice({
     activeScoreLabel && contribution
       ? getScorePressureInterpretation(contribution)
       : null;
+  const unresolvedContributionMatchesFocusedRecord =
+    Boolean(
+      activeScoreLatestUnresolvedContribution &&
+        activeScoreLatestUnresolvedContribution.contribution.id === contribution.id,
+    );
+  const unresolvedContributionMatchesLatestVisible =
+    Boolean(
+      activeScoreLatestUnresolvedContribution &&
+        activeScoreLatestVisibleContribution &&
+        activeScoreLatestUnresolvedContribution.contribution.id ===
+          activeScoreLatestVisibleContribution.contribution.id,
+    );
 
   return (
     <div className={styles.summaryFocusNotice}>
@@ -943,6 +965,47 @@ function SummaryFocusNotice({
               </Link>
             ) : null}
           </div>
+        </div>
+      ) : null}
+      {activeScoreLabel ? (
+        <div className={styles.summaryReferenceBlock}>
+          <span className={styles.metaParagraph}>Open review pressure on this score</span>
+          {activeScoreLatestUnresolvedContribution ? (
+            unresolvedContributionMatchesFocusedRecord ? (
+              <p className={styles.metaParagraph}>
+                This exact record is still unresolved and could still move{" "}
+                <strong>{activeScoreLabel}</strong> after human review.
+              </p>
+            ) : unresolvedContributionMatchesLatestVisible ? (
+              <p className={styles.metaParagraph}>
+                The freshest visible record on <strong>{activeScoreLabel}</strong>{" "}
+                is still unresolved and could still move the score after human review.
+              </p>
+            ) : (
+              <p className={styles.metaParagraph}>
+                The newest unresolved public pressure that could still move{" "}
+                <strong>{activeScoreLabel}</strong> is{" "}
+                <Link
+                  className={styles.sourceLink}
+                  href={getExactContributionLedgerHref(
+                    activeScoreLatestUnresolvedContribution.contribution,
+                    summaryLabel,
+                    activeScoreLabel,
+                    activeScoreLatestUnresolvedContribution.slice.label,
+                  )}
+                >
+                  {activeScoreLatestUnresolvedContribution.contribution.title}
+                </Link>
+                {" "}through{" "}
+                <strong>{activeScoreLatestUnresolvedContribution.slice.label}</strong>.
+              </p>
+            )
+          ) : (
+            <p className={styles.metaParagraph}>
+              No unresolved public pressure is currently linked to{" "}
+              <strong>{activeScoreLabel}</strong>.
+            </p>
+          )}
         </div>
       ) : null}
       <div className={styles.summaryReferenceBlock}>
@@ -1295,6 +1358,24 @@ export default async function TopicCardPage({
   const activeSummaryLabel = getSingleSearchParamValue(searchParams?.summaryLabel)?.trim();
   const activeScoreLabel = getSingleSearchParamValue(searchParams?.scoreLabel)?.trim();
   const activeScoreSliceLabel = getSingleSearchParamValue(searchParams?.scoreSlice)?.trim();
+  const activeScoreRelatedSlices = activeScoreLabel
+    ? getScoreTransparencySlices(activeScoreLabel, liveContributions)
+    : [];
+  const activeScoreLatestVisibleContribution = activeScoreLabel
+    ? getLatestScoreTransparencyContribution(
+        activeScoreRelatedSlices,
+        liveContributions,
+      )
+    : null;
+  const activeScoreLatestUnresolvedContribution = activeScoreLabel
+    ? getLatestScoreTransparencyContribution(
+        activeScoreRelatedSlices,
+        liveContributions,
+        (contribution) =>
+          contribution.status === "pending" ||
+          contribution.status === "needs review",
+      )
+    : null;
   const summaryFocusLedgerHref = getSummaryFocusLedgerHref(searchParams);
   const scoreFocusHref = getScoreFocusHref(searchParams);
   const summaryFocusedContribution =
@@ -1367,6 +1448,8 @@ export default async function TopicCardPage({
                 activeSummaryRecordId={activeSummaryRecordId}
                 activeScoreLabel={activeScoreLabel}
                 activeScoreSliceLabel={activeScoreSliceLabel}
+                activeScoreLatestVisibleContribution={activeScoreLatestVisibleContribution}
+                activeScoreLatestUnresolvedContribution={activeScoreLatestUnresolvedContribution}
                 contribution={summaryFocusedContribution}
                 ledgerHref={summaryFocusLedgerHref}
                 scoreReturnHref={scoreFocusHref}
@@ -1385,6 +1468,8 @@ export default async function TopicCardPage({
                 activeSummaryRecordId={activeSummaryRecordId}
                 activeScoreLabel={activeScoreLabel}
                 activeScoreSliceLabel={activeScoreSliceLabel}
+                activeScoreLatestVisibleContribution={activeScoreLatestVisibleContribution}
+                activeScoreLatestUnresolvedContribution={activeScoreLatestUnresolvedContribution}
                 contribution={summaryFocusedContribution}
                 ledgerHref={summaryFocusLedgerHref}
                 scoreReturnHref={scoreFocusHref}
@@ -1707,6 +1792,8 @@ export default async function TopicCardPage({
                 activeSummaryRecordId={activeSummaryRecordId}
                 activeScoreLabel={activeScoreLabel}
                 activeScoreSliceLabel={activeScoreSliceLabel}
+                activeScoreLatestVisibleContribution={activeScoreLatestVisibleContribution}
+                activeScoreLatestUnresolvedContribution={activeScoreLatestUnresolvedContribution}
                 contribution={summaryFocusedContribution}
                 ledgerHref={summaryFocusLedgerHref}
                 scoreReturnHref={scoreFocusHref}
@@ -1739,6 +1826,8 @@ export default async function TopicCardPage({
                 activeSummaryRecordId={activeSummaryRecordId}
                 activeScoreLabel={activeScoreLabel}
                 activeScoreSliceLabel={activeScoreSliceLabel}
+                activeScoreLatestVisibleContribution={activeScoreLatestVisibleContribution}
+                activeScoreLatestUnresolvedContribution={activeScoreLatestUnresolvedContribution}
                 contribution={summaryFocusedContribution}
                 ledgerHref={summaryFocusLedgerHref}
                 scoreReturnHref={scoreFocusHref}
@@ -1812,6 +1901,8 @@ export default async function TopicCardPage({
               activeSummaryRecordId={activeSummaryRecordId}
               activeScoreLabel={activeScoreLabel}
               activeScoreSliceLabel={activeScoreSliceLabel}
+              activeScoreLatestVisibleContribution={activeScoreLatestVisibleContribution}
+              activeScoreLatestUnresolvedContribution={activeScoreLatestUnresolvedContribution}
               contribution={summaryFocusedContribution}
               ledgerHref={summaryFocusLedgerHref}
               scoreReturnHref={scoreFocusHref}
@@ -1833,6 +1924,8 @@ export default async function TopicCardPage({
                 activeSummaryRecordId={activeSummaryRecordId}
                 activeScoreLabel={activeScoreLabel}
                 activeScoreSliceLabel={activeScoreSliceLabel}
+                activeScoreLatestVisibleContribution={activeScoreLatestVisibleContribution}
+                activeScoreLatestUnresolvedContribution={activeScoreLatestUnresolvedContribution}
                 contribution={summaryFocusedContribution}
                 ledgerHref={summaryFocusLedgerHref}
                 scoreReturnHref={scoreFocusHref}
@@ -2094,6 +2187,8 @@ export default async function TopicCardPage({
               activeSummaryRecordId={activeSummaryRecordId}
               activeScoreLabel={activeScoreLabel}
               activeScoreSliceLabel={activeScoreSliceLabel}
+              activeScoreLatestVisibleContribution={activeScoreLatestVisibleContribution}
+              activeScoreLatestUnresolvedContribution={activeScoreLatestUnresolvedContribution}
               contribution={summaryFocusedContribution}
               ledgerHref={summaryFocusLedgerHref}
               scoreReturnHref={scoreFocusHref}
@@ -2114,6 +2209,8 @@ export default async function TopicCardPage({
                 activeSummaryRecordId={activeSummaryRecordId}
                 activeScoreLabel={activeScoreLabel}
                 activeScoreSliceLabel={activeScoreSliceLabel}
+                activeScoreLatestVisibleContribution={activeScoreLatestVisibleContribution}
+                activeScoreLatestUnresolvedContribution={activeScoreLatestUnresolvedContribution}
                 contribution={summaryFocusedContribution}
                 ledgerHref={summaryFocusLedgerHref}
                 scoreReturnHref={scoreFocusHref}
@@ -2611,6 +2708,8 @@ export default async function TopicCardPage({
                     activeSummaryRecordId={activeSummaryRecordId}
                     activeScoreLabel={activeScoreLabel}
                     activeScoreSliceLabel={activeScoreSliceLabel}
+                    activeScoreLatestVisibleContribution={activeScoreLatestVisibleContribution}
+                    activeScoreLatestUnresolvedContribution={activeScoreLatestUnresolvedContribution}
                     contribution={summaryFocusedContribution}
                     ledgerHref={summaryFocusLedgerHref}
                     scoreReturnHref={scoreFocusHref}
@@ -2669,6 +2768,8 @@ export default async function TopicCardPage({
                 activeSummaryRecordId={activeSummaryRecordId}
                 activeScoreLabel={activeScoreLabel}
                 activeScoreSliceLabel={activeScoreSliceLabel}
+                activeScoreLatestVisibleContribution={activeScoreLatestVisibleContribution}
+                activeScoreLatestUnresolvedContribution={activeScoreLatestUnresolvedContribution}
                 contribution={summaryFocusedContribution}
                 ledgerHref={summaryFocusLedgerHref}
                 scoreReturnHref={scoreFocusHref}
@@ -2727,6 +2828,8 @@ export default async function TopicCardPage({
                 activeSummaryRecordId={activeSummaryRecordId}
                 activeScoreLabel={activeScoreLabel}
                 activeScoreSliceLabel={activeScoreSliceLabel}
+                activeScoreLatestVisibleContribution={activeScoreLatestVisibleContribution}
+                activeScoreLatestUnresolvedContribution={activeScoreLatestUnresolvedContribution}
                 contribution={summaryFocusedContribution}
                 ledgerHref={summaryFocusLedgerHref}
                 scoreReturnHref={scoreFocusHref}
@@ -2906,6 +3009,8 @@ export default async function TopicCardPage({
                 activeSummaryRecordId={activeSummaryRecordId}
                 activeScoreLabel={activeScoreLabel}
                 activeScoreSliceLabel={activeScoreSliceLabel}
+                activeScoreLatestVisibleContribution={activeScoreLatestVisibleContribution}
+                activeScoreLatestUnresolvedContribution={activeScoreLatestUnresolvedContribution}
                 contribution={summaryFocusedContribution}
                 ledgerHref={summaryFocusLedgerHref}
                 scoreReturnHref={scoreFocusHref}
@@ -3110,6 +3215,8 @@ export default async function TopicCardPage({
               activeSummaryRecordId={activeSummaryRecordId}
               activeScoreLabel={activeScoreLabel}
               activeScoreSliceLabel={activeScoreSliceLabel}
+              activeScoreLatestVisibleContribution={activeScoreLatestVisibleContribution}
+              activeScoreLatestUnresolvedContribution={activeScoreLatestUnresolvedContribution}
               contribution={summaryFocusedContribution}
               ledgerHref={summaryFocusLedgerHref}
               scoreReturnHref={scoreFocusHref}
