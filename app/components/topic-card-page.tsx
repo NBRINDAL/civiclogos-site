@@ -321,6 +321,13 @@ export default async function TopicCardPage({
       ).length,
     }))
     .filter((item) => item.count > 0);
+  const assistedLaneCounts = debateLaneOptions
+    .map((lane) => ({
+      lane,
+      label: debateLaneLabels[lane],
+      count: assistedRecordContributions.filter((item) => item.lane === lane).length,
+    }))
+    .filter((item) => item.count > 0);
   const needsAttentionContributions = liveContributions.filter(
     (item) => item.status === "pending" || item.status === "needs review",
   );
@@ -1464,6 +1471,24 @@ export default async function TopicCardPage({
                           attachment: item.attachment,
                         })}
                         key={`assisted-target-${item.attachment}`}
+                      >
+                        {item.label} {item.count}
+                      </Link>
+                    ))}
+                  </div>
+                  <p className={styles.metaParagraph}>
+                    By debate lane:
+                  </p>
+                  <div className={styles.reviewPills}>
+                    {assistedLaneCounts.map((item) => (
+                      <Link
+                        className={styles.reviewPillLink}
+                        href={getContributionLedgerHref({
+                          recordView: "ai-assisted",
+                          origin: "ai-origin",
+                          lane: item.lane,
+                        })}
+                        key={`assisted-lane-${item.lane}`}
                       >
                         {item.label} {item.count}
                       </Link>
