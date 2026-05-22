@@ -259,6 +259,15 @@ export default async function RoomsPage({
                         "This candidate was opened because the current room map did not cleanly absorb the idea yet."}
                     </p>
 
+                    <div className={styles.liveCardNote}>
+                      <span>Current map relationship</span>
+                      <strong>
+                        {entry.routing.roomTitle && entry.routing.roomTitle !== "Room candidate"
+                          ? `Closest current room: ${entry.routing.roomTitle}, but still outside the active map`
+                          : "Still outside the active room map"}
+                      </strong>
+                    </div>
+
                     {entry.routing.suggestedCentralQuestion ? (
                       <div className={styles.liveCardNote}>
                         <span>Central question</span>

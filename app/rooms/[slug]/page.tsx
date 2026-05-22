@@ -7,6 +7,7 @@ import RoomGuide from "../../components/room-guide";
 import { SiteBrand } from "../../components/site-brand";
 import {
   getInspectableTopics,
+  getRoomTopicHref,
   issueRooms,
   type IssueRoomData,
   type IssueRoomSlug,
@@ -422,6 +423,9 @@ export default async function IssueRoomPage({
                 const earliestPromptDate = earliestPrompt
                   ? formatPromptDate(earliestPrompt.createdAt)
                   : undefined;
+                const closestLiveCardHref = entry.routing.topicId
+                  ? getRoomTopicHref(roomSlug, entry.routing.topicId)
+                  : undefined;
 
                 return (
                   <article className={styles.trackItem} key={entry.id}>
@@ -441,6 +445,29 @@ export default async function IssueRoomPage({
                         entry.routing.fitSummary ??
                         "This draft topic was opened because the room fit was clear but the current live cards did not absorb the idea cleanly yet."}
                     </p>
+
+                    <div className={styles.liveCardNote}>
+                      <span>Current map relationship</span>
+                      <strong>
+                        {entry.routing.topicTitle
+                          ? `Pressure inside ${room.title}, still not absorbed by ${entry.routing.topicTitle}`
+                          : `Pressure inside ${room.title}, still waiting for a cleaner live-card home`}
+                      </strong>
+                    </div>
+
+                    {closestLiveCardHref && entry.routing.topicTitle ? (
+                      <div className={styles.promptPressureNote}>
+                        <div className={styles.promptPressureMeta}>
+                          <span>Closest current live card</span>
+                          <strong>Still under-modeling this pressure</strong>
+                        </div>
+                        <p>
+                          Civic Logos is holding this as a draft topic because the
+                          current live card <strong>{entry.routing.topicTitle}</strong>{" "}
+                          still does not absorb the intake pressure cleanly enough.
+                        </p>
+                      </div>
+                    ) : null}
 
                     {latestPrompt ? (
                       <div className={styles.draftPromptNote}>
@@ -492,6 +519,11 @@ export default async function IssueRoomPage({
                       <Link className={styles.trackItemLink} href={`/intake/${entry.id}`}>
                         Open draft topic
                       </Link>
+                      {closestLiveCardHref ? (
+                        <Link className={styles.trackItemSubLink} href={closestLiveCardHref}>
+                          Open closest live card
+                        </Link>
+                      ) : null}
                       <Link
                         className={styles.trackItemSubLink}
                         href={getPromptHistoryHref(entry)}

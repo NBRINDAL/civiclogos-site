@@ -211,6 +211,53 @@ export default async function IntakeEntryPage({
             </div>
           ) : null}
 
+          {entry.routing.routeKind !== "existing-room" ? (
+            <div className={styles.listBlock}>
+              <h3>Current map relationship</h3>
+              {entry.routing.routeKind === "room-topic-draft" ? (
+                <>
+                  <p>
+                    This object now lives as a durable draft topic inside{" "}
+                    <strong>{entry.routing.roomTitle ?? "the host room"}</strong>.
+                    {entry.routing.topicTitle
+                      ? ` It is currently pressing on the live card ${entry.routing.topicTitle}, which still does not absorb the pressure cleanly enough.`
+                      : " It still needs a cleaner live-card home before it becomes a full inspectable topic card."}
+                  </p>
+                  <div className={styles.actions}>
+                    {roomHref ? (
+                      <Link className={styles.primaryAction} href={`${roomHref}#draft-topics`}>
+                        Open host room
+                      </Link>
+                    ) : null}
+                    {topicHref ? (
+                      <Link className={styles.secondaryAction} href={topicHref}>
+                        Open closest live card
+                      </Link>
+                    ) : null}
+                  </div>
+                </>
+              ) : (
+                <>
+                  <p>
+                    This object is currently being held as a room candidate because
+                    the active room library still does not absorb it cleanly enough.
+                    It can accumulate more public pressure here before Civic Logos
+                    decides whether it belongs inside a current room or needs a new
+                    room to exist.
+                  </p>
+                  <div className={styles.actions}>
+                    <Link className={styles.primaryAction} href="/rooms#room-candidates">
+                      Open room candidates
+                    </Link>
+                    <Link className={styles.secondaryAction} href="/rooms">
+                      Open room library
+                    </Link>
+                  </div>
+                </>
+              )}
+            </div>
+          ) : null}
+
           {entry.routing.routeKind !== "existing-room" && promptHistory.length ? (
             <div className={styles.listBlock} id="prompt-history">
               <h3>
