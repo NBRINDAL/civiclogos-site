@@ -3,6 +3,7 @@ import {
   getRoomTopicHref,
   type IssueRoomSlug,
 } from "../lib/civic-logos";
+import { getHomeIntakeDraftTopicsHref } from "../lib/home-intake-artifact-links";
 import { getHomeIntakeClosestMapPath } from "../lib/home-intake-map-path";
 import type { HomeIntakeRecord } from "../lib/home-intake-types";
 import styles from "./intake-route-banner.module.css";
@@ -69,10 +70,13 @@ export default function IntakeRouteBanner({
       entry.routing.suggestedTopicTitle ??
       (isDraftTopicPressure ? "Draft topic pressure" : "Closest current room");
   const roomContextHref = isDraftTopicPressure
-    ? `${currentRoomHref}?intake=${entry.id}#draft-topics`
+    ? getHomeIntakeDraftTopicsHref(currentRoomHref, {
+        entryId: entry.id,
+        intakeId: entry.id,
+      })
     : `${currentRoomHref}?intake=${entry.id}`;
   const roomContextLabel = isDraftTopicPressure
-    ? "Open room draft topics"
+    ? "Open exact draft topic"
     : isNearestCurrentRoom
       ? "Open this room in context"
       : "Stay in this room";

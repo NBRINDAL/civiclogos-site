@@ -21,6 +21,10 @@ import {
   getPromptHistoryHref,
   getPromptTimestamp,
 } from "@/app/lib/home-intake-prompt-history";
+import {
+  getHomeIntakeDraftTopicsHref,
+  getHomeIntakeRoomCandidatesHref,
+} from "@/app/lib/home-intake-artifact-links";
 import { getHomeIntakeHeldQuestions } from "@/app/lib/home-intake-held-questions";
 import {
   getHomeIntakeClosestMapPath,
@@ -89,7 +93,10 @@ export default async function IntakeEntryPage({
     : undefined;
   const roomContextHref = roomHref
     ? entry.routing.routeKind === "room-topic-draft"
-      ? `${roomHref}?intake=${entry.id}#draft-topics`
+      ? getHomeIntakeDraftTopicsHref(roomHref, {
+          entryId: entry.id,
+          intakeId: entry.id,
+        })
       : `${roomHref}?intake=${entry.id}`
     : undefined;
   const closestMapPath = getHomeIntakeClosestMapPath(entry.routing);
@@ -295,7 +302,10 @@ export default async function IntakeEntryPage({
                     </div>
                   ) : null}
                   <div className={styles.actions}>
-                    <Link className={styles.primaryAction} href="/rooms#room-candidates">
+                    <Link
+                      className={styles.primaryAction}
+                      href={getHomeIntakeRoomCandidatesHref(entry.id)}
+                    >
                       Open room candidates
                     </Link>
                     <Link className={styles.secondaryAction} href="/rooms">
@@ -395,7 +405,10 @@ export default async function IntakeEntryPage({
               </Link>
             ) : null}
             {entry.routing.routeKind === "new-room-draft" ? (
-              <Link className={styles.primaryAction} href="/rooms#room-candidates">
+              <Link
+                className={styles.primaryAction}
+                href={getHomeIntakeRoomCandidatesHref(entry.id)}
+              >
                 Open room candidates
               </Link>
             ) : null}
@@ -529,7 +542,13 @@ export default async function IntakeEntryPage({
                             className={styles.secondaryAction}
                             href={
                               providerMapPath.routeKind === "room-topic-draft"
-                                ? `${providerMapPath.roomHref}?intake=${entry.id}#draft-topics`
+                                ? getHomeIntakeDraftTopicsHref(
+                                    providerMapPath.roomHref,
+                                    {
+                                      entryId: entry.id,
+                                      intakeId: entry.id,
+                                    },
+                                  )
                                 : `${providerMapPath.roomHref}?intake=${entry.id}`
                             }
                           >

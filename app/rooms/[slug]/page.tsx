@@ -24,6 +24,9 @@ import {
   getPromptHistoryCount,
   getPromptHistoryHref,
 } from "../../lib/home-intake-prompt-history";
+import {
+  getHomeIntakeDraftTopicAnchor,
+} from "../../lib/home-intake-artifact-links";
 import { getHomeIntakeHeldQuestions } from "../../lib/home-intake-held-questions";
 import { getHomeIntakeClosestMapPath } from "../../lib/home-intake-map-path";
 import { summarizeHomeIntakeRoutingConsensus } from "../../lib/home-intake-routing-consensus";
@@ -441,7 +444,11 @@ export default async function IssueRoomPage({
                     : undefined);
 
                 return (
-                  <article className={styles.trackItem} key={entry.id}>
+                  <article
+                    className={styles.trackItem}
+                    id={getHomeIntakeDraftTopicAnchor(entry.id)}
+                    key={entry.id}
+                  >
                     <div className={styles.trackMeta}>
                       <span>{entry.routing.routeConfidence ?? "working draft"}</span>
                       <strong>
