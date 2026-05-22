@@ -2119,6 +2119,10 @@ export default async function TopicCardPage({
           "sourceExactRecordRead",
           institutionalPilotRecordInterpretation.label,
         );
+        params.set(
+          "sourceExactRecordReadNote",
+          institutionalPilotRecordInterpretation.note,
+        );
       }
 
       if (institutionalPilotRecordContext.publicUptakeContribution) {

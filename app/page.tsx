@@ -111,6 +111,7 @@ export default async function Home({
     sourceExactRecordSlice?: string | string[];
     sourceExactRecordTarget?: string | string[];
     sourceExactRecordRead?: string | string[];
+    sourceExactRecordReadNote?: string | string[];
     sourceExactRecordAiSource?: string | string[];
     sourceExactRecordHref?: string | string[];
     sourceExactRecordSourceTurnHref?: string | string[];
@@ -190,6 +191,9 @@ export default async function Home({
   );
   const sourceExactRecordRead = getFirstValue(
     resolvedSearchParams.sourceExactRecordRead,
+  );
+  const sourceExactRecordReadNote = getFirstValue(
+    resolvedSearchParams.sourceExactRecordReadNote,
   );
   const sourceExactRecordAiSource = getFirstValue(
     resolvedSearchParams.sourceExactRecordAiSource,
@@ -328,6 +332,12 @@ export default async function Home({
     sourceExactRecordRead
       ? { label: "Record read", value: sourceExactRecordRead }
       : null,
+    sourceExactRecordReadNote
+      ? {
+          label: sourceExactRecordRead ?? "Read interpretation",
+          value: sourceExactRecordReadNote,
+        }
+      : null,
     sourceExactRecordAiSource
       ? { label: "AI source", value: sourceExactRecordAiSource }
       : null,
@@ -460,6 +470,9 @@ export default async function Home({
             : null,
           sourceExactRecordRead
             ? `- Record read: ${sourceExactRecordRead}`
+            : null,
+          sourceExactRecordReadNote
+            ? `- ${sourceExactRecordRead ?? "Read interpretation"}: ${sourceExactRecordReadNote}`
             : null,
           sourceExactRecordAiSource
             ? `- AI source: ${sourceExactRecordAiSource}`
