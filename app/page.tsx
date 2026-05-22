@@ -105,6 +105,8 @@ export default async function Home({
     sourceExactRecordTarget?: string | string[];
     sourceExactRecordRead?: string | string[];
     sourceExactRecordHref?: string | string[];
+    sourceExactRecordSummaryLabel?: string | string[];
+    sourceExactRecordSummaryHref?: string | string[];
     sourceIntakeArtifactTitle?: string | string[];
     sourceIntakePromptCount?: string | string[];
     sourceIntakeHeldQuestionCount?: string | string[];
@@ -118,6 +120,8 @@ export default async function Home({
   const resolvedSearchParams = await searchParams;
   const getFirstValue = (value?: string | string[]) =>
     Array.isArray(value) ? value[0] : value;
+  const getAllValues = (value?: string | string[]) =>
+    Array.isArray(value) ? value.filter(Boolean) : value ? [value] : [];
   const initialInterest = getFirstValue(resolvedSearchParams.interest);
   const sourceTopic = getFirstValue(resolvedSearchParams.sourceTopic);
   const sourceRoom = getFirstValue(resolvedSearchParams.sourceRoom);
@@ -152,6 +156,18 @@ export default async function Home({
   const sourceExactRecordHref = getFirstValue(
     resolvedSearchParams.sourceExactRecordHref,
   );
+  const sourceExactRecordSummaryLabels = getAllValues(
+    resolvedSearchParams.sourceExactRecordSummaryLabel,
+  );
+  const sourceExactRecordSummaryHrefs = getAllValues(
+    resolvedSearchParams.sourceExactRecordSummaryHref,
+  );
+  const sourceExactRecordSummaryLinks = sourceExactRecordSummaryLabels
+    .map((label, index) => ({
+      label,
+      href: sourceExactRecordSummaryHrefs[index] ?? "",
+    }))
+    .filter((item): item is { label: string; href: string } => Boolean(item.href));
   const sourceIntakeArtifactTitle = getFirstValue(
     resolvedSearchParams.sourceIntakeArtifactTitle,
   );
@@ -233,6 +249,12 @@ export default async function Home({
     sourceExactRecordRead
       ? { label: "Record read", value: sourceExactRecordRead }
       : null,
+    sourceExactRecordSummaryLinks.length
+      ? {
+          label: "Surfacing in card",
+          value: sourceExactRecordSummaryLinks.map((item) => item.label).join(", "),
+        }
+      : null,
     sourceIntakeArtifactTitle
       ? { label: "Held artifact", value: sourceIntakeArtifactTitle }
       : null,
@@ -247,6 +269,10 @@ export default async function Home({
     sourceExactRecordHref
       ? { label: "Open exact public record entry", href: sourceExactRecordHref }
       : null,
+    ...sourceExactRecordSummaryLinks.map((item) => ({
+      label: `Open ${item.label}`,
+      href: item.href,
+    })),
     sourceTopicHref
       ? { label: "Open current topic card", href: sourceTopicHref }
       : null,
@@ -296,6 +322,11 @@ export default async function Home({
             : null,
           sourceExactRecordRead
             ? `- Record read: ${sourceExactRecordRead}`
+            : null,
+          sourceExactRecordSummaryLinks.length
+            ? `- Surfacing in card: ${sourceExactRecordSummaryLinks
+                .map((item) => item.label)
+                .join(", ")}`
             : null,
           sourceIntakeArtifactTitle
             ? `- Held artifact: ${sourceIntakeArtifactTitle}`

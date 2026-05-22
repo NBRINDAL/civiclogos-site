@@ -1748,6 +1748,12 @@ export default async function TopicCardPage({
           institutionalPilotRecordContext.contribution,
         )
       : null;
+  const institutionalPilotRecordSummaryReferences =
+    institutionalPilotRecordContext
+      ? contributionSummaryReferences[
+          institutionalPilotRecordContext.contribution.id
+        ] ?? []
+      : [];
   const activeHeldIntakeRelationship =
     topicIntakeMatchesCard && topicIntakeEntry
       ? topicIntakeEntry.routing.routeKind === "room-topic-draft"
@@ -1854,6 +1860,14 @@ export default async function TopicCardPage({
         params.set(
           "sourceExactRecordRead",
           institutionalPilotRecordInterpretation.label,
+        );
+      }
+
+      for (const reference of institutionalPilotRecordSummaryReferences.slice(0, 4)) {
+        params.append("sourceExactRecordSummaryLabel", reference.label);
+        params.append(
+          "sourceExactRecordSummaryHref",
+          `${getRoomTopicHref(roomSlug, card.id)}${reference.href}`,
         );
       }
     } else if (activeScoreLabel) {
@@ -3108,6 +3122,28 @@ export default async function TopicCardPage({
                       contribution={institutionalPilotRecordContext.contribution}
                       sourceIntakeId={activeIntakeContextId}
                     />
+                    {institutionalPilotRecordSummaryReferences.length ? (
+                      <div className={styles.scoreTransparency}>
+                        <span className={styles.scoreTransparencyLabel}>
+                          Surfacing in this card
+                        </span>
+                        <p>
+                          This same exact record is currently being used in the
+                          following summary layers on the topic card.
+                        </p>
+                        <div className={styles.scoreSliceList}>
+                          {institutionalPilotRecordSummaryReferences.map((reference) => (
+                            <Link
+                              className={styles.scoreSliceLink}
+                              href={reference.href}
+                              key={`${institutionalPilotRecordContext.contribution.id}-${reference.label}`}
+                            >
+                              {reference.label}
+                            </Link>
+                          ))}
+                        </div>
+                      </div>
+                    ) : null}
                   </>
                 ) : null}
               </div>
