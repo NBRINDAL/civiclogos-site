@@ -1398,6 +1398,26 @@ export default async function TopicCardPage({
                           </Link>
                           .
                         </p>
+                        {item.draftSource ? (
+                          <p className={styles.metaParagraph}>
+                            AI origin: {item.draftSource.providerLabel}
+                            {item.draftSource.model
+                              ? ` (${item.draftSource.model})`
+                              : ""}{" "}
+                            on {formatTimestamp(item.draftSource.generatedAt)}.
+                            {item.draftSource.messageId ? (
+                              <>
+                                {" "}
+                                <Link
+                                  className={styles.sourceLink}
+                                  href={getTopicChatMessageHref(item.draftSource.messageId)}
+                                >
+                                  Open source AI turn
+                                </Link>
+                              </>
+                            ) : null}
+                          </p>
+                        ) : null}
                       </li>
                     ))}
                   </ul>
@@ -1473,6 +1493,26 @@ export default async function TopicCardPage({
                           </Link>
                           .
                         </p>
+                        {item.draftSource ? (
+                          <p className={styles.metaParagraph}>
+                            AI origin: {item.draftSource.providerLabel}
+                            {item.draftSource.model
+                              ? ` (${item.draftSource.model})`
+                              : ""}{" "}
+                            on {formatTimestamp(item.draftSource.generatedAt)}.
+                            {item.draftSource.messageId ? (
+                              <>
+                                {" "}
+                                <Link
+                                  className={styles.sourceLink}
+                                  href={getTopicChatMessageHref(item.draftSource.messageId)}
+                                >
+                                  Open source AI turn
+                                </Link>
+                              </>
+                            ) : null}
+                          </p>
+                        ) : null}
                       </li>
                     ))}
                   </ul>
