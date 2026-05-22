@@ -303,6 +303,28 @@ function getContributionStatusFilter(status: ReviewStatus): ContributionStatusFi
   return status === "needs review" ? "needs-review" : status;
 }
 
+function getContributionRecordView(
+  contribution: PublicContribution,
+): ContributionFilter | undefined {
+  if (contribution.draftSource) {
+    return "ai-assisted";
+  }
+
+  if (contribution.review?.changedSynthesis === true) {
+    return "changed-card";
+  }
+
+  if (contribution.evidenceDocument) {
+    return "document-backed";
+  }
+
+  if (contribution.status === "pending" || contribution.status === "needs review") {
+    return "needs-review";
+  }
+
+  return undefined;
+}
+
 function getContributionLaneFilterLabel(filter: ContributionLaneFilter) {
   if (filter === "all-lanes") {
     return "All lanes";
@@ -352,6 +374,54 @@ function getSourceAiTurnHref(
   return `${pathname}?${nextSearchParams.toString()}#topic-chat-message-${messageId}`;
 }
 
+function getExactContributionLedgerHref(
+  pathname: string,
+  searchParams: { toString(): string },
+  contribution: PublicContribution,
+) {
+  const nextSearchParams = new URLSearchParams(searchParams.toString());
+  const recordView = getContributionRecordView(contribution);
+  const statusFilter = getContributionStatusFilter(contribution.status);
+  const attachmentFilter = getVisibleAttachmentFilter(contribution);
+  const originFilter = getContributionOrigin(contribution);
+
+  if (recordView && recordView !== "all") {
+    nextSearchParams.set("recordView", recordView);
+  } else {
+    nextSearchParams.delete("recordView");
+  }
+
+  if (statusFilter !== "all-statuses") {
+    nextSearchParams.set("reviewStatus", statusFilter);
+  } else {
+    nextSearchParams.delete("reviewStatus");
+  }
+
+  if (attachmentFilter !== "all-targets") {
+    nextSearchParams.set("attachment", attachmentFilter);
+  } else {
+    nextSearchParams.delete("attachment");
+  }
+
+  if (originFilter !== "all-origins") {
+    nextSearchParams.set("origin", originFilter);
+  } else {
+    nextSearchParams.delete("origin");
+  }
+
+  nextSearchParams.set("lane", contribution.lane);
+
+  return `${pathname}?${nextSearchParams.toString()}#contribution-${contribution.id}`;
+}
+
+function getHighlightedContributionId(hash: string) {
+  if (!hash.startsWith("#contribution-") || hash === "#contribution-record") {
+    return "";
+  }
+
+  return decodeURIComponent(hash.slice("#contribution-".length));
+}
+
 function formatBytes(value: number) {
   if (value < 1024) {
     return `${value} B`;
@@ -386,6 +456,7 @@ export default function TopicContributionLoop({
   const [contributions, setContributions] = useState<PublicContribution[]>(initialContributions);
   const [storeMode, setStoreMode] = useState(initialStoreMode);
   const [storeNote, setStoreNote] = useState(initialStoreNote);
+  const [currentHash, setCurrentHash] = useState("");
   const [isPending, startTransition] = useTransition();
   const titleRef = useRef<HTMLInputElement>(null);
 
@@ -452,6 +523,10 @@ export default function TopicContributionLoop({
   const activeLaneFilter = useMemo(
     () => normalizeContributionLaneFilter(searchParams.get("lane")),
     [searchParams],
+  );
+  const highlightedContributionId = useMemo(
+    () => getHighlightedContributionId(currentHash),
+    [currentHash],
   );
   const recordFilteredContributions = useMemo(
     () =>
@@ -619,6 +694,20 @@ export default function TopicContributionLoop({
     activeOriginFilter,
     activeStatusFilter,
   ]);
+  const highlightedContribution = useMemo(
+    () =>
+      highlightedContributionId
+        ? contributions.find((item) => item.id === highlightedContributionId) ?? null
+        : null,
+    [contributions, highlightedContributionId],
+  );
+  const highlightedVisibleContribution = useMemo(
+    () =>
+      highlightedContributionId
+        ? filteredContributions.find((item) => item.id === highlightedContributionId) ?? null
+        : null,
+    [filteredContributions, highlightedContributionId],
+  );
 
   function handleFilterPick(filter: ContributionFilter) {
     const nextSearchParams = new URLSearchParams(searchParams.toString());
@@ -726,6 +815,47 @@ export default function TopicContributionLoop({
       },
     );
   }
+
+  function revealExactContribution(contribution: PublicContribution) {
+    router.replace(getExactContributionLedgerHref(pathname, searchParams, contribution), {
+      scroll: false,
+    });
+  }
+
+  useEffect(() => {
+    function syncHashFromWindow() {
+      setCurrentHash(window.location.hash);
+    }
+
+    syncHashFromWindow();
+    window.addEventListener("hashchange", syncHashFromWindow);
+
+    return () => {
+      window.removeEventListener("hashchange", syncHashFromWindow);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!highlightedContributionId) {
+      return;
+    }
+
+    const targetId = highlightedVisibleContribution
+      ? `contribution-${highlightedVisibleContribution.id}`
+      : "contribution-record";
+    let timeoutId = 0;
+
+    timeoutId = window.setTimeout(() => {
+      document.getElementById(targetId)?.scrollIntoView({
+        block: "start",
+        behavior: "smooth",
+      });
+    }, 140);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [highlightedContributionId, highlightedVisibleContribution]);
 
   useEffect(() => {
     let isCancelled = false;
@@ -1210,6 +1340,55 @@ export default function TopicContributionLoop({
         </div>
 
         <div className={styles.filterBlock}>
+          {highlightedVisibleContribution ? (
+            <div className={styles.focusNotice}>
+              <div>
+                <span className={styles.sectionLabel}>Exact record focus</span>
+                <p>
+                  Showing the exact contribution entry linked from this card&apos;s
+                  summary layers: <strong>{highlightedVisibleContribution.title}</strong>.
+                </p>
+              </div>
+              <p className={styles.focusMeta}>
+                {contributionOriginFilterLabels[
+                  getContributionOrigin(highlightedVisibleContribution)
+                ]}{" "}
+                · {statusLabels[highlightedVisibleContribution.status]} ·{" "}
+                {getDebateLaneLabel(highlightedVisibleContribution.lane)}
+              </p>
+            </div>
+          ) : highlightedContribution ? (
+            <div className={`${styles.focusNotice} ${styles.focusMissing}`}>
+              <div>
+                <span className={styles.sectionLabel}>Exact record outside current slice</span>
+                <p>
+                  This page was opened for the exact contribution{" "}
+                  <strong>{highlightedContribution.title}</strong>, but the active
+                  ledger filters are hiding it right now.
+                </p>
+              </div>
+              <div className={styles.focusActions}>
+                <button
+                  className={styles.filterReset}
+                  onClick={() => revealExactContribution(highlightedContribution)}
+                  type="button"
+                >
+                  Show exact record entry
+                </button>
+              </div>
+            </div>
+          ) : highlightedContributionId ? (
+            <div className={`${styles.focusNotice} ${styles.focusMissing}`}>
+              <div>
+                <span className={styles.sectionLabel}>Exact record unavailable</span>
+                <p>
+                  This public-record link points to a contribution that is not in the
+                  current visible ledger right now. The surrounding slice is still
+                  shown below.
+                </p>
+              </div>
+            </div>
+          ) : null}
           <div className={styles.filterSection}>
             <span className={styles.sectionLabel}>Record view</span>
             <div className={styles.filterList}>
