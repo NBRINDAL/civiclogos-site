@@ -10,6 +10,8 @@
   flex: 0 0 var(--brand-mark-size, 52px);
   width: var(--brand-mark-size, 52px);
   aspect-ratio: 1;
+  --brand-square-size: 72%;
+  --brand-circle-size: 81.24%;
 }
 
 .square,
@@ -19,15 +21,23 @@
 }
 
 .square {
-  inset: 9%;
+  top: 50%;
+  left: 50%;
+  width: var(--brand-square-size);
+  aspect-ratio: 1;
   border: 2px solid rgba(var(--brand-blue-rgb), 0.94);
-  border-radius: 8px;
+  border-radius: 0;
+  transform: translate(-50%, -50%);
 }
 
 .circle {
-  inset: 4%;
+  top: 50%;
+  left: 50%;
+  width: var(--brand-circle-size);
+  aspect-ratio: 1;
   border: 2px solid rgba(var(--brand-red-rgb), 0.94);
   border-radius: 999px;
+  transform: translate(-50%, -50%);
 }
 
 .dot {
