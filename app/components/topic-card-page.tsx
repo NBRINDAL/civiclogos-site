@@ -516,6 +516,7 @@ function getScoreTransparencySlices(
 function getLatestScoreTransparencyContribution(
   slices: readonly ScoreTransparencySlice[],
   liveContributions: readonly PublicContribution[],
+  matches: (contribution: PublicContribution) => boolean = () => true,
 ) {
   let bestMatch:
     | {
@@ -526,7 +527,10 @@ function getLatestScoreTransparencyContribution(
 
   for (const slice of slices) {
     const candidate = liveContributions
-      .filter((contribution) => matchesContributionSlice(contribution, slice))
+      .filter(
+        (contribution) =>
+          matchesContributionSlice(contribution, slice) && matches(contribution),
+      )
       .sort(
         (left, right) =>
           getContributionActivityTimestamp(right) -
@@ -1414,6 +1418,14 @@ export default async function TopicCardPage({
                     relatedSlices,
                     liveContributions,
                   );
+                const latestUnresolvedScoreContribution =
+                  getLatestScoreTransparencyContribution(
+                    relatedSlices,
+                    liveContributions,
+                    (contribution) =>
+                      contribution.status === "pending" ||
+                      contribution.status === "needs review",
+                  );
                 const latestScoreReferences = latestScoreContribution
                   ? (contributionScoreReferences[
                       latestScoreContribution.contribution.id
@@ -1429,6 +1441,9 @@ export default async function TopicCardPage({
                       latestScoreContribution.contribution,
                     )
                   : null;
+                const latestUnresolvedMatchesLatest =
+                  latestUnresolvedScoreContribution?.contribution.id ===
+                  latestScoreContribution?.contribution.id;
 
                 return (
                   <div
@@ -1546,6 +1561,66 @@ export default async function TopicCardPage({
                                 {latestScoreInterpretation.label}
                               </span>
                               <p>{latestScoreInterpretation.note}</p>
+                            </div>
+                          ) : null}
+                          {latestScoreContribution ? (
+                            <div className={styles.scoreTransparency}>
+                              <span className={styles.scoreTransparencyLabel}>
+                                Open review pressure
+                              </span>
+                              {latestUnresolvedScoreContribution ? (
+                                latestUnresolvedMatchesLatest ? (
+                                  <p>
+                                    The freshest visible record touching this score
+                                    is still unresolved and could still move the
+                                    score after human review.
+                                  </p>
+                                ) : (
+                                  <>
+                                    <p>
+                                      The newest unresolved record that could still
+                                      move this score is{" "}
+                                      <strong>
+                                        <Link
+                                          className={styles.sourceLink}
+                                          href={getExactContributionLedgerHref(
+                                            latestUnresolvedScoreContribution.contribution,
+                                            undefined,
+                                            item.label,
+                                            latestUnresolvedScoreContribution.slice.label,
+                                          )}
+                                        >
+                                          {latestUnresolvedScoreContribution.contribution.title}
+                                        </Link>
+                                      </strong>
+                                      {" "}through{" "}
+                                      <strong>
+                                        {latestUnresolvedScoreContribution.slice.label}
+                                      </strong>
+                                      .
+                                    </p>
+                                    <ContributionRecordContext
+                                      contribution={latestUnresolvedScoreContribution.contribution}
+                                      recordView={getContributionRecordView(
+                                        latestUnresolvedScoreContribution.contribution,
+                                      )}
+                                      showReviewStatus
+                                    />
+                                    <ContributionAiOriginContext
+                                      contribution={latestUnresolvedScoreContribution.contribution}
+                                      sourceScoreLabel={item.label}
+                                      sourceScoreSliceLabel={
+                                        latestUnresolvedScoreContribution.slice.label
+                                      }
+                                    />
+                                  </>
+                                )
+                              ) : (
+                                <p>
+                                  No unresolved public pressure is currently linked
+                                  to this score.
+                                </p>
+                              )}
                             </div>
                           ) : null}
                           {latestScoreReferences.length ? (
