@@ -1589,6 +1589,42 @@ export default async function TopicCardPage({
                               : "This AI-assisted topic-chat suggestion has been resolved in the public record.",
                           )}
                         </p>
+                        <p className={styles.metaParagraph}>
+                          Debate lane:{" "}
+                          <Link
+                            className={styles.sourceLink}
+                            href={getContributionLedgerHref({
+                              recordView: "ai-assisted",
+                              origin: "ai-origin",
+                              lane: item.lane,
+                            })}
+                          >
+                            {debateLaneLabels[item.lane]}
+                          </Link>
+                          . Review status:{" "}
+                          <Link
+                            className={styles.sourceLink}
+                            href={getContributionLedgerHref({
+                              recordView: "ai-assisted",
+                              origin: "ai-origin",
+                              reviewStatus: getContributionStatusFilter(item.status),
+                            })}
+                          >
+                            {item.status}
+                          </Link>
+                          . Public record target:{" "}
+                          <Link
+                            className={styles.sourceLink}
+                            href={getContributionLedgerHref({
+                              recordView: "ai-assisted",
+                              origin: "ai-origin",
+                              attachment: getContributionAttachmentFilter(item),
+                            })}
+                          >
+                            {getContributionAttachmentLabel(getContributionAttachmentFilter(item))}
+                          </Link>
+                          .
+                        </p>
                         <dl className={styles.aiProvenance}>
                           <div>
                             <dt>Source AI</dt>
