@@ -415,6 +415,33 @@ function getExactContributionLedgerHref(
   return `${pathname}?${nextSearchParams.toString()}#contribution-${contribution.id}`;
 }
 
+function getSummaryReferenceHref(
+  href: string,
+  scoreLabel?: string,
+  scoreSliceLabel?: string,
+) {
+  if (!scoreLabel && !scoreSliceLabel) {
+    return href;
+  }
+
+  const [pathAndQuery, hashFragment] = href.split("#");
+  const [path, query = ""] = pathAndQuery.split("?");
+  const nextSearchParams = new URLSearchParams(query);
+
+  if (scoreLabel) {
+    nextSearchParams.set("scoreLabel", scoreLabel);
+  }
+
+  if (scoreSliceLabel) {
+    nextSearchParams.set("scoreSlice", scoreSliceLabel);
+  }
+
+  const nextQuery = nextSearchParams.toString();
+  const nextHash = hashFragment ? `#${hashFragment}` : "";
+
+  return `${path}${nextQuery ? `?${nextQuery}` : ""}${nextHash}`;
+}
+
 function getHighlightedContributionId(hash: string) {
   if (!hash.startsWith("#contribution-") || hash === "#contribution-record") {
     return "";
@@ -1454,7 +1481,11 @@ export default function TopicContributionLoop({
                       <div className={styles.summaryReferenceList}>
                         <a
                           className={styles.summaryReferenceLink}
-                          href={highlightedSourceSummaryReference.href}
+                          href={getSummaryReferenceHref(
+                            highlightedSourceSummaryReference.href,
+                            activeScoreLabel,
+                            activeScoreSliceLabel,
+                          )}
                         >
                           {highlightedSourceSummaryReference.label}
                         </a>
@@ -1468,7 +1499,11 @@ export default function TopicContributionLoop({
                         {alternateHighlightedSummaryReferences.map((reference) => (
                           <a
                             className={styles.summaryReferenceLink}
-                            href={reference.href}
+                            href={getSummaryReferenceHref(
+                              reference.href,
+                              activeScoreLabel,
+                              activeScoreSliceLabel,
+                            )}
                             key={`focus-${highlightedVisibleContribution.id}-${reference.href}-${reference.label}`}
                           >
                             {reference.label}
@@ -1507,7 +1542,11 @@ export default function TopicContributionLoop({
                       <div className={styles.summaryReferenceList}>
                         <a
                           className={styles.summaryReferenceLink}
-                          href={highlightedSourceSummaryReference.href}
+                          href={getSummaryReferenceHref(
+                            highlightedSourceSummaryReference.href,
+                            activeScoreLabel,
+                            activeScoreSliceLabel,
+                          )}
                         >
                           {highlightedSourceSummaryReference.label}
                         </a>
@@ -1521,7 +1560,11 @@ export default function TopicContributionLoop({
                         {alternateHighlightedSummaryReferences.map((reference) => (
                           <a
                             className={styles.summaryReferenceLink}
-                            href={reference.href}
+                            href={getSummaryReferenceHref(
+                              reference.href,
+                              activeScoreLabel,
+                              activeScoreSliceLabel,
+                            )}
                             key={`hidden-focus-${highlightedContribution.id}-${reference.href}-${reference.label}`}
                           >
                             {reference.label}
@@ -1784,7 +1827,11 @@ export default function TopicContributionLoop({
                         {summaryReferencesForItem.map((reference) => (
                           <a
                             className={styles.summaryReferenceLink}
-                            href={reference.href}
+                            href={getSummaryReferenceHref(
+                              reference.href,
+                              activeScoreLabel,
+                              activeScoreSliceLabel,
+                            )}
                             key={`${item.id}-${reference.href}-${reference.label}`}
                           >
                             {reference.label}
