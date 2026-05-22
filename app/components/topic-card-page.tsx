@@ -88,6 +88,7 @@ function getContributionLedgerHref({
   origin,
   lane,
   contributionId,
+  sourceSummary,
 }: {
   recordView?: ContributionRecordView;
   attachment?: ContributionAttachmentFilter;
@@ -95,6 +96,7 @@ function getContributionLedgerHref({
   origin?: ContributionOriginFilter;
   lane?: DebateLane;
   contributionId?: string;
+  sourceSummary?: string;
 }) {
   const params = new URLSearchParams();
 
@@ -116,6 +118,10 @@ function getContributionLedgerHref({
 
   if (lane) {
     params.set("lane", lane);
+  }
+
+  if (sourceSummary) {
+    params.set("sourceSummary", sourceSummary);
   }
 
   const query = params.toString();
@@ -237,7 +243,10 @@ function getSingleSearchParamValue(value: string | string[] | undefined) {
   return value;
 }
 
-function getExactContributionLedgerHref(contribution: PublicContribution) {
+function getExactContributionLedgerHref(
+  contribution: PublicContribution,
+  sourceSummary?: string,
+) {
   return getContributionLedgerHref({
     recordView: getContributionRecordView(contribution),
     attachment: getContributionAttachmentFilter(contribution),
@@ -245,6 +254,7 @@ function getExactContributionLedgerHref(contribution: PublicContribution) {
     origin: getContributionOrigin(contribution),
     lane: contribution.lane,
     contributionId: contribution.id,
+    sourceSummary,
   });
 }
 
@@ -452,7 +462,10 @@ function SummaryFocusNotice({
       <p>
         This summary was opened from the public-record entry{" "}
         <strong>
-          <Link className={styles.sourceLink} href={getExactContributionLedgerHref(contribution)}>
+          <Link
+            className={styles.sourceLink}
+            href={getExactContributionLedgerHref(contribution, summaryLabel)}
+          >
             {contribution.title}
           </Link>
         </strong>
@@ -469,7 +482,7 @@ function SummaryFocusNotice({
         <div className={styles.summaryReferenceList}>
           <Link
             className={styles.summaryReferenceLink}
-            href={getExactContributionLedgerHref(contribution)}
+            href={getExactContributionLedgerHref(contribution, summaryLabel)}
           >
             Open exact ledger entry
           </Link>

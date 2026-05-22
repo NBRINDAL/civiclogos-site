@@ -721,6 +721,30 @@ export default function TopicContributionLoop({
 
     return [];
   }, [highlightedContribution, highlightedVisibleContribution, summaryReferences]);
+  const activeSourceSummaryLabel = useMemo(
+    () => searchParams.get("sourceSummary")?.trim() || undefined,
+    [searchParams],
+  );
+  const highlightedSourceSummaryReference = useMemo(() => {
+    if (!activeSourceSummaryLabel) {
+      return null;
+    }
+
+    return (
+      highlightedSummaryReferences.find(
+        (reference) => reference.label === activeSourceSummaryLabel,
+      ) ?? null
+    );
+  }, [activeSourceSummaryLabel, highlightedSummaryReferences]);
+  const alternateHighlightedSummaryReferences = useMemo(
+    () =>
+      highlightedSourceSummaryReference
+        ? highlightedSummaryReferences.filter(
+            (reference) => reference.label !== highlightedSourceSummaryReference.label,
+          )
+        : highlightedSummaryReferences,
+    [highlightedSourceSummaryReference, highlightedSummaryReferences],
+  );
 
   function handleFilterPick(filter: ContributionFilter) {
     const nextSearchParams = new URLSearchParams(searchParams.toString());
@@ -1358,8 +1382,11 @@ export default function TopicContributionLoop({
               <div>
                 <span className={styles.sectionLabel}>Exact record focus</span>
                 <p>
-                  Showing the exact contribution entry linked from this card&apos;s
-                  summary layers: <strong>{highlightedVisibleContribution.title}</strong>.
+                  Showing the exact contribution entry linked from{" "}
+                  <strong>
+                    {highlightedSourceSummaryReference?.label ?? "this card's summary layers"}
+                  </strong>
+                  : <strong>{highlightedVisibleContribution.title}</strong>.
                 </p>
               </div>
               <p className={styles.focusMeta}>
@@ -1369,20 +1396,37 @@ export default function TopicContributionLoop({
                 · {statusLabels[highlightedVisibleContribution.status]} ·{" "}
                 {getDebateLaneLabel(highlightedVisibleContribution.lane)}
               </p>
-              {highlightedSummaryReferences.length ? (
+              {highlightedSourceSummaryReference || alternateHighlightedSummaryReferences.length ? (
                 <div className={styles.focusReferenceBlock}>
-                  <span className={styles.sectionLabel}>Card summaries using this record</span>
-                  <div className={styles.summaryReferenceList}>
-                    {highlightedSummaryReferences.map((reference) => (
-                      <a
-                        className={styles.summaryReferenceLink}
-                        href={reference.href}
-                        key={`focus-${highlightedVisibleContribution.id}-${reference.href}-${reference.label}`}
-                      >
-                        {reference.label}
-                      </a>
-                    ))}
-                  </div>
+                  {highlightedSourceSummaryReference ? (
+                    <>
+                      <span className={styles.sectionLabel}>Returned from summary</span>
+                      <div className={styles.summaryReferenceList}>
+                        <a
+                          className={styles.summaryReferenceLink}
+                          href={highlightedSourceSummaryReference.href}
+                        >
+                          {highlightedSourceSummaryReference.label}
+                        </a>
+                      </div>
+                    </>
+                  ) : null}
+                  {alternateHighlightedSummaryReferences.length ? (
+                    <>
+                      <span className={styles.sectionLabel}>Card summaries using this record</span>
+                      <div className={styles.summaryReferenceList}>
+                        {alternateHighlightedSummaryReferences.map((reference) => (
+                          <a
+                            className={styles.summaryReferenceLink}
+                            href={reference.href}
+                            key={`focus-${highlightedVisibleContribution.id}-${reference.href}-${reference.label}`}
+                          >
+                            {reference.label}
+                          </a>
+                        ))}
+                      </div>
+                    </>
+                  ) : null}
                 </div>
               ) : null}
             </div>
@@ -1405,20 +1449,37 @@ export default function TopicContributionLoop({
                   Show exact record entry
                 </button>
               </div>
-              {highlightedSummaryReferences.length ? (
+              {highlightedSourceSummaryReference || alternateHighlightedSummaryReferences.length ? (
                 <div className={styles.focusReferenceBlock}>
-                  <span className={styles.sectionLabel}>Card summaries using this record</span>
-                  <div className={styles.summaryReferenceList}>
-                    {highlightedSummaryReferences.map((reference) => (
-                      <a
-                        className={styles.summaryReferenceLink}
-                        href={reference.href}
-                        key={`hidden-focus-${highlightedContribution.id}-${reference.href}-${reference.label}`}
-                      >
-                        {reference.label}
-                      </a>
-                    ))}
-                  </div>
+                  {highlightedSourceSummaryReference ? (
+                    <>
+                      <span className={styles.sectionLabel}>Returned from summary</span>
+                      <div className={styles.summaryReferenceList}>
+                        <a
+                          className={styles.summaryReferenceLink}
+                          href={highlightedSourceSummaryReference.href}
+                        >
+                          {highlightedSourceSummaryReference.label}
+                        </a>
+                      </div>
+                    </>
+                  ) : null}
+                  {alternateHighlightedSummaryReferences.length ? (
+                    <>
+                      <span className={styles.sectionLabel}>Card summaries using this record</span>
+                      <div className={styles.summaryReferenceList}>
+                        {alternateHighlightedSummaryReferences.map((reference) => (
+                          <a
+                            className={styles.summaryReferenceLink}
+                            href={reference.href}
+                            key={`hidden-focus-${highlightedContribution.id}-${reference.href}-${reference.label}`}
+                          >
+                            {reference.label}
+                          </a>
+                        ))}
+                      </div>
+                    </>
+                  ) : null}
                 </div>
               ) : null}
             </div>
