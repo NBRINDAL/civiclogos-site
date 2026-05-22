@@ -54,6 +54,7 @@
 .text {
   display: grid;
   gap: 4px;
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
 }
 
 .text strong {
