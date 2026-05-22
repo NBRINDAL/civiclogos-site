@@ -346,6 +346,34 @@ function getSourceContributionRecordHref(searchParams: {
   return `?${nextSearchParams.toString()}#contribution-${contributionId}`;
 }
 
+function getScoreAnchorId(label: string) {
+  return `score-${label
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")}`;
+}
+
+function getSourceScoreHref(searchParams: {
+  get(name: string): null | string;
+}) {
+  const sourceScoreLabel = searchParams.get("sourceScoreLabel")?.trim();
+
+  if (!sourceScoreLabel) {
+    return null;
+  }
+
+  const nextSearchParams = new URLSearchParams();
+  const sourceScoreSlice = searchParams.get("sourceScoreSlice")?.trim();
+
+  nextSearchParams.set("scoreLabel", sourceScoreLabel);
+
+  if (sourceScoreSlice) {
+    nextSearchParams.set("scoreSlice", sourceScoreSlice);
+  }
+
+  return `?${nextSearchParams.toString()}#${getScoreAnchorId(sourceScoreLabel)}`;
+}
+
 function buildTranscript(messages: TopicChatMessage[]): TranscriptItem[] {
   let lastUserQuestion = "";
 
@@ -414,6 +442,7 @@ export default function TopicAiPanel({
     () => getSourceContributionRecordHref(searchParams),
     [searchParams],
   );
+  const sourceScoreHref = useMemo(() => getSourceScoreHref(searchParams), [searchParams]);
   const sourceContributionTitle = searchParams.get("sourceContributionTitle")?.trim() ?? "";
   const sourceAttachmentSummary =
     searchParams.get("sourceAttachmentSummary")?.trim() ?? "";
@@ -667,6 +696,11 @@ export default function TopicAiPanel({
                       ? `Return to exact record from ${sourceSummaryLabel}`
                       : "Return to exact public record entry"}
                   </a>
+                  {sourceScoreHref && sourceScoreLabel ? (
+                    <a className={styles.sessionTargetLink} href={sourceScoreHref}>
+                      Return to {sourceScoreLabel}
+                    </a>
+                  ) : null}
                 </div>
               </div>
             ) : null}
@@ -740,6 +774,11 @@ export default function TopicAiPanel({
                       ? `Return to exact record from ${sourceSummaryLabel}`
                       : "Return to exact public record entry"}
                   </a>
+                  {sourceScoreHref && sourceScoreLabel ? (
+                    <a className={styles.sessionTargetLink} href={sourceScoreHref}>
+                      Return to {sourceScoreLabel}
+                    </a>
+                  ) : null}
                 </div>
               </div>
             ) : null}
