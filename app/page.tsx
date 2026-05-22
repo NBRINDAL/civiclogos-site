@@ -99,6 +99,12 @@ export default async function Home({
     sourceScoreValue?: string | string[];
     sourceScoreSlice?: string | string[];
     sourceScoreOpenPressure?: string | string[];
+    sourceExactRecordTitle?: string | string[];
+    sourceExactRecordState?: string | string[];
+    sourceExactRecordSlice?: string | string[];
+    sourceExactRecordTarget?: string | string[];
+    sourceExactRecordRead?: string | string[];
+    sourceExactRecordHref?: string | string[];
     sourceIntakeArtifactTitle?: string | string[];
     sourceIntakePromptCount?: string | string[];
     sourceIntakeHeldQuestionCount?: string | string[];
@@ -127,6 +133,24 @@ export default async function Home({
   const sourceScoreSlice = getFirstValue(resolvedSearchParams.sourceScoreSlice);
   const sourceScoreOpenPressure = getFirstValue(
     resolvedSearchParams.sourceScoreOpenPressure,
+  );
+  const sourceExactRecordTitle = getFirstValue(
+    resolvedSearchParams.sourceExactRecordTitle,
+  );
+  const sourceExactRecordState = getFirstValue(
+    resolvedSearchParams.sourceExactRecordState,
+  );
+  const sourceExactRecordSlice = getFirstValue(
+    resolvedSearchParams.sourceExactRecordSlice,
+  );
+  const sourceExactRecordTarget = getFirstValue(
+    resolvedSearchParams.sourceExactRecordTarget,
+  );
+  const sourceExactRecordRead = getFirstValue(
+    resolvedSearchParams.sourceExactRecordRead,
+  );
+  const sourceExactRecordHref = getFirstValue(
+    resolvedSearchParams.sourceExactRecordHref,
   );
   const sourceIntakeArtifactTitle = getFirstValue(
     resolvedSearchParams.sourceIntakeArtifactTitle,
@@ -163,6 +187,7 @@ export default async function Home({
     : null;
   const contactContextScopeParts = [
     sourceScoreLabel ? "focused score context" : null,
+    sourceExactRecordTitle ? "current pressure record" : null,
     sourceIntakeArtifactTitle ? "held intake pressure" : null,
   ].filter((part): part is string => Boolean(part));
   const contactContextScopeSuffix = contactContextScopeParts.length
@@ -190,6 +215,24 @@ export default async function Home({
     sourceScoreOpenPressure
       ? { label: "Open review pressure", value: sourceScoreOpenPressure }
       : null,
+    sourceExactRecordTitle || sourceExactRecordState
+      ? {
+          label: "Current pressure record",
+          value:
+            sourceExactRecordTitle ??
+            sourceExactRecordState ??
+            "No visible public-record entry is currently linked.",
+        }
+      : null,
+    sourceExactRecordSlice
+      ? { label: "Record slice", value: sourceExactRecordSlice }
+      : null,
+    sourceExactRecordTarget
+      ? { label: "Record target", value: sourceExactRecordTarget }
+      : null,
+    sourceExactRecordRead
+      ? { label: "Record read", value: sourceExactRecordRead }
+      : null,
     sourceIntakeArtifactTitle
       ? { label: "Held artifact", value: sourceIntakeArtifactTitle }
       : null,
@@ -201,6 +244,9 @@ export default async function Home({
       : null,
   ].filter((item): item is { label: string; value: string } => Boolean(item));
   const contactContextLinks = [
+    sourceExactRecordHref
+      ? { label: "Open exact public record entry", href: sourceExactRecordHref }
+      : null,
     sourceTopicHref
       ? { label: "Open current topic card", href: sourceTopicHref }
       : null,
@@ -235,6 +281,21 @@ export default async function Home({
           sourceScoreSlice ? `- Score slice: ${sourceScoreSlice}` : null,
           sourceScoreOpenPressure
             ? `- Open review pressure: ${sourceScoreOpenPressure}`
+            : null,
+          sourceExactRecordTitle
+            ? `- Current pressure record: ${sourceExactRecordTitle}`
+            : null,
+          !sourceExactRecordTitle && sourceExactRecordState
+            ? `- Current pressure record: ${sourceExactRecordState}`
+            : null,
+          sourceExactRecordSlice
+            ? `- Record slice: ${sourceExactRecordSlice}`
+            : null,
+          sourceExactRecordTarget
+            ? `- Record target: ${sourceExactRecordTarget}`
+            : null,
+          sourceExactRecordRead
+            ? `- Record read: ${sourceExactRecordRead}`
             : null,
           sourceIntakeArtifactTitle
             ? `- Held artifact: ${sourceIntakeArtifactTitle}`

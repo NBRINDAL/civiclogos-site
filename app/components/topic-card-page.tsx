@@ -1677,6 +1677,11 @@ export default async function TopicCardPage({
   const activeScoreItem = activeScoreLabel
     ? card.scorecard.find((item) => item.label === activeScoreLabel) ?? null
     : null;
+  const activeScoreLatestVisibleInterpretation = activeScoreLatestVisibleContribution
+    ? getScorePressureInterpretation(
+        activeScoreLatestVisibleContribution.contribution,
+      )
+    : null;
   const activeHeldIntakeRelationship =
     topicIntakeMatchesCard && topicIntakeEntry
       ? topicIntakeEntry.routing.routeKind === "room-topic-draft"
@@ -1743,6 +1748,45 @@ export default async function TopicCardPage({
         activeScoreLatestUnresolvedContribution
           ? "Still unresolved public pressure"
           : "No unresolved public pressure currently linked",
+      );
+    }
+
+    if (activeScoreLatestVisibleContribution) {
+      params.set(
+        "sourceExactRecordTitle",
+        activeScoreLatestVisibleContribution.contribution.title,
+      );
+      params.set(
+        "sourceExactRecordSlice",
+        activeScoreLatestVisibleContribution.slice.label,
+      );
+      params.set(
+        "sourceExactRecordTarget",
+        getContributionAttachmentSummary(
+          activeScoreLatestVisibleContribution.contribution,
+        ),
+      );
+      params.set(
+        "sourceExactRecordHref",
+        `${getRoomTopicHref(roomSlug, card.id)}${getExactContributionLedgerHref(
+          activeScoreLatestVisibleContribution.contribution,
+          undefined,
+          activeScoreItem?.label,
+          activeScoreLatestVisibleContribution.slice.label,
+          activeIntakeContextId,
+        )}`,
+      );
+
+      if (activeScoreLatestVisibleInterpretation) {
+        params.set(
+          "sourceExactRecordRead",
+          activeScoreLatestVisibleInterpretation.label,
+        );
+      }
+    } else if (activeScoreLabel) {
+      params.set(
+        "sourceExactRecordState",
+        "No visible public-record entry is currently linked to this focused score.",
       );
     }
 
