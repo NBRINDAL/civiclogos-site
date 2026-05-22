@@ -464,6 +464,17 @@ function SummaryFocusNotice({
         showReviewStatus
       />
       <ContributionAiOriginContext contribution={contribution} />
+      <div className={styles.summaryReferenceBlock}>
+        <span className={styles.metaParagraph}>Public record</span>
+        <div className={styles.summaryReferenceList}>
+          <Link
+            className={styles.summaryReferenceLink}
+            href={getExactContributionLedgerHref(contribution)}
+          >
+            Open exact ledger entry
+          </Link>
+        </div>
+      </div>
       {alternateSummaryReferences.length ? (
         <div className={styles.summaryReferenceBlock}>
           <span className={styles.metaParagraph}>Also surfaced in</span>
