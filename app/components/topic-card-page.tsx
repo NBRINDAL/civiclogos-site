@@ -1377,6 +1377,11 @@ export default async function TopicCardPage({
                     relatedSlices,
                     liveContributions,
                   );
+                const latestScoreReferences = latestScoreContribution
+                  ? (contributionScoreReferences[
+                      latestScoreContribution.contribution.id
+                    ] ?? [])
+                  : [];
 
                 return (
                   <div
@@ -1488,6 +1493,37 @@ export default async function TopicCardPage({
                               latestScoreContribution.slice.label
                             }
                           />
+                          {latestScoreReferences.length ? (
+                            <div className={styles.scoreTransparency}>
+                              <span className={styles.scoreTransparencyLabel}>
+                                Scorecard use of this record
+                              </span>
+                              <p>
+                                This exact record is currently participating in the
+                                scorecard through the following score slices.
+                              </p>
+                              <div className={styles.scoreSliceList}>
+                                {latestScoreReferences.map((reference) => (
+                                  <Link
+                                    className={styles.scoreSliceLink}
+                                    href={getScoreItemHref(
+                                      reference.scoreLabel,
+                                      reference.scoreSliceLabel,
+                                      searchParams,
+                                    )}
+                                    key={`${item.label}-${reference.scoreLabel}-${reference.scoreSliceLabel}`}
+                                  >
+                                    {reference.scoreLabel} · {reference.scoreSliceLabel}
+                                    {reference.scoreLabel === item.label &&
+                                    reference.scoreSliceLabel ===
+                                      latestScoreContribution.slice.label
+                                      ? " · current"
+                                      : ""}
+                                  </Link>
+                                ))}
+                              </div>
+                            </div>
+                          ) : null}
                         </div>
                       ) : null}
                     </details>
