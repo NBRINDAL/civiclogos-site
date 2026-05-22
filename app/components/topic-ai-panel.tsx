@@ -22,6 +22,10 @@ type TopicAiPanelProps = {
   initialStoreMode: TopicChatStoreMetadata["mode"];
   initialStoreNote: string;
   roomSlug: IssueRoomSlug;
+  scoreReferences?: Record<
+    string,
+    Array<{ scoreLabel: string; scoreSliceLabel: string }>
+  >;
   topicId: string;
   topicTitle: string;
 };
@@ -374,6 +378,20 @@ function getSourceScoreHref(searchParams: {
   return `?${nextSearchParams.toString()}#${getScoreAnchorId(sourceScoreLabel)}`;
 }
 
+function getScoreItemHref(
+  scoreLabel: string,
+  scoreSliceLabel?: string,
+) {
+  const nextSearchParams = new URLSearchParams();
+  nextSearchParams.set("scoreLabel", scoreLabel);
+
+  if (scoreSliceLabel) {
+    nextSearchParams.set("scoreSlice", scoreSliceLabel);
+  }
+
+  return `?${nextSearchParams.toString()}#${getScoreAnchorId(scoreLabel)}`;
+}
+
 function buildTranscript(messages: TopicChatMessage[]): TranscriptItem[] {
   let lastUserQuestion = "";
 
@@ -418,6 +436,7 @@ export default function TopicAiPanel({
   initialStoreMode,
   initialStoreNote,
   roomSlug,
+  scoreReferences = {},
   topicId,
   topicTitle,
 }: TopicAiPanelProps) {
@@ -443,11 +462,16 @@ export default function TopicAiPanel({
     [searchParams],
   );
   const sourceScoreHref = useMemo(() => getSourceScoreHref(searchParams), [searchParams]);
+  const sourceContributionId = searchParams.get("sourceContribution")?.trim() ?? "";
   const sourceContributionTitle = searchParams.get("sourceContributionTitle")?.trim() ?? "";
   const sourceAttachmentSummary =
     searchParams.get("sourceAttachmentSummary")?.trim() ?? "";
   const sourceScoreLabel = searchParams.get("sourceScoreLabel")?.trim() ?? "";
   const sourceScoreSliceLabel = searchParams.get("sourceScoreSlice")?.trim() ?? "";
+  const sourceContributionScoreReferences = useMemo(
+    () => (sourceContributionId ? scoreReferences[sourceContributionId] ?? [] : []),
+    [scoreReferences, sourceContributionId],
+  );
   const sourceContributionContext = useMemo(() => {
     const sourceReviewStatus = searchParams.get("sourceReviewStatus")?.trim();
     const sourceAttachment = searchParams.get("sourceAttachment")?.trim();
@@ -702,6 +726,33 @@ export default function TopicAiPanel({
                     </a>
                   ) : null}
                 </div>
+                {sourceContributionScoreReferences.length ? (
+                  <div className={styles.sourceTurnActions}>
+                    <span className={styles.sessionImpactLabel}>
+                      {sourceScoreLabel
+                        ? "Scorecard use of this record"
+                        : "Scorecard items using this record"}
+                    </span>
+                    <div className={styles.sessionTargetMap}>
+                      {sourceContributionScoreReferences.map((reference) => (
+                        <a
+                          className={styles.sessionTargetLink}
+                          href={getScoreItemHref(
+                            reference.scoreLabel,
+                            reference.scoreSliceLabel,
+                          )}
+                          key={`source-score-${reference.scoreLabel}-${reference.scoreSliceLabel}`}
+                        >
+                          {reference.scoreLabel} · {reference.scoreSliceLabel}
+                          {sourceScoreLabel === reference.scoreLabel &&
+                          sourceScoreSliceLabel === reference.scoreSliceLabel
+                            ? " · current"
+                            : ""}
+                        </a>
+                      ))}
+                    </div>
+                  </div>
+                ) : null}
               </div>
             ) : null}
           </div>
@@ -780,6 +831,33 @@ export default function TopicAiPanel({
                     </a>
                   ) : null}
                 </div>
+                {sourceContributionScoreReferences.length ? (
+                  <div className={styles.sourceTurnActions}>
+                    <span className={styles.sessionImpactLabel}>
+                      {sourceScoreLabel
+                        ? "Scorecard use of this record"
+                        : "Scorecard items using this record"}
+                    </span>
+                    <div className={styles.sessionTargetMap}>
+                      {sourceContributionScoreReferences.map((reference) => (
+                        <a
+                          className={styles.sessionTargetLink}
+                          href={getScoreItemHref(
+                            reference.scoreLabel,
+                            reference.scoreSliceLabel,
+                          )}
+                          key={`missing-source-score-${reference.scoreLabel}-${reference.scoreSliceLabel}`}
+                        >
+                          {reference.scoreLabel} · {reference.scoreSliceLabel}
+                          {sourceScoreLabel === reference.scoreLabel &&
+                          sourceScoreSliceLabel === reference.scoreSliceLabel
+                            ? " · current"
+                            : ""}
+                        </a>
+                      ))}
+                    </div>
+                  </div>
+                ) : null}
               </div>
             ) : null}
           </div>

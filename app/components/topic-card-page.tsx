@@ -2828,6 +2828,7 @@ export default async function TopicCardPage({
           initialStoreMode={topicChatStoreMetadata.mode}
           initialStoreNote={topicChatStoreMetadata.note}
           roomSlug={roomSlug}
+          scoreReferences={contributionScoreReferences}
           topicId={card.id}
           topicTitle={card.title}
         />
