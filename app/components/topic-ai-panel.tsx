@@ -3,6 +3,7 @@
 import { useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState, useTransition } from "react";
 import type { IssueRoomSlug } from "../lib/civic-logos";
+import type { PublicContribution } from "../lib/contribution-types";
 import {
   getDebateLaneLabel,
   normalizeReviewTargetKind,
@@ -22,6 +23,15 @@ type TopicAiPanelProps = {
   initialStoreMode: TopicChatStoreMetadata["mode"];
   initialStoreNote: string;
   roomSlug: IssueRoomSlug;
+  scorePressureContexts?: Record<
+    string,
+    {
+      latestVisibleContribution: PublicContribution | null;
+      latestVisibleSliceLabel: null | string;
+      latestUnresolvedContribution: PublicContribution | null;
+      latestUnresolvedSliceLabel: null | string;
+    }
+  >;
   scoreReferences?: Record<
     string,
     Array<{ scoreLabel: string; scoreSliceLabel: string }>
@@ -75,6 +85,17 @@ type ContributionStatusFilter =
   | "accepted"
   | "incorporated"
   | "rejected";
+
+type ContributionFilter =
+  | "needs-review"
+  | "changed-card"
+  | "ai-assisted"
+  | "document-backed";
+
+type ContributionOriginFilter =
+  | "human-submitted"
+  | "ai-origin"
+  | "seed-example";
 
 const quickChallengePrompts = [
   "Which assumption is carrying the most hidden risk in this card right now?",
@@ -196,6 +217,62 @@ function getContributionOriginLabel(origin: string) {
     default:
       return origin;
   }
+}
+
+function getVisibleAttachmentFilter(
+  contribution: PublicContribution,
+): PromotionAttachmentFilter {
+  const kind =
+    contribution.review?.assignedToKind ?? contribution.aiIntake?.suggestedAssignmentKind;
+  const normalizedKind = kind ? normalizeReviewTargetKind(kind) : null;
+
+  if (!normalizedKind || normalizedKind === "unclear") {
+    return "none-yet";
+  }
+
+  return normalizedKind;
+}
+
+function getContributionOriginFilter(
+  contribution: PublicContribution,
+): ContributionOriginFilter {
+  if (contribution.isSeedExample) {
+    return "seed-example";
+  }
+
+  if (contribution.draftSource) {
+    return "ai-origin";
+  }
+
+  return "human-submitted";
+}
+
+function getContributionStatusFilter(
+  status: PublicContribution["status"],
+): ContributionStatusFilter {
+  return status === "needs review" ? "needs-review" : status;
+}
+
+function getContributionRecordView(
+  contribution: PublicContribution,
+): ContributionFilter | undefined {
+  if (contribution.draftSource) {
+    return "ai-assisted";
+  }
+
+  if (contribution.review?.changedSynthesis === true) {
+    return "changed-card";
+  }
+
+  if (contribution.evidenceDocument) {
+    return "document-backed";
+  }
+
+  if (contribution.status === "pending" || contribution.status === "needs review") {
+    return "needs-review";
+  }
+
+  return undefined;
 }
 
 function getAttachmentCounts(messages: TopicChatMessage[]) {
@@ -392,6 +469,37 @@ function getScoreItemHref(
   return `?${nextSearchParams.toString()}#${getScoreAnchorId(scoreLabel)}`;
 }
 
+function getExactContributionRecordHref(
+  contribution: PublicContribution,
+  sourceScoreLabel?: string,
+  sourceScoreSliceLabel?: string,
+) {
+  const nextSearchParams = new URLSearchParams();
+  const recordView = getContributionRecordView(contribution);
+  const reviewStatus = getContributionStatusFilter(contribution.status);
+  const attachment = getVisibleAttachmentFilter(contribution);
+  const origin = getContributionOriginFilter(contribution);
+
+  if (recordView) {
+    nextSearchParams.set("recordView", recordView);
+  }
+
+  nextSearchParams.set("reviewStatus", reviewStatus);
+  nextSearchParams.set("attachment", attachment);
+  nextSearchParams.set("origin", origin);
+  nextSearchParams.set("lane", contribution.lane);
+
+  if (sourceScoreLabel) {
+    nextSearchParams.set("scoreLabel", sourceScoreLabel);
+  }
+
+  if (sourceScoreSliceLabel) {
+    nextSearchParams.set("scoreSlice", sourceScoreSliceLabel);
+  }
+
+  return `?${nextSearchParams.toString()}#contribution-${contribution.id}`;
+}
+
 function buildTranscript(messages: TopicChatMessage[]): TranscriptItem[] {
   let lastUserQuestion = "";
 
@@ -436,6 +544,7 @@ export default function TopicAiPanel({
   initialStoreMode,
   initialStoreNote,
   roomSlug,
+  scorePressureContexts = {},
   scoreReferences = {},
   topicId,
   topicTitle,
@@ -468,6 +577,10 @@ export default function TopicAiPanel({
     searchParams.get("sourceAttachmentSummary")?.trim() ?? "";
   const sourceScoreLabel = searchParams.get("sourceScoreLabel")?.trim() ?? "";
   const sourceScoreSliceLabel = searchParams.get("sourceScoreSlice")?.trim() ?? "";
+  const sourceScorePressureContext = useMemo(
+    () => (sourceScoreLabel ? scorePressureContexts[sourceScoreLabel] ?? null : null),
+    [scorePressureContexts, sourceScoreLabel],
+  );
   const sourceContributionScoreReferences = useMemo(
     () => (sourceContributionId ? scoreReferences[sourceContributionId] ?? [] : []),
     [scoreReferences, sourceContributionId],
@@ -490,6 +603,17 @@ export default function TopicAiPanel({
     };
   }, [searchParams]);
   const sourceSummaryLabel = searchParams.get("sourceSummary")?.trim() ?? "";
+  const sourceScoreUnresolvedMatchesSourceContribution = Boolean(
+    sourceScorePressureContext?.latestUnresolvedContribution &&
+      sourceContributionId &&
+      sourceScorePressureContext.latestUnresolvedContribution.id === sourceContributionId,
+  );
+  const sourceScoreUnresolvedMatchesLatestVisible = Boolean(
+    sourceScorePressureContext?.latestUnresolvedContribution &&
+      sourceScorePressureContext?.latestVisibleContribution &&
+      sourceScorePressureContext.latestUnresolvedContribution.id ===
+        sourceScorePressureContext.latestVisibleContribution.id,
+  );
   const hasHighlightedMessageRequest = highlightedMessageId.length > 0;
   const highlightedTranscriptItem = useMemo(
     () =>
@@ -726,6 +850,57 @@ export default function TopicAiPanel({
                     </a>
                   ) : null}
                 </div>
+                {sourceScoreLabel ? (
+                  <div className={styles.sourceTurnActions}>
+                    <span className={styles.sessionImpactLabel}>
+                      Open review pressure on this score
+                    </span>
+                    {sourceScorePressureContext?.latestUnresolvedContribution ? (
+                      sourceScoreUnresolvedMatchesSourceContribution ? (
+                        <p className={styles.sourceRecordTitle}>
+                          This exact public record is still unresolved and could
+                          still move <strong>{sourceScoreLabel}</strong> after human
+                          review.
+                        </p>
+                      ) : sourceScoreUnresolvedMatchesLatestVisible ? (
+                        <p className={styles.sourceRecordTitle}>
+                          The freshest visible record on{" "}
+                          <strong>{sourceScoreLabel}</strong> is still unresolved
+                          and could still move the score after human review.
+                        </p>
+                      ) : (
+                        <p className={styles.sourceRecordTitle}>
+                          The newest unresolved public pressure that could still
+                          move <strong>{sourceScoreLabel}</strong> is{" "}
+                          <a
+                            className={styles.sessionTargetLink}
+                            href={getExactContributionRecordHref(
+                              sourceScorePressureContext.latestUnresolvedContribution,
+                              sourceScoreLabel,
+                              (
+                                sourceScorePressureContext.latestUnresolvedSliceLabel ??
+                                sourceScoreSliceLabel
+                              ) || undefined,
+                            )}
+                          >
+                            {sourceScorePressureContext.latestUnresolvedContribution.title}
+                          </a>
+                          {" "}through{" "}
+                          <strong>
+                            {sourceScorePressureContext.latestUnresolvedSliceLabel ??
+                              "linked public record"}
+                          </strong>
+                          .
+                        </p>
+                      )
+                    ) : (
+                      <p className={styles.sourceRecordTitle}>
+                        No unresolved public pressure is currently linked to{" "}
+                        <strong>{sourceScoreLabel}</strong>.
+                      </p>
+                    )}
+                  </div>
+                ) : null}
                 {sourceContributionScoreReferences.length ? (
                   <div className={styles.sourceTurnActions}>
                     <span className={styles.sessionImpactLabel}>
@@ -831,6 +1006,57 @@ export default function TopicAiPanel({
                     </a>
                   ) : null}
                 </div>
+                {sourceScoreLabel ? (
+                  <div className={styles.sourceTurnActions}>
+                    <span className={styles.sessionImpactLabel}>
+                      Open review pressure on this score
+                    </span>
+                    {sourceScorePressureContext?.latestUnresolvedContribution ? (
+                      sourceScoreUnresolvedMatchesSourceContribution ? (
+                        <p className={styles.sourceRecordTitle}>
+                          This exact public record is still unresolved and could
+                          still move <strong>{sourceScoreLabel}</strong> after human
+                          review.
+                        </p>
+                      ) : sourceScoreUnresolvedMatchesLatestVisible ? (
+                        <p className={styles.sourceRecordTitle}>
+                          The freshest visible record on{" "}
+                          <strong>{sourceScoreLabel}</strong> is still unresolved
+                          and could still move the score after human review.
+                        </p>
+                      ) : (
+                        <p className={styles.sourceRecordTitle}>
+                          The newest unresolved public pressure that could still
+                          move <strong>{sourceScoreLabel}</strong> is{" "}
+                          <a
+                            className={styles.sessionTargetLink}
+                            href={getExactContributionRecordHref(
+                              sourceScorePressureContext.latestUnresolvedContribution,
+                              sourceScoreLabel,
+                              (
+                                sourceScorePressureContext.latestUnresolvedSliceLabel ??
+                                sourceScoreSliceLabel
+                              ) || undefined,
+                            )}
+                          >
+                            {sourceScorePressureContext.latestUnresolvedContribution.title}
+                          </a>
+                          {" "}through{" "}
+                          <strong>
+                            {sourceScorePressureContext.latestUnresolvedSliceLabel ??
+                              "linked public record"}
+                          </strong>
+                          .
+                        </p>
+                      )
+                    ) : (
+                      <p className={styles.sourceRecordTitle}>
+                        No unresolved public pressure is currently linked to{" "}
+                        <strong>{sourceScoreLabel}</strong>.
+                      </p>
+                    )}
+                  </div>
+                ) : null}
                 {sourceContributionScoreReferences.length ? (
                   <div className={styles.sourceTurnActions}>
                     <span className={styles.sessionImpactLabel}>

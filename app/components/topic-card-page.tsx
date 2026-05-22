@@ -81,6 +81,13 @@ type ContributionScoreReference = {
   scoreSliceLabel: string;
 };
 
+type ScorePressureContext = {
+  latestVisibleContribution: PublicContribution | null;
+  latestVisibleSliceLabel: null | string;
+  latestUnresolvedContribution: PublicContribution | null;
+  latestUnresolvedSliceLabel: null | string;
+};
+
 type TopicCardPageProps = {
   roomSlug: IssueRoomSlug;
   card: TopicCardData;
@@ -1345,6 +1352,39 @@ export default async function TopicCardPage({
 
     return Object.fromEntries(map.entries());
   })();
+  const scorePressureContexts = Object.fromEntries(
+    card.scorecard.map((scoreItem) => {
+      const relatedSlices = getScoreTransparencySlices(
+        scoreItem.label,
+        liveContributions,
+      );
+      const latestVisibleContribution = getLatestScoreTransparencyContribution(
+        relatedSlices,
+        liveContributions,
+      );
+      const latestUnresolvedContribution = getLatestScoreTransparencyContribution(
+        relatedSlices,
+        liveContributions,
+        (contribution) =>
+          contribution.status === "pending" ||
+          contribution.status === "needs review",
+      );
+
+      return [
+        scoreItem.label,
+        {
+          latestVisibleContribution:
+            latestVisibleContribution?.contribution ?? null,
+          latestVisibleSliceLabel:
+            latestVisibleContribution?.slice.label ?? null,
+          latestUnresolvedContribution:
+            latestUnresolvedContribution?.contribution ?? null,
+          latestUnresolvedSliceLabel:
+            latestUnresolvedContribution?.slice.label ?? null,
+        } satisfies ScorePressureContext,
+      ];
+    }),
+  );
   const previousCard =
     currentTopicIndex > 0 ? roomCards[currentTopicIndex - 1] : null;
   const nextCard =
@@ -3125,6 +3165,7 @@ export default async function TopicCardPage({
           initialStoreMode={topicChatStoreMetadata.mode}
           initialStoreNote={topicChatStoreMetadata.note}
           roomSlug={roomSlug}
+          scorePressureContexts={scorePressureContexts}
           scoreReferences={contributionScoreReferences}
           topicId={card.id}
           topicTitle={card.title}
