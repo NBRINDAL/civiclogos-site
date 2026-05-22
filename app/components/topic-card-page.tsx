@@ -234,6 +234,84 @@ function getExactContributionLedgerHref(contribution: PublicContribution) {
   });
 }
 
+function ContributionRecordContext({
+  contribution,
+  recordView,
+  targetLabel = "Public record target",
+}: {
+  contribution: PublicContribution;
+  recordView?: ContributionRecordView;
+  targetLabel?: string;
+}) {
+  return (
+    <p className={styles.metaParagraph}>
+      Debate lane:{" "}
+      <Link
+        className={styles.sourceLink}
+        href={getContributionLedgerHref({
+          recordView,
+          reviewStatus: getContributionStatusFilter(contribution.status),
+          lane: contribution.lane,
+        })}
+      >
+        {debateLaneLabels[contribution.lane]}
+      </Link>
+      . Origin:{" "}
+      <Link
+        className={styles.sourceLink}
+        href={getContributionLedgerHref({
+          recordView,
+          reviewStatus: getContributionStatusFilter(contribution.status),
+          origin: getContributionOrigin(contribution),
+        })}
+      >
+        {getContributionOriginLabel(getContributionOrigin(contribution))}
+      </Link>
+      . {targetLabel}:{" "}
+      <Link
+        className={styles.sourceLink}
+        href={getContributionLedgerHref({
+          recordView,
+          reviewStatus: getContributionStatusFilter(contribution.status),
+          attachment: getContributionAttachmentFilter(contribution),
+        })}
+      >
+        {getContributionAttachmentSummary(contribution)}
+      </Link>
+      .
+    </p>
+  );
+}
+
+function ContributionAiOriginContext({
+  contribution,
+}: {
+  contribution: PublicContribution;
+}) {
+  if (!contribution.draftSource) {
+    return null;
+  }
+
+  return (
+    <p className={styles.metaParagraph}>
+      AI origin: {contribution.draftSource.providerLabel}
+      {contribution.draftSource.model ? ` (${contribution.draftSource.model})` : ""} on{" "}
+      {formatTimestamp(contribution.draftSource.generatedAt)}.
+      {contribution.draftSource.messageId ? (
+        <>
+          {" "}
+          <Link
+            className={styles.sourceLink}
+            href={getTopicChatMessageHref(contribution.draftSource.messageId)}
+          >
+            Open source AI turn
+          </Link>
+        </>
+      ) : null}
+    </p>
+  );
+}
+
 export default async function TopicCardPage({
   roomSlug,
   card,
@@ -546,6 +624,8 @@ export default async function TopicCardPage({
                           "A reviewed outside contribution was attached to this assumption layer.",
                         )}
                       </p>
+                      <ContributionRecordContext contribution={item} recordView="changed-card" />
+                      <ContributionAiOriginContext contribution={item} />
                     </article>
                   ))}
                 </div>
@@ -693,6 +773,8 @@ export default async function TopicCardPage({
                           "A reviewed outside contribution was attached to the evidence layer.",
                         )}
                       </p>
+                      <ContributionRecordContext contribution={item} recordView="changed-card" />
+                      <ContributionAiOriginContext contribution={item} />
                     </article>
                   ))}
                 </div>
@@ -764,6 +846,11 @@ export default async function TopicCardPage({
                                 ? " This document-backed contribution is still waiting on a full human review decision."
                                 : " This document is visible in the record even if its full synthesis impact is still being clarified."}
                           </p>
+                          <ContributionRecordContext
+                            contribution={item}
+                            recordView="document-backed"
+                          />
+                          <ContributionAiOriginContext contribution={item} />
                           {document.extraction.note ? (
                             <p className={styles.metaParagraph}>
                               {document.extraction.note}
@@ -1106,6 +1193,8 @@ export default async function TopicCardPage({
                           "A reviewed outside contribution was attached to the open-question layer.",
                         )}
                       </p>
+                      <ContributionRecordContext contribution={item} recordView="changed-card" />
+                      <ContributionAiOriginContext contribution={item} />
                     </article>
                   ))}
                 </div>
