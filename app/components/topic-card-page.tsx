@@ -260,6 +260,34 @@ function getContributionSummaryHref(
   return `?${params.toString()}${hash}`;
 }
 
+function getSummaryFocusLedgerHref(
+  searchParams?: Record<string, string | string[] | undefined>,
+) {
+  const params = new URLSearchParams();
+
+  for (const [key, value] of Object.entries(searchParams ?? {})) {
+    if (key === "summaryRecord" || key === "summaryLabel") {
+      continue;
+    }
+
+    if (Array.isArray(value)) {
+      for (const item of value) {
+        if (item) {
+          params.append(key, item);
+        }
+      }
+      continue;
+    }
+
+    if (value) {
+      params.set(key, value);
+    }
+  }
+
+  const query = params.toString();
+  return `${query ? `?${query}` : ""}#contribution-record`;
+}
+
 function ContributionRecordContext({
   contribution,
   recordView,
@@ -375,15 +403,41 @@ function addContributionSummaryReference(
 
 function SummaryFocusNotice({
   activeSummaryLabel,
+  activeSummaryRecordId,
   contribution,
+  ledgerHref,
   summaryLabel,
 }: {
   activeSummaryLabel?: string;
+  activeSummaryRecordId?: string;
   contribution: null | PublicContribution;
+  ledgerHref: string;
   summaryLabel: string;
 }) {
-  if (!contribution || activeSummaryLabel !== summaryLabel) {
+  if (activeSummaryLabel !== summaryLabel) {
     return null;
+  }
+
+  if (!contribution) {
+    if (!activeSummaryRecordId) {
+      return null;
+    }
+
+    return (
+      <div className={`${styles.summaryFocusNotice} ${styles.summaryFocusMissing}`}>
+        <span className={styles.panelLabel}>Focused record unavailable</span>
+        <p>
+          This summary was opened from an exact public-record link, but that
+          contribution is not in the current visible topic ledger right now.
+          The summary is still shown below.
+        </p>
+        <div className={styles.roomActions}>
+          <Link className={styles.roomActionSecondary} href={ledgerHref}>
+            Open contribution ledger
+          </Link>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -668,6 +722,7 @@ export default async function TopicCardPage({
     roomSlug === "institutional-trust" && card.id === "topic-001";
   const activeSummaryRecordId = getSingleSearchParamValue(searchParams?.summaryRecord)?.trim();
   const activeSummaryLabel = getSingleSearchParamValue(searchParams?.summaryLabel)?.trim();
+  const summaryFocusLedgerHref = getSummaryFocusLedgerHref(searchParams);
   const summaryFocusedContribution =
     activeSummaryRecordId
       ? liveContributions.find((item) => item.id === activeSummaryRecordId) ?? null
@@ -731,7 +786,9 @@ export default async function TopicCardPage({
               <h3>The problem it is trying to solve</h3>
               <SummaryFocusNotice
                 activeSummaryLabel={activeSummaryLabel}
+                activeSummaryRecordId={activeSummaryRecordId}
                 contribution={summaryFocusedContribution}
+                ledgerHref={summaryFocusLedgerHref}
                 summaryLabel="Assumption layer"
               />
               <p>{card.problemStatement}</p>
@@ -741,7 +798,9 @@ export default async function TopicCardPage({
               <h3>The proposed move</h3>
               <SummaryFocusNotice
                 activeSummaryLabel={activeSummaryLabel}
+                activeSummaryRecordId={activeSummaryRecordId}
                 contribution={summaryFocusedContribution}
+                ledgerHref={summaryFocusLedgerHref}
                 summaryLabel="Objection layer"
               />
               <p>{card.proposedSolution}</p>
@@ -794,7 +853,9 @@ export default async function TopicCardPage({
               <h3>Expected upside</h3>
               <SummaryFocusNotice
                 activeSummaryLabel={activeSummaryLabel}
+                activeSummaryRecordId={activeSummaryRecordId}
                 contribution={summaryFocusedContribution}
+                ledgerHref={summaryFocusLedgerHref}
                 summaryLabel="Evidence layer"
               />
               <ul className={styles.bulletList}>
@@ -818,7 +879,9 @@ export default async function TopicCardPage({
               <h3>Stakeholders already in the blast radius</h3>
               <SummaryFocusNotice
                 activeSummaryLabel={activeSummaryLabel}
+                activeSummaryRecordId={activeSummaryRecordId}
                 contribution={summaryFocusedContribution}
+                ledgerHref={summaryFocusLedgerHref}
                 summaryLabel="Visible evidence record"
               />
               <div className={styles.tagList}>
@@ -883,7 +946,9 @@ export default async function TopicCardPage({
             <h2>Where the topic could fail or misfire</h2>
             <SummaryFocusNotice
               activeSummaryLabel={activeSummaryLabel}
+              activeSummaryRecordId={activeSummaryRecordId}
               contribution={summaryFocusedContribution}
+              ledgerHref={summaryFocusLedgerHref}
               summaryLabel="Review-driven record"
             />
             <ul className={styles.bulletList}>
@@ -896,7 +961,9 @@ export default async function TopicCardPage({
               <h3>Anticipated objection</h3>
               <SummaryFocusNotice
                 activeSummaryLabel={activeSummaryLabel}
+                activeSummaryRecordId={activeSummaryRecordId}
                 contribution={summaryFocusedContribution}
+                ledgerHref={summaryFocusLedgerHref}
                 summaryLabel="Open-question layer"
               />
               <p>{card.anticipatedObjection ?? card.strongestObjection}</p>
@@ -1149,7 +1216,9 @@ export default async function TopicCardPage({
             <h2>Human review should change the visible object, not just the queue.</h2>
             <SummaryFocusNotice
               activeSummaryLabel={activeSummaryLabel}
+              activeSummaryRecordId={activeSummaryRecordId}
               contribution={summaryFocusedContribution}
+              ledgerHref={summaryFocusLedgerHref}
               summaryLabel="Open pressure"
             />
             <p>
@@ -1161,7 +1230,9 @@ export default async function TopicCardPage({
               <h3>Assumptions now under live pressure</h3>
               <SummaryFocusNotice
                 activeSummaryLabel={activeSummaryLabel}
+                activeSummaryRecordId={activeSummaryRecordId}
                 contribution={summaryFocusedContribution}
+                ledgerHref={summaryFocusLedgerHref}
                 summaryLabel="Pressure by lane"
               />
               {incorporatedAssumptions.length ? (
@@ -1650,7 +1721,9 @@ export default async function TopicCardPage({
                   <h3>Most recent contributor-driven card changes</h3>
                   <SummaryFocusNotice
                     activeSummaryLabel={activeSummaryLabel}
+                    activeSummaryRecordId={activeSummaryRecordId}
                     contribution={summaryFocusedContribution}
+                    ledgerHref={summaryFocusLedgerHref}
                     summaryLabel="Manual cycle - Changed card"
                   />
                   <ul className={styles.bulletList}>
@@ -1700,7 +1773,9 @@ export default async function TopicCardPage({
               <h3>Needs maintainer attention</h3>
               <SummaryFocusNotice
                 activeSummaryLabel={activeSummaryLabel}
+                activeSummaryRecordId={activeSummaryRecordId}
                 contribution={summaryFocusedContribution}
+                ledgerHref={summaryFocusLedgerHref}
                 summaryLabel="Manual cycle - Needs attention"
               />
               {needsAttentionContributions.length ? (
@@ -1750,7 +1825,9 @@ export default async function TopicCardPage({
               <h3>AI-assisted record activity</h3>
               <SummaryFocusNotice
                 activeSummaryLabel={activeSummaryLabel}
+                activeSummaryRecordId={activeSummaryRecordId}
                 contribution={summaryFocusedContribution}
+                ledgerHref={summaryFocusLedgerHref}
                 summaryLabel="AI-assisted record activity"
               />
               {assistedRecordContributions.length ? (
@@ -1917,7 +1994,9 @@ export default async function TopicCardPage({
               <h3>Recent human review decisions</h3>
               <SummaryFocusNotice
                 activeSummaryLabel={activeSummaryLabel}
+                activeSummaryRecordId={activeSummaryRecordId}
                 contribution={summaryFocusedContribution}
+                ledgerHref={summaryFocusLedgerHref}
                 summaryLabel="Recent human review decisions"
               />
               {reviewedContributions.length ? (
@@ -2111,7 +2190,9 @@ export default async function TopicCardPage({
             <h3>Contribution-driven trace</h3>
             <SummaryFocusNotice
               activeSummaryLabel={activeSummaryLabel}
+              activeSummaryRecordId={activeSummaryRecordId}
               contribution={summaryFocusedContribution}
+              ledgerHref={summaryFocusLedgerHref}
               summaryLabel="Contribution-driven trace"
             />
             {changedCardContributions.length ? (

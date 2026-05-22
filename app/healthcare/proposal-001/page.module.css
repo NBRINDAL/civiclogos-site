@@ -259,6 +259,15 @@
     0 16px 34px rgba(18, 33, 39, 0.05);
 }
 
+.summaryFocusMissing {
+  border-color: rgba(var(--brand-red-rgb), 0.22);
+  background: linear-gradient(
+    180deg,
+    rgba(255, 251, 245, 0.96),
+    rgba(255, 246, 244, 0.94)
+  );
+}
+
 .copyBlock:target {
   padding: 18px 20px;
   border: 1px solid rgba(var(--brand-blue-rgb), 0.26);
