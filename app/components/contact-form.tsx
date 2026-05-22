@@ -39,21 +39,40 @@ const initialState: SubmissionState = {
   message: "",
 };
 
+type ContactContextFact = {
+  label: string;
+  value: string;
+};
+
 export function ContactForm({
   initialInterest,
+  initialMessage,
+  initialContextTitle,
+  initialContextNote,
+  initialContextFacts = [],
+  initialContextHref,
 }: {
   initialInterest?: string;
+  initialMessage?: string;
+  initialContextTitle?: string;
+  initialContextNote?: string;
+  initialContextFacts?: ContactContextFact[];
+  initialContextHref?: string;
 }) {
   const seededInterest =
     initialInterest && allowedInterests.has(initialInterest)
       ? initialInterest
       : initialValues.interest;
-  const [values, setValues] = useState<ContactValues>({
+  const seededMessage = initialMessage?.trim() || initialValues.message;
+  const seededValues: ContactValues = {
     ...initialValues,
     interest: seededInterest,
-  });
+    message: seededMessage,
+  };
+  const [values, setValues] = useState<ContactValues>(seededValues);
   const [submission, setSubmission] = useState<SubmissionState>(initialState);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const isInstitutionalPilot = values.interest === "Institutional pilot";
 
   function updateValue<Key extends keyof ContactValues>(
     key: Key,
@@ -90,10 +109,7 @@ export function ContactForm({
         return;
       }
 
-      setValues({
-        ...initialValues,
-        interest: seededInterest,
-      });
+      setValues(seededValues);
       setSubmission({
         tone: "success",
         message:
@@ -113,6 +129,51 @@ export function ContactForm({
 
   return (
     <form className={styles.form} onSubmit={handleSubmit}>
+      {initialContextTitle ? (
+        <div className={styles.contextPanel}>
+          <div className={styles.contextHeader}>
+            <span className={styles.contextLabel}>
+              {isInstitutionalPilot ? "Institutional pilot context" : "Inquiry context"}
+            </span>
+            <h3>{initialContextTitle}</h3>
+          </div>
+          {initialContextNote ? <p className={styles.contextNote}>{initialContextNote}</p> : null}
+          {initialContextFacts.length ? (
+            <dl className={styles.contextFacts}>
+              {initialContextFacts.map((item) => (
+                <div className={styles.contextFact} key={`${item.label}-${item.value}`}>
+                  <dt>{item.label}</dt>
+                  <dd>{item.value}</dd>
+                </div>
+              ))}
+            </dl>
+          ) : null}
+          <div className={styles.contextLinks}>
+            {initialContextHref ? (
+              <a className={styles.contextLink} href={initialContextHref}>
+                Open current topic card
+              </a>
+            ) : null}
+            {isInstitutionalPilot ? (
+              <span className={styles.contextTrustNote}>
+                Paying funds review capacity, not authority over the synthesis.
+              </span>
+            ) : null}
+          </div>
+        </div>
+      ) : isInstitutionalPilot ? (
+        <div className={styles.contextPanel}>
+          <div className={styles.contextHeader}>
+            <span className={styles.contextLabel}>Institutional pilot context</span>
+            <h3>Public review comes before favorable conclusions.</h3>
+          </div>
+          <p className={styles.contextNote}>
+            This path is for funding review capacity, evidence work, and synthesis labor.
+            It does not buy legitimacy, favorable scoring, or quiet outcomes.
+          </p>
+        </div>
+      ) : null}
+
       <div className={styles.grid}>
         <label className={styles.field}>
           <span>Name</span>
@@ -192,7 +253,11 @@ export function ContactForm({
 
       <div className={styles.actions}>
         <button className={styles.primaryButton} disabled={isSubmitting} type="submit">
-          {isSubmitting ? "Sending..." : "Request early access"}
+          {isSubmitting
+            ? "Sending..."
+            : isInstitutionalPilot
+              ? "Request institutional review pilot"
+              : "Request early access"}
         </button>
         <p className={styles.helper}>
           Messages go to <a href="mailto:hello@civiclogos.com">hello@civiclogos.com</a>.

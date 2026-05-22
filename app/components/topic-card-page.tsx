@@ -16,6 +16,7 @@ import {
   type DebateLane,
   type ReviewTargetKind,
 } from "../lib/reasoning-types";
+import { getRoomTopicHref } from "../lib/civic-logos";
 import {
   getTopicChatSessionCookieName,
 } from "../lib/topic-chat-session";
@@ -1394,6 +1395,24 @@ export default async function TopicCardPage({
   const siblingCards = roomCards.filter((item) => item.id !== card.id);
   const showInstitutionalPilotCta =
     roomSlug === "institutional-trust" && card.id === "topic-001";
+  const institutionalPilotInquiryHref = (() => {
+    const params = new URLSearchParams({
+      interest: "Institutional pilot",
+      sourceTopic: card.title,
+      sourceRoom: roomLabel,
+      sourceTopicHref: getRoomTopicHref(roomSlug, card.id),
+      sourceLiveRecord: String(liveContributions.length),
+      sourcePendingReview: String(
+        contributionStatusCounts.pending + contributionStatusCounts.needsReview,
+      ),
+      sourceChangedCard: String(changedCardContributions.length),
+      sourceAiOrigin: String(assistedRecordContributions.length),
+      sourceDocumentBacked: String(documentBackedContributions.length),
+      sourceRecordMode: contributionStoreMetadata.mode,
+    });
+
+    return `/?${params.toString()}#contact`;
+  })();
   const activeSummaryRecordId = getSingleSearchParamValue(searchParams?.summaryRecord)?.trim();
   const activeSummaryLabel = getSingleSearchParamValue(searchParams?.summaryLabel)?.trim();
   const activeScoreLabel = getSingleSearchParamValue(searchParams?.scoreLabel)?.trim();
@@ -2513,7 +2532,7 @@ export default async function TopicCardPage({
             <div className={styles.roomActions}>
               <Link
                 className={styles.roomActionPrimary}
-                href="/?interest=Institutional%20pilot#contact"
+                href={institutionalPilotInquiryHref}
               >
                 Request an institutional review pilot
               </Link>

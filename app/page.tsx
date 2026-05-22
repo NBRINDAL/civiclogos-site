@@ -86,13 +86,71 @@ export default async function Home({
 }: {
   searchParams: Promise<{
     interest?: string | string[];
+    sourceTopic?: string | string[];
+    sourceRoom?: string | string[];
+    sourceTopicHref?: string | string[];
+    sourceLiveRecord?: string | string[];
+    sourcePendingReview?: string | string[];
+    sourceChangedCard?: string | string[];
+    sourceAiOrigin?: string | string[];
+    sourceDocumentBacked?: string | string[];
+    sourceRecordMode?: string | string[];
   }>;
 }) {
   const resolvedSearchParams = await searchParams;
-  const initialInterest = Array.isArray(resolvedSearchParams.interest)
-    ? resolvedSearchParams.interest[0]
-    : resolvedSearchParams.interest;
+  const getFirstValue = (value?: string | string[]) =>
+    Array.isArray(value) ? value[0] : value;
+  const initialInterest = getFirstValue(resolvedSearchParams.interest);
+  const sourceTopic = getFirstValue(resolvedSearchParams.sourceTopic);
+  const sourceRoom = getFirstValue(resolvedSearchParams.sourceRoom);
+  const sourceTopicHref = getFirstValue(resolvedSearchParams.sourceTopicHref);
+  const sourceLiveRecord = getFirstValue(resolvedSearchParams.sourceLiveRecord);
+  const sourcePendingReview = getFirstValue(resolvedSearchParams.sourcePendingReview);
+  const sourceChangedCard = getFirstValue(resolvedSearchParams.sourceChangedCard);
+  const sourceAiOrigin = getFirstValue(resolvedSearchParams.sourceAiOrigin);
+  const sourceDocumentBacked = getFirstValue(resolvedSearchParams.sourceDocumentBacked);
+  const sourceRecordMode = getFirstValue(resolvedSearchParams.sourceRecordMode);
   const liveCardIndex = getLiveCardIndex();
+  const contactContextTitle = sourceTopic
+    ? `${sourceTopic}${sourceRoom ? ` in ${sourceRoom}` : ""}`
+    : undefined;
+  const contactContextNote =
+    sourceTopic && sourceRoom
+      ? `This inquiry came from the live topic card in ${sourceRoom} and carries the card's current public-record snapshot into the pilot request.`
+      : sourceTopic
+        ? "This inquiry came from a live Civic Logos topic card and carries its current public-record snapshot into the pilot request."
+        : undefined;
+  const contactContextFacts = [
+    sourceLiveRecord ? { label: "Visible record", value: sourceLiveRecord } : null,
+    sourcePendingReview ? { label: "Pending review", value: sourcePendingReview } : null,
+    sourceChangedCard ? { label: "Changed card", value: sourceChangedCard } : null,
+    sourceAiOrigin ? { label: "AI-origin", value: sourceAiOrigin } : null,
+    sourceDocumentBacked
+      ? { label: "Document-backed", value: sourceDocumentBacked }
+      : null,
+    sourceRecordMode ? { label: "Record mode", value: sourceRecordMode } : null,
+  ].filter((item): item is { label: string; value: string } => Boolean(item));
+  const initialMessage =
+    initialInterest === "Institutional pilot" && sourceTopic
+      ? [
+          `I am interested in an institutional review pilot for "${sourceTopic}"${sourceRoom ? ` in ${sourceRoom}` : ""}.`,
+          "",
+          "Current public-record snapshot:",
+          sourceLiveRecord ? `- Visible record: ${sourceLiveRecord}` : null,
+          sourcePendingReview ? `- Pending review: ${sourcePendingReview}` : null,
+          sourceChangedCard ? `- Changed card: ${sourceChangedCard}` : null,
+          sourceAiOrigin ? `- AI-origin contributions: ${sourceAiOrigin}` : null,
+          sourceDocumentBacked
+            ? `- Document-backed contributions: ${sourceDocumentBacked}`
+            : null,
+          sourceRecordMode ? `- Record mode: ${sourceRecordMode}` : null,
+          "",
+          "What I want to explore:",
+          "",
+        ]
+          .filter((item): item is string => Boolean(item))
+          .join("\n")
+      : undefined;
 
   return (
     <div className={styles.page}>
@@ -366,7 +424,14 @@ export default async function Home({
             </div>
 
             <div className={styles.contactFormWrap}>
-              <ContactForm initialInterest={initialInterest} />
+              <ContactForm
+                initialContextFacts={contactContextFacts}
+                initialContextHref={sourceTopicHref}
+                initialContextNote={contactContextNote}
+                initialContextTitle={contactContextTitle}
+                initialInterest={initialInterest}
+                initialMessage={initialMessage}
+              />
             </div>
           </div>
         </section>
