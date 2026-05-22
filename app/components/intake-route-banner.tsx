@@ -3,7 +3,10 @@ import {
   getRoomTopicHref,
   type IssueRoomSlug,
 } from "../lib/civic-logos";
-import { getHomeIntakeDraftTopicsHref } from "../lib/home-intake-artifact-links";
+import {
+  getHomeIntakeDraftTopicsHref,
+  getHomeIntakeTopicCardHref,
+} from "../lib/home-intake-artifact-links";
 import { getHomeIntakeClosestMapPath } from "../lib/home-intake-map-path";
 import type { HomeIntakeRecord } from "../lib/home-intake-types";
 import styles from "./intake-route-banner.module.css";
@@ -35,10 +38,18 @@ export default function IntakeRouteBanner({
   }
 
   const suggestedTopicHref =
-    closestMapPath?.topicHref ??
+    (closestMapPath?.topicHref ??
     (entry.routing.topicId
       ? getRoomTopicHref(currentRoomSlug, entry.routing.topicId)
-      : undefined);
+      : undefined))
+      ? getHomeIntakeTopicCardHref(
+          closestMapPath?.topicHref ??
+            (entry.routing.topicId
+              ? getRoomTopicHref(currentRoomSlug, entry.routing.topicId)
+              : ""),
+          entry.id,
+        )
+      : undefined;
   const intakeHref = `/intake/${entry.id}`;
   const eyebrow = isExistingRoomRoute
     ? "AI route"

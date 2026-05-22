@@ -26,6 +26,7 @@ import {
 } from "../../lib/home-intake-prompt-history";
 import {
   getHomeIntakeDraftTopicAnchor,
+  getHomeIntakeTopicCardHref,
 } from "../../lib/home-intake-artifact-links";
 import { getHomeIntakeHeldQuestions } from "../../lib/home-intake-held-questions";
 import { getHomeIntakeClosestMapPath } from "../../lib/home-intake-map-path";
@@ -617,7 +618,13 @@ export default async function IssueRoomPage({
                         Open full routing read
                       </Link>
                       {closestLiveCardHref ? (
-                        <Link className={styles.trackItemSubLink} href={closestLiveCardHref}>
+                        <Link
+                          className={styles.trackItemSubLink}
+                          href={getHomeIntakeTopicCardHref(
+                            closestLiveCardHref,
+                            entry.id,
+                          )}
+                        >
                           Open closest live card
                         </Link>
                       ) : null}

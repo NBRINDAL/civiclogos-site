@@ -31,3 +31,20 @@ export function getHomeIntakeDraftTopicsHref(
 
   return `${roomContextHref}#${anchor}`;
 }
+
+export function getHomeIntakeTopicCardHref(
+  topicHref: string,
+  intakeId?: string,
+) {
+  if (!intakeId) {
+    return topicHref;
+  }
+
+  const [pathAndQuery, hash = ""] = topicHref.split("#");
+  const [path, query = ""] = pathAndQuery.split("?");
+  const params = new URLSearchParams(query);
+  params.set("intake", intakeId);
+  const nextQuery = params.toString();
+
+  return `${path}${nextQuery ? `?${nextQuery}` : ""}${hash ? `#${hash}` : ""}`;
+}

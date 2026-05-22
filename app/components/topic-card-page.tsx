@@ -4,6 +4,17 @@ import TopicContributionLoop from "./topic-contribution-loop";
 import TopicAiPanel from "./topic-ai-panel";
 import { SiteBrand } from "./site-brand";
 import type { IssueRoomSlug, TopicCardData } from "../lib/civic-logos";
+import {
+  getHomeIntakeCookieName,
+  parseHomeIntakeCookie,
+} from "../lib/home-intake-cookie";
+import {
+  getHomeIntakeDraftTopicsHref,
+  getHomeIntakeRoomCandidatesHref,
+} from "../lib/home-intake-artifact-links";
+import { getHomeIntakeClosestMapPath } from "../lib/home-intake-map-path";
+import { getHomeIntakeEntry } from "../lib/home-intake-store";
+import type { HomeIntakeRecord } from "../lib/home-intake-types";
 import { topicCardVisibleContributionLimit } from "../lib/contribution-constants";
 import type { PublicContribution } from "../lib/contribution-types";
 import {
@@ -99,6 +110,25 @@ type TopicCardPageProps = {
   currentTopicIndex: number;
   searchParams?: Record<string, string | string[] | undefined>;
 };
+
+function getHomeIntakeRecordFromCookie(
+  cookieEntry: ReturnType<typeof parseHomeIntakeCookie>,
+): HomeIntakeRecord | null {
+  if (!cookieEntry) {
+    return null;
+  }
+
+  return {
+    id: cookieEntry.id,
+    prompt: cookieEntry.prompt,
+    createdAt: "",
+    updatedAt: "",
+    promptCount:
+      cookieEntry.promptCount ?? cookieEntry.relatedPrompts?.length ?? 1,
+    relatedPrompts: cookieEntry.relatedPrompts,
+    routing: cookieEntry.routing,
+  };
+}
 
 function getPublicContributionOutcomeNote(
   decisionReason?: string,
@@ -1091,9 +1121,16 @@ export default async function TopicCardPage({
   searchParams,
 }: TopicCardPageProps) {
   const cookieStore = await cookies();
+  const intakeId = getSingleSearchParamValue(searchParams?.intake)?.trim();
+  const cookieIntakeEntry = parseHomeIntakeCookie(
+    cookieStore.get(getHomeIntakeCookieName())?.value,
+  );
+  const cookieTopicIntakeEntry = getHomeIntakeRecordFromCookie(
+    cookieIntakeEntry?.id === intakeId ? cookieIntakeEntry : null,
+  );
   const topicChatSessionId =
     cookieStore.get(getTopicChatSessionCookieName())?.value?.trim() ?? "";
-  const [liveContributions, contributionStoreMetadata, topicChatMessages, topicChatStoreMetadata] = await Promise.all([
+  const [liveContributions, contributionStoreMetadata, topicChatMessages, topicChatStoreMetadata, storedTopicIntakeEntry] = await Promise.all([
     listPublicContributions({
       roomSlug,
       topicId: card.id,
@@ -1109,7 +1146,31 @@ export default async function TopicCardPage({
         })
       : Promise.resolve([]),
     getTopicChatStoreMetadata(),
+    intakeId && !cookieTopicIntakeEntry
+      ? getHomeIntakeEntry(intakeId)
+      : Promise.resolve(null),
   ]);
+  const topicIntakeEntry = cookieTopicIntakeEntry ?? storedTopicIntakeEntry;
+  const topicIntakeClosestMapPath = topicIntakeEntry
+    ? getHomeIntakeClosestMapPath(topicIntakeEntry.routing)
+    : null;
+  const topicIntakeMatchesCard = Boolean(
+    topicIntakeEntry &&
+      ((topicIntakeEntry.routing.roomSlug === roomSlug &&
+        topicIntakeEntry.routing.topicId === card.id) ||
+        (topicIntakeClosestMapPath?.roomSlug === roomSlug &&
+          topicIntakeClosestMapPath.topicId === card.id)),
+  );
+  const topicIntakeArtifactHref = topicIntakeEntry
+    ? topicIntakeEntry.routing.routeKind === "room-topic-draft"
+      ? getHomeIntakeDraftTopicsHref(roomHref, {
+          entryId: topicIntakeEntry.id,
+          intakeId: topicIntakeEntry.id,
+        })
+      : topicIntakeEntry.routing.routeKind === "new-room-draft"
+        ? getHomeIntakeRoomCandidatesHref(topicIntakeEntry.id)
+        : `${roomHref}?intake=${topicIntakeEntry.id}`
+    : null;
   const contributorObjectionThatChangedCard = liveContributions.find(
     (item) => item.lane === "objection" && item.review?.changedSynthesis === true,
   );
@@ -1494,6 +1555,64 @@ export default async function TopicCardPage({
       </header>
 
       <main className={styles.main}>
+        {topicIntakeMatchesCard && topicIntakeEntry ? (
+          <section className={styles.panel} id="intake-pressure">
+            <span className={styles.eyebrow}>Intake pressure</span>
+            <h2>
+              {topicIntakeEntry.routing.routeKind === "room-topic-draft"
+                ? "This live card is currently the closest current map path for a draft topic still being held separately in this room."
+                : topicIntakeEntry.routing.routeKind === "new-room-draft"
+                  ? "This live card is currently the closest current map path for a room candidate still being held outside the active map."
+                  : "This live card was opened from a homepage intake route into the current room map."}
+            </h2>
+            <p>
+              {topicIntakeClosestMapPath?.detail ??
+                topicIntakeEntry.routing.fitSummary ??
+                "The intake layer currently treats this live card as the strongest active-map path for the held issue."}
+            </p>
+            <div className={styles.scoreFocusNotice}>
+              <p>
+                <strong>Held artifact:</strong>{" "}
+                {topicIntakeEntry.routing.suggestedTopicTitle ??
+                  topicIntakeEntry.routing.suggestedCentralQuestion ??
+                  topicIntakeEntry.prompt}
+              </p>
+              <p>
+                <strong>Current relationship:</strong>{" "}
+                {topicIntakeEntry.routing.routeKind === "room-topic-draft"
+                  ? "Still held as a durable draft topic because the live card path remains under-modeled."
+                  : topicIntakeEntry.routing.routeKind === "new-room-draft"
+                    ? "Still held as a room candidate because the active room map does not absorb it cleanly enough yet."
+                    : "Routed into the current room map through the homepage intake flow."}
+              </p>
+            </div>
+
+            <div className={styles.roomActions}>
+              {topicIntakeArtifactHref ? (
+                <Link className={styles.roomActionPrimary} href={topicIntakeArtifactHref}>
+                  {topicIntakeEntry.routing.routeKind === "room-topic-draft"
+                    ? "Open exact draft topic"
+                    : topicIntakeEntry.routing.routeKind === "new-room-draft"
+                      ? "Open exact room candidate"
+                      : "Return to room intake context"}
+                </Link>
+              ) : null}
+              <Link
+                className={styles.roomActionSecondary}
+                href={`/intake/${topicIntakeEntry.id}`}
+              >
+                Return to intake artifact
+              </Link>
+              <Link
+                className={styles.roomActionSecondary}
+                href={`/intake/${topicIntakeEntry.id}#routing-ais`}
+              >
+                Open routing AIs
+              </Link>
+            </div>
+          </section>
+        ) : null}
+
         <section className={styles.gridSection}>
           <article className={styles.panel}>
             <span className={styles.eyebrow}>Current read</span>

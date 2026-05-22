@@ -24,6 +24,7 @@ import {
 import {
   getHomeIntakeDraftTopicsHref,
   getHomeIntakeRoomCandidatesHref,
+  getHomeIntakeTopicCardHref,
 } from "@/app/lib/home-intake-artifact-links";
 import { getHomeIntakeHeldQuestions } from "@/app/lib/home-intake-held-questions";
 import {
@@ -108,6 +109,9 @@ export default async function IntakeEntryPage({
     (entry.routing.roomSlug && entry.routing.topicId
       ? getRoomTopicHref(entry.routing.roomSlug, entry.routing.topicId)
       : undefined);
+  const topicContextHref = topicHref
+    ? getHomeIntakeTopicCardHref(topicHref, entry.id)
+    : undefined;
   const issueDevelopment =
     entry.routing.routeKind !== "existing-room"
       ? await buildHomeIntakeBrief(entry)
@@ -263,8 +267,8 @@ export default async function IntakeEntryPage({
                         Open host room
                       </Link>
                     ) : null}
-                    {topicHref ? (
-                      <Link className={styles.secondaryAction} href={topicHref}>
+                    {topicContextHref ? (
+                      <Link className={styles.secondaryAction} href={topicContextHref}>
                         Open closest live card
                       </Link>
                     ) : null}
@@ -293,7 +297,10 @@ export default async function IntakeEntryPage({
                         {closestMapPath.topicHref ? (
                           <Link
                             className={styles.secondaryAction}
-                            href={closestMapPath.topicHref}
+                            href={getHomeIntakeTopicCardHref(
+                              closestMapPath.topicHref,
+                              entry.id,
+                            )}
                           >
                             Open closest live card
                           </Link>
@@ -425,8 +432,8 @@ export default async function IntakeEntryPage({
                 Open prompt history
               </Link>
             ) : null}
-            {topicHref ? (
-              <Link className={styles.secondaryAction} href={topicHref}>
+            {topicContextHref ? (
+              <Link className={styles.secondaryAction} href={topicContextHref}>
                 {entry.routing.routeKind === "room-topic-draft"
                   ? "Open closest live card"
                   : "Open suggested live card"}
@@ -559,7 +566,10 @@ export default async function IntakeEntryPage({
                           {providerMapPath.topicHref ? (
                             <Link
                               className={styles.secondaryAction}
-                              href={providerMapPath.topicHref}
+                              href={getHomeIntakeTopicCardHref(
+                                providerMapPath.topicHref,
+                                entry.id,
+                              )}
                             >
                               {providerMapPath.routeKind === "room-topic-draft"
                                 ? "Open closest live card"

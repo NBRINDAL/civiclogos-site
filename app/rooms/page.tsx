@@ -14,7 +14,10 @@ import {
   getPromptHistoryCount,
   getPromptHistoryHref,
 } from "../lib/home-intake-prompt-history";
-import { getHomeIntakeRoomCandidateAnchor } from "../lib/home-intake-artifact-links";
+import {
+  getHomeIntakeRoomCandidateAnchor,
+  getHomeIntakeTopicCardHref,
+} from "../lib/home-intake-artifact-links";
 import { getHomeIntakeHeldQuestions } from "../lib/home-intake-held-questions";
 import { getHomeIntakeClosestMapPath } from "../lib/home-intake-map-path";
 import { summarizeHomeIntakeRoutingConsensus } from "../lib/home-intake-routing-consensus";
@@ -350,7 +353,10 @@ export default async function RoomsPage({
                           {closestMapPath.topicHref ? (
                             <Link
                               className={styles.roomSubLink}
-                              href={closestMapPath.topicHref}
+                              href={getHomeIntakeTopicCardHref(
+                                closestMapPath.topicHref,
+                                entry.id,
+                              )}
                             >
                               Open closest live card
                             </Link>
