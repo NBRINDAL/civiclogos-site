@@ -34,6 +34,97 @@ const reviewStatusPriority: Record<string, number> = {
   rejected: 4,
 };
 
+function getContributionOrigin(contribution: {
+  draftSource?: unknown;
+  isSeedExample?: boolean;
+}) {
+  if (contribution.isSeedExample) {
+    return "seed-example";
+  }
+
+  if (contribution.draftSource) {
+    return "ai-origin";
+  }
+
+  return "human-submitted";
+}
+
+function getContributionStatusFilter(status: string) {
+  return status === "needs review" ? "needs-review" : status;
+}
+
+function getContributionAttachmentFilter(contribution: {
+  aiIntake?: { suggestedAssignmentKind?: string | null };
+  review?: { assignedToKind?: string | null };
+}) {
+  const kind = contribution.review?.assignedToKind ?? contribution.aiIntake?.suggestedAssignmentKind;
+
+  if (!kind || kind === "unclear") {
+    return "none-yet";
+  }
+
+  return kind;
+}
+
+function getContributionRecordView(contribution: {
+  draftSource?: unknown;
+  evidenceDocument?: unknown;
+  review?: { changedSynthesis?: boolean | null };
+  status: string;
+}) {
+  if (contribution.draftSource) {
+    return "ai-assisted";
+  }
+
+  if (contribution.review?.changedSynthesis === true) {
+    return "changed-card";
+  }
+
+  if (contribution.evidenceDocument) {
+    return "document-backed";
+  }
+
+  if (contribution.status === "pending" || contribution.status === "needs review") {
+    return "needs-review";
+  }
+
+  return undefined;
+}
+
+function getTopicChatMessageHref(item: {
+  aiIntake?: { suggestedAssignmentKind?: string | null };
+  draftSource?: { messageId?: string | null };
+  evidenceDocument?: unknown;
+  id: string;
+  isSeedExample?: boolean;
+  lane: string;
+  review?: { assignedToKind?: string | null; changedSynthesis?: boolean | null };
+  status: string;
+}) {
+  const messageId = item.draftSource?.messageId?.trim();
+
+  if (!messageId) {
+    return "#topic-ai-transcript";
+  }
+
+  const params = new URLSearchParams({
+    chatMessage: messageId,
+    sourceContribution: item.id,
+    sourceOrigin: getContributionOrigin(item),
+    sourceReviewStatus: getContributionStatusFilter(item.status),
+    sourceAttachment: getContributionAttachmentFilter(item),
+    sourceLane: item.lane,
+  });
+
+  const recordView = getContributionRecordView(item);
+
+  if (recordView) {
+    params.set("sourceRecordView", recordView);
+  }
+
+  return `?${params.toString()}#topic-chat-message-${messageId}`;
+}
+
 function getSuggestedAttachmentTargets(
   topicCard: NonNullable<ReturnType<typeof getRoomTopicCard>>,
 ) {
@@ -420,12 +511,7 @@ export default async function ContributionReviewPage({
                           {" "}·{" "}
                           <Link
                             className={styles.topicLink}
-                            href={`${getRoomTopicHref(
-                              item.roomSlug,
-                              item.topicId,
-                            )}?chatMessage=${encodeURIComponent(
-                              item.draftSource.messageId,
-                            )}#topic-chat-message-${item.draftSource.messageId}`}
+                            href={`${getRoomTopicHref(item.roomSlug, item.topicId)}${getTopicChatMessageHref(item)}`}
                           >
                             Open source AI turn
                           </Link>

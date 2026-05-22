@@ -231,8 +231,34 @@ function formatTimestamp(value: string) {
   }).format(new Date(value));
 }
 
-function getTopicChatMessageHref(messageId: string) {
-  return `?chatMessage=${encodeURIComponent(messageId)}#topic-chat-message-${messageId}`;
+function getTopicChatMessageHref(
+  messageId: string,
+  contribution?: PublicContribution,
+  sourceSummary?: string,
+) {
+  const params = new URLSearchParams({
+    chatMessage: messageId,
+  });
+
+  if (contribution) {
+    params.set("sourceContribution", contribution.id);
+    params.set("sourceOrigin", getContributionOrigin(contribution));
+    params.set("sourceReviewStatus", getContributionStatusFilter(contribution.status));
+    params.set("sourceAttachment", getContributionAttachmentFilter(contribution));
+    params.set("sourceLane", contribution.lane);
+
+    const recordView = getContributionRecordView(contribution);
+
+    if (recordView) {
+      params.set("sourceRecordView", recordView);
+    }
+  }
+
+  if (sourceSummary) {
+    params.set("sourceSummary", sourceSummary);
+  }
+
+  return `?${params.toString()}#topic-chat-message-${messageId}`;
 }
 
 function getSingleSearchParamValue(value: string | string[] | undefined) {
@@ -365,8 +391,10 @@ function ContributionRecordContext({
 
 function ContributionAiOriginContext({
   contribution,
+  sourceSummaryLabel,
 }: {
   contribution: PublicContribution;
+  sourceSummaryLabel?: string;
 }) {
   if (!contribution.draftSource) {
     return null;
@@ -382,7 +410,11 @@ function ContributionAiOriginContext({
           {" "}
           <Link
             className={styles.sourceLink}
-            href={getTopicChatMessageHref(contribution.draftSource.messageId)}
+            href={getTopicChatMessageHref(
+              contribution.draftSource.messageId,
+              contribution,
+              sourceSummaryLabel,
+            )}
           >
             Open source AI turn
           </Link>
@@ -476,7 +508,10 @@ function SummaryFocusNotice({
         recordView={getContributionRecordView(contribution)}
         showReviewStatus
       />
-      <ContributionAiOriginContext contribution={contribution} />
+      <ContributionAiOriginContext
+        contribution={contribution}
+        sourceSummaryLabel={summaryLabel}
+      />
       <div className={styles.summaryReferenceBlock}>
         <span className={styles.metaParagraph}>Public record</span>
         <div className={styles.summaryReferenceList}>

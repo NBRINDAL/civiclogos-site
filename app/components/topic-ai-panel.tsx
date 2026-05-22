@@ -262,6 +262,50 @@ function getRecordViewHref(
   return `?${searchParams.toString()}#contribution-record`;
 }
 
+function getSourceContributionRecordHref(searchParams: {
+  get(name: string): null | string;
+}) {
+  const contributionId = searchParams.get("sourceContribution")?.trim();
+
+  if (!contributionId) {
+    return null;
+  }
+
+  const nextSearchParams = new URLSearchParams();
+  const sourceRecordView = searchParams.get("sourceRecordView")?.trim();
+  const sourceReviewStatus = searchParams.get("sourceReviewStatus")?.trim();
+  const sourceAttachment = searchParams.get("sourceAttachment")?.trim();
+  const sourceOrigin = searchParams.get("sourceOrigin")?.trim();
+  const sourceLane = searchParams.get("sourceLane")?.trim();
+  const sourceSummary = searchParams.get("sourceSummary")?.trim();
+
+  if (sourceRecordView) {
+    nextSearchParams.set("recordView", sourceRecordView);
+  }
+
+  if (sourceReviewStatus) {
+    nextSearchParams.set("reviewStatus", sourceReviewStatus);
+  }
+
+  if (sourceAttachment) {
+    nextSearchParams.set("attachment", sourceAttachment);
+  }
+
+  if (sourceOrigin) {
+    nextSearchParams.set("origin", sourceOrigin);
+  }
+
+  if (sourceLane) {
+    nextSearchParams.set("lane", sourceLane);
+  }
+
+  if (sourceSummary) {
+    nextSearchParams.set("sourceSummary", sourceSummary);
+  }
+
+  return `?${nextSearchParams.toString()}#contribution-${contributionId}`;
+}
+
 function buildTranscript(messages: TopicChatMessage[]): TranscriptItem[] {
   let lastUserQuestion = "";
 
@@ -326,6 +370,11 @@ export default function TopicAiPanel({
   const transcript = useMemo(() => buildTranscript(messages), [messages]);
   const sessionImpact = useMemo(() => getSessionImpact(messages), [messages]);
   const highlightedMessageId = searchParams.get("chatMessage")?.trim() ?? "";
+  const sourceContributionHref = useMemo(
+    () => getSourceContributionRecordHref(searchParams),
+    [searchParams],
+  );
+  const sourceSummaryLabel = searchParams.get("sourceSummary")?.trim() ?? "";
   const hasHighlightedMessageRequest = highlightedMessageId.length > 0;
   const highlightedTranscriptItem = useMemo(
     () =>
@@ -498,6 +547,18 @@ export default function TopicAiPanel({
                 Originating question: {highlightedTranscriptItem.sourceQuestion}
               </p>
             ) : null}
+            {sourceContributionHref ? (
+              <div className={styles.sourceTurnActions}>
+                <span className={styles.sessionImpactLabel}>Public record origin</span>
+                <div className={styles.sessionTargetMap}>
+                  <a className={styles.sessionTargetLink} href={sourceContributionHref}>
+                    {sourceSummaryLabel
+                      ? `Return to exact record from ${sourceSummaryLabel}`
+                      : "Return to exact public record entry"}
+                  </a>
+                </div>
+              </div>
+            ) : null}
           </div>
         ) : hasHighlightedMessageRequest ? (
           <div className={`${styles.sourceTurnNotice} ${styles.sourceTurnMissing}`}>
@@ -510,6 +571,18 @@ export default function TopicAiPanel({
                 provenance attached to the record entry itself.
               </p>
             </div>
+            {sourceContributionHref ? (
+              <div className={styles.sourceTurnActions}>
+                <span className={styles.sessionImpactLabel}>Public record origin</span>
+                <div className={styles.sessionTargetMap}>
+                  <a className={styles.sessionTargetLink} href={sourceContributionHref}>
+                    {sourceSummaryLabel
+                      ? `Return to exact record from ${sourceSummaryLabel}`
+                      : "Return to exact public record entry"}
+                  </a>
+                </div>
+              </div>
+            ) : null}
           </div>
         ) : null}
 

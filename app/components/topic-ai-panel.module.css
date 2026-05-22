@@ -128,6 +128,13 @@
   border-top: 1px solid rgba(18, 33, 39, 0.08);
 }
 
+.sourceTurnActions {
+  display: grid;
+  gap: 10px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(18, 33, 39, 0.08);
+}
+
 .sessionImpactGrid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
