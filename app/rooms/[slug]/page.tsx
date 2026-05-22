@@ -24,6 +24,7 @@ import {
   getPromptHistoryCount,
   getPromptHistoryHref,
 } from "../../lib/home-intake-prompt-history";
+import { getHomeIntakeHeldQuestions } from "../../lib/home-intake-held-questions";
 import { summarizeHomeIntakeRoutingConsensus } from "../../lib/home-intake-routing-consensus";
 import { getHomeIntakeEntry, listHomeIntakeEntries } from "../../lib/home-intake-store";
 import type { HomeIntakeRecord } from "../../lib/home-intake-types";
@@ -418,6 +419,10 @@ export default async function IssueRoomPage({
                 const latestPrompt = getLatestAttachedPrompt(entry);
                 const earliestPrompt = getEarliestAttachedPrompt(entry);
                 const promptEvolution = getPromptEvolution(entry);
+                const heldQuestions = getHomeIntakeHeldQuestions(
+                  entry.routing,
+                  2,
+                );
                 const routingConsensus = summarizeHomeIntakeRoutingConsensus(
                   entry.routing,
                 );
@@ -466,6 +471,23 @@ export default async function IssueRoomPage({
                           <strong>Model provenance</strong>
                         </div>
                         <p>{routingConsensus.detail}</p>
+                      </div>
+                    ) : null}
+
+                    {heldQuestions.length ? (
+                      <div className={styles.draftPromptNote}>
+                        <div className={styles.draftPromptMeta}>
+                          <span>Questions held here</span>
+                          <strong>Next inquiry</strong>
+                        </div>
+                        <ul className={styles.artifactQuestionList}>
+                          {heldQuestions.map((question) => (
+                            <li className={styles.artifactQuestionItem} key={question.question}>
+                              <p>{question.question}</p>
+                              <span>{question.provenanceLabel}</span>
+                            </li>
+                          ))}
+                        </ul>
                       </div>
                     ) : null}
 

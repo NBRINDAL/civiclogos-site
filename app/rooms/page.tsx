@@ -14,6 +14,7 @@ import {
   getPromptHistoryCount,
   getPromptHistoryHref,
 } from "../lib/home-intake-prompt-history";
+import { getHomeIntakeHeldQuestions } from "../lib/home-intake-held-questions";
 import { summarizeHomeIntakeRoutingConsensus } from "../lib/home-intake-routing-consensus";
 import { listHomeIntakeEntries } from "../lib/home-intake-store";
 import type { HomeIntakeRecord } from "../lib/home-intake-types";
@@ -235,6 +236,10 @@ export default async function RoomsPage({
                 const latestPrompt = getLatestAttachedPrompt(entry);
                 const earliestPrompt = getEarliestAttachedPrompt(entry);
                 const promptEvolution = getPromptEvolution(entry);
+                const heldQuestions = getHomeIntakeHeldQuestions(
+                  entry.routing,
+                  2,
+                );
                 const routingConsensus = summarizeHomeIntakeRoutingConsensus(
                   entry.routing,
                 );
@@ -279,6 +284,23 @@ export default async function RoomsPage({
                           <strong>Model provenance</strong>
                         </div>
                         <p>{routingConsensus.detail}</p>
+                      </div>
+                    ) : null}
+
+                    {heldQuestions.length ? (
+                      <div className={styles.promptPressureNote}>
+                        <div className={styles.promptPressureMeta}>
+                          <span>Questions held here</span>
+                          <strong>Next inquiry</strong>
+                        </div>
+                        <ul className={styles.promptPressureList}>
+                          {heldQuestions.map((question) => (
+                            <li className={styles.promptPressureListItem} key={question.question}>
+                              <p>{question.question}</p>
+                              <span>{question.provenanceLabel}</span>
+                            </li>
+                          ))}
+                        </ul>
                       </div>
                     ) : null}
 

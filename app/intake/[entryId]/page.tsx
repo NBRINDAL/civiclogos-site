@@ -21,6 +21,7 @@ import {
   getPromptHistoryHref,
   getPromptTimestamp,
 } from "@/app/lib/home-intake-prompt-history";
+import { getHomeIntakeHeldQuestions } from "@/app/lib/home-intake-held-questions";
 import { summarizeHomeIntakeRoutingConsensus } from "@/app/lib/home-intake-routing-consensus";
 import { getHomeIntakeEntry, getHomeIntakeStoreMetadata } from "@/app/lib/home-intake-store";
 import styles from "./page.module.css";
@@ -111,6 +112,7 @@ export default async function IntakeEntryPage({
   const latestPromptDate = latestPrompt
     ? formatPromptDate(latestPrompt.createdAt)
     : undefined;
+  const heldQuestions = getHomeIntakeHeldQuestions(entry.routing);
   const routingConsensus = summarizeHomeIntakeRoutingConsensus(entry.routing);
 
   return (
@@ -191,12 +193,15 @@ export default async function IntakeEntryPage({
             </div>
           ) : null}
 
-          {entry.routing.suggestedFirstQuestions?.length ? (
+          {heldQuestions.length ? (
             <div className={styles.listBlock}>
-              <h3>Suggested first questions</h3>
-              <ul>
-                {entry.routing.suggestedFirstQuestions.map((item) => (
-                  <li key={item}>{item}</li>
+              <h3>Questions this artifact is holding</h3>
+              <ul className={styles.questionList}>
+                {heldQuestions.map((item) => (
+                  <li className={styles.questionListItem} key={item.question}>
+                    <p>{item.question}</p>
+                    <span>{item.provenanceLabel}</span>
+                  </li>
                 ))}
               </ul>
             </div>

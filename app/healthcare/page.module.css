@@ -454,6 +454,42 @@
   line-height: 1.65;
 }
 
+.artifactQuestionList {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.artifactQuestionItem {
+  display: grid;
+  gap: 6px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(18, 33, 39, 0.1);
+}
+
+.artifactQuestionItem:first-child {
+  padding-top: 0;
+  border-top: 0;
+}
+
+.artifactQuestionItem p {
+  color: var(--foreground);
+  display: block;
+  overflow: visible;
+  -webkit-line-clamp: unset;
+  line-height: 1.65;
+}
+
+.artifactQuestionItem span {
+  color: var(--signal);
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
 .promptTimeline {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
