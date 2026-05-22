@@ -81,6 +81,7 @@ type ContributionOriginFilter =
   | "human-submitted"
   | "ai-origin"
   | "seed-example";
+type TopicCardView = "reader" | "ledger";
 
 const INSTITUTIONAL_PILOT_SECTION_ID = "institutional-pilot";
 
@@ -796,6 +797,40 @@ function setSearchParamInHref(href: string, key: string, value: string) {
   const nextHash = hashFragment ? `#${hashFragment}` : "";
 
   return `${path}${nextQuery ? `?${nextQuery}` : ""}${nextHash}`;
+}
+
+function getTopicCardViewHref({
+  roomSlug,
+  topicId,
+  view,
+  hash,
+  intakeId,
+  pilotInquiry,
+}: {
+  roomSlug: IssueRoomSlug;
+  topicId: string;
+  view: TopicCardView;
+  hash?: string;
+  intakeId?: string;
+  pilotInquiry?: boolean;
+}) {
+  const params = new URLSearchParams();
+
+  if (view === "ledger") {
+    params.set("view", "ledger");
+  }
+
+  if (intakeId) {
+    params.set("intake", intakeId);
+  }
+
+  if (pilotInquiry) {
+    params.set("pilotInquiry", "1");
+  }
+
+  const query = params.toString();
+
+  return `${getRoomTopicHref(roomSlug, topicId)}${query ? `?${query}` : ""}${hash ? `#${hash}` : ""}`;
 }
 
 function matchesContributionSlice(
@@ -1948,12 +1983,27 @@ export default async function TopicCardPage({
       ? roomCards[currentTopicIndex + 1]
       : null;
   const siblingCards = roomCards.filter((item) => item.id !== card.id);
+  const requestedView = getSingleSearchParamValue(searchParams?.view)?.trim();
   const activeSummaryRecordId = getSingleSearchParamValue(searchParams?.summaryRecord)?.trim();
   const activeSummaryLabel = getSingleSearchParamValue(searchParams?.summaryLabel)?.trim();
   const activeScoreLabel = getSingleSearchParamValue(searchParams?.scoreLabel)?.trim();
   const activeScoreSliceLabel = getSingleSearchParamValue(searchParams?.scoreSlice)?.trim();
   const activePilotInquiry =
     getSingleSearchParamValue(searchParams?.pilotInquiry)?.trim() === "1";
+  const hasLedgerSearchContext = Boolean(
+    activeSummaryRecordId ||
+      activeSummaryLabel ||
+      activeScoreLabel ||
+      activeScoreSliceLabel ||
+      getSingleSearchParamValue(searchParams?.recordView)?.trim() ||
+      getSingleSearchParamValue(searchParams?.reviewStatus)?.trim() ||
+      getSingleSearchParamValue(searchParams?.attachment)?.trim() ||
+      getSingleSearchParamValue(searchParams?.origin)?.trim() ||
+      getSingleSearchParamValue(searchParams?.lane)?.trim() ||
+      getSingleSearchParamValue(searchParams?.chatMessage)?.trim(),
+  );
+  const activeView: TopicCardView =
+    requestedView === "ledger" || hasLedgerSearchContext ? "ledger" : "reader";
   const activeScoreRelatedSlices = activeScoreLabel
     ? getScoreTransparencySlices(activeScoreLabel, liveContributions)
     : [];
@@ -2298,8 +2348,40 @@ export default async function TopicCardPage({
       }
     }
 
-    return `/?${params.toString()}#contact`;
+    return `/institutions?${params.toString()}#inquiry`;
   })();
+  const readerViewHref = getTopicCardViewHref({
+    roomSlug,
+    topicId: card.id,
+    view: "reader",
+    hash: "reader-view",
+    intakeId: activeIntakeContextId,
+    pilotInquiry: activePilotInquiry,
+  });
+  const ledgerViewHref = getTopicCardViewHref({
+    roomSlug,
+    topicId: card.id,
+    view: "ledger",
+    hash: "contribution-record",
+    intakeId: activeIntakeContextId,
+    pilotInquiry: activePilotInquiry,
+  });
+  const contributeHref = getTopicCardViewHref({
+    roomSlug,
+    topicId: card.id,
+    view: "ledger",
+    hash: "debate",
+    intakeId: activeIntakeContextId,
+    pilotInquiry: activePilotInquiry,
+  });
+  const askTopicHref = getTopicCardViewHref({
+    roomSlug,
+    topicId: card.id,
+    view: "ledger",
+    hash: "topic-ai-transcript",
+    intakeId: activeIntakeContextId,
+    pilotInquiry: activePilotInquiry,
+  });
   const summaryFocusLedgerHref = getSummaryFocusLedgerHref(searchParams);
   const scoreFocusHref = getScoreFocusHref(searchParams);
   const summaryFocusedContribution =
@@ -2326,6 +2408,397 @@ export default async function TopicCardPage({
     searchParams,
     summaryReferences: summaryFocusedReferences,
   };
+  const readerStrongestObjectionContribution =
+    contributorObjectionThatChangedCard ?? strongestLiveContributorObjection ?? null;
+  const readerStrongestEvidenceContribution =
+    incorporatedEvidence[0] ?? documentBackedContributions[0] ?? null;
+  const readerUnresolvedPressureContribution = needsAttentionContributions[0] ?? null;
+
+  if (activeView === "reader") {
+    return (
+      <div className={styles.page}>
+        <div className={styles.backdrop} aria-hidden="true" />
+
+        <header className={styles.header}>
+          <div className={styles.headerBar}>
+            <SiteBrand className={styles.brand} href={roomHref} subtitle={brandSubtitle} />
+
+            <nav className={styles.nav}>
+              <Link href="/">Home</Link>
+              <Link href={roomHref}>{roomLabel}</Link>
+              <a href="#reader-view">Reader view</a>
+              <Link href={ledgerViewHref}>Ledger view</Link>
+            </nav>
+          </div>
+
+          <div className={styles.hero}>
+            <div className={styles.heroCopy}>
+              <span className={styles.eyebrow}>Working topic card</span>
+              <h1>{card.title}</h1>
+              <p className={styles.subtitle}>{card.subtitle}</p>
+              <p className={styles.thesis}>{card.thesis}</p>
+
+              <div className={styles.viewToggle}>
+                <Link className={styles.viewToggleActive} href={readerViewHref}>
+                  Reader View
+                </Link>
+                <Link className={styles.viewToggleLink} href={ledgerViewHref}>
+                  Ledger View
+                </Link>
+              </div>
+              <p className={styles.viewToggleNote}>
+                Reader View is the lighter first pass. Open Ledger View for the
+                full contribution record, AI sorting, human review status,
+                scorecard pressure, attachment targets, revision trace, and
+                filters.
+              </p>
+            </div>
+
+            <aside className={styles.heroPanel}>
+              <span className={styles.panelLabel}>Card note</span>
+              <p>{card.draftNote}</p>
+              <p>{card.currentRead}</p>
+
+              <div className={styles.heroMeta}>
+                <div>
+                  <span>Default mode</span>
+                  <strong>Reader View</strong>
+                </div>
+                <div>
+                  <span>Maturity</span>
+                  <strong>{card.maturity}</strong>
+                </div>
+                <div>
+                  <span>Visible ledger depth</span>
+                  <strong>{liveContributions.length} contribution records</strong>
+                </div>
+              </div>
+            </aside>
+          </div>
+        </header>
+
+        <main className={styles.main}>
+          {topicIntakeMatchesCard && topicIntakeEntry ? (
+            <section
+              className={`${styles.panel} ${styles.intakePressurePanel}`}
+              id={HOME_INTAKE_TOPIC_CARD_PRESSURE_SECTION_ID}
+            >
+              <span className={styles.eyebrow}>Intake pressure</span>
+              <h2>
+                {topicIntakeEntry.routing.routeKind === "room-topic-draft"
+                  ? "This live card is currently the closest current map path for a draft topic still being held separately in this room."
+                  : topicIntakeEntry.routing.routeKind === "new-room-draft"
+                    ? "This live card is currently the closest current map path for a room candidate still being held outside the active map."
+                    : "This live card was opened from a homepage intake route into the current room map."}
+              </h2>
+              <p>
+                {topicIntakeClosestMapPath?.detail ??
+                  topicIntakeEntry.routing.fitSummary ??
+                  "The intake layer currently treats this live card as the strongest active-map path for the held issue."}
+              </p>
+              {topicIntakeHeldQuestions.length ? (
+                <div className={styles.copyBlock}>
+                  <h3>Questions held here</h3>
+                  <ul className={styles.bulletList}>
+                    {topicIntakeHeldQuestions.map((question) => (
+                      <li key={question.question}>
+                        <strong>{question.question}</strong>: {question.provenanceLabel}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ) : null}
+              {topicIntakeLatestPrompt ? (
+                <div className={styles.copyBlock}>
+                  <h3>
+                    {topicIntakePromptCount > 1
+                      ? "Latest attached prompt"
+                      : "Current seed prompt"}
+                  </h3>
+                  <p>{topicIntakeLatestPrompt.prompt}</p>
+                </div>
+              ) : null}
+              <div className={styles.roomActions}>
+                {topicIntakeArtifactHref ? (
+                  <Link className={styles.roomActionPrimary} href={topicIntakeArtifactHref}>
+                    {topicIntakeEntry.routing.routeKind === "room-topic-draft"
+                      ? "Open exact draft topic"
+                      : topicIntakeEntry.routing.routeKind === "new-room-draft"
+                        ? "Open exact room candidate"
+                        : "Return to room intake context"}
+                  </Link>
+                ) : null}
+                <Link
+                  className={styles.roomActionSecondary}
+                  href={`/intake/${topicIntakeEntry.id}`}
+                >
+                  Return to intake artifact
+                </Link>
+                <Link
+                  className={styles.roomActionSecondary}
+                  href={`/intake/${topicIntakeEntry.id}#routing-ais`}
+                >
+                  Open routing AIs
+                </Link>
+              </div>
+            </section>
+          ) : null}
+
+          <section className={styles.gridSection} id="reader-view">
+            <article className={styles.panel}>
+              <span className={styles.eyebrow}>Reader view</span>
+              <h2>Start with the current visible synthesis.</h2>
+              <p>{card.thesis}</p>
+
+              <div className={styles.copyBlock}>
+                <h3>Why the card currently reads this way</h3>
+                <p>{card.currentRead}</p>
+              </div>
+
+              <div className={styles.copyBlock}>
+                <h3>What would move the card</h3>
+                <ul className={styles.bulletList}>
+                  {card.whatWouldStrengthen.map((item) => (
+                    <li key={item}>{item}</li>
+                  ))}
+                </ul>
+              </div>
+
+              <div className={styles.roomActions}>
+                <Link className={styles.roomActionPrimary} href={contributeHref}>
+                  Contribute to this card
+                </Link>
+                <Link className={styles.roomActionSecondary} href={askTopicHref}>
+                  Ask the topic
+                </Link>
+                <Link className={styles.roomActionSecondary} href={ledgerViewHref}>
+                  Open Ledger View
+                </Link>
+              </div>
+            </article>
+
+            <article className={styles.panel}>
+              <span className={styles.eyebrow}>Reader guide</span>
+              <h2>Start with the strongest visible pressure on the object.</h2>
+
+              <div className={styles.copyBlock}>
+                <h3>Strongest objection</h3>
+                {readerStrongestObjectionContribution ? (
+                  <>
+                    <p>
+                      <strong>
+                        <Link
+                          className={styles.sourceLink}
+                          href={getExactContributionLedgerHref(
+                            readerStrongestObjectionContribution,
+                          )}
+                        >
+                          {readerStrongestObjectionContribution.title}
+                        </Link>
+                      </strong>
+                    </p>
+                    <p>{readerStrongestObjectionContribution.body}</p>
+                    <ContributionRecordContext
+                      contribution={readerStrongestObjectionContribution}
+                      recordView={getContributionRecordView(
+                        readerStrongestObjectionContribution,
+                      )}
+                      showReviewStatus
+                    />
+                  </>
+                ) : (
+                  <p>{card.strongestObjection}</p>
+                )}
+              </div>
+
+              <div className={styles.copyBlock}>
+                <h3>Strongest evidence</h3>
+                {readerStrongestEvidenceContribution ? (
+                  <>
+                    <p>
+                      <strong>
+                        <Link
+                          className={styles.sourceLink}
+                          href={getExactContributionLedgerHref(
+                            readerStrongestEvidenceContribution,
+                          )}
+                        >
+                          {readerStrongestEvidenceContribution.title}
+                        </Link>
+                      </strong>
+                    </p>
+                    <p>
+                      {getPublicContributionOutcomeNote(
+                        readerStrongestEvidenceContribution.review?.decisionReason,
+                        readerStrongestEvidenceContribution.review?.publicRecordNote,
+                        readerStrongestEvidenceContribution.body,
+                      )}
+                    </p>
+                    <ContributionRecordContext
+                      contribution={readerStrongestEvidenceContribution}
+                      recordView={getContributionRecordView(
+                        readerStrongestEvidenceContribution,
+                      )}
+                      showReviewStatus
+                    />
+                  </>
+                ) : (
+                  <>
+                    <p>
+                      <strong>{card.evidence[0]?.title ?? card.strongestSupport}</strong>
+                    </p>
+                    <p>{card.evidence[0]?.note ?? card.strongestSupport}</p>
+                  </>
+                )}
+              </div>
+
+              <div className={styles.copyBlock}>
+                <h3>Unresolved pressure</h3>
+                {readerUnresolvedPressureContribution ? (
+                  <>
+                    <p>
+                      <strong>
+                        <Link
+                          className={styles.sourceLink}
+                          href={getExactContributionLedgerHref(
+                            readerUnresolvedPressureContribution,
+                          )}
+                        >
+                          {readerUnresolvedPressureContribution.title}
+                        </Link>
+                      </strong>
+                    </p>
+                    <p>
+                      {getPublicContributionOutcomeNote(
+                        readerUnresolvedPressureContribution.review?.decisionReason,
+                        readerUnresolvedPressureContribution.review?.publicRecordNote,
+                        readerUnresolvedPressureContribution.aiIntake?.reviewerNote ??
+                          readerUnresolvedPressureContribution.body,
+                      )}
+                    </p>
+                    <ContributionRecordContext
+                      contribution={readerUnresolvedPressureContribution}
+                      recordView={getContributionRecordView(
+                        readerUnresolvedPressureContribution,
+                      )}
+                      showReviewStatus
+                    />
+                  </>
+                ) : (
+                  <p>
+                    No open pressure is currently visible on this card. Open the
+                    ledger when you want the full contribution record and review
+                    state behind that calm.
+                  </p>
+                )}
+              </div>
+            </article>
+          </section>
+
+          {showInstitutionalPilotCta ? (
+            <section className={styles.panel} id={INSTITUTIONAL_PILOT_SECTION_ID}>
+              <span className={styles.eyebrow}>Institutional pilot</span>
+              <h2>
+                {institutionalPilotCtaVariant === "healthcare"
+                  ? "Use this healthcare card as a Public Review Stake style pilot object."
+                  : "Request an institutional review pilot."}
+              </h2>
+              <p>
+                {institutionalPilotCtaVariant === "healthcare"
+                  ? "This live healthcare card already shows the core loop a serious pilot needs: visible contributions, unresolved review pressure, AI-assisted sorting, human synthesis, and a revisable public record."
+                  : "Civic Logos can turn a room like this into a living review object. Paying for the pilot funds examination, review capacity, evidence work, and synthesis labor without buying favorable conclusions."}
+              </p>
+
+              <div className={styles.copyBlock}>
+                <h3>Why this card is pilot-ready</h3>
+                <p>
+                  The live object currently shows <strong>{liveContributions.length}</strong>{" "}
+                  visible contribution record
+                  {liveContributions.length === 1 ? "" : "s"},{" "}
+                  <strong>
+                    {contributionStatusCounts.pending + contributionStatusCounts.needsReview}
+                  </strong>{" "}
+                  still waiting on human review, and{" "}
+                  <strong>{changedCardContributions.length}</strong> record
+                  {changedCardContributions.length === 1 ? "" : "s"} already
+                  marked as changing the visible card.
+                </p>
+              </div>
+
+              {activePilotInquiry ? (
+                <div className={styles.scoreFocusNotice}>
+                  <span className={styles.scoreTransparencyLabel}>
+                    Returned from institutional inquiry
+                  </span>
+                  <p>
+                    This section is the live review object currently grounding the
+                    active institutional pilot snapshot.
+                  </p>
+                  <div className={styles.scoreSliceList}>
+                    <Link className={styles.scoreSliceLink} href={institutionalPilotInquiryHref}>
+                      Return to institutional inquiry snapshot
+                    </Link>
+                  </div>
+                </div>
+              ) : null}
+
+              {institutionalPilotRecordContext ? (
+                <div className={styles.copyBlock}>
+                  <h3>Current pilot-facing record</h3>
+                  <p>
+                    <strong>
+                      <Link
+                        className={styles.sourceLink}
+                        href={getExactContributionLedgerHref(
+                          institutionalPilotRecordContext.contribution,
+                        )}
+                      >
+                        {institutionalPilotRecordContext.contribution.title}
+                      </Link>
+                    </strong>
+                    {" "}through{" "}
+                    <strong>{institutionalPilotRecordContext.sliceLabel}</strong>.
+                  </p>
+                  <ContributionRecordContext
+                    contribution={institutionalPilotRecordContext.contribution}
+                    recordView={getContributionRecordView(
+                      institutionalPilotRecordContext.contribution,
+                    )}
+                    showReviewStatus
+                  />
+                  <p className={styles.metaParagraph}>
+                    Pilot grounding: {institutionalPilotRecordContext.pilotGrounding}
+                  </p>
+                </div>
+              ) : null}
+
+              <div className={styles.copyBlock}>
+                <h3>Revenue firewall</h3>
+                <ul className={styles.bulletList}>
+                  <li>Paying funds review capacity, not authority over the synthesis.</li>
+                  <li>Funder identity, relevant constraints, and review conditions must be disclosed.</li>
+                  <li>Objections, reviewer notes, and visible revision history remain part of the record.</li>
+                  <li>Civic Logos does not sell legitimacy, favorable scoring, or quiet review outcomes.</li>
+                </ul>
+              </div>
+
+              <div className={styles.roomActions}>
+                <Link className={styles.roomActionPrimary} href={institutionalPilotInquiryHref}>
+                  Request an institutional review pilot
+                </Link>
+                <Link className={styles.roomActionSecondary} href={ledgerViewHref}>
+                  Open Ledger View
+                </Link>
+                <Link className={styles.roomActionSecondary} href="/institutions#model">
+                  Open Public Review Stake model
+                </Link>
+              </div>
+            </section>
+          ) : null}
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div className={styles.page}>
@@ -2349,6 +2822,20 @@ export default async function TopicCardPage({
             <h1>{card.title}</h1>
             <p className={styles.subtitle}>{card.subtitle}</p>
             <p className={styles.thesis}>{card.thesis}</p>
+
+            <div className={styles.viewToggle}>
+              <Link className={styles.viewToggleLink} href={readerViewHref}>
+                Reader View
+              </Link>
+              <Link className={styles.viewToggleActive} href={ledgerViewHref}>
+                Ledger View
+              </Link>
+            </div>
+            <p className={styles.viewToggleNote}>
+              Ledger View keeps the full contribution record, AI sorting,
+              human review status, scorecard pressure, attachment targets,
+              revision trace, and filters in one inspectable path.
+            </p>
           </div>
 
           <aside className={styles.heroPanel}>

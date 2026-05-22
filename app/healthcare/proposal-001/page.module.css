@@ -191,6 +191,48 @@
   font-size: 1.14rem;
 }
 
+.viewToggle {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.viewToggleLink,
+.viewToggleActive {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 46px;
+  padding: 0 16px;
+  border-radius: 999px;
+  font-weight: 700;
+  text-decoration: none;
+  transition:
+    transform 180ms ease,
+    border-color 180ms ease,
+    background 180ms ease;
+}
+
+.viewToggleLink {
+  border: 1px solid rgba(18, 33, 39, 0.14);
+  background: rgba(255, 251, 245, 0.86);
+  color: var(--foreground);
+}
+
+.viewToggleActive {
+  border: 1px solid transparent;
+  background: var(--accent-dark);
+  color: #fff7ee;
+}
+
+.viewToggleNote {
+  margin-top: 14px;
+  color: var(--muted);
+  font-size: 0.94rem;
+  line-height: 1.68;
+}
+
 .heroPanel {
   display: grid;
   gap: 18px;
@@ -916,6 +958,8 @@
 }
 
 @media (hover: hover) and (pointer: fine) {
+  .viewToggleLink:hover,
+  .viewToggleActive:hover,
   .roomActionPrimary:hover,
   .roomActionSecondary:hover,
   .scoreSliceLink:hover,
@@ -925,10 +969,12 @@
     transform: translateY(-2px);
   }
 
+  .viewToggleActive:hover,
   .roomActionPrimary:hover {
     background: var(--accent);
   }
 
+  .viewToggleLink:hover,
   .roomActionSecondary:hover,
   .scoreSliceLink:hover,
   .reviewPillLink:hover,
@@ -964,6 +1010,15 @@
     align-items: start;
   }
 
+  .viewToggle {
+    flex-direction: column;
+  }
+
+  .viewToggleLink,
+  .viewToggleActive {
+    width: 100%;
+  }
+
   .heroCopy,
   .heroPanel,
   .scorePanel,
@@ -988,6 +1043,8 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .viewToggleLink,
+  .viewToggleActive,
   .roomActionPrimary,
   .roomActionSecondary,
   .reviewPillLink,
