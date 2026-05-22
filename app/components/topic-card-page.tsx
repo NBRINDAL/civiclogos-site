@@ -13,6 +13,7 @@ import {
   getHomeIntakeRoomCandidatesHref,
   HOME_INTAKE_TOPIC_CARD_PRESSURE_SECTION_ID,
 } from "../lib/home-intake-artifact-links";
+import { getHomeIntakeHeldQuestions } from "../lib/home-intake-held-questions";
 import { getHomeIntakeClosestMapPath } from "../lib/home-intake-map-path";
 import { getHomeIntakeEntry } from "../lib/home-intake-store";
 import type { HomeIntakeRecord } from "../lib/home-intake-types";
@@ -1155,6 +1156,12 @@ export default async function TopicCardPage({
   const topicIntakeClosestMapPath = topicIntakeEntry
     ? getHomeIntakeClosestMapPath(topicIntakeEntry.routing)
     : null;
+  const topicIntakeHeldQuestions = topicIntakeEntry
+    ? getHomeIntakeHeldQuestions(topicIntakeEntry.routing, 2)
+    : [];
+  const topicIntakePromptCount = topicIntakeEntry
+    ? topicIntakeEntry.promptCount ?? topicIntakeEntry.relatedPrompts?.length ?? 1
+    : 0;
   const topicIntakeMatchesCard = Boolean(
     topicIntakeEntry &&
       ((topicIntakeEntry.routing.roomSlug === roomSlug &&
@@ -2730,6 +2737,25 @@ export default async function TopicCardPage({
                   Open document-backed slice
                 </Link>
               </article>
+              {topicIntakeMatchesCard && topicIntakeEntry ? (
+                <article className={styles.snapshotCard}>
+                  <span className={styles.snapshotLabel}>Held intake pressure</span>
+                  <strong>{topicIntakePromptCount}</strong>
+                  <p>
+                    {topicIntakeEntry.routing.routeKind === "room-topic-draft"
+                      ? `${topicIntakePromptCount} prompt${topicIntakePromptCount === 1 ? "" : "s"} and ${topicIntakeHeldQuestions.length} held question${topicIntakeHeldQuestions.length === 1 ? "" : "s"} are still pressing on this card from a durable draft topic outside the live record.`
+                      : topicIntakeEntry.routing.routeKind === "new-room-draft"
+                        ? `${topicIntakePromptCount} prompt${topicIntakePromptCount === 1 ? "" : "s"} and ${topicIntakeHeldQuestions.length} held question${topicIntakeHeldQuestions.length === 1 ? "" : "s"} are still pressing on this card from a room candidate the active map has not absorbed yet.`
+                        : "This live card is still being read through a current room-intake route."}
+                  </p>
+                  <Link
+                    className={styles.roomActionSecondary}
+                    href={`#${HOME_INTAKE_TOPIC_CARD_PRESSURE_SECTION_ID}`}
+                  >
+                    Open intake pressure notice
+                  </Link>
+                </article>
+              ) : null}
             </div>
 
             <div className={styles.copyBlock} id="ai-assisted-record-activity">
