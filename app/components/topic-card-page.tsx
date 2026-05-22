@@ -108,6 +108,11 @@ type ScorePressureContext = {
   latestUnresolvedSliceLabel: null | string;
 };
 
+type PilotRecordContext = {
+  contribution: PublicContribution;
+  sliceLabel: string;
+};
+
 type TopicCardIntakeContext = {
   intakeId: string;
   routeKind: "existing-room" | "room-topic-draft" | "new-room-draft";
@@ -184,6 +189,60 @@ function getScorePressureInterpretation(contribution: PublicContribution) {
         contribution.aiIntake.reviewerNote ??
         contribution.aiIntake.summary ??
         "This contribution still needs a human review decision.",
+    };
+  }
+
+  return null;
+}
+
+function getPilotInquiryRecordContext({
+  activeScoreLabel,
+  activeScoreLatestVisibleContribution,
+  changedCardContributions,
+  liveContributions,
+}: {
+  activeScoreLabel?: string;
+  activeScoreLatestVisibleContribution?: {
+    contribution: PublicContribution;
+    slice: Omit<ContributionSliceDefinition, "label"> & { label: string };
+  } | null;
+  changedCardContributions: PublicContribution[];
+  liveContributions: PublicContribution[];
+}): PilotRecordContext | null {
+  if (activeScoreLatestVisibleContribution) {
+    return {
+      contribution: activeScoreLatestVisibleContribution.contribution,
+      sliceLabel: activeScoreLatestVisibleContribution.slice.label,
+    };
+  }
+
+  if (activeScoreLabel) {
+    return null;
+  }
+
+  const needsReviewContribution = liveContributions.find(
+    (contribution) =>
+      contribution.status === "pending" || contribution.status === "needs review",
+  );
+
+  if (changedCardContributions[0]) {
+    return {
+      contribution: changedCardContributions[0],
+      sliceLabel: "Changed card",
+    };
+  }
+
+  if (needsReviewContribution) {
+    return {
+      contribution: needsReviewContribution,
+      sliceLabel: "Needs review",
+    };
+  }
+
+  if (liveContributions[0]) {
+    return {
+      contribution: liveContributions[0],
+      sliceLabel: "Visible record",
     };
   }
 
@@ -1677,11 +1736,18 @@ export default async function TopicCardPage({
   const activeScoreItem = activeScoreLabel
     ? card.scorecard.find((item) => item.label === activeScoreLabel) ?? null
     : null;
-  const activeScoreLatestVisibleInterpretation = activeScoreLatestVisibleContribution
-    ? getScorePressureInterpretation(
-        activeScoreLatestVisibleContribution.contribution,
-      )
-    : null;
+  const institutionalPilotRecordContext = getPilotInquiryRecordContext({
+    activeScoreLabel,
+    activeScoreLatestVisibleContribution,
+    changedCardContributions,
+    liveContributions,
+  });
+  const institutionalPilotRecordInterpretation =
+    institutionalPilotRecordContext
+      ? getScorePressureInterpretation(
+          institutionalPilotRecordContext.contribution,
+        )
+      : null;
   const activeHeldIntakeRelationship =
     topicIntakeMatchesCard && topicIntakeEntry
       ? topicIntakeEntry.routing.routeKind === "room-topic-draft"
@@ -1758,36 +1824,36 @@ export default async function TopicCardPage({
       );
     }
 
-    if (activeScoreLatestVisibleContribution) {
+    if (institutionalPilotRecordContext) {
       params.set(
         "sourceExactRecordTitle",
-        activeScoreLatestVisibleContribution.contribution.title,
+        institutionalPilotRecordContext.contribution.title,
       );
       params.set(
         "sourceExactRecordSlice",
-        activeScoreLatestVisibleContribution.slice.label,
+        institutionalPilotRecordContext.sliceLabel,
       );
       params.set(
         "sourceExactRecordTarget",
         getContributionAttachmentSummary(
-          activeScoreLatestVisibleContribution.contribution,
+          institutionalPilotRecordContext.contribution,
         ),
       );
       params.set(
         "sourceExactRecordHref",
         `${getRoomTopicHref(roomSlug, card.id)}${getExactContributionLedgerHref(
-          activeScoreLatestVisibleContribution.contribution,
+          institutionalPilotRecordContext.contribution,
           undefined,
           activeScoreItem?.label,
-          activeScoreLatestVisibleContribution.slice.label,
+          institutionalPilotRecordContext.sliceLabel,
           activeIntakeContextId,
         )}`,
       );
 
-      if (activeScoreLatestVisibleInterpretation) {
+      if (institutionalPilotRecordInterpretation) {
         params.set(
           "sourceExactRecordRead",
-          activeScoreLatestVisibleInterpretation.label,
+          institutionalPilotRecordInterpretation.label,
         );
       }
     } else if (activeScoreLabel) {
@@ -3000,6 +3066,50 @@ export default async function TopicCardPage({
                   document-backed contribution
                   {documentBackedContributions.length === 1 ? "" : "s"}.
                 </p>
+                {institutionalPilotRecordContext ? (
+                  <>
+                    <span className={styles.scoreTransparencyLabel}>
+                      Current pilot-facing record
+                    </span>
+                    <p>
+                      The current live review object most ready to carry into a
+                      pilot request is{" "}
+                      <strong>
+                        <Link
+                          className={styles.sourceLink}
+                          href={getExactContributionLedgerHref(
+                            institutionalPilotRecordContext.contribution,
+                            undefined,
+                            activeScoreItem?.label,
+                            institutionalPilotRecordContext.sliceLabel,
+                            activeIntakeContextId,
+                          )}
+                        >
+                          {institutionalPilotRecordContext.contribution.title}
+                        </Link>
+                      </strong>
+                      {" "}through{" "}
+                      <strong>{institutionalPilotRecordContext.sliceLabel}</strong>.
+                    </p>
+                    <ContributionRecordContext
+                      contribution={institutionalPilotRecordContext.contribution}
+                      recordView={getContributionRecordView(
+                        institutionalPilotRecordContext.contribution,
+                      )}
+                      showReviewStatus
+                    />
+                    {institutionalPilotRecordInterpretation ? (
+                      <p className={styles.metaParagraph}>
+                        {institutionalPilotRecordInterpretation.label}:{" "}
+                        {institutionalPilotRecordInterpretation.note}
+                      </p>
+                    ) : null}
+                    <ContributionAiOriginContext
+                      contribution={institutionalPilotRecordContext.contribution}
+                      sourceIntakeId={activeIntakeContextId}
+                    />
+                  </>
+                ) : null}
               </div>
             ) : null}
 
