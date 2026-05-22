@@ -15,10 +15,13 @@ export function generateStaticParams() {
 
 export default async function HealthcareTopicPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ topicId: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const { topicId } = await params;
+  const resolvedSearchParams = await searchParams;
   const card = getRoomTopicCard("healthcare", topicId);
   const roomCards = getRoomTopicCards("healthcare");
   const currentTopicIndex = roomCards.findIndex((item) => item.id === topicId);
@@ -40,6 +43,7 @@ export default async function HealthcareTopicPage({
         href: getRoomTopicHref("healthcare", item.id),
       }))}
       roomLabel={getRoomTopicLabel("healthcare")}
+      searchParams={resolvedSearchParams}
     />
   );
 }

@@ -24,10 +24,13 @@ export function generateStaticParams() {
 
 export default async function IssueRoomTopicPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ slug: string; topicId: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const { slug, topicId } = await params;
+  const resolvedSearchParams = await searchParams;
   const roomSlug = slug as IssueRoomSlug;
 
   if (!(roomSlug in issueRooms) || roomSlug === "healthcare") {
@@ -55,6 +58,7 @@ export default async function IssueRoomTopicPage({
         href: getRoomTopicHref(roomSlug, item.id),
       }))}
       roomLabel={getRoomTopicLabel(roomSlug)}
+      searchParams={resolvedSearchParams}
     />
   );
 }

@@ -243,6 +243,22 @@
   margin-top: 24px;
 }
 
+.summaryFocusNotice {
+  display: grid;
+  gap: 10px;
+  padding: 16px 18px;
+  border: 1px solid rgba(var(--brand-blue-rgb), 0.24);
+  border-radius: 22px;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 251, 245, 0.96),
+    rgba(244, 250, 255, 0.94)
+  );
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.52),
+    0 16px 34px rgba(18, 33, 39, 0.05);
+}
+
 .copyBlock:target {
   padding: 18px 20px;
   border: 1px solid rgba(var(--brand-blue-rgb), 0.26);

@@ -70,6 +70,7 @@ type TopicCardPageProps = {
   roomLabel: string;
   roomCards: readonly TopicCardLink[];
   currentTopicIndex: number;
+  searchParams?: Record<string, string | string[] | undefined>;
 };
 
 function getPublicContributionOutcomeNote(
@@ -228,6 +229,14 @@ function getTopicChatMessageHref(messageId: string) {
   return `?chatMessage=${encodeURIComponent(messageId)}#topic-chat-message-${messageId}`;
 }
 
+function getSingleSearchParamValue(value: string | string[] | undefined) {
+  if (Array.isArray(value)) {
+    return value[0];
+  }
+
+  return value;
+}
+
 function getExactContributionLedgerHref(contribution: PublicContribution) {
   return getContributionLedgerHref({
     recordView: getContributionRecordView(contribution),
@@ -237,6 +246,18 @@ function getExactContributionLedgerHref(contribution: PublicContribution) {
     lane: contribution.lane,
     contributionId: contribution.id,
   });
+}
+
+function getContributionSummaryHref(
+  contributionId: string,
+  label: string,
+  hash: string,
+) {
+  const params = new URLSearchParams();
+  params.set("summaryRecord", contributionId);
+  params.set("summaryLabel", label);
+
+  return `?${params.toString()}${hash}`;
 }
 
 function ContributionRecordContext({
@@ -344,11 +365,47 @@ function addContributionSummaryReference(
   }
 
   const existing = map.get(contribution.id) ?? [];
+  const exactHref = getContributionSummaryHref(contribution.id, label, href);
 
-  if (!existing.some((item) => item.label === label && item.href === href)) {
-    existing.push({ label, href });
+  if (!existing.some((item) => item.label === label && item.href === exactHref)) {
+    existing.push({ label, href: exactHref });
     map.set(contribution.id, existing);
   }
+}
+
+function SummaryFocusNotice({
+  activeSummaryLabel,
+  contribution,
+  summaryLabel,
+}: {
+  activeSummaryLabel?: string;
+  contribution: null | PublicContribution;
+  summaryLabel: string;
+}) {
+  if (!contribution || activeSummaryLabel !== summaryLabel) {
+    return null;
+  }
+
+  return (
+    <div className={styles.summaryFocusNotice}>
+      <span className={styles.panelLabel}>Focused by exact record</span>
+      <p>
+        This summary was opened from the public-record entry{" "}
+        <strong>
+          <Link className={styles.sourceLink} href={getExactContributionLedgerHref(contribution)}>
+            {contribution.title}
+          </Link>
+        </strong>
+        .
+      </p>
+      <ContributionRecordContext
+        contribution={contribution}
+        recordView={getContributionRecordView(contribution)}
+        showReviewStatus
+      />
+      <ContributionAiOriginContext contribution={contribution} />
+    </div>
+  );
 }
 
 export default async function TopicCardPage({
@@ -359,6 +416,7 @@ export default async function TopicCardPage({
   roomLabel,
   roomCards,
   currentTopicIndex,
+  searchParams,
 }: TopicCardPageProps) {
   const cookieStore = await cookies();
   const topicChatSessionId =
@@ -608,6 +666,12 @@ export default async function TopicCardPage({
   const siblingCards = roomCards.filter((item) => item.id !== card.id);
   const showInstitutionalPilotCta =
     roomSlug === "institutional-trust" && card.id === "topic-001";
+  const activeSummaryRecordId = getSingleSearchParamValue(searchParams?.summaryRecord)?.trim();
+  const activeSummaryLabel = getSingleSearchParamValue(searchParams?.summaryLabel)?.trim();
+  const summaryFocusedContribution =
+    activeSummaryRecordId
+      ? liveContributions.find((item) => item.id === activeSummaryRecordId) ?? null
+      : null;
 
   return (
     <div className={styles.page}>
@@ -665,11 +729,21 @@ export default async function TopicCardPage({
 
             <div className={styles.copyBlock} id="assumption-layer">
               <h3>The problem it is trying to solve</h3>
+              <SummaryFocusNotice
+                activeSummaryLabel={activeSummaryLabel}
+                contribution={summaryFocusedContribution}
+                summaryLabel="Assumption layer"
+              />
               <p>{card.problemStatement}</p>
             </div>
 
             <div className={styles.copyBlock} id="objection-layer">
               <h3>The proposed move</h3>
+              <SummaryFocusNotice
+                activeSummaryLabel={activeSummaryLabel}
+                contribution={summaryFocusedContribution}
+                summaryLabel="Objection layer"
+              />
               <p>{card.proposedSolution}</p>
             </div>
           </article>
@@ -718,6 +792,11 @@ export default async function TopicCardPage({
 
             <div className={styles.copyBlock} id="evidence-layer">
               <h3>Expected upside</h3>
+              <SummaryFocusNotice
+                activeSummaryLabel={activeSummaryLabel}
+                contribution={summaryFocusedContribution}
+                summaryLabel="Evidence layer"
+              />
               <ul className={styles.bulletList}>
                 {card.benefits.map((item) => (
                   <li key={item}>{item}</li>
@@ -737,6 +816,11 @@ export default async function TopicCardPage({
 
             <div className={styles.copyBlock} id="document-evidence-record">
               <h3>Stakeholders already in the blast radius</h3>
+              <SummaryFocusNotice
+                activeSummaryLabel={activeSummaryLabel}
+                contribution={summaryFocusedContribution}
+                summaryLabel="Visible evidence record"
+              />
               <div className={styles.tagList}>
                 {card.stakeholders.map((item) => (
                   <span className={styles.tag} key={item}>
@@ -797,6 +881,11 @@ export default async function TopicCardPage({
           <article className={styles.panel}>
             <span className={styles.eyebrow}>Stress test</span>
             <h2>Where the topic could fail or misfire</h2>
+            <SummaryFocusNotice
+              activeSummaryLabel={activeSummaryLabel}
+              contribution={summaryFocusedContribution}
+              summaryLabel="Review-driven record"
+            />
             <ul className={styles.bulletList}>
               {card.risks.map((item) => (
                 <li key={item}>{item}</li>
@@ -805,6 +894,11 @@ export default async function TopicCardPage({
 
             <div className={styles.copyBlock} id="open-question-layer">
               <h3>Anticipated objection</h3>
+              <SummaryFocusNotice
+                activeSummaryLabel={activeSummaryLabel}
+                contribution={summaryFocusedContribution}
+                summaryLabel="Open-question layer"
+              />
               <p>{card.anticipatedObjection ?? card.strongestObjection}</p>
             </div>
 
@@ -1053,6 +1147,11 @@ export default async function TopicCardPage({
           <article className={styles.panel}>
             <span className={styles.eyebrow}>Review-driven record</span>
             <h2>Human review should change the visible object, not just the queue.</h2>
+            <SummaryFocusNotice
+              activeSummaryLabel={activeSummaryLabel}
+              contribution={summaryFocusedContribution}
+              summaryLabel="Open pressure"
+            />
             <p>
               These are the reviewed outside contributions that have already been
               marked as changing the card&apos;s public reasoning record.
@@ -1060,6 +1159,11 @@ export default async function TopicCardPage({
 
             <div className={styles.copyBlock} id="pressure-by-lane">
               <h3>Assumptions now under live pressure</h3>
+              <SummaryFocusNotice
+                activeSummaryLabel={activeSummaryLabel}
+                contribution={summaryFocusedContribution}
+                summaryLabel="Pressure by lane"
+              />
               {incorporatedAssumptions.length ? (
                 <div className={styles.historyList}>
                   {incorporatedAssumptions.slice(0, 3).map((item) => (
@@ -1544,6 +1648,11 @@ export default async function TopicCardPage({
               <>
                 <div className={styles.copyBlock}>
                   <h3>Most recent contributor-driven card changes</h3>
+                  <SummaryFocusNotice
+                    activeSummaryLabel={activeSummaryLabel}
+                    contribution={summaryFocusedContribution}
+                    summaryLabel="Manual cycle - Changed card"
+                  />
                   <ul className={styles.bulletList}>
                     {changedCardContributions.slice(0, 3).map((item) => (
                       <li key={item.id}>
@@ -1589,6 +1698,11 @@ export default async function TopicCardPage({
 
             <div className={styles.copyBlock}>
               <h3>Needs maintainer attention</h3>
+              <SummaryFocusNotice
+                activeSummaryLabel={activeSummaryLabel}
+                contribution={summaryFocusedContribution}
+                summaryLabel="Manual cycle - Needs attention"
+              />
               {needsAttentionContributions.length ? (
                 <>
                   <ul className={styles.bulletList}>
@@ -1634,6 +1748,11 @@ export default async function TopicCardPage({
 
             <div className={styles.copyBlock}>
               <h3>AI-assisted record activity</h3>
+              <SummaryFocusNotice
+                activeSummaryLabel={activeSummaryLabel}
+                contribution={summaryFocusedContribution}
+                summaryLabel="AI-assisted record activity"
+              />
               {assistedRecordContributions.length ? (
                 <>
                   <p>
@@ -1796,6 +1915,11 @@ export default async function TopicCardPage({
 
             <div className={styles.copyBlock}>
               <h3>Recent human review decisions</h3>
+              <SummaryFocusNotice
+                activeSummaryLabel={activeSummaryLabel}
+                contribution={summaryFocusedContribution}
+                summaryLabel="Recent human review decisions"
+              />
               {reviewedContributions.length ? (
                 <div className={styles.historyList}>
                   {reviewedContributions.slice(0, 4).map((item) => (
@@ -1985,6 +2109,11 @@ export default async function TopicCardPage({
 
           <div className={styles.copyBlock} id="contribution-driven-trace">
             <h3>Contribution-driven trace</h3>
+            <SummaryFocusNotice
+              activeSummaryLabel={activeSummaryLabel}
+              contribution={summaryFocusedContribution}
+              summaryLabel="Contribution-driven trace"
+            />
             {changedCardContributions.length ? (
               <div className={styles.historyList}>
                 {changedCardContributions.slice(0, 4).map((item) => (
