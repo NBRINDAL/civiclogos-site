@@ -1624,8 +1624,36 @@ export default async function TopicCardPage({
                         )}
                       </p>
                       <p className={styles.metaParagraph}>
-                        Public record target:{" "}
-                        {getContributionAttachmentLabel(getContributionAttachmentFilter(item))}
+                        Debate lane:{" "}
+                        <Link
+                          className={styles.sourceLink}
+                          href={getContributionLedgerHref({
+                            reviewStatus: getContributionStatusFilter(item.status),
+                            lane: item.lane,
+                          })}
+                        >
+                          {debateLaneLabels[item.lane]}
+                        </Link>
+                        . Origin:{" "}
+                        <Link
+                          className={styles.sourceLink}
+                          href={getContributionLedgerHref({
+                            reviewStatus: getContributionStatusFilter(item.status),
+                            origin: getContributionOrigin(item),
+                          })}
+                        >
+                          {getContributionOriginLabel(getContributionOrigin(item))}
+                        </Link>
+                        . Public record target:{" "}
+                        <Link
+                          className={styles.sourceLink}
+                          href={getContributionLedgerHref({
+                            reviewStatus: getContributionStatusFilter(item.status),
+                            attachment: getContributionAttachmentFilter(item),
+                          })}
+                        >
+                          {getContributionAttachmentLabel(getContributionAttachmentFilter(item))}
+                        </Link>
                         .{" "}
                         <Link
                           className={styles.sourceLink}
