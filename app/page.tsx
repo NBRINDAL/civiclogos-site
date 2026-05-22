@@ -95,6 +95,10 @@ export default async function Home({
     sourceAiOrigin?: string | string[];
     sourceDocumentBacked?: string | string[];
     sourceRecordMode?: string | string[];
+    sourceScoreLabel?: string | string[];
+    sourceScoreValue?: string | string[];
+    sourceScoreSlice?: string | string[];
+    sourceScoreOpenPressure?: string | string[];
   }>;
 }) {
   const resolvedSearchParams = await searchParams;
@@ -110,15 +114,29 @@ export default async function Home({
   const sourceAiOrigin = getFirstValue(resolvedSearchParams.sourceAiOrigin);
   const sourceDocumentBacked = getFirstValue(resolvedSearchParams.sourceDocumentBacked);
   const sourceRecordMode = getFirstValue(resolvedSearchParams.sourceRecordMode);
+  const sourceScoreLabel = getFirstValue(resolvedSearchParams.sourceScoreLabel);
+  const sourceScoreValue = getFirstValue(resolvedSearchParams.sourceScoreValue);
+  const sourceScoreSlice = getFirstValue(resolvedSearchParams.sourceScoreSlice);
+  const sourceScoreOpenPressure = getFirstValue(
+    resolvedSearchParams.sourceScoreOpenPressure,
+  );
   const liveCardIndex = getLiveCardIndex();
   const contactContextTitle = sourceTopic
     ? `${sourceTopic}${sourceRoom ? ` in ${sourceRoom}` : ""}`
     : undefined;
+  const sourceScoreSummary = sourceScoreLabel
+    ? sourceScoreValue
+      ? `${sourceScoreLabel} · ${sourceScoreValue}`
+      : sourceScoreLabel
+    : null;
+  const contactContextScopeSuffix = sourceScoreLabel
+    ? " plus the focused score context"
+    : "";
   const contactContextNote =
     sourceTopic && sourceRoom
-      ? `This inquiry came from the live topic card in ${sourceRoom} and carries the card's current public-record snapshot into the pilot request.`
+      ? `This inquiry came from the live topic card in ${sourceRoom} and carries the card's current public-record snapshot${contactContextScopeSuffix} into the pilot request.`
       : sourceTopic
-        ? "This inquiry came from a live Civic Logos topic card and carries its current public-record snapshot into the pilot request."
+        ? `This inquiry came from a live Civic Logos topic card and carries its current public-record snapshot${contactContextScopeSuffix} into the pilot request.`
         : undefined;
   const contactContextFacts = [
     sourceLiveRecord ? { label: "Visible record", value: sourceLiveRecord } : null,
@@ -129,6 +147,13 @@ export default async function Home({
       ? { label: "Document-backed", value: sourceDocumentBacked }
       : null,
     sourceRecordMode ? { label: "Record mode", value: sourceRecordMode } : null,
+    sourceScoreSummary
+      ? { label: "Focused score", value: sourceScoreSummary }
+      : null,
+    sourceScoreSlice ? { label: "Score slice", value: sourceScoreSlice } : null,
+    sourceScoreOpenPressure
+      ? { label: "Open review pressure", value: sourceScoreOpenPressure }
+      : null,
   ].filter((item): item is { label: string; value: string } => Boolean(item));
   const initialMessage =
     initialInterest === "Institutional pilot" && sourceTopic
@@ -144,6 +169,11 @@ export default async function Home({
             ? `- Document-backed contributions: ${sourceDocumentBacked}`
             : null,
           sourceRecordMode ? `- Record mode: ${sourceRecordMode}` : null,
+          sourceScoreSummary ? `- Focused score: ${sourceScoreSummary}` : null,
+          sourceScoreSlice ? `- Score slice: ${sourceScoreSlice}` : null,
+          sourceScoreOpenPressure
+            ? `- Open review pressure: ${sourceScoreOpenPressure}`
+            : null,
           "",
           "What I want to explore:",
           "",

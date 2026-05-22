@@ -1652,26 +1652,6 @@ export default async function TopicCardPage({
       ? roomCards[currentTopicIndex + 1]
       : null;
   const siblingCards = roomCards.filter((item) => item.id !== card.id);
-  const showInstitutionalPilotCta =
-    roomSlug === "institutional-trust" && card.id === "topic-001";
-  const institutionalPilotInquiryHref = (() => {
-    const params = new URLSearchParams({
-      interest: "Institutional pilot",
-      sourceTopic: card.title,
-      sourceRoom: roomLabel,
-      sourceTopicHref: getRoomTopicHref(roomSlug, card.id),
-      sourceLiveRecord: String(liveContributions.length),
-      sourcePendingReview: String(
-        contributionStatusCounts.pending + contributionStatusCounts.needsReview,
-      ),
-      sourceChangedCard: String(changedCardContributions.length),
-      sourceAiOrigin: String(assistedRecordContributions.length),
-      sourceDocumentBacked: String(documentBackedContributions.length),
-      sourceRecordMode: contributionStoreMetadata.mode,
-    });
-
-    return `/?${params.toString()}#contact`;
-  })();
   const activeSummaryRecordId = getSingleSearchParamValue(searchParams?.summaryRecord)?.trim();
   const activeSummaryLabel = getSingleSearchParamValue(searchParams?.summaryLabel)?.trim();
   const activeScoreLabel = getSingleSearchParamValue(searchParams?.scoreLabel)?.trim();
@@ -1694,6 +1674,72 @@ export default async function TopicCardPage({
           contribution.status === "needs review",
       )
     : null;
+  const activeScoreItem = activeScoreLabel
+    ? card.scorecard.find((item) => item.label === activeScoreLabel) ?? null
+    : null;
+  const showInstitutionalPilotCta =
+    roomSlug === "institutional-trust" && card.id === "topic-001";
+  const institutionalPilotSourceTopicHref = (() => {
+    const baseHref = getRoomTopicHref(roomSlug, card.id);
+    const params = new URLSearchParams();
+
+    if (activeIntakeContextId) {
+      params.set("intake", activeIntakeContextId);
+    }
+
+    if (activeScoreLabel) {
+      params.set("scoreLabel", activeScoreLabel);
+    }
+
+    if (activeScoreSliceLabel) {
+      params.set("scoreSlice", activeScoreSliceLabel);
+    }
+
+    const query = params.toString();
+    const hash = activeScoreLabel
+      ? `#${getScoreAnchorId(activeScoreLabel)}`
+      : activeIntakeContextId
+        ? `#${HOME_INTAKE_TOPIC_CARD_PRESSURE_SECTION_ID}`
+        : "";
+
+    return `${baseHref}${query ? `?${query}` : ""}${hash}`;
+  })();
+  const institutionalPilotInquiryHref = (() => {
+    const params = new URLSearchParams({
+      interest: "Institutional pilot",
+      sourceTopic: card.title,
+      sourceRoom: roomLabel,
+      sourceTopicHref: institutionalPilotSourceTopicHref,
+      sourceLiveRecord: String(liveContributions.length),
+      sourcePendingReview: String(
+        contributionStatusCounts.pending + contributionStatusCounts.needsReview,
+      ),
+      sourceChangedCard: String(changedCardContributions.length),
+      sourceAiOrigin: String(assistedRecordContributions.length),
+      sourceDocumentBacked: String(documentBackedContributions.length),
+      sourceRecordMode: contributionStoreMetadata.mode,
+    });
+
+    if (activeScoreItem) {
+      params.set("sourceScoreLabel", activeScoreItem.label);
+      params.set("sourceScoreValue", String(activeScoreItem.value));
+    }
+
+    if (activeScoreSliceLabel) {
+      params.set("sourceScoreSlice", activeScoreSliceLabel);
+    }
+
+    if (activeScoreLabel) {
+      params.set(
+        "sourceScoreOpenPressure",
+        activeScoreLatestUnresolvedContribution
+          ? "Still unresolved public pressure"
+          : "No unresolved public pressure currently linked",
+      );
+    }
+
+    return `/?${params.toString()}#contact`;
+  })();
   const summaryFocusLedgerHref = getSummaryFocusLedgerHref(searchParams);
   const scoreFocusHref = getScoreFocusHref(searchParams);
   const summaryFocusedContribution =
