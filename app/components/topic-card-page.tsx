@@ -1179,6 +1179,22 @@ export default async function TopicCardPage({
         ? getHomeIntakeRoomCandidatesHref(topicIntakeEntry.id)
         : `${roomHref}?intake=${topicIntakeEntry.id}`
     : null;
+  const topicContributionIntakeContext =
+    topicIntakeMatchesCard && topicIntakeEntry && topicIntakeArtifactHref
+      ? {
+          routeKind: topicIntakeEntry.routing.routeKind ?? "existing-room",
+          artifactTitle:
+            topicIntakeEntry.routing.suggestedTopicTitle ??
+            topicIntakeEntry.routing.suggestedCentralQuestion ??
+            topicIntakeEntry.prompt,
+          promptCount: topicIntakePromptCount,
+          heldQuestionCount: topicIntakeHeldQuestions.length,
+          pressureNoticeHref: `#${HOME_INTAKE_TOPIC_CARD_PRESSURE_SECTION_ID}`,
+          exactArtifactHref: topicIntakeArtifactHref,
+          intakeArtifactHref: `/intake/${topicIntakeEntry.id}`,
+          routingHref: `/intake/${topicIntakeEntry.id}#routing-ais`,
+        }
+      : null;
   const contributorObjectionThatChangedCard = liveContributions.find(
     (item) => item.lane === "objection" && item.review?.changedSynthesis === true,
   );
@@ -3344,6 +3360,7 @@ export default async function TopicCardPage({
           initialContributions={liveContributions}
           initialStoreMode={contributionStoreMetadata.mode}
           initialStoreNote={contributionStoreMetadata.note}
+          intakeContext={topicContributionIntakeContext}
           openQuestions={card.openQuestions}
           roomSlug={roomSlug}
           scoreReferences={contributionScoreReferences}

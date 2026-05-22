@@ -34,6 +34,16 @@ type TopicContributionLoopProps = {
   initialContributions: PublicContribution[];
   initialStoreMode: "prototype" | "database" | "fallback";
   initialStoreNote: string;
+  intakeContext?: {
+    routeKind: "existing-room" | "room-topic-draft" | "new-room-draft";
+    artifactTitle: string;
+    promptCount: number;
+    heldQuestionCount: number;
+    pressureNoticeHref: string;
+    exactArtifactHref: string;
+    intakeArtifactHref: string;
+    routingHref: string;
+  } | null;
   scoreReferences?: Record<
     string,
     Array<{ scoreLabel: string; scoreSliceLabel: string }>
@@ -663,6 +673,7 @@ export default function TopicContributionLoop({
   initialContributions,
   initialStoreMode,
   initialStoreNote,
+  intakeContext = null,
   scoreReferences = {},
   summaryReferences = {},
 }: TopicContributionLoopProps) {
@@ -1682,6 +1693,57 @@ export default function TopicContributionLoop({
         </div>
 
         <div className={styles.filterBlock}>
+          {intakeContext ? (
+            <div className={styles.focusNotice}>
+              <div>
+                <span className={styles.sectionLabel}>
+                  Viewed under held intake pressure
+                </span>
+                <p>
+                  This ledger is being read while{" "}
+                  <strong>{intakeContext.artifactTitle}</strong>{" "}
+                  {intakeContext.routeKind === "room-topic-draft"
+                    ? `is still held as a durable draft topic outside the live record, with ${intakeContext.promptCount} prompt${intakeContext.promptCount === 1 ? "" : "s"} and ${intakeContext.heldQuestionCount} held question${intakeContext.heldQuestionCount === 1 ? "" : "s"} still pressing on this card.`
+                    : intakeContext.routeKind === "new-room-draft"
+                      ? `is still held as a room candidate outside the active map, with ${intakeContext.promptCount} prompt${intakeContext.promptCount === 1 ? "" : "s"} and ${intakeContext.heldQuestionCount} held question${intakeContext.heldQuestionCount === 1 ? "" : "s"} still pressing on this card.`
+                      : "is still being read through the current room-intake route."}
+                </p>
+              </div>
+              <div className={styles.focusReferenceBlock}>
+                <span className={styles.sectionLabel}>Return path</span>
+                <div className={styles.summaryReferenceList}>
+                  <a
+                    className={styles.summaryReferenceLink}
+                    href={intakeContext.pressureNoticeHref}
+                  >
+                    Return to intake pressure notice
+                  </a>
+                  <a
+                    className={styles.summaryReferenceLink}
+                    href={intakeContext.exactArtifactHref}
+                  >
+                    {intakeContext.routeKind === "room-topic-draft"
+                      ? "Open exact draft topic"
+                      : intakeContext.routeKind === "new-room-draft"
+                        ? "Open exact room candidate"
+                        : "Return to room intake context"}
+                  </a>
+                  <a
+                    className={styles.summaryReferenceLink}
+                    href={intakeContext.intakeArtifactHref}
+                  >
+                    Return to intake artifact
+                  </a>
+                  <a
+                    className={styles.summaryReferenceLink}
+                    href={intakeContext.routingHref}
+                  >
+                    Open routing AIs
+                  </a>
+                </div>
+              </div>
+            </div>
+          ) : null}
           {activeScoreLabel ? (
             <div className={styles.focusNotice}>
               <div>
