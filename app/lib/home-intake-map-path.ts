@@ -21,6 +21,11 @@ export type HomeIntakeMapPath = {
   detail: string;
 };
 
+export type HomeIntakeProviderMapPath = HomeIntakeMapPath & {
+  providerLabel: string;
+  routeKind: Exclude<HomeIntakeRouteKind, "new-room-draft">;
+};
+
 function getProviderLabel(provider: ProviderHomeIntakeRouting["provider"]) {
   return provider === "openai" ? "OpenAI" : "Claude";
 }
@@ -207,5 +212,47 @@ export function getHomeIntakeClosestMapPath(
       bestPath.routeKind === "room-topic-draft"
         ? `${provenanceLabel} still sees ${getPathLabel(bestPath)} as the nearest current map path, but the issue is being held separately because that live path still leaves the pressure under-modeled.`
         : `${provenanceLabel} still sees ${getPathLabel(bestPath)} as the nearest current map path even though the artifact is being held outside the active map for now.`,
+  };
+}
+
+export function getHomeIntakeProviderMapPath(
+  provider: ProviderHomeIntakeRouting,
+): HomeIntakeProviderMapPath | null {
+  if (
+    provider.state !== "completed" ||
+    !provider.roomSlug ||
+    !provider.routeKind ||
+    provider.routeKind === "new-room-draft"
+  ) {
+    return null;
+  }
+
+  const roomHref = getRoomHref(provider.roomSlug);
+  const topicHref =
+    provider.topicId
+      ? getRoomTopicHref(provider.roomSlug, provider.topicId)
+      : undefined;
+  const providerLabel = getProviderLabel(provider.provider);
+
+  return {
+    providerLabel,
+    routeKind: provider.routeKind,
+    roomSlug: provider.roomSlug,
+    roomTitle: provider.roomTitle ?? "Current room",
+    topicId: provider.topicId,
+    topicTitle: provider.topicTitle,
+    roomHref,
+    topicHref,
+    provenanceLabel: providerLabel,
+    detail:
+      provider.routeKind === "room-topic-draft"
+        ? `${providerLabel} treated ${getPathLabel({
+            roomTitle: provider.roomTitle ?? "the host room",
+            topicTitle: provider.topicTitle,
+          })} as the nearest current map path, but still judged the issue to need its own durable draft topic.`
+        : `${providerLabel} treated ${getPathLabel({
+            roomTitle: provider.roomTitle ?? "the current room",
+            topicTitle: provider.topicTitle,
+          })} as the cleanest current map path.`,
   };
 }

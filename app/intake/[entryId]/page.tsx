@@ -22,7 +22,10 @@ import {
   getPromptTimestamp,
 } from "@/app/lib/home-intake-prompt-history";
 import { getHomeIntakeHeldQuestions } from "@/app/lib/home-intake-held-questions";
-import { getHomeIntakeClosestMapPath } from "@/app/lib/home-intake-map-path";
+import {
+  getHomeIntakeClosestMapPath,
+  getHomeIntakeProviderMapPath,
+} from "@/app/lib/home-intake-map-path";
 import { summarizeHomeIntakeRoutingConsensus } from "@/app/lib/home-intake-routing-consensus";
 import { getHomeIntakeEntry, getHomeIntakeStoreMetadata } from "@/app/lib/home-intake-store";
 import styles from "./page.module.css";
@@ -475,37 +478,74 @@ export default async function IntakeEntryPage({
 
           <div className={styles.providerGrid}>
             {entry.routing.providers.map((provider) => (
-              <article className={styles.providerCard} key={provider.provider}>
-                <div className={styles.providerMeta}>
-                  <span>{getProviderLabel(provider.provider)}</span>
-                  <strong>{provider.model ?? "Unavailable"}</strong>
-                </div>
+              (() => {
+                const providerMapPath = getHomeIntakeProviderMapPath(provider);
 
-                <p>
-                  {provider.state === "completed"
-                    ? provider.fitSummary
-                    : provider.errorMessage ??
-                      "This provider did not produce a routing read for this prompt."}
-                </p>
+                return (
+                  <article className={styles.providerCard} key={provider.provider}>
+                    <div className={styles.providerMeta}>
+                      <span>{getProviderLabel(provider.provider)}</span>
+                      <strong>{provider.model ?? "Unavailable"}</strong>
+                    </div>
 
-                {provider.routeKind ? (
-                  <p>
-                    <strong>Route:</strong>{" "}
-                    {provider.routeKind === "existing-room"
-                      ? provider.roomTitle ?? "Current room"
-                      : provider.routeKind === "room-topic-draft"
-                        ? `${provider.roomTitle ?? "Current room"} (draft topic)`
-                        : "Room candidate"}
-                  </p>
-                ) : null}
+                    <p>
+                      {provider.state === "completed"
+                        ? provider.fitSummary
+                        : provider.errorMessage ??
+                          "This provider did not produce a routing read for this prompt."}
+                    </p>
 
-                {provider.topicTitle || provider.suggestedTopicTitle ? (
-                  <p>
-                    <strong>Suggested topic:</strong>{" "}
-                    {provider.topicTitle ?? provider.suggestedTopicTitle}
-                  </p>
-                ) : null}
-              </article>
+                    {provider.routeKind ? (
+                      <p>
+                        <strong>Route:</strong>{" "}
+                        {provider.routeKind === "existing-room"
+                          ? provider.roomTitle ?? "Current room"
+                          : provider.routeKind === "room-topic-draft"
+                            ? `${provider.roomTitle ?? "Current room"} (draft topic)`
+                            : "Room candidate"}
+                      </p>
+                    ) : null}
+
+                    {provider.topicTitle || provider.suggestedTopicTitle ? (
+                      <p>
+                        <strong>Suggested topic:</strong>{" "}
+                        {provider.topicTitle ?? provider.suggestedTopicTitle}
+                      </p>
+                    ) : null}
+
+                    {providerMapPath ? (
+                      <div className={styles.closestMapPath}>
+                        <span>Provider map path</span>
+                        <p>{providerMapPath.detail}</p>
+                        <div className={styles.actions}>
+                          <Link
+                            className={styles.secondaryAction}
+                            href={
+                              providerMapPath.routeKind === "room-topic-draft"
+                                ? `${providerMapPath.roomHref}#draft-topics`
+                                : providerMapPath.roomHref
+                            }
+                          >
+                            {providerMapPath.routeKind === "room-topic-draft"
+                              ? "Open host room"
+                              : "Open routed room"}
+                          </Link>
+                          {providerMapPath.topicHref ? (
+                            <Link
+                              className={styles.secondaryAction}
+                              href={providerMapPath.topicHref}
+                            >
+                              {providerMapPath.routeKind === "room-topic-draft"
+                                ? "Open closest live card"
+                                : "Open suggested live card"}
+                            </Link>
+                          ) : null}
+                        </div>
+                      </div>
+                    ) : null}
+                  </article>
+                );
+              })()
             ))}
           </div>
         </section>
