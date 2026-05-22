@@ -341,6 +341,15 @@ export default async function Home({
       ? { label: "Open prompt history", href: sourceIntakePromptHistoryHref }
       : null,
   ].filter((item): item is { label: string; href: string } => Boolean(item));
+  const showInstitutionalPilotSnapshot =
+    initialInterest === "Institutional pilot" &&
+    Boolean(
+      contactContextTitle &&
+        (contactContextFacts.length ||
+          contactContextLinks.length ||
+          contactContextNote ||
+          sourceIntakeRelationship),
+    );
   const initialMessage =
     initialInterest === "Institutional pilot" && sourceTopic
       ? [
@@ -686,6 +695,48 @@ export default async function Home({
             </div>
 
             <div className={styles.contactFormWrap}>
+              {showInstitutionalPilotSnapshot ? (
+                <article className={styles.contactSnapshot}>
+                  <div className={styles.contactSnapshotHeader}>
+                    <span className={styles.cardLabel}>Institutional pilot snapshot</span>
+                    <h3>{contactContextTitle}</h3>
+                  </div>
+                  {contactContextNote ? (
+                    <p className={styles.contactSnapshotNote}>{contactContextNote}</p>
+                  ) : null}
+                  {contactContextFacts.length ? (
+                    <dl className={styles.contactSnapshotFacts}>
+                      {contactContextFacts.map((item) => (
+                        <div
+                          className={styles.contactSnapshotFact}
+                          key={`${item.label}-${item.value}`}
+                        >
+                          <dt>{item.label}</dt>
+                          <dd>{item.value}</dd>
+                        </div>
+                      ))}
+                    </dl>
+                  ) : null}
+                  {sourceIntakeRelationship ? (
+                    <p className={styles.contactSnapshotNote}>
+                      {sourceIntakeRelationship}
+                    </p>
+                  ) : null}
+                  {contactContextLinks.length ? (
+                    <div className={styles.contactSnapshotLinks}>
+                      {contactContextLinks.slice(0, 8).map((item) => (
+                        <Link
+                          className={styles.contactSnapshotLink}
+                          href={item.href}
+                          key={item.href}
+                        >
+                          {item.label}
+                        </Link>
+                      ))}
+                    </div>
+                  ) : null}
+                </article>
+              ) : null}
               <ContactForm
                 initialContextFacts={contactContextFacts}
                 initialContextHref={sourceTopicHref}
