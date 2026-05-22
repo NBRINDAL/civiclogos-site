@@ -76,6 +76,11 @@ type ScoreTransparencySlice = ContributionSliceDefinition & {
   href: string;
 };
 
+type ContributionScoreReference = {
+  scoreLabel: string;
+  scoreSliceLabel: string;
+};
+
 type TopicCardPageProps = {
   roomSlug: IssueRoomSlug;
   card: TopicCardData;
@@ -709,6 +714,29 @@ function addContributionSummaryReference(
   }
 }
 
+function addContributionScoreReference(
+  map: Map<string, ContributionScoreReference[]>,
+  contribution: PublicContribution | null | undefined,
+  scoreLabel: string,
+  scoreSliceLabel: string,
+) {
+  if (!contribution) {
+    return;
+  }
+
+  const existing = map.get(contribution.id) ?? [];
+
+  if (
+    !existing.some(
+      (item) =>
+        item.scoreLabel === scoreLabel && item.scoreSliceLabel === scoreSliceLabel,
+    )
+  ) {
+    existing.push({ scoreLabel, scoreSliceLabel });
+    map.set(contribution.id, existing);
+  }
+}
+
 function SummaryFocusNotice({
   activeSummaryLabel,
   activeSummaryRecordId,
@@ -1113,6 +1141,30 @@ export default async function TopicCardPage({
         item,
         "Contribution-driven trace",
         "#contribution-driven-trace",
+      );
+    }
+
+    return Object.fromEntries(map.entries());
+  })();
+  const contributionScoreReferences = (() => {
+    const map = new Map<string, ContributionScoreReference[]>();
+
+    for (const scoreItem of card.scorecard) {
+      const relatedSlices = getScoreTransparencySlices(scoreItem.label, liveContributions);
+      const latestScoreContribution = getLatestScoreTransparencyContribution(
+        relatedSlices,
+        liveContributions,
+      );
+
+      if (!latestScoreContribution) {
+        continue;
+      }
+
+      addContributionScoreReference(
+        map,
+        latestScoreContribution.contribution,
+        scoreItem.label,
+        latestScoreContribution.slice.label,
       );
     }
 
@@ -2690,6 +2742,7 @@ export default async function TopicCardPage({
           initialStoreNote={contributionStoreMetadata.note}
           openQuestions={card.openQuestions}
           roomSlug={roomSlug}
+          scoreReferences={contributionScoreReferences}
           summaryReferences={contributionSummaryReferences}
           topicId={card.id}
           topicTitle={card.title}

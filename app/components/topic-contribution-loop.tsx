@@ -34,6 +34,10 @@ type TopicContributionLoopProps = {
   initialContributions: PublicContribution[];
   initialStoreMode: "prototype" | "database" | "fallback";
   initialStoreNote: string;
+  scoreReferences?: Record<
+    string,
+    Array<{ scoreLabel: string; scoreSliceLabel: string }>
+  >;
   summaryReferences?: Record<string, Array<{ label: string; href: string }>>;
 };
 
@@ -442,6 +446,24 @@ function getSummaryReferenceHref(
   return `${path}${nextQuery ? `?${nextQuery}` : ""}${nextHash}`;
 }
 
+function getScoreReferenceHref(
+  pathname: string,
+  searchParams: { toString(): string },
+  scoreLabel: string,
+  scoreSliceLabel?: string,
+) {
+  const nextSearchParams = new URLSearchParams(searchParams.toString());
+  nextSearchParams.set("scoreLabel", scoreLabel);
+
+  if (scoreSliceLabel) {
+    nextSearchParams.set("scoreSlice", scoreSliceLabel);
+  } else {
+    nextSearchParams.delete("scoreSlice");
+  }
+
+  return `${pathname}?${nextSearchParams.toString()}#${getScoreAnchorId(scoreLabel)}`;
+}
+
 function getHighlightedContributionId(hash: string) {
   if (!hash.startsWith("#contribution-") || hash === "#contribution-record") {
     return "";
@@ -479,6 +501,7 @@ export default function TopicContributionLoop({
   initialContributions,
   initialStoreMode,
   initialStoreNote,
+  scoreReferences = {},
   summaryReferences = {},
 }: TopicContributionLoopProps) {
   const pathname = usePathname();
@@ -755,6 +778,17 @@ export default function TopicContributionLoop({
 
     return [];
   }, [highlightedContribution, highlightedVisibleContribution, summaryReferences]);
+  const highlightedScoreReferences = useMemo(() => {
+    if (highlightedVisibleContribution) {
+      return scoreReferences[highlightedVisibleContribution.id] ?? [];
+    }
+
+    if (highlightedContribution) {
+      return scoreReferences[highlightedContribution.id] ?? [];
+    }
+
+    return [];
+  }, [highlightedContribution, highlightedVisibleContribution, scoreReferences]);
   const activeSourceSummaryLabel = useMemo(
     () => searchParams.get("sourceSummary")?.trim() || undefined,
     [searchParams],
@@ -786,6 +820,17 @@ export default function TopicContributionLoop({
           )
         : highlightedSummaryReferences,
     [highlightedSourceSummaryReference, highlightedSummaryReferences],
+  );
+  const alternateHighlightedScoreReferences = useMemo(
+    () =>
+      highlightedScoreReferences.filter(
+        (reference) =>
+          !(
+            activeScoreLabel === reference.scoreLabel &&
+            activeScoreSliceLabel === reference.scoreSliceLabel
+          ),
+      ),
+    [activeScoreLabel, activeScoreSliceLabel, highlightedScoreReferences],
   );
   const scoreReturnHref = useMemo(() => {
     if (!activeScoreLabel) {
@@ -1514,6 +1559,31 @@ export default function TopicContributionLoop({
                   ) : null}
                 </div>
               ) : null}
+              {alternateHighlightedScoreReferences.length ? (
+                <div className={styles.focusReferenceBlock}>
+                  <span className={styles.sectionLabel}>
+                    {activeScoreLabel
+                      ? "Also used by scorecard"
+                      : "Scorecard items using this record"}
+                  </span>
+                  <div className={styles.summaryReferenceList}>
+                    {alternateHighlightedScoreReferences.map((reference) => (
+                      <a
+                        className={styles.summaryReferenceLink}
+                        href={getScoreReferenceHref(
+                          pathname,
+                          searchParams,
+                          reference.scoreLabel,
+                          reference.scoreSliceLabel,
+                        )}
+                        key={`focus-score-${highlightedVisibleContribution.id}-${reference.scoreLabel}-${reference.scoreSliceLabel}`}
+                      >
+                        {reference.scoreLabel} · {reference.scoreSliceLabel}
+                      </a>
+                    ))}
+                  </div>
+                </div>
+              ) : null}
             </div>
           ) : highlightedContribution ? (
             <div className={`${styles.focusNotice} ${styles.focusMissing}`}>
@@ -1573,6 +1643,31 @@ export default function TopicContributionLoop({
                       </div>
                     </>
                   ) : null}
+                </div>
+              ) : null}
+              {alternateHighlightedScoreReferences.length ? (
+                <div className={styles.focusReferenceBlock}>
+                  <span className={styles.sectionLabel}>
+                    {activeScoreLabel
+                      ? "Also used by scorecard"
+                      : "Scorecard items using this record"}
+                  </span>
+                  <div className={styles.summaryReferenceList}>
+                    {alternateHighlightedScoreReferences.map((reference) => (
+                      <a
+                        className={styles.summaryReferenceLink}
+                        href={getScoreReferenceHref(
+                          pathname,
+                          searchParams,
+                          reference.scoreLabel,
+                          reference.scoreSliceLabel,
+                        )}
+                        key={`hidden-focus-score-${highlightedContribution.id}-${reference.scoreLabel}-${reference.scoreSliceLabel}`}
+                      >
+                        {reference.scoreLabel} · {reference.scoreSliceLabel}
+                      </a>
+                    ))}
+                  </div>
                 </div>
               ) : null}
             </div>
@@ -1732,6 +1827,7 @@ export default function TopicContributionLoop({
               const changedCardValue =
                 item.review?.changedSynthesis ?? item.aiIntake?.changedSynthesisLikely;
               const summaryReferencesForItem = summaryReferences[item.id] ?? [];
+              const scoreReferencesForItem = scoreReferences[item.id] ?? [];
 
               return (
                 <article
@@ -1835,6 +1931,28 @@ export default function TopicContributionLoop({
                             key={`${item.id}-${reference.href}-${reference.label}`}
                           >
                             {reference.label}
+                          </a>
+                        ))}
+                      </div>
+                    </div>
+                  ) : null}
+
+                  {scoreReferencesForItem.length ? (
+                    <div className={styles.recordSection}>
+                      <span className={styles.sectionLabel}>Scorecard items using this record</span>
+                      <div className={styles.summaryReferenceList}>
+                        {scoreReferencesForItem.map((reference) => (
+                          <a
+                            className={styles.summaryReferenceLink}
+                            href={getScoreReferenceHref(
+                              pathname,
+                              searchParams,
+                              reference.scoreLabel,
+                              reference.scoreSliceLabel,
+                            )}
+                            key={`${item.id}-${reference.scoreLabel}-${reference.scoreSliceLabel}`}
+                          >
+                            {reference.scoreLabel} · {reference.scoreSliceLabel}
                           </a>
                         ))}
                       </div>
