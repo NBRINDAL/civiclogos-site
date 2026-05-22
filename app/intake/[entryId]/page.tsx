@@ -22,6 +22,7 @@ import {
   getPromptTimestamp,
 } from "@/app/lib/home-intake-prompt-history";
 import { getHomeIntakeHeldQuestions } from "@/app/lib/home-intake-held-questions";
+import { getHomeIntakeClosestMapPath } from "@/app/lib/home-intake-map-path";
 import { summarizeHomeIntakeRoutingConsensus } from "@/app/lib/home-intake-routing-consensus";
 import { getHomeIntakeEntry, getHomeIntakeStoreMetadata } from "@/app/lib/home-intake-store";
 import styles from "./page.module.css";
@@ -113,6 +114,7 @@ export default async function IntakeEntryPage({
     ? formatPromptDate(latestPrompt.createdAt)
     : undefined;
   const heldQuestions = getHomeIntakeHeldQuestions(entry.routing);
+  const closestMapPath = getHomeIntakeClosestMapPath(entry.routing);
   const routingConsensus = summarizeHomeIntakeRoutingConsensus(entry.routing);
 
   return (
@@ -252,6 +254,25 @@ export default async function IntakeEntryPage({
                     decides whether it belongs inside a current room or needs a new
                     room to exist.
                   </p>
+                  {closestMapPath ? (
+                    <div className={styles.closestMapPath}>
+                      <span>Closest current map path</span>
+                      <p>{closestMapPath.detail}</p>
+                      <div className={styles.actions}>
+                        <Link className={styles.secondaryAction} href={closestMapPath.roomHref}>
+                          Open closest current room
+                        </Link>
+                        {closestMapPath.topicHref ? (
+                          <Link
+                            className={styles.secondaryAction}
+                            href={closestMapPath.topicHref}
+                          >
+                            Open closest live card
+                          </Link>
+                        ) : null}
+                      </div>
+                    </div>
+                  ) : null}
                   <div className={styles.actions}>
                     <Link className={styles.primaryAction} href="/rooms#room-candidates">
                       Open room candidates

@@ -234,6 +234,29 @@
   text-transform: uppercase;
 }
 
+.closestMapPath {
+  display: grid;
+  gap: 10px;
+  margin-top: 14px;
+  padding: 16px 18px;
+  border: 1px solid rgba(18, 33, 39, 0.1);
+  border-radius: 20px;
+  background: rgba(255, 251, 245, 0.86);
+}
+
+.closestMapPath span {
+  color: var(--signal);
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.closestMapPath p {
+  color: var(--foreground);
+  line-height: 1.72;
+}
+
 .promptHistoryMeta {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));

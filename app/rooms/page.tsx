@@ -15,6 +15,7 @@ import {
   getPromptHistoryHref,
 } from "../lib/home-intake-prompt-history";
 import { getHomeIntakeHeldQuestions } from "../lib/home-intake-held-questions";
+import { getHomeIntakeClosestMapPath } from "../lib/home-intake-map-path";
 import { summarizeHomeIntakeRoutingConsensus } from "../lib/home-intake-routing-consensus";
 import { listHomeIntakeEntries } from "../lib/home-intake-store";
 import type { HomeIntakeRecord } from "../lib/home-intake-types";
@@ -240,6 +241,7 @@ export default async function RoomsPage({
                   entry.routing,
                   2,
                 );
+                const closestMapPath = getHomeIntakeClosestMapPath(entry.routing);
                 const routingConsensus = summarizeHomeIntakeRoutingConsensus(
                   entry.routing,
                 );
@@ -276,6 +278,29 @@ export default async function RoomsPage({
                           : "Still outside the active room map"}
                       </strong>
                     </div>
+
+                    {closestMapPath ? (
+                      <div className={styles.promptPressureNote}>
+                        <div className={styles.promptPressureMeta}>
+                          <span>Closest current map path</span>
+                          <strong>{closestMapPath.provenanceLabel}</strong>
+                        </div>
+                        <p>{closestMapPath.detail}</p>
+                        <div className={styles.roomActions}>
+                          <Link className={styles.roomSubLink} href={closestMapPath.roomHref}>
+                            Open closest current room
+                          </Link>
+                          {closestMapPath.topicHref ? (
+                            <Link
+                              className={styles.roomSubLink}
+                              href={closestMapPath.topicHref}
+                            >
+                              Open closest live card
+                            </Link>
+                          ) : null}
+                        </div>
+                      </div>
+                    ) : null}
 
                     {entry.routing.whyNotExistingRooms ? (
                       <div className={styles.promptPressureNote}>
