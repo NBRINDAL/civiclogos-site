@@ -595,8 +595,9 @@ function getSummaryReferenceHref(
   href: string,
   scoreLabel?: string,
   scoreSliceLabel?: string,
+  intakeId?: string,
 ) {
-  if (!scoreLabel && !scoreSliceLabel) {
+  if (!scoreLabel && !scoreSliceLabel && !intakeId) {
     return href;
   }
 
@@ -610,6 +611,10 @@ function getSummaryReferenceHref(
 
   if (scoreSliceLabel) {
     nextSearchParams.set("scoreSlice", scoreSliceLabel);
+  }
+
+  if (intakeId) {
+    nextSearchParams.set("intake", intakeId);
   }
 
   const nextQuery = nextSearchParams.toString();
@@ -972,6 +977,10 @@ export default function TopicContributionLoop({
   );
   const activeScoreSliceLabel = useMemo(
     () => searchParams.get("scoreSlice")?.trim() || undefined,
+    [searchParams],
+  );
+  const activeIntakeId = useMemo(
+    () => searchParams.get("intake")?.trim() || undefined,
     [searchParams],
   );
   const activeScoreRelatedSlices = useMemo(
@@ -1846,6 +1855,7 @@ export default function TopicContributionLoop({
                             highlightedSourceSummaryReference.href,
                             activeScoreLabel,
                             activeScoreSliceLabel,
+                            activeIntakeId,
                           )}
                         >
                           {highlightedSourceSummaryReference.label}
@@ -1864,6 +1874,7 @@ export default function TopicContributionLoop({
                               reference.href,
                               activeScoreLabel,
                               activeScoreSliceLabel,
+                              activeIntakeId,
                             )}
                             key={`focus-${highlightedVisibleContribution.id}-${reference.href}-${reference.label}`}
                           >
@@ -1940,6 +1951,7 @@ export default function TopicContributionLoop({
                             highlightedSourceSummaryReference.href,
                             activeScoreLabel,
                             activeScoreSliceLabel,
+                            activeIntakeId,
                           )}
                         >
                           {highlightedSourceSummaryReference.label}
@@ -1958,6 +1970,7 @@ export default function TopicContributionLoop({
                               reference.href,
                               activeScoreLabel,
                               activeScoreSliceLabel,
+                              activeIntakeId,
                             )}
                             key={`hidden-focus-${highlightedContribution.id}-${reference.href}-${reference.label}`}
                           >
@@ -2251,6 +2264,7 @@ export default function TopicContributionLoop({
                               reference.href,
                               activeScoreLabel,
                               activeScoreSliceLabel,
+                              activeIntakeId,
                             )}
                             key={`${item.id}-${reference.href}-${reference.label}`}
                           >
