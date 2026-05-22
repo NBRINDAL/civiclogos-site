@@ -119,6 +119,8 @@ export default async function Home({
     sourceExactRecordSummaryHref?: string | string[];
     sourceExactRecordScoreLabel?: string | string[];
     sourceExactRecordScoreHref?: string | string[];
+    sourceExactRecordScorePressureLabel?: string | string[];
+    sourceExactRecordScorePressureHref?: string | string[];
     sourceIntakeArtifactTitle?: string | string[];
     sourceIntakePromptCount?: string | string[];
     sourceIntakeHeldQuestionCount?: string | string[];
@@ -226,6 +228,18 @@ export default async function Home({
     .map((label, index) => ({
       label,
       href: sourceExactRecordScoreHrefs[index] ?? "",
+    }))
+    .filter((item): item is { label: string; href: string } => Boolean(item.href));
+  const sourceExactRecordScorePressureLabels = getAllValues(
+    resolvedSearchParams.sourceExactRecordScorePressureLabel,
+  );
+  const sourceExactRecordScorePressureHrefs = getAllValues(
+    resolvedSearchParams.sourceExactRecordScorePressureHref,
+  );
+  const sourceExactRecordScorePressureLinks = sourceExactRecordScorePressureLabels
+    .map((label, index) => ({
+      label,
+      href: sourceExactRecordScorePressureHrefs[index] ?? "",
     }))
     .filter((item): item is { label: string; href: string } => Boolean(item.href));
   const sourceIntakeArtifactTitle = getFirstValue(
@@ -353,6 +367,14 @@ export default async function Home({
           value: sourceExactRecordScoreLinks.map((item) => item.label).join(", "),
         }
       : null,
+    sourceExactRecordScorePressureLinks.length
+      ? {
+          label: "Open review pressure on linked scores",
+          value: sourceExactRecordScorePressureLinks
+            .map((item) => item.label)
+            .join(", "),
+        }
+      : null,
     sourceIntakeArtifactTitle
       ? { label: "Held artifact", value: sourceIntakeArtifactTitle }
       : null,
@@ -386,6 +408,10 @@ export default async function Home({
       href: item.href,
     })),
     ...sourceExactRecordScoreLinks.map((item) => ({
+      label: `Open ${item.label}`,
+      href: item.href,
+    })),
+    ...sourceExactRecordScorePressureLinks.map((item) => ({
       label: `Open ${item.label}`,
       href: item.href,
     })),
@@ -484,6 +510,11 @@ export default async function Home({
             : null,
           sourceExactRecordScoreLinks.length
             ? `- Scorecard use of this record: ${sourceExactRecordScoreLinks
+                .map((item) => item.label)
+                .join(", ")}`
+            : null,
+          sourceExactRecordScorePressureLinks.length
+            ? `- Open review pressure on linked scores: ${sourceExactRecordScorePressureLinks
                 .map((item) => item.label)
                 .join(", ")}`
             : null,

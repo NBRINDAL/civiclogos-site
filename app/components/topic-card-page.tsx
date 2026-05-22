@@ -1985,6 +1985,38 @@ export default async function TopicCardPage({
           institutionalPilotRecordContext.contribution.id
         ] ?? []
       : [];
+  const institutionalPilotRecordScorePressureLinks =
+    institutionalPilotRecordContext
+      ? institutionalPilotRecordScoreReferences.map((reference) => {
+          const scorePressureContext = scorePressureContexts[reference.scoreLabel];
+          const unresolvedContribution =
+            scorePressureContext?.latestUnresolvedContribution ?? null;
+          const unresolvedSliceLabel =
+            scorePressureContext?.latestUnresolvedSliceLabel ?? null;
+
+          if (unresolvedContribution && unresolvedSliceLabel) {
+            return {
+              label: `${reference.scoreLabel} · ${unresolvedSliceLabel} still unresolved`,
+              href: getExactContributionLedgerHref(
+                unresolvedContribution,
+                undefined,
+                reference.scoreLabel,
+                unresolvedSliceLabel,
+                activeIntakeContextId,
+              ),
+            };
+          }
+
+          return {
+            label: `${reference.scoreLabel} · No unresolved public pressure`,
+            href: getScoreItemHref(
+              reference.scoreLabel,
+              reference.scoreSliceLabel,
+              searchParams,
+            ),
+          };
+        })
+      : [];
   const activeHeldIntakeRelationship =
     topicIntakeMatchesCard && topicIntakeEntry
       ? topicIntakeEntry.routing.routeKind === "room-topic-draft"
@@ -2182,6 +2214,13 @@ export default async function TopicCardPage({
             reference.scoreSliceLabel,
             searchParams,
           )}`,
+        );
+      }
+      for (const link of institutionalPilotRecordScorePressureLinks.slice(0, 4)) {
+        params.append("sourceExactRecordScorePressureLabel", link.label);
+        params.append(
+          "sourceExactRecordScorePressureHref",
+          `${getRoomTopicHref(roomSlug, card.id)}${link.href}`,
         );
       }
     } else if (activeScoreLabel) {
@@ -3527,6 +3566,30 @@ export default async function TopicCardPage({
                               key={`${institutionalPilotRecordContext.contribution.id}-${reference.scoreLabel}-${reference.scoreSliceLabel}`}
                             >
                               {reference.scoreLabel} · {reference.scoreSliceLabel}
+                            </Link>
+                          ))}
+                        </div>
+                      </div>
+                    ) : null}
+                    {institutionalPilotRecordScorePressureLinks.length ? (
+                      <div className={styles.scoreTransparency}>
+                        <span className={styles.scoreTransparencyLabel}>
+                          Open review pressure on linked scores
+                        </span>
+                        <p>
+                          These score slices currently grounded by the
+                          pilot-facing record either show the newest unresolved
+                          public pressure that could still move them, or confirm
+                          that no unresolved pressure is currently linked.
+                        </p>
+                        <div className={styles.scoreSliceList}>
+                          {institutionalPilotRecordScorePressureLinks.map((link) => (
+                            <Link
+                              className={styles.scoreSliceLink}
+                              href={link.href}
+                              key={`${institutionalPilotRecordContext.contribution.id}-${link.label}`}
+                            >
+                              {link.label}
                             </Link>
                           ))}
                         </div>
