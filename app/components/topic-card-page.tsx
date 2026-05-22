@@ -15,6 +15,12 @@ import {
 } from "../lib/home-intake-artifact-links";
 import { getHomeIntakeHeldQuestions } from "../lib/home-intake-held-questions";
 import { getHomeIntakeClosestMapPath } from "../lib/home-intake-map-path";
+import {
+  formatPromptDate,
+  getLatestAttachedPrompt,
+  getPromptEvolution,
+  getPromptHistoryHref,
+} from "../lib/home-intake-prompt-history";
 import { getHomeIntakeEntry } from "../lib/home-intake-store";
 import type { HomeIntakeRecord } from "../lib/home-intake-types";
 import { topicCardVisibleContributionLimit } from "../lib/contribution-constants";
@@ -1286,6 +1292,18 @@ export default async function TopicCardPage({
   const topicIntakePromptCount = topicIntakeEntry
     ? topicIntakeEntry.promptCount ?? topicIntakeEntry.relatedPrompts?.length ?? 1
     : 0;
+  const topicIntakeLatestPrompt = topicIntakeEntry
+    ? getLatestAttachedPrompt(topicIntakeEntry)
+    : null;
+  const topicIntakeLatestPromptDate = topicIntakeLatestPrompt
+    ? formatPromptDate(topicIntakeLatestPrompt.createdAt)
+    : undefined;
+  const topicIntakePromptEvolution = topicIntakeEntry
+    ? getPromptEvolution(topicIntakeEntry)
+    : null;
+  const topicIntakePromptHistoryHref = topicIntakeEntry
+    ? getPromptHistoryHref(topicIntakeEntry)
+    : null;
   const topicIntakeMatchesCard = Boolean(
     topicIntakeEntry &&
       ((topicIntakeEntry.routing.roomSlug === roomSlug &&
@@ -1755,6 +1773,52 @@ export default async function TopicCardPage({
                     : "Routed into the current room map through the homepage intake flow."}
               </p>
             </div>
+            {topicIntakeHeldQuestions.length ? (
+              <div className={styles.intakePressureDetail}>
+                <div className={styles.intakePressureDetailMeta}>
+                  <span>Questions held here</span>
+                  <strong>Next inquiry</strong>
+                </div>
+                <ul className={styles.intakePressureQuestionList}>
+                  {topicIntakeHeldQuestions.map((question) => (
+                    <li
+                      className={styles.intakePressureQuestionItem}
+                      key={question.question}
+                    >
+                      <p>{question.question}</p>
+                      <span>{question.provenanceLabel}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ) : null}
+            {topicIntakeLatestPrompt ? (
+              <div className={styles.intakePressureDetail}>
+                <div className={styles.intakePressureDetailMeta}>
+                  <span>
+                    {topicIntakePromptCount > 1
+                      ? "Latest attached prompt"
+                      : "Current seed prompt"}
+                  </span>
+                  {topicIntakeLatestPromptDate ? (
+                    <strong>{topicIntakeLatestPromptDate}</strong>
+                  ) : null}
+                </div>
+                <p>{topicIntakeLatestPrompt.prompt}</p>
+              </div>
+            ) : null}
+            {topicIntakePromptEvolution ? (
+              <div className={styles.intakePressureEvolution}>
+                <div className={styles.intakePressureEvolutionItem}>
+                  <span>Started with</span>
+                  <p>{topicIntakePromptEvolution.earliest.prompt}</p>
+                </div>
+                <div className={styles.intakePressureEvolutionItem}>
+                  <span>Latest pressure</span>
+                  <p>{topicIntakePromptEvolution.latest.prompt}</p>
+                </div>
+              </div>
+            ) : null}
 
             <div className={styles.roomActions}>
               {topicIntakeArtifactHref ? (
@@ -1778,6 +1842,14 @@ export default async function TopicCardPage({
               >
                 Open routing AIs
               </Link>
+              {topicIntakePromptHistoryHref ? (
+                <Link
+                  className={styles.roomActionSecondary}
+                  href={topicIntakePromptHistoryHref}
+                >
+                  Open prompt history
+                </Link>
+              ) : null}
             </div>
           </section>
         ) : null}
@@ -2813,6 +2885,14 @@ export default async function TopicCardPage({
                   >
                     Open intake pressure notice
                   </Link>
+                  {topicIntakePromptHistoryHref ? (
+                    <Link
+                      className={styles.roomActionSecondary}
+                      href={topicIntakePromptHistoryHref}
+                    >
+                      Open prompt history
+                    </Link>
+                  ) : null}
                 </article>
               ) : null}
             </div>

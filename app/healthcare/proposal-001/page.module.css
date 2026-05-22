@@ -459,6 +459,91 @@
     0 24px 52px rgba(18, 33, 39, 0.1);
 }
 
+.intakePressureDetail {
+  display: grid;
+  gap: 10px;
+  margin-top: 16px;
+  padding: 16px 18px;
+  border: 1px solid rgba(18, 33, 39, 0.08);
+  border-radius: 20px;
+  background: rgba(255, 251, 245, 0.82);
+}
+
+.intakePressureDetail p {
+  color: var(--muted);
+  font-size: 0.94rem;
+  line-height: 1.66;
+}
+
+.intakePressureDetailMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+.intakePressureDetailMeta span,
+.intakePressureEvolutionItem span,
+.intakePressureQuestionItem span {
+  color: var(--signal);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.intakePressureDetailMeta strong {
+  color: var(--foreground);
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.intakePressureQuestionList {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.intakePressureQuestionItem {
+  display: grid;
+  gap: 6px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(18, 33, 39, 0.08);
+}
+
+.intakePressureQuestionItem:first-child {
+  padding-top: 0;
+  border-top: 0;
+}
+
+.intakePressureQuestionItem p {
+  color: var(--foreground);
+}
+
+.intakePressureEvolution {
+  display: grid;
+  gap: 14px;
+  margin-top: 16px;
+}
+
+.intakePressureEvolutionItem {
+  display: grid;
+  gap: 8px;
+  padding: 16px 18px;
+  border: 1px solid rgba(18, 33, 39, 0.08);
+  border-radius: 20px;
+  background: rgba(255, 251, 245, 0.82);
+}
+
+.intakePressureEvolutionItem p {
+  color: var(--foreground);
+  font-size: 0.94rem;
+  line-height: 1.66;
+}
+
 .scoreTransparencyLabel {
   color: var(--signal);
   font-size: 0.8rem;
