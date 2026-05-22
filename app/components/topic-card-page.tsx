@@ -109,6 +109,7 @@ type ScorePressureContext = {
 };
 
 type TopicCardIntakeContext = {
+  intakeId: string;
   routeKind: "existing-room" | "room-topic-draft" | "new-room-draft";
   artifactTitle: string;
   promptCount: number;
@@ -117,6 +118,13 @@ type TopicCardIntakeContext = {
   exactArtifactHref: string;
   intakeArtifactHref: string;
   routingHref: string;
+  promptHistoryHref?: string | null;
+  heldQuestions: Array<{ question: string; provenanceLabel: string }>;
+  latestPrompt?: {
+    label: string;
+    prompt: string;
+    date?: string;
+  } | null;
 };
 
 type TopicCardPageProps = {
@@ -356,6 +364,7 @@ function getTopicChatMessageHref(
   sourceSummary?: string,
   sourceScoreLabel?: string,
   sourceScoreSliceLabel?: string,
+  sourceIntakeId?: string,
 ) {
   const params = new URLSearchParams({
     chatMessage: messageId,
@@ -390,6 +399,10 @@ function getTopicChatMessageHref(
 
   if (sourceScoreSliceLabel) {
     params.set("sourceScoreSlice", sourceScoreSliceLabel);
+  }
+
+  if (sourceIntakeId) {
+    params.set("intake", sourceIntakeId);
   }
 
   return `?${params.toString()}#topic-chat-message-${messageId}`;
@@ -808,11 +821,13 @@ function ContributionAiOriginContext({
   sourceSummaryLabel,
   sourceScoreLabel,
   sourceScoreSliceLabel,
+  sourceIntakeId,
 }: {
   contribution: PublicContribution;
   sourceSummaryLabel?: string;
   sourceScoreLabel?: string;
   sourceScoreSliceLabel?: string;
+  sourceIntakeId?: string;
 }) {
   if (!contribution.draftSource) {
     return null;
@@ -834,6 +849,7 @@ function ContributionAiOriginContext({
               sourceSummaryLabel,
               sourceScoreLabel,
               sourceScoreSliceLabel,
+              sourceIntakeId,
             )}
           >
             Open source AI turn
@@ -1065,6 +1081,7 @@ function SummaryFocusNotice({
         sourceSummaryLabel={summaryLabel}
         sourceScoreLabel={activeScoreLabel}
         sourceScoreSliceLabel={activeScoreSliceLabel}
+        sourceIntakeId={activeIntakeId}
       />
       {scorePressureInterpretation ? (
         <div className={styles.summaryReferenceBlock}>
@@ -1326,6 +1343,7 @@ export default async function TopicCardPage({
   const topicContributionIntakeContext =
     topicIntakeMatchesCard && topicIntakeEntry && topicIntakeArtifactHref
       ? ({
+          intakeId: topicIntakeEntry.id,
           routeKind: topicIntakeEntry.routing.routeKind ?? "existing-room",
           artifactTitle:
             topicIntakeEntry.routing.suggestedTopicTitle ??
@@ -1337,6 +1355,18 @@ export default async function TopicCardPage({
           exactArtifactHref: topicIntakeArtifactHref,
           intakeArtifactHref: `/intake/${topicIntakeEntry.id}`,
           routingHref: `/intake/${topicIntakeEntry.id}#routing-ais`,
+          promptHistoryHref: topicIntakePromptHistoryHref,
+          heldQuestions: topicIntakeHeldQuestions,
+          latestPrompt: topicIntakeLatestPrompt
+            ? {
+                label:
+                  topicIntakePromptCount > 1
+                    ? "Latest attached prompt"
+                    : "Current seed prompt",
+                prompt: topicIntakeLatestPrompt.prompt,
+                date: topicIntakeLatestPromptDate,
+              }
+            : null,
         } satisfies TopicCardIntakeContext)
       : null;
   const contributorObjectionThatChangedCard = liveContributions.find(
@@ -2032,6 +2062,7 @@ export default async function TopicCardPage({
                             sourceScoreSliceLabel={
                               latestScoreContribution.slice.label
                             }
+                            sourceIntakeId={activeIntakeContextId}
                           />
                           {latestScoreInterpretation ? (
                             <div className={styles.scoreTransparency}>
@@ -2091,6 +2122,7 @@ export default async function TopicCardPage({
                                       sourceScoreSliceLabel={
                                         latestUnresolvedScoreContribution.slice.label
                                       }
+                                      sourceIntakeId={activeIntakeContextId}
                                     />
                                   </>
                                 )
@@ -2240,7 +2272,10 @@ export default async function TopicCardPage({
                         )}
                       </p>
                       <ContributionRecordContext contribution={item} recordView="changed-card" />
-                      <ContributionAiOriginContext contribution={item} />
+                      <ContributionAiOriginContext
+                        contribution={item}
+                        sourceIntakeId={activeIntakeContextId}
+                      />
                     </article>
                   ))}
                 </div>
@@ -2315,6 +2350,7 @@ export default async function TopicCardPage({
                   />
                   <ContributionAiOriginContext
                     contribution={contributorObjectionThatChangedCard}
+                    sourceIntakeId={activeIntakeContextId}
                   />
                 </>
               ) : strongestLiveContributorObjection ? (
@@ -2342,6 +2378,7 @@ export default async function TopicCardPage({
                   />
                   <ContributionAiOriginContext
                     contribution={strongestLiveContributorObjection}
+                    sourceIntakeId={activeIntakeContextId}
                   />
                 </>
               ) : (
@@ -2412,7 +2449,10 @@ export default async function TopicCardPage({
                         )}
                       </p>
                       <ContributionRecordContext contribution={item} recordView="changed-card" />
-                      <ContributionAiOriginContext contribution={item} />
+                      <ContributionAiOriginContext
+                        contribution={item}
+                        sourceIntakeId={activeIntakeContextId}
+                      />
                     </article>
                   ))}
                 </div>
@@ -2488,7 +2528,10 @@ export default async function TopicCardPage({
                             contribution={item}
                             recordView="document-backed"
                           />
-                          <ContributionAiOriginContext contribution={item} />
+                          <ContributionAiOriginContext
+                            contribution={item}
+                            sourceIntakeId={activeIntakeContextId}
+                          />
                           {document.extraction.note ? (
                             <p className={styles.metaParagraph}>
                               {document.extraction.note}
@@ -2562,7 +2605,10 @@ export default async function TopicCardPage({
                         )}
                       </p>
                       <ContributionRecordContext contribution={item} recordView="changed-card" />
-                      <ContributionAiOriginContext contribution={item} />
+                      <ContributionAiOriginContext
+                        contribution={item}
+                        sourceIntakeId={activeIntakeContextId}
+                      />
                     </article>
                   ))}
                 </div>
@@ -2610,7 +2656,10 @@ export default async function TopicCardPage({
                           )}
                         </p>
                         <ContributionRecordContext contribution={item} recordView="changed-card" />
-                        <ContributionAiOriginContext contribution={item} />
+                        <ContributionAiOriginContext
+                          contribution={item}
+                          sourceIntakeId={activeIntakeContextId}
+                        />
                       </article>
                     ))}
                 </div>
@@ -2670,7 +2719,10 @@ export default async function TopicCardPage({
                       recordView="needs-review"
                       targetLabel="Current record target"
                     />
-                    <ContributionAiOriginContext contribution={item} />
+                    <ContributionAiOriginContext
+                      contribution={item}
+                      sourceIntakeId={activeIntakeContextId}
+                    />
                   </article>
                 ))}
               </div>
@@ -2706,7 +2758,10 @@ export default async function TopicCardPage({
                         )}
                       </p>
                       <ContributionRecordContext contribution={item} recordView="changed-card" />
-                      <ContributionAiOriginContext contribution={item} />
+                      <ContributionAiOriginContext
+                        contribution={item}
+                        sourceIntakeId={activeIntakeContextId}
+                      />
                     </article>
                   ))}
                 </div>
@@ -2983,7 +3038,10 @@ export default async function TopicCardPage({
                             targetLabel="Current record target"
                             showReviewStatus
                           />
-                          <ContributionAiOriginContext contribution={item.latestUnresolved} />
+                          <ContributionAiOriginContext
+                            contribution={item.latestUnresolved}
+                            sourceIntakeId={activeIntakeContextId}
+                          />
                         </>
                       ) : (
                         <p>
@@ -3072,7 +3130,10 @@ export default async function TopicCardPage({
                           "Marked as changing the card.",
                         )}
                         <ContributionRecordContext contribution={item} recordView="changed-card" />
-                        <ContributionAiOriginContext contribution={item} />
+                        <ContributionAiOriginContext
+                          contribution={item}
+                          sourceIntakeId={activeIntakeContextId}
+                        />
                       </li>
                     ))}
                   </ul>
@@ -3124,7 +3185,10 @@ export default async function TopicCardPage({
                           recordView="needs-review"
                           targetLabel="Current record target"
                         />
-                        <ContributionAiOriginContext contribution={item} />
+                        <ContributionAiOriginContext
+                          contribution={item}
+                          sourceIntakeId={activeIntakeContextId}
+                        />
                       </li>
                     ))}
                   </ul>
@@ -3278,6 +3342,9 @@ export default async function TopicCardPage({
                                   item.draftSource.messageId,
                                   item,
                                   "AI-assisted record activity",
+                                  undefined,
+                                  undefined,
+                                  activeIntakeContextId,
                                 )}
                               >
                                 Open source AI turn
@@ -3377,7 +3444,10 @@ export default async function TopicCardPage({
                           Open public record entry
                         </Link>
                       </p>
-                      <ContributionAiOriginContext contribution={item} />
+                      <ContributionAiOriginContext
+                        contribution={item}
+                        sourceIntakeId={activeIntakeContextId}
+                      />
                     </article>
                   ))}
                 </div>
@@ -3427,6 +3497,7 @@ export default async function TopicCardPage({
           initialMessages={topicChatMessages}
           initialStoreMode={topicChatStoreMetadata.mode}
           initialStoreNote={topicChatStoreMetadata.note}
+          intakeContext={topicContributionIntakeContext}
           roomSlug={roomSlug}
           scorePressureContexts={scorePressureContexts}
           scoreReferences={contributionScoreReferences}
@@ -3548,7 +3619,10 @@ export default async function TopicCardPage({
                       )}
                     </p>
                     <ContributionRecordContext contribution={item} recordView="changed-card" />
-                    <ContributionAiOriginContext contribution={item} />
+                    <ContributionAiOriginContext
+                      contribution={item}
+                      sourceIntakeId={activeIntakeContextId}
+                    />
                   </article>
                 ))}
               </div>

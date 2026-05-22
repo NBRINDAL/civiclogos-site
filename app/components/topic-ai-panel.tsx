@@ -36,6 +36,7 @@ type TopicAiPanelProps = {
     string,
     Array<{ scoreLabel: string; scoreSliceLabel: string }>
   >;
+  intakeContext?: TopicAiIntakeContext | null;
   topicId: string;
   topicTitle: string;
 };
@@ -69,6 +70,25 @@ type ProviderRequest = "openai" | "anthropic" | "all";
 type TranscriptItem = {
   message: TopicChatMessage;
   sourceQuestion?: string;
+};
+
+type TopicAiIntakeContext = {
+  intakeId: string;
+  routeKind: "existing-room" | "room-topic-draft" | "new-room-draft";
+  artifactTitle: string;
+  promptCount: number;
+  heldQuestionCount: number;
+  pressureNoticeHref: string;
+  exactArtifactHref: string;
+  intakeArtifactHref: string;
+  routingHref: string;
+  promptHistoryHref?: string | null;
+  heldQuestions: Array<{ question: string; provenanceLabel: string }>;
+  latestPrompt?: {
+    label: string;
+    prompt: string;
+    date?: string;
+  } | null;
 };
 
 type PromotionAttachmentFilter =
@@ -123,6 +143,20 @@ function formatTimestamp(value: string) {
 
 function getProviderLabel(provider: TopicAiAnswer["provider"] | TopicAiIssue["provider"]) {
   return provider === "openai" ? "GPT AI" : "Claude AI";
+}
+
+function getIntakeContextPrimaryActionLabel(
+  routeKind: TopicAiIntakeContext["routeKind"],
+) {
+  switch (routeKind) {
+    case "room-topic-draft":
+      return "Open exact draft topic";
+    case "new-room-draft":
+      return "Open exact room candidate";
+    case "existing-room":
+    default:
+      return "Return to room intake context";
+  }
 }
 
 function getPromotionLabel(state: TopicChatPromotionState) {
@@ -301,7 +335,10 @@ function getPromotionContributionStatusFilter(
   return status === "needs review" ? "needs-review" : status;
 }
 
-function getContributionRecordHref(promotion: TopicChatPromotion) {
+function getContributionRecordHref(
+  promotion: TopicChatPromotion,
+  intakeId?: string,
+) {
   if (!promotion.contributionId) {
     return "#contribution-record";
   }
@@ -332,6 +369,10 @@ function getContributionRecordHref(promotion: TopicChatPromotion) {
 
   searchParams.set("attachment", getPromotionAttachmentFilter(promotion));
 
+  if (intakeId) {
+    searchParams.set("intake", intakeId);
+  }
+
   return `?${searchParams.toString()}#contribution-${promotion.contributionId}`;
 }
 
@@ -356,6 +397,7 @@ function getRecordViewHref(
   filter: "needs-review" | "ai-assisted",
   attachment?: PromotionAttachmentFilter,
   reviewStatus?: ContributionStatusFilter,
+  intakeId?: string,
 ) {
   const searchParams = new URLSearchParams({
     recordView: filter,
@@ -368,6 +410,10 @@ function getRecordViewHref(
 
   if (reviewStatus) {
     searchParams.set("reviewStatus", reviewStatus);
+  }
+
+  if (intakeId) {
+    searchParams.set("intake", intakeId);
   }
 
   return `?${searchParams.toString()}#contribution-record`;
@@ -391,6 +437,7 @@ function getSourceContributionRecordHref(searchParams: {
   const sourceSummary = searchParams.get("sourceSummary")?.trim();
   const sourceScoreLabel = searchParams.get("sourceScoreLabel")?.trim();
   const sourceScoreSlice = searchParams.get("sourceScoreSlice")?.trim();
+  const intakeId = searchParams.get("intake")?.trim();
 
   if (sourceRecordView) {
     nextSearchParams.set("recordView", sourceRecordView);
@@ -424,6 +471,10 @@ function getSourceContributionRecordHref(searchParams: {
     nextSearchParams.set("scoreSlice", sourceScoreSlice);
   }
 
+  if (intakeId) {
+    nextSearchParams.set("intake", intakeId);
+  }
+
   return `?${nextSearchParams.toString()}#contribution-${contributionId}`;
 }
 
@@ -445,11 +496,16 @@ function getSourceScoreHref(searchParams: {
 
   const nextSearchParams = new URLSearchParams();
   const sourceScoreSlice = searchParams.get("sourceScoreSlice")?.trim();
+  const intakeId = searchParams.get("intake")?.trim();
 
   nextSearchParams.set("scoreLabel", sourceScoreLabel);
 
   if (sourceScoreSlice) {
     nextSearchParams.set("scoreSlice", sourceScoreSlice);
+  }
+
+  if (intakeId) {
+    nextSearchParams.set("intake", intakeId);
   }
 
   return `?${nextSearchParams.toString()}#${getScoreAnchorId(sourceScoreLabel)}`;
@@ -458,12 +514,17 @@ function getSourceScoreHref(searchParams: {
 function getScoreItemHref(
   scoreLabel: string,
   scoreSliceLabel?: string,
+  intakeId?: string,
 ) {
   const nextSearchParams = new URLSearchParams();
   nextSearchParams.set("scoreLabel", scoreLabel);
 
   if (scoreSliceLabel) {
     nextSearchParams.set("scoreSlice", scoreSliceLabel);
+  }
+
+  if (intakeId) {
+    nextSearchParams.set("intake", intakeId);
   }
 
   return `?${nextSearchParams.toString()}#${getScoreAnchorId(scoreLabel)}`;
@@ -473,6 +534,7 @@ function getExactContributionRecordHref(
   contribution: PublicContribution,
   sourceScoreLabel?: string,
   sourceScoreSliceLabel?: string,
+  sourceIntakeId?: string,
 ) {
   const nextSearchParams = new URLSearchParams();
   const recordView = getContributionRecordView(contribution);
@@ -495,6 +557,10 @@ function getExactContributionRecordHref(
 
   if (sourceScoreSliceLabel) {
     nextSearchParams.set("scoreSlice", sourceScoreSliceLabel);
+  }
+
+  if (sourceIntakeId) {
+    nextSearchParams.set("intake", sourceIntakeId);
   }
 
   return `?${nextSearchParams.toString()}#contribution-${contribution.id}`;
@@ -546,6 +612,7 @@ export default function TopicAiPanel({
   roomSlug,
   scorePressureContexts = {},
   scoreReferences = {},
+  intakeContext = null,
   topicId,
   topicTitle,
 }: TopicAiPanelProps) {
@@ -563,6 +630,7 @@ export default function TopicAiPanel({
   const [storeNote, setStoreNote] = useState(initialStoreNote);
   const [isPending, startTransition] = useTransition();
   const searchParams = useSearchParams();
+  const activeIntakeId = searchParams.get("intake")?.trim() ?? intakeContext?.intakeId ?? "";
   const transcript = useMemo(() => buildTranscript(messages), [messages]);
   const sessionImpact = useMemo(() => getSessionImpact(messages), [messages]);
   const highlightedMessageId = searchParams.get("chatMessage")?.trim() ?? "";
@@ -758,6 +826,74 @@ export default function TopicAiPanel({
         <p>{storeNote}</p>
       </div>
 
+      {intakeContext ? (
+        <div className={styles.sourceTurnNotice}>
+          <div>
+            <span className={styles.sessionImpactLabel}>Held intake pressure</span>
+            <p>
+              This AI transcript is still being read under pressure from{" "}
+              <strong>{intakeContext.artifactTitle}</strong>, which is currently
+              holding {intakeContext.promptCount} prompt
+              {intakeContext.promptCount === 1 ? "" : "s"} and{" "}
+              {intakeContext.heldQuestionCount} question
+              {intakeContext.heldQuestionCount === 1 ? "" : "s"} in the intake layer.
+            </p>
+          </div>
+          {intakeContext.heldQuestions.length ? (
+            <div className={styles.sourceTurnActions}>
+              <span className={styles.sessionImpactLabel}>Questions held here</span>
+              <div className={styles.issueList}>
+                {intakeContext.heldQuestions.map((question) => (
+                  <p className={styles.issueItem} key={question.question}>
+                    <strong>{question.question}</strong>
+                    <br />
+                    {question.provenanceLabel}
+                  </p>
+                ))}
+              </div>
+            </div>
+          ) : null}
+          {intakeContext.latestPrompt ? (
+            <div className={styles.sourceTurnActions}>
+              <span className={styles.sessionImpactLabel}>
+                {intakeContext.latestPrompt.label}
+              </span>
+              <p className={styles.sourceRecordTitle}>
+                {intakeContext.latestPrompt.date ? (
+                  <>
+                    <strong>{intakeContext.latestPrompt.date}</strong>
+                    {" · "}
+                  </>
+                ) : null}
+                {intakeContext.latestPrompt.prompt}
+              </p>
+            </div>
+          ) : null}
+          <div className={styles.sourceTurnActions}>
+            <span className={styles.sessionImpactLabel}>Return paths</span>
+            <div className={styles.sessionTargetMap}>
+              <a className={styles.sessionTargetLink} href={intakeContext.pressureNoticeHref}>
+                Return to intake pressure notice
+              </a>
+              <a className={styles.sessionTargetLink} href={intakeContext.exactArtifactHref}>
+                {getIntakeContextPrimaryActionLabel(intakeContext.routeKind)}
+              </a>
+              <a className={styles.sessionTargetLink} href={intakeContext.intakeArtifactHref}>
+                Return to intake artifact
+              </a>
+              <a className={styles.sessionTargetLink} href={intakeContext.routingHref}>
+                Open routing AIs
+              </a>
+              {intakeContext.promptHistoryHref ? (
+                <a className={styles.sessionTargetLink} href={intakeContext.promptHistoryHref}>
+                  Open prompt history
+                </a>
+              ) : null}
+            </div>
+          </div>
+        </div>
+      ) : null}
+
       <div className={styles.transcriptBlock}>
         <div className={styles.transcriptHeader}>
           <div>
@@ -881,6 +1017,7 @@ export default function TopicAiPanel({
                                 sourceScorePressureContext.latestUnresolvedSliceLabel ??
                                 sourceScoreSliceLabel
                               ) || undefined,
+                              activeIntakeId || undefined,
                             )}
                           >
                             {sourceScorePressureContext.latestUnresolvedContribution.title}
@@ -915,6 +1052,7 @@ export default function TopicAiPanel({
                           href={getScoreItemHref(
                             reference.scoreLabel,
                             reference.scoreSliceLabel,
+                            activeIntakeId || undefined,
                           )}
                           key={`source-score-${reference.scoreLabel}-${reference.scoreSliceLabel}`}
                         >
@@ -1037,6 +1175,7 @@ export default function TopicAiPanel({
                                 sourceScorePressureContext.latestUnresolvedSliceLabel ??
                                 sourceScoreSliceLabel
                               ) || undefined,
+                              activeIntakeId || undefined,
                             )}
                           >
                             {sourceScorePressureContext.latestUnresolvedContribution.title}
@@ -1071,6 +1210,7 @@ export default function TopicAiPanel({
                           href={getScoreItemHref(
                             reference.scoreLabel,
                             reference.scoreSliceLabel,
+                            activeIntakeId || undefined,
                           )}
                           key={`missing-source-score-${reference.scoreLabel}-${reference.scoreSliceLabel}`}
                         >
@@ -1101,7 +1241,7 @@ export default function TopicAiPanel({
               <>
                 <a
                   className={styles.promotionLink}
-                  href={getRecordViewHref("ai-assisted")}
+                  href={getRecordViewHref("ai-assisted", undefined, undefined, activeIntakeId || undefined)}
                 >
                   Open AI-assisted ledger
                 </a>
@@ -1110,7 +1250,12 @@ export default function TopicAiPanel({
                     {sessionImpact.autoRecordedAttachmentCounts.map((item) => (
                       <a
                         className={styles.sessionTargetLink}
-                        href={getRecordViewHref("ai-assisted", item.attachment)}
+                        href={getRecordViewHref(
+                          "ai-assisted",
+                          item.attachment,
+                          undefined,
+                          activeIntakeId || undefined,
+                        )}
                         key={`auto-recorded-target-${item.attachment}`}
                       >
                         {item.label} {item.count}
@@ -1132,7 +1277,7 @@ export default function TopicAiPanel({
               <>
                 <a
                   className={styles.promotionLink}
-                  href={getRecordViewHref("needs-review")}
+                  href={getRecordViewHref("needs-review", undefined, undefined, activeIntakeId || undefined)}
                 >
                   Open needs-review ledger
                 </a>
@@ -1141,7 +1286,12 @@ export default function TopicAiPanel({
                     {sessionImpact.sentToReviewAttachmentCounts.map((item) => (
                       <a
                         className={styles.sessionTargetLink}
-                        href={getRecordViewHref("needs-review", item.attachment)}
+                        href={getRecordViewHref(
+                          "needs-review",
+                          item.attachment,
+                          undefined,
+                          activeIntakeId || undefined,
+                        )}
                         key={`sent-to-review-target-${item.attachment}`}
                       >
                         {item.label} {item.count}
@@ -1250,7 +1400,10 @@ export default function TopicAiPanel({
                       <div className={styles.promotionActions}>
                         <a
                           className={styles.promotionLink}
-                          href={getContributionRecordHref(item.message.promotion)}
+                          href={getContributionRecordHref(
+                            item.message.promotion,
+                            activeIntakeId || undefined,
+                          )}
                         >
                           View public record entry
                         </a>
