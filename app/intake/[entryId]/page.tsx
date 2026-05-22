@@ -87,7 +87,15 @@ export default async function IntakeEntryPage({
   const roomHref = entry.routing.roomSlug
     ? getRoomHref(entry.routing.roomSlug)
     : undefined;
+  const roomContextHref = roomHref
+    ? entry.routing.routeKind === "room-topic-draft"
+      ? `${roomHref}?intake=${entry.id}#draft-topics`
+      : `${roomHref}?intake=${entry.id}`
+    : undefined;
   const closestMapPath = getHomeIntakeClosestMapPath(entry.routing);
+  const closestRoomContextHref = closestMapPath
+    ? `${closestMapPath.roomHref}?intake=${entry.id}`
+    : undefined;
   const topicHref =
     closestMapPath?.topicHref ??
     (entry.routing.roomSlug && entry.routing.topicId
@@ -243,8 +251,8 @@ export default async function IntakeEntryPage({
                     </div>
                   ) : null}
                   <div className={styles.actions}>
-                    {roomHref ? (
-                      <Link className={styles.primaryAction} href={`${roomHref}#draft-topics`}>
+                    {roomContextHref ? (
+                      <Link className={styles.primaryAction} href={roomContextHref}>
                         Open host room
                       </Link>
                     ) : null}
@@ -269,7 +277,10 @@ export default async function IntakeEntryPage({
                       <span>Closest current map path</span>
                       <p>{closestMapPath.detail}</p>
                       <div className={styles.actions}>
-                        <Link className={styles.secondaryAction} href={closestMapPath.roomHref}>
+                        <Link
+                          className={styles.secondaryAction}
+                          href={closestRoomContextHref ?? closestMapPath.roomHref}
+                        >
                           Open closest current room
                         </Link>
                         {closestMapPath.topicHref ? (
@@ -373,14 +384,10 @@ export default async function IntakeEntryPage({
           ) : null}
 
           <div className={styles.actions}>
-            {roomHref ? (
+            {roomContextHref ? (
               <Link
                 className={styles.primaryAction}
-                href={
-                  entry.routing.routeKind === "room-topic-draft"
-                    ? `${roomHref}#draft-topics`
-                    : `${roomHref}?intake=${entry.id}`
-                }
+                href={roomContextHref}
               >
                 {entry.routing.routeKind === "room-topic-draft"
                   ? "Open host room"
@@ -392,8 +399,8 @@ export default async function IntakeEntryPage({
                 Open room candidates
               </Link>
             ) : null}
-            {entry.routing.routeKind === "room-topic-draft" && roomHref ? (
-              <Link className={styles.secondaryAction} href={`${roomHref}#draft-topics`}>
+            {entry.routing.routeKind === "room-topic-draft" && roomContextHref ? (
+              <Link className={styles.secondaryAction} href={roomContextHref}>
                 Open room draft topics
               </Link>
             ) : null}
@@ -522,8 +529,8 @@ export default async function IntakeEntryPage({
                             className={styles.secondaryAction}
                             href={
                               providerMapPath.routeKind === "room-topic-draft"
-                                ? `${providerMapPath.roomHref}#draft-topics`
-                                : providerMapPath.roomHref
+                                ? `${providerMapPath.roomHref}?intake=${entry.id}#draft-topics`
+                                : `${providerMapPath.roomHref}?intake=${entry.id}`
                             }
                           >
                             {providerMapPath.routeKind === "room-topic-draft"

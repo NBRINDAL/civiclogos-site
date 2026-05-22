@@ -3,6 +3,7 @@ import {
   getRoomTopicHref,
   type IssueRoomSlug,
 } from "../lib/civic-logos";
+import { getHomeIntakeClosestMapPath } from "../lib/home-intake-map-path";
 import type { HomeIntakeRecord } from "../lib/home-intake-types";
 import styles from "./intake-route-banner.module.css";
 
@@ -17,27 +18,71 @@ export default function IntakeRouteBanner({
   currentRoomSlug,
   entry,
 }: IntakeRouteBannerProps) {
-  if (
-    entry.routing.routeKind !== "existing-room" ||
-    entry.routing.roomSlug !== currentRoomSlug
-  ) {
+  const closestMapPath = getHomeIntakeClosestMapPath(entry.routing);
+  const isExistingRoomRoute =
+    entry.routing.routeKind === "existing-room" &&
+    entry.routing.roomSlug === currentRoomSlug;
+  const isDraftTopicPressure =
+    entry.routing.routeKind === "room-topic-draft" &&
+    entry.routing.roomSlug === currentRoomSlug;
+  const isNearestCurrentRoom =
+    entry.routing.routeKind === "new-room-draft" &&
+    closestMapPath?.roomSlug === currentRoomSlug;
+
+  if (!isExistingRoomRoute && !isDraftTopicPressure && !isNearestCurrentRoom) {
     return null;
   }
 
   const suggestedTopicHref =
-    entry.routing.topicId
+    closestMapPath?.topicHref ??
+    (entry.routing.topicId
       ? getRoomTopicHref(currentRoomSlug, entry.routing.topicId)
-      : undefined;
+      : undefined);
+  const intakeHref = `/intake/${entry.id}`;
+  const eyebrow = isExistingRoomRoute
+    ? "AI route"
+    : isDraftTopicPressure
+      ? "Draft topic pressure"
+      : "Nearest current room";
+  const title = isExistingRoomRoute
+    ? "This idea was routed into this room from the homepage intake."
+    : isDraftTopicPressure
+      ? "This room is currently holding this idea as a durable draft topic from the homepage intake."
+      : "This room is the nearest current map path for a room candidate still being held outside the active map.";
+  const summary = isNearestCurrentRoom
+    ? closestMapPath?.detail ??
+      entry.routing.fitSummary ??
+      "The active map still does not absorb this issue cleanly enough, but this room is currently the closest place it could belong."
+    : entry.routing.fitSummary ??
+      "The current room map judged this question to be a better fit here than in the other active rooms.";
+  const relationshipLabel = isExistingRoomRoute
+    ? "Suggested topic"
+    : isDraftTopicPressure
+      ? "Draft topic"
+      : "Current map path";
+  const relationshipValue = isExistingRoomRoute
+    ? entry.routing.topicTitle ??
+      entry.routing.suggestedTopicTitle ??
+      "Stay at room level"
+    : closestMapPath?.topicTitle ??
+      entry.routing.topicTitle ??
+      entry.routing.suggestedTopicTitle ??
+      (isDraftTopicPressure ? "Draft topic pressure" : "Closest current room");
+  const roomContextHref = isDraftTopicPressure
+    ? `${currentRoomHref}?intake=${entry.id}#draft-topics`
+    : `${currentRoomHref}?intake=${entry.id}`;
+  const roomContextLabel = isDraftTopicPressure
+    ? "Open room draft topics"
+    : isNearestCurrentRoom
+      ? "Open this room in context"
+      : "Stay in this room";
 
   return (
     <section className={styles.banner}>
       <div className={styles.copy}>
-        <span className={styles.eyebrow}>AI route</span>
-        <h2>This idea was routed into this room from the homepage intake.</h2>
-        <p className={styles.summary}>
-          {entry.routing.fitSummary ??
-            "The current room map judged this question to be a better fit here than in the other active rooms."}
-        </p>
+        <span className={styles.eyebrow}>{eyebrow}</span>
+        <h2>{title}</h2>
+        <p className={styles.summary}>{summary}</p>
         <blockquote className={styles.promptQuote}>
           <p>{entry.prompt}</p>
         </blockquote>
@@ -49,12 +94,8 @@ export default function IntakeRouteBanner({
           <strong>{entry.routing.routeConfidence ?? "working draft"}</strong>
         </div>
         <div className={styles.metaItem}>
-          <span>Suggested topic</span>
-          <strong>
-            {entry.routing.topicTitle ??
-              entry.routing.suggestedTopicTitle ??
-              "Stay at room level"}
-          </strong>
+          <span>{relationshipLabel}</span>
+          <strong>{relationshipValue}</strong>
         </div>
 
         {entry.routing.suggestedFirstQuestions?.length ? (
@@ -71,11 +112,16 @@ export default function IntakeRouteBanner({
         <div className={styles.actions}>
           {suggestedTopicHref ? (
             <Link className={styles.primaryAction} href={suggestedTopicHref}>
-              Open suggested topic
+              {isDraftTopicPressure || isNearestCurrentRoom
+                ? "Open closest live card"
+                : "Open suggested topic"}
             </Link>
           ) : null}
-          <Link className={styles.secondaryAction} href={currentRoomHref}>
-            Stay in this room
+          <Link className={styles.secondaryAction} href={roomContextHref}>
+            {roomContextLabel}
+          </Link>
+          <Link className={styles.secondaryAction} href={intakeHref}>
+            Open intake artifact
           </Link>
         </div>
       </div>

@@ -287,7 +287,10 @@ export default async function RoomsPage({
                         </div>
                         <p>{closestMapPath.detail}</p>
                         <div className={styles.roomActions}>
-                          <Link className={styles.roomSubLink} href={closestMapPath.roomHref}>
+                          <Link
+                            className={styles.roomSubLink}
+                            href={`${closestMapPath.roomHref}?intake=${entry.id}`}
+                          >
                             Open closest current room
                           </Link>
                           {closestMapPath.topicHref ? (
