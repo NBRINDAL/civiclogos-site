@@ -102,6 +102,17 @@ type ScorePressureContext = {
   latestUnresolvedSliceLabel: null | string;
 };
 
+type TopicCardIntakeContext = {
+  routeKind: "existing-room" | "room-topic-draft" | "new-room-draft";
+  artifactTitle: string;
+  promptCount: number;
+  heldQuestionCount: number;
+  pressureNoticeHref: string;
+  exactArtifactHref: string;
+  intakeArtifactHref: string;
+  routingHref: string;
+};
+
 type TopicCardPageProps = {
   roomSlug: IssueRoomSlug;
   card: TopicCardData;
@@ -175,6 +186,7 @@ function getContributionLedgerHref({
   sourceSummary,
   sourceScoreLabel,
   sourceScoreSliceLabel,
+  sourceIntakeId,
 }: {
   recordView?: ContributionRecordView;
   attachment?: ContributionAttachmentFilter;
@@ -185,6 +197,7 @@ function getContributionLedgerHref({
   sourceSummary?: string;
   sourceScoreLabel?: string;
   sourceScoreSliceLabel?: string;
+  sourceIntakeId?: string;
 }) {
   const params = new URLSearchParams();
 
@@ -218,6 +231,10 @@ function getContributionLedgerHref({
 
   if (sourceScoreSliceLabel) {
     params.set("scoreSlice", sourceScoreSliceLabel);
+  }
+
+  if (sourceIntakeId) {
+    params.set("intake", sourceIntakeId);
   }
 
   const query = params.toString();
@@ -385,6 +402,7 @@ function getExactContributionLedgerHref(
   sourceSummary?: string,
   sourceScoreLabel?: string,
   sourceScoreSliceLabel?: string,
+  sourceIntakeId?: string,
 ) {
   return getContributionLedgerHref({
     recordView: getContributionRecordView(contribution),
@@ -396,6 +414,7 @@ function getExactContributionLedgerHref(
     sourceSummary,
     sourceScoreLabel,
     sourceScoreSliceLabel,
+    sourceIntakeId,
   });
 }
 
@@ -411,6 +430,20 @@ function getContributionSummaryHref(
   return `?${params.toString()}${hash}`;
 }
 
+function getIntakeContextPrimaryActionLabel(
+  routeKind: TopicCardIntakeContext["routeKind"],
+) {
+  switch (routeKind) {
+    case "room-topic-draft":
+      return "Open exact draft topic";
+    case "new-room-draft":
+      return "Open exact room candidate";
+    case "existing-room":
+    default:
+      return "Return to room intake context";
+  }
+}
+
 function getScoreAnchorId(label: string) {
   return `score-${label
     .toLowerCase()
@@ -422,8 +455,9 @@ function getScoreAwareSummaryHref(
   href: string,
   sourceScoreLabel?: string,
   sourceScoreSliceLabel?: string,
+  intakeId?: string,
 ) {
-  if (!sourceScoreLabel && !sourceScoreSliceLabel) {
+  if (!sourceScoreLabel && !sourceScoreSliceLabel && !intakeId) {
     return href;
   }
 
@@ -437,6 +471,10 @@ function getScoreAwareSummaryHref(
 
   if (sourceScoreSliceLabel) {
     nextSearchParams.set("scoreSlice", sourceScoreSliceLabel);
+  }
+
+  if (intakeId) {
+    nextSearchParams.set("intake", intakeId);
   }
 
   const nextQuery = nextSearchParams.toString();
@@ -845,11 +883,13 @@ function addContributionScoreReference(
 function SummaryFocusNotice({
   activeSummaryLabel,
   activeSummaryRecordId,
+  activeIntakeId,
   activeScoreLabel,
   activeScoreSliceLabel,
   activeScoreLatestVisibleContribution,
   activeScoreLatestUnresolvedContribution,
   contribution,
+  intakeContext,
   ledgerHref,
   scoreReturnHref,
   scoreReferences,
@@ -859,6 +899,7 @@ function SummaryFocusNotice({
 }: {
   activeSummaryLabel?: string;
   activeSummaryRecordId?: string;
+  activeIntakeId?: string;
   activeScoreLabel?: string;
   activeScoreSliceLabel?: string;
   activeScoreLatestVisibleContribution?: {
@@ -870,6 +911,7 @@ function SummaryFocusNotice({
     slice: ScoreTransparencySlice;
   } | null;
   contribution: null | PublicContribution;
+  intakeContext?: TopicCardIntakeContext | null;
   ledgerHref: string;
   scoreReturnHref?: string;
   scoreReferences: ContributionScoreReference[];
@@ -908,6 +950,45 @@ function SummaryFocusNotice({
                   Return to {activeScoreSliceLabel}
                 </Link>
               ) : null}
+            </div>
+          </div>
+        ) : null}
+        {intakeContext ? (
+          <div className={styles.summaryReferenceBlock}>
+            <span className={styles.metaParagraph}>Held intake pressure</span>
+            <p className={styles.metaParagraph}>
+              This summary is still being read under pressure from{" "}
+              <strong>{intakeContext.artifactTitle}</strong>, which is currently
+              holding {intakeContext.promptCount} prompt
+              {intakeContext.promptCount === 1 ? "" : "s"} and{" "}
+              {intakeContext.heldQuestionCount} question
+              {intakeContext.heldQuestionCount === 1 ? "" : "s"} in the intake layer.
+            </p>
+            <div className={styles.summaryReferenceList}>
+              <Link
+                className={styles.summaryReferenceLink}
+                href={intakeContext.pressureNoticeHref}
+              >
+                Return to intake pressure notice
+              </Link>
+              <Link
+                className={styles.summaryReferenceLink}
+                href={intakeContext.exactArtifactHref}
+              >
+                {getIntakeContextPrimaryActionLabel(intakeContext.routeKind)}
+              </Link>
+              <Link
+                className={styles.summaryReferenceLink}
+                href={intakeContext.intakeArtifactHref}
+              >
+                Return to intake artifact
+              </Link>
+              <Link
+                className={styles.summaryReferenceLink}
+                href={intakeContext.routingHref}
+              >
+                Open routing AIs
+              </Link>
             </div>
           </div>
         ) : null}
@@ -960,6 +1041,7 @@ function SummaryFocusNotice({
               summaryLabel,
               activeScoreLabel,
               activeScoreSliceLabel,
+              activeIntakeId,
             )}
           >
             {contribution.title}
@@ -984,6 +1066,45 @@ function SummaryFocusNotice({
             {scorePressureInterpretation.label}
           </span>
           <p className={styles.metaParagraph}>{scorePressureInterpretation.note}</p>
+        </div>
+      ) : null}
+      {intakeContext ? (
+        <div className={styles.summaryReferenceBlock}>
+          <span className={styles.metaParagraph}>Held intake pressure</span>
+          <p className={styles.metaParagraph}>
+            This summary is still being read under pressure from{" "}
+            <strong>{intakeContext.artifactTitle}</strong>, which is currently
+            holding {intakeContext.promptCount} prompt
+            {intakeContext.promptCount === 1 ? "" : "s"} and{" "}
+            {intakeContext.heldQuestionCount} question
+            {intakeContext.heldQuestionCount === 1 ? "" : "s"} in the intake layer.
+          </p>
+          <div className={styles.summaryReferenceList}>
+            <Link
+              className={styles.summaryReferenceLink}
+              href={intakeContext.pressureNoticeHref}
+            >
+              Return to intake pressure notice
+            </Link>
+            <Link
+              className={styles.summaryReferenceLink}
+              href={intakeContext.exactArtifactHref}
+            >
+              {getIntakeContextPrimaryActionLabel(intakeContext.routeKind)}
+            </Link>
+            <Link
+              className={styles.summaryReferenceLink}
+              href={intakeContext.intakeArtifactHref}
+            >
+              Return to intake artifact
+            </Link>
+            <Link
+              className={styles.summaryReferenceLink}
+              href={intakeContext.routingHref}
+            >
+              Open routing AIs
+            </Link>
+          </div>
         </div>
       ) : null}
       {activeScoreLabel ? (
@@ -1032,6 +1153,7 @@ function SummaryFocusNotice({
                     summaryLabel,
                     activeScoreLabel,
                     activeScoreLatestUnresolvedContribution.slice.label,
+                    activeIntakeId,
                   )}
                 >
                   {activeScoreLatestUnresolvedContribution.contribution.title}
@@ -1058,6 +1180,7 @@ function SummaryFocusNotice({
               summaryLabel,
               activeScoreLabel,
               activeScoreSliceLabel,
+              activeIntakeId,
             )}
           >
             Open exact ledger entry
@@ -1075,6 +1198,7 @@ function SummaryFocusNotice({
                   reference.href,
                   activeScoreLabel,
                   activeScoreSliceLabel,
+                  activeIntakeId,
                 )}
                 key={`${reference.href}-${reference.label}`}
               >
@@ -1169,6 +1293,8 @@ export default async function TopicCardPage({
         (topicIntakeClosestMapPath?.roomSlug === roomSlug &&
           topicIntakeClosestMapPath.topicId === card.id)),
   );
+  const activeIntakeContextId =
+    topicIntakeMatchesCard && topicIntakeEntry ? topicIntakeEntry.id : undefined;
   const topicIntakeArtifactHref = topicIntakeEntry
     ? topicIntakeEntry.routing.routeKind === "room-topic-draft"
       ? getHomeIntakeDraftTopicsHref(roomHref, {
@@ -1181,7 +1307,7 @@ export default async function TopicCardPage({
     : null;
   const topicContributionIntakeContext =
     topicIntakeMatchesCard && topicIntakeEntry && topicIntakeArtifactHref
-      ? {
+      ? ({
           routeKind: topicIntakeEntry.routing.routeKind ?? "existing-room",
           artifactTitle:
             topicIntakeEntry.routing.suggestedTopicTitle ??
@@ -1193,7 +1319,7 @@ export default async function TopicCardPage({
           exactArtifactHref: topicIntakeArtifactHref,
           intakeArtifactHref: `/intake/${topicIntakeEntry.id}`,
           routingHref: `/intake/${topicIntakeEntry.id}#routing-ais`,
-        }
+        } satisfies TopicCardIntakeContext)
       : null;
   const contributorObjectionThatChangedCard = liveContributions.find(
     (item) => item.lane === "objection" && item.review?.changedSynthesis === true,
@@ -1530,6 +1656,22 @@ export default async function TopicCardPage({
     activeSummaryRecordId ? contributionSummaryReferences[activeSummaryRecordId] ?? [] : [];
   const summaryFocusedScoreReferences =
     activeSummaryRecordId ? contributionScoreReferences[activeSummaryRecordId] ?? [] : [];
+  const summaryFocusNoticeProps = {
+    activeSummaryLabel,
+    activeSummaryRecordId,
+    activeIntakeId: activeIntakeContextId,
+    activeScoreLabel,
+    activeScoreSliceLabel,
+    activeScoreLatestVisibleContribution,
+    activeScoreLatestUnresolvedContribution,
+    contribution: summaryFocusedContribution,
+    intakeContext: topicContributionIntakeContext,
+    ledgerHref: summaryFocusLedgerHref,
+    scoreReturnHref: scoreFocusHref,
+    scoreReferences: summaryFocusedScoreReferences,
+    searchParams,
+    summaryReferences: summaryFocusedReferences,
+  };
 
   return (
     <div className={styles.page}>
@@ -1648,41 +1790,13 @@ export default async function TopicCardPage({
 
             <div className={styles.copyBlock} id="assumption-layer">
               <h3>The problem it is trying to solve</h3>
-              <SummaryFocusNotice
-                activeSummaryLabel={activeSummaryLabel}
-                activeSummaryRecordId={activeSummaryRecordId}
-                activeScoreLabel={activeScoreLabel}
-                activeScoreSliceLabel={activeScoreSliceLabel}
-                activeScoreLatestVisibleContribution={activeScoreLatestVisibleContribution}
-                activeScoreLatestUnresolvedContribution={activeScoreLatestUnresolvedContribution}
-                contribution={summaryFocusedContribution}
-                ledgerHref={summaryFocusLedgerHref}
-                scoreReturnHref={scoreFocusHref}
-                scoreReferences={summaryFocusedScoreReferences}
-                searchParams={searchParams}
-                summaryReferences={summaryFocusedReferences}
-                summaryLabel="Assumption layer"
-              />
+              <SummaryFocusNotice {...summaryFocusNoticeProps} summaryLabel="Assumption layer" />
               <p>{card.problemStatement}</p>
             </div>
 
             <div className={styles.copyBlock} id="objection-layer">
               <h3>The proposed move</h3>
-              <SummaryFocusNotice
-                activeSummaryLabel={activeSummaryLabel}
-                activeSummaryRecordId={activeSummaryRecordId}
-                activeScoreLabel={activeScoreLabel}
-                activeScoreSliceLabel={activeScoreSliceLabel}
-                activeScoreLatestVisibleContribution={activeScoreLatestVisibleContribution}
-                activeScoreLatestUnresolvedContribution={activeScoreLatestUnresolvedContribution}
-                contribution={summaryFocusedContribution}
-                ledgerHref={summaryFocusLedgerHref}
-                scoreReturnHref={scoreFocusHref}
-                scoreReferences={summaryFocusedScoreReferences}
-                searchParams={searchParams}
-                summaryReferences={summaryFocusedReferences}
-                summaryLabel="Objection layer"
-              />
+              <SummaryFocusNotice {...summaryFocusNoticeProps} summaryLabel="Objection layer" />
               <p>{card.proposedSolution}</p>
             </div>
           </article>
@@ -1800,6 +1914,7 @@ export default async function TopicCardPage({
                                   lane: slice.lane,
                                   sourceScoreLabel: item.label,
                                   sourceScoreSliceLabel: slice.label,
+                                  sourceIntakeId: activeIntakeContextId,
                                 })}
                               >
                                 {slice.label} · {slice.count}
@@ -1823,6 +1938,7 @@ export default async function TopicCardPage({
                                   undefined,
                                   item.label,
                                   latestScoreContribution.slice.label,
+                                  activeIntakeContextId,
                                 )}
                               >
                                 {latestScoreContribution.contribution.title}
@@ -1878,6 +1994,7 @@ export default async function TopicCardPage({
                                             undefined,
                                             item.label,
                                             latestUnresolvedScoreContribution.slice.label,
+                                            activeIntakeContextId,
                                           )}
                                         >
                                           {latestUnresolvedScoreContribution.contribution.title}
@@ -1961,6 +2078,7 @@ export default async function TopicCardPage({
                                       reference.href,
                                       item.label,
                                       latestScoreContribution.slice.label,
+                                      activeIntakeContextId,
                                     )}
                                     key={`${item.label}-${latestScoreContribution.contribution.id}-${reference.label}`}
                                   >
@@ -1992,21 +2110,7 @@ export default async function TopicCardPage({
 
             <div className={styles.copyBlock} id="evidence-layer">
               <h3>Expected upside</h3>
-              <SummaryFocusNotice
-                activeSummaryLabel={activeSummaryLabel}
-                activeSummaryRecordId={activeSummaryRecordId}
-                activeScoreLabel={activeScoreLabel}
-                activeScoreSliceLabel={activeScoreSliceLabel}
-                activeScoreLatestVisibleContribution={activeScoreLatestVisibleContribution}
-                activeScoreLatestUnresolvedContribution={activeScoreLatestUnresolvedContribution}
-                contribution={summaryFocusedContribution}
-                ledgerHref={summaryFocusLedgerHref}
-                scoreReturnHref={scoreFocusHref}
-                scoreReferences={summaryFocusedScoreReferences}
-                searchParams={searchParams}
-                summaryReferences={summaryFocusedReferences}
-                summaryLabel="Evidence layer"
-              />
+              <SummaryFocusNotice {...summaryFocusNoticeProps} summaryLabel="Evidence layer" />
               <ul className={styles.bulletList}>
                 {card.benefits.map((item) => (
                   <li key={item}>{item}</li>
@@ -2027,18 +2131,7 @@ export default async function TopicCardPage({
             <div className={styles.copyBlock} id="document-evidence-record">
               <h3>Stakeholders already in the blast radius</h3>
               <SummaryFocusNotice
-                activeSummaryLabel={activeSummaryLabel}
-                activeSummaryRecordId={activeSummaryRecordId}
-                activeScoreLabel={activeScoreLabel}
-                activeScoreSliceLabel={activeScoreSliceLabel}
-                activeScoreLatestVisibleContribution={activeScoreLatestVisibleContribution}
-                activeScoreLatestUnresolvedContribution={activeScoreLatestUnresolvedContribution}
-                contribution={summaryFocusedContribution}
-                ledgerHref={summaryFocusLedgerHref}
-                scoreReturnHref={scoreFocusHref}
-                scoreReferences={summaryFocusedScoreReferences}
-                searchParams={searchParams}
-                summaryReferences={summaryFocusedReferences}
+                {...summaryFocusNoticeProps}
                 summaryLabel="Visible evidence record"
               />
               <div className={styles.tagList}>
@@ -2102,18 +2195,7 @@ export default async function TopicCardPage({
             <span className={styles.eyebrow}>Stress test</span>
             <h2>Where the topic could fail or misfire</h2>
             <SummaryFocusNotice
-              activeSummaryLabel={activeSummaryLabel}
-              activeSummaryRecordId={activeSummaryRecordId}
-              activeScoreLabel={activeScoreLabel}
-              activeScoreSliceLabel={activeScoreSliceLabel}
-              activeScoreLatestVisibleContribution={activeScoreLatestVisibleContribution}
-              activeScoreLatestUnresolvedContribution={activeScoreLatestUnresolvedContribution}
-              contribution={summaryFocusedContribution}
-              ledgerHref={summaryFocusLedgerHref}
-              scoreReturnHref={scoreFocusHref}
-              scoreReferences={summaryFocusedScoreReferences}
-              searchParams={searchParams}
-              summaryReferences={summaryFocusedReferences}
+              {...summaryFocusNoticeProps}
               summaryLabel="Review-driven record"
             />
             <ul className={styles.bulletList}>
@@ -2125,18 +2207,7 @@ export default async function TopicCardPage({
             <div className={styles.copyBlock} id="open-question-layer">
               <h3>Anticipated objection</h3>
               <SummaryFocusNotice
-                activeSummaryLabel={activeSummaryLabel}
-                activeSummaryRecordId={activeSummaryRecordId}
-                activeScoreLabel={activeScoreLabel}
-                activeScoreSliceLabel={activeScoreSliceLabel}
-                activeScoreLatestVisibleContribution={activeScoreLatestVisibleContribution}
-                activeScoreLatestUnresolvedContribution={activeScoreLatestUnresolvedContribution}
-                contribution={summaryFocusedContribution}
-                ledgerHref={summaryFocusLedgerHref}
-                scoreReturnHref={scoreFocusHref}
-                scoreReferences={summaryFocusedScoreReferences}
-                searchParams={searchParams}
-                summaryReferences={summaryFocusedReferences}
+                {...summaryFocusNoticeProps}
                 summaryLabel="Open-question layer"
               />
               <p>{card.anticipatedObjection ?? card.strongestObjection}</p>
@@ -2387,21 +2458,7 @@ export default async function TopicCardPage({
           <article className={styles.panel}>
             <span className={styles.eyebrow}>Review-driven record</span>
             <h2>Human review should change the visible object, not just the queue.</h2>
-            <SummaryFocusNotice
-              activeSummaryLabel={activeSummaryLabel}
-              activeSummaryRecordId={activeSummaryRecordId}
-              activeScoreLabel={activeScoreLabel}
-              activeScoreSliceLabel={activeScoreSliceLabel}
-              activeScoreLatestVisibleContribution={activeScoreLatestVisibleContribution}
-              activeScoreLatestUnresolvedContribution={activeScoreLatestUnresolvedContribution}
-              contribution={summaryFocusedContribution}
-              ledgerHref={summaryFocusLedgerHref}
-              scoreReturnHref={scoreFocusHref}
-              scoreReferences={summaryFocusedScoreReferences}
-              searchParams={searchParams}
-              summaryReferences={summaryFocusedReferences}
-              summaryLabel="Open pressure"
-            />
+            <SummaryFocusNotice {...summaryFocusNoticeProps} summaryLabel="Open pressure" />
             <p>
               These are the reviewed outside contributions that have already been
               marked as changing the card&apos;s public reasoning record.
@@ -2409,21 +2466,7 @@ export default async function TopicCardPage({
 
             <div className={styles.copyBlock} id="pressure-by-lane">
               <h3>Assumptions now under live pressure</h3>
-              <SummaryFocusNotice
-                activeSummaryLabel={activeSummaryLabel}
-                activeSummaryRecordId={activeSummaryRecordId}
-                activeScoreLabel={activeScoreLabel}
-                activeScoreSliceLabel={activeScoreSliceLabel}
-                activeScoreLatestVisibleContribution={activeScoreLatestVisibleContribution}
-                activeScoreLatestUnresolvedContribution={activeScoreLatestUnresolvedContribution}
-                contribution={summaryFocusedContribution}
-                ledgerHref={summaryFocusLedgerHref}
-                scoreReturnHref={scoreFocusHref}
-                scoreReferences={summaryFocusedScoreReferences}
-                searchParams={searchParams}
-                summaryReferences={summaryFocusedReferences}
-                summaryLabel="Pressure by lane"
-              />
+              <SummaryFocusNotice {...summaryFocusNoticeProps} summaryLabel="Pressure by lane" />
               {incorporatedAssumptions.length ? (
                 <div className={styles.historyList}>
                   {incorporatedAssumptions.slice(0, 3).map((item) => (
@@ -2928,18 +2971,7 @@ export default async function TopicCardPage({
                 <div className={styles.copyBlock}>
                   <h3>Most recent contributor-driven card changes</h3>
                   <SummaryFocusNotice
-                    activeSummaryLabel={activeSummaryLabel}
-                    activeSummaryRecordId={activeSummaryRecordId}
-                    activeScoreLabel={activeScoreLabel}
-                    activeScoreSliceLabel={activeScoreSliceLabel}
-                    activeScoreLatestVisibleContribution={activeScoreLatestVisibleContribution}
-                    activeScoreLatestUnresolvedContribution={activeScoreLatestUnresolvedContribution}
-                    contribution={summaryFocusedContribution}
-                    ledgerHref={summaryFocusLedgerHref}
-                    scoreReturnHref={scoreFocusHref}
-                    scoreReferences={summaryFocusedScoreReferences}
-                    searchParams={searchParams}
-                    summaryReferences={summaryFocusedReferences}
+                    {...summaryFocusNoticeProps}
                     summaryLabel="Manual cycle - Changed card"
                   />
                   <ul className={styles.bulletList}>
@@ -2988,18 +3020,7 @@ export default async function TopicCardPage({
             <div className={styles.copyBlock}>
               <h3>Needs maintainer attention</h3>
               <SummaryFocusNotice
-                activeSummaryLabel={activeSummaryLabel}
-                activeSummaryRecordId={activeSummaryRecordId}
-                activeScoreLabel={activeScoreLabel}
-                activeScoreSliceLabel={activeScoreSliceLabel}
-                activeScoreLatestVisibleContribution={activeScoreLatestVisibleContribution}
-                activeScoreLatestUnresolvedContribution={activeScoreLatestUnresolvedContribution}
-                contribution={summaryFocusedContribution}
-                ledgerHref={summaryFocusLedgerHref}
-                scoreReturnHref={scoreFocusHref}
-                scoreReferences={summaryFocusedScoreReferences}
-                searchParams={searchParams}
-                summaryReferences={summaryFocusedReferences}
+                {...summaryFocusNoticeProps}
                 summaryLabel="Manual cycle - Needs attention"
               />
               {needsAttentionContributions.length ? (
@@ -3048,18 +3069,7 @@ export default async function TopicCardPage({
             <div className={styles.copyBlock}>
               <h3>AI-assisted record activity</h3>
               <SummaryFocusNotice
-                activeSummaryLabel={activeSummaryLabel}
-                activeSummaryRecordId={activeSummaryRecordId}
-                activeScoreLabel={activeScoreLabel}
-                activeScoreSliceLabel={activeScoreSliceLabel}
-                activeScoreLatestVisibleContribution={activeScoreLatestVisibleContribution}
-                activeScoreLatestUnresolvedContribution={activeScoreLatestUnresolvedContribution}
-                contribution={summaryFocusedContribution}
-                ledgerHref={summaryFocusLedgerHref}
-                scoreReturnHref={scoreFocusHref}
-                scoreReferences={summaryFocusedScoreReferences}
-                searchParams={searchParams}
-                summaryReferences={summaryFocusedReferences}
+                {...summaryFocusNoticeProps}
                 summaryLabel="AI-assisted record activity"
               />
               {assistedRecordContributions.length ? (
@@ -3229,18 +3239,7 @@ export default async function TopicCardPage({
             <div className={styles.copyBlock}>
               <h3>Recent human review decisions</h3>
               <SummaryFocusNotice
-                activeSummaryLabel={activeSummaryLabel}
-                activeSummaryRecordId={activeSummaryRecordId}
-                activeScoreLabel={activeScoreLabel}
-                activeScoreSliceLabel={activeScoreSliceLabel}
-                activeScoreLatestVisibleContribution={activeScoreLatestVisibleContribution}
-                activeScoreLatestUnresolvedContribution={activeScoreLatestUnresolvedContribution}
-                contribution={summaryFocusedContribution}
-                ledgerHref={summaryFocusLedgerHref}
-                scoreReturnHref={scoreFocusHref}
-                scoreReferences={summaryFocusedScoreReferences}
-                searchParams={searchParams}
-                summaryReferences={summaryFocusedReferences}
+                {...summaryFocusNoticeProps}
                 summaryLabel="Recent human review decisions"
               />
               {reviewedContributions.length ? (
@@ -3437,18 +3436,7 @@ export default async function TopicCardPage({
           <div className={styles.copyBlock} id="contribution-driven-trace">
             <h3>Contribution-driven trace</h3>
             <SummaryFocusNotice
-              activeSummaryLabel={activeSummaryLabel}
-              activeSummaryRecordId={activeSummaryRecordId}
-              activeScoreLabel={activeScoreLabel}
-              activeScoreSliceLabel={activeScoreSliceLabel}
-              activeScoreLatestVisibleContribution={activeScoreLatestVisibleContribution}
-              activeScoreLatestUnresolvedContribution={activeScoreLatestUnresolvedContribution}
-              contribution={summaryFocusedContribution}
-              ledgerHref={summaryFocusLedgerHref}
-              scoreReturnHref={scoreFocusHref}
-              scoreReferences={summaryFocusedScoreReferences}
-              searchParams={searchParams}
-              summaryReferences={summaryFocusedReferences}
+              {...summaryFocusNoticeProps}
               summaryLabel="Contribution-driven trace"
             />
             {changedCardContributions.length ? (
