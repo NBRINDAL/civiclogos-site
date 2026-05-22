@@ -914,6 +914,8 @@ export default async function TopicCardPage({
     roomSlug === "institutional-trust" && card.id === "topic-001";
   const activeSummaryRecordId = getSingleSearchParamValue(searchParams?.summaryRecord)?.trim();
   const activeSummaryLabel = getSingleSearchParamValue(searchParams?.summaryLabel)?.trim();
+  const activeScoreLabel = getSingleSearchParamValue(searchParams?.scoreLabel)?.trim();
+  const activeScoreSliceLabel = getSingleSearchParamValue(searchParams?.scoreSlice)?.trim();
   const summaryFocusLedgerHref = getSummaryFocusLedgerHref(searchParams);
   const summaryFocusedContribution =
     activeSummaryRecordId
@@ -1014,6 +1016,7 @@ export default async function TopicCardPage({
 
             <div className={styles.scoreList}>
               {card.scorecard.map((item) => {
+                const isScoreFocused = activeScoreLabel === item.label;
                 const relatedSlices = getScoreTransparencySliceDefinitions(item.label).map(
                   (slice) => ({
                     ...slice,
@@ -1032,7 +1035,11 @@ export default async function TopicCardPage({
 
                 return (
                   <div
-                    className={styles.scoreItem}
+                    className={
+                      isScoreFocused
+                        ? `${styles.scoreItem} ${styles.scoreItemFocused}`
+                        : styles.scoreItem
+                    }
                     id={getScoreAnchorId(item.label)}
                     key={item.label}
                   >
@@ -1043,8 +1050,32 @@ export default async function TopicCardPage({
                     <div className={styles.scoreTrack}>
                       <span style={{ width: `${item.value}%` }} />
                     </div>
-                    <details className={styles.scoreDetails}>
+                    <details className={styles.scoreDetails} open={isScoreFocused}>
                       <summary>How this was scored</summary>
+                      {isScoreFocused ? (
+                        <div className={styles.scoreFocusNotice}>
+                          <span className={styles.scoreTransparencyLabel}>
+                            Returned from public record
+                          </span>
+                          <p>
+                            This score was reopened through the slice{" "}
+                            <strong>
+                              {activeScoreSliceLabel ?? "linked public record"}
+                            </strong>
+                            . Use the related record below to challenge or refine the
+                            score, or return to that exact ledger view.
+                          </p>
+                          <div className={styles.scoreSliceList}>
+                            <Link
+                              className={styles.scoreSliceLink}
+                              href={summaryFocusLedgerHref}
+                            >
+                              Return to{" "}
+                              {activeScoreSliceLabel ?? "current ledger slice"}
+                            </Link>
+                          </div>
+                        </div>
+                      ) : null}
                       <p>
                         {item.basis ??
                           "Provisional founder estimate pending a public scoring rubric and challenge workflow."}
