@@ -115,6 +115,7 @@ type PilotRecordContext = {
   publicUptakeLabel: string;
   publicUptakeNote: string;
   publicUptakeContribution: PublicContribution | null;
+  publicUptakeLinks: ContributionSummaryReference[];
 };
 
 type TopicCardIntakeContext = {
@@ -282,6 +283,12 @@ function getPilotInquiryRecordContext({
     sliceLabel: string,
   ): PilotRecordContext => {
     const origin = getContributionOrigin(contribution);
+    const publicSubmissionCount = liveContributions.filter(
+      (item) => getContributionOrigin(item) === "human-submitted",
+    ).length;
+    const aiOriginCount = liveContributions.filter(
+      (item) => getContributionOrigin(item) === "ai-origin",
+    ).length;
     const visibleNonSeedContributions = sortPilotCandidates(
       liveContributions.filter(
         (item) => getContributionOrigin(item) !== "seed-example",
@@ -294,6 +301,16 @@ function getPilotInquiryRecordContext({
       visibleNonSeedContributions[0] ?? null;
     const strongestReviewedNonSeedContribution =
       reviewedNonSeedContributions[0] ?? null;
+    const publicUptakeLinks = [
+      {
+        label: `Public submissions · ${publicSubmissionCount}`,
+        href: getContributionLedgerHref({ origin: "human-submitted" }),
+      },
+      {
+        label: `AI-origin record · ${aiOriginCount}`,
+        href: getContributionLedgerHref({ origin: "ai-origin" }),
+      },
+    ] satisfies ContributionSummaryReference[];
     const hasReviewedNonSeedRecord = liveContributions.some(
       (item) => getContributionOrigin(item) !== "seed-example" && item.review?.reviewedAt,
     );
@@ -338,6 +355,7 @@ function getPilotInquiryRecordContext({
         publicUptakeLabel,
         publicUptakeNote,
         publicUptakeContribution,
+        publicUptakeLinks,
       };
     }
 
@@ -350,6 +368,7 @@ function getPilotInquiryRecordContext({
         publicUptakeLabel,
         publicUptakeNote,
         publicUptakeContribution,
+        publicUptakeLinks,
       };
     }
 
@@ -361,6 +380,7 @@ function getPilotInquiryRecordContext({
       publicUptakeLabel,
       publicUptakeNote,
       publicUptakeContribution,
+      publicUptakeLinks,
     };
   };
 
@@ -2056,6 +2076,13 @@ export default async function TopicCardPage({
         "sourceExactRecordPublicUptakeNote",
         institutionalPilotRecordContext.publicUptakeNote,
       );
+      for (const link of institutionalPilotRecordContext.publicUptakeLinks.slice(0, 4)) {
+        params.append("sourceExactRecordPublicUptakeLinkLabel", link.label);
+        params.append(
+          "sourceExactRecordPublicUptakeLinkHref",
+          `${getRoomTopicHref(roomSlug, card.id)}${link.href}`,
+        );
+      }
       params.set(
         "sourceExactRecordOrigin",
         getContributionOriginLabel(
@@ -3420,6 +3447,19 @@ export default async function TopicCardPage({
                           >
                             Open public uptake record
                           </Link>
+                        </div>
+                      ) : null}
+                      {institutionalPilotRecordContext.publicUptakeLinks.length ? (
+                        <div className={styles.scoreSliceList}>
+                          {institutionalPilotRecordContext.publicUptakeLinks.map((link) => (
+                            <Link
+                              className={styles.scoreSliceLink}
+                              href={link.href}
+                              key={`${institutionalPilotRecordContext.contribution.id}-${link.label}`}
+                            >
+                              {link.label}
+                            </Link>
+                          ))}
                         </div>
                       ) : null}
                     </div>

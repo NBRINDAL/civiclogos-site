@@ -105,6 +105,8 @@ export default async function Home({
     sourceExactRecordPublicUptakeLabel?: string | string[];
     sourceExactRecordPublicUptakeNote?: string | string[];
     sourceExactRecordPublicUptakeHref?: string | string[];
+    sourceExactRecordPublicUptakeLinkLabel?: string | string[];
+    sourceExactRecordPublicUptakeLinkHref?: string | string[];
     sourceExactRecordOrigin?: string | string[];
     sourceExactRecordSlice?: string | string[];
     sourceExactRecordTarget?: string | string[];
@@ -165,6 +167,18 @@ export default async function Home({
   const sourceExactRecordPublicUptakeHref = getFirstValue(
     resolvedSearchParams.sourceExactRecordPublicUptakeHref,
   );
+  const sourceExactRecordPublicUptakeLinkLabels = getAllValues(
+    resolvedSearchParams.sourceExactRecordPublicUptakeLinkLabel,
+  );
+  const sourceExactRecordPublicUptakeLinkHrefs = getAllValues(
+    resolvedSearchParams.sourceExactRecordPublicUptakeLinkHref,
+  );
+  const sourceExactRecordPublicUptakeLinks = sourceExactRecordPublicUptakeLinkLabels
+    .map((label, index) => ({
+      label,
+      href: sourceExactRecordPublicUptakeLinkHrefs[index] ?? "",
+    }))
+    .filter((item): item is { label: string; href: string } => Boolean(item.href));
   const sourceExactRecordOrigin = getFirstValue(
     resolvedSearchParams.sourceExactRecordOrigin,
   );
@@ -297,6 +311,14 @@ export default async function Home({
     sourceExactRecordPublicUptakeNote
       ? { label: "Public uptake note", value: sourceExactRecordPublicUptakeNote }
       : null,
+    sourceExactRecordPublicUptakeLinks.length
+      ? {
+          label: "Public uptake slices",
+          value: sourceExactRecordPublicUptakeLinks
+            .map((item) => item.label)
+            .join(", "),
+        }
+      : null,
     sourceExactRecordSlice
       ? { label: "Record slice", value: sourceExactRecordSlice }
       : null,
@@ -341,6 +363,10 @@ export default async function Home({
     sourceExactRecordPublicUptakeHref
       ? { label: "Open public uptake record", href: sourceExactRecordPublicUptakeHref }
       : null,
+    ...sourceExactRecordPublicUptakeLinks.map((item) => ({
+      label: `Open ${item.label}`,
+      href: item.href,
+    })),
     ...sourceExactRecordSummaryLinks.map((item) => ({
       label: `Open ${item.label}`,
       href: item.href,
@@ -410,6 +436,11 @@ export default async function Home({
             : null,
           sourceExactRecordPublicUptakeNote
             ? `- Public uptake note: ${sourceExactRecordPublicUptakeNote}`
+            : null,
+          sourceExactRecordPublicUptakeLinks.length
+            ? `- Public uptake slices: ${sourceExactRecordPublicUptakeLinks
+                .map((item) => item.label)
+                .join(", ")}`
             : null,
           sourceExactRecordSlice
             ? `- Record slice: ${sourceExactRecordSlice}`
