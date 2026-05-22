@@ -1836,6 +1836,12 @@ export default async function TopicCardPage({
         institutionalPilotRecordContext.contribution.title,
       );
       params.set(
+        "sourceExactRecordOrigin",
+        getContributionOriginLabel(
+          getContributionOrigin(institutionalPilotRecordContext.contribution),
+        ),
+      );
+      params.set(
         "sourceExactRecordSlice",
         institutionalPilotRecordContext.sliceLabel,
       );
@@ -1861,6 +1867,30 @@ export default async function TopicCardPage({
           "sourceExactRecordRead",
           institutionalPilotRecordInterpretation.label,
         );
+      }
+
+      if (institutionalPilotRecordContext.contribution.draftSource) {
+        const { draftSource } = institutionalPilotRecordContext.contribution;
+        params.set(
+          "sourceExactRecordAiSource",
+          `${draftSource.providerLabel}${
+            draftSource.model ? ` (${draftSource.model})` : ""
+          } on ${formatTimestamp(draftSource.generatedAt)}`,
+        );
+
+        if (draftSource.messageId) {
+          params.set(
+            "sourceExactRecordSourceTurnHref",
+            `${getRoomTopicHref(roomSlug, card.id)}${getTopicChatMessageHref(
+              draftSource.messageId,
+              institutionalPilotRecordContext.contribution,
+              undefined,
+              activeScoreItem?.label,
+              institutionalPilotRecordContext.sliceLabel,
+              activeIntakeContextId,
+            )}`,
+          );
+        }
       }
 
       for (const reference of institutionalPilotRecordSummaryReferences.slice(0, 4)) {

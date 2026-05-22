@@ -101,10 +101,13 @@ export default async function Home({
     sourceScoreOpenPressure?: string | string[];
     sourceExactRecordTitle?: string | string[];
     sourceExactRecordState?: string | string[];
+    sourceExactRecordOrigin?: string | string[];
     sourceExactRecordSlice?: string | string[];
     sourceExactRecordTarget?: string | string[];
     sourceExactRecordRead?: string | string[];
+    sourceExactRecordAiSource?: string | string[];
     sourceExactRecordHref?: string | string[];
+    sourceExactRecordSourceTurnHref?: string | string[];
     sourceExactRecordSummaryLabel?: string | string[];
     sourceExactRecordSummaryHref?: string | string[];
     sourceIntakeArtifactTitle?: string | string[];
@@ -144,6 +147,9 @@ export default async function Home({
   const sourceExactRecordState = getFirstValue(
     resolvedSearchParams.sourceExactRecordState,
   );
+  const sourceExactRecordOrigin = getFirstValue(
+    resolvedSearchParams.sourceExactRecordOrigin,
+  );
   const sourceExactRecordSlice = getFirstValue(
     resolvedSearchParams.sourceExactRecordSlice,
   );
@@ -153,8 +159,14 @@ export default async function Home({
   const sourceExactRecordRead = getFirstValue(
     resolvedSearchParams.sourceExactRecordRead,
   );
+  const sourceExactRecordAiSource = getFirstValue(
+    resolvedSearchParams.sourceExactRecordAiSource,
+  );
   const sourceExactRecordHref = getFirstValue(
     resolvedSearchParams.sourceExactRecordHref,
+  );
+  const sourceExactRecordSourceTurnHref = getFirstValue(
+    resolvedSearchParams.sourceExactRecordSourceTurnHref,
   );
   const sourceExactRecordSummaryLabels = getAllValues(
     resolvedSearchParams.sourceExactRecordSummaryLabel,
@@ -240,6 +252,9 @@ export default async function Home({
             "No visible public-record entry is currently linked.",
         }
       : null,
+    sourceExactRecordOrigin
+      ? { label: "Record origin", value: sourceExactRecordOrigin }
+      : null,
     sourceExactRecordSlice
       ? { label: "Record slice", value: sourceExactRecordSlice }
       : null,
@@ -248,6 +263,9 @@ export default async function Home({
       : null,
     sourceExactRecordRead
       ? { label: "Record read", value: sourceExactRecordRead }
+      : null,
+    sourceExactRecordAiSource
+      ? { label: "AI source", value: sourceExactRecordAiSource }
       : null,
     sourceExactRecordSummaryLinks.length
       ? {
@@ -268,6 +286,9 @@ export default async function Home({
   const contactContextLinks = [
     sourceExactRecordHref
       ? { label: "Open exact public record entry", href: sourceExactRecordHref }
+      : null,
+    sourceExactRecordSourceTurnHref
+      ? { label: "Open source AI turn", href: sourceExactRecordSourceTurnHref }
       : null,
     ...sourceExactRecordSummaryLinks.map((item) => ({
       label: `Open ${item.label}`,
@@ -314,6 +335,9 @@ export default async function Home({
           !sourceExactRecordTitle && sourceExactRecordState
             ? `- Current pressure record: ${sourceExactRecordState}`
             : null,
+          sourceExactRecordOrigin
+            ? `- Record origin: ${sourceExactRecordOrigin}`
+            : null,
           sourceExactRecordSlice
             ? `- Record slice: ${sourceExactRecordSlice}`
             : null,
@@ -322,6 +346,9 @@ export default async function Home({
             : null,
           sourceExactRecordRead
             ? `- Record read: ${sourceExactRecordRead}`
+            : null,
+          sourceExactRecordAiSource
+            ? `- AI source: ${sourceExactRecordAiSource}`
             : null,
           sourceExactRecordSummaryLinks.length
             ? `- Surfacing in card: ${sourceExactRecordSummaryLinks
