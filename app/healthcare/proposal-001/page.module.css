@@ -387,6 +387,44 @@
   font-size: 0.94rem;
 }
 
+.scoreTransparency {
+  display: grid;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.scoreTransparencyLabel {
+  color: var(--signal);
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.scoreSliceList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.scoreSliceLink {
+  display: inline-flex;
+  align-items: center;
+  min-height: 38px;
+  padding: 0 14px;
+  border: 1px solid rgba(18, 33, 39, 0.14);
+  border-radius: 999px;
+  background: rgba(255, 251, 245, 0.9);
+  color: var(--foreground);
+  font-size: 0.84rem;
+  font-weight: 700;
+  text-decoration: none;
+  transition:
+    transform 180ms ease,
+    border-color 180ms ease,
+    background 180ms ease;
+}
+
 .scoreTop {
   display: flex;
   justify-content: space-between;
@@ -716,6 +754,7 @@
 @media (hover: hover) and (pointer: fine) {
   .roomActionPrimary:hover,
   .roomActionSecondary:hover,
+  .scoreSliceLink:hover,
   .reviewPillLink:hover,
   .relatedCardItem:hover,
   .lanePressureLink:hover {
@@ -727,6 +766,7 @@
   }
 
   .roomActionSecondary:hover,
+  .scoreSliceLink:hover,
   .reviewPillLink:hover,
   .relatedCardItem:hover,
   .lanePressureLink:hover {

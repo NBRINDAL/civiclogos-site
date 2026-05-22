@@ -62,6 +62,15 @@ type ContributionOriginFilter =
   | "ai-origin"
   | "seed-example";
 
+type ContributionSliceDefinition = {
+  label: string;
+  recordView?: ContributionRecordView;
+  attachment?: ContributionAttachmentFilter;
+  reviewStatus?: ContributionStatusFilter;
+  origin?: ContributionOriginFilter;
+  lane?: DebateLane;
+};
+
 type TopicCardPageProps = {
   roomSlug: IssueRoomSlug;
   card: TopicCardData;
@@ -299,6 +308,84 @@ function getContributionSummaryHref(
   params.set("summaryLabel", label);
 
   return `?${params.toString()}${hash}`;
+}
+
+function matchesContributionSlice(
+  contribution: PublicContribution,
+  slice: Omit<ContributionSliceDefinition, "label">,
+) {
+  if (
+    slice.recordView &&
+    getContributionRecordView(contribution) !== slice.recordView
+  ) {
+    return false;
+  }
+
+  if (
+    slice.attachment &&
+    getContributionAttachmentFilter(contribution) !== slice.attachment
+  ) {
+    return false;
+  }
+
+  if (
+    slice.reviewStatus &&
+    getContributionStatusFilter(contribution.status) !== slice.reviewStatus
+  ) {
+    return false;
+  }
+
+  if (slice.origin && getContributionOrigin(contribution) !== slice.origin) {
+    return false;
+  }
+
+  if (slice.lane && contribution.lane !== slice.lane) {
+    return false;
+  }
+
+  return true;
+}
+
+function getScoreTransparencySliceDefinitions(
+  scoreLabel: string,
+): ContributionSliceDefinition[] {
+  switch (scoreLabel) {
+    case "Novelty":
+      return [
+        { label: "Changed-card record", recordView: "changed-card" },
+        { label: "AI-origin record", origin: "ai-origin" },
+      ];
+    case "Coherence":
+      return [
+        { label: "Changed-card record", recordView: "changed-card" },
+        { label: "Open-question pressure", attachment: "open-question" },
+      ];
+    case "Feasibility":
+      return [
+        { label: "Assumption pressure", attachment: "assumption" },
+        { label: "Needs-review record", recordView: "needs-review" },
+      ];
+    case "Evidence quality":
+      return [
+        { label: "Evidence record", attachment: "evidence" },
+        { label: "Document-backed record", recordView: "document-backed" },
+      ];
+    case "Economic delta clarity":
+      return [
+        {
+          label: "Economic-challenge lane",
+          lane: "economic-assumption-challenge",
+        },
+        { label: "Open-question pressure", attachment: "open-question" },
+      ];
+    case "Public value":
+      return [
+        { label: "Public submissions", origin: "human-submitted" },
+        { label: "Changed-card record", recordView: "changed-card" },
+      ];
+    default:
+      return [];
+  }
 }
 
 function getSummaryFocusLedgerHref(
@@ -907,24 +994,60 @@ export default async function TopicCardPage({
             </p>
 
             <div className={styles.scoreList}>
-              {card.scorecard.map((item) => (
-                <div className={styles.scoreItem} key={item.label}>
-                  <div className={styles.scoreTop}>
-                    <span>{item.label}</span>
-                    <strong>{item.value}</strong>
+              {card.scorecard.map((item) => {
+                const relatedSlices = getScoreTransparencySliceDefinitions(item.label).map(
+                  (slice) => ({
+                    ...slice,
+                    count: liveContributions.filter((contribution) =>
+                      matchesContributionSlice(contribution, slice),
+                    ).length,
+                    href: getContributionLedgerHref({
+                      recordView: slice.recordView,
+                      attachment: slice.attachment,
+                      reviewStatus: slice.reviewStatus,
+                      origin: slice.origin,
+                      lane: slice.lane,
+                    }),
+                  }),
+                );
+
+                return (
+                  <div className={styles.scoreItem} key={item.label}>
+                    <div className={styles.scoreTop}>
+                      <span>{item.label}</span>
+                      <strong>{item.value}</strong>
+                    </div>
+                    <div className={styles.scoreTrack}>
+                      <span style={{ width: `${item.value}%` }} />
+                    </div>
+                    <details className={styles.scoreDetails}>
+                      <summary>How this was scored</summary>
+                      <p>
+                        {item.basis ??
+                          "Provisional founder estimate pending a public scoring rubric and challenge workflow."}
+                      </p>
+                      {relatedSlices.length ? (
+                        <div className={styles.scoreTransparency}>
+                          <span className={styles.scoreTransparencyLabel}>
+                            Inspect related public record slices
+                          </span>
+                          <div className={styles.scoreSliceList}>
+                            {relatedSlices.map((slice) => (
+                              <Link
+                                key={`${item.label}-${slice.label}`}
+                                className={styles.scoreSliceLink}
+                                href={slice.href}
+                              >
+                                {slice.label} · {slice.count}
+                              </Link>
+                            ))}
+                          </div>
+                        </div>
+                      ) : null}
+                    </details>
                   </div>
-                  <div className={styles.scoreTrack}>
-                    <span style={{ width: `${item.value}%` }} />
-                  </div>
-                  <details className={styles.scoreDetails}>
-                    <summary>How this was scored</summary>
-                    <p>
-                      {item.basis ??
-                        "Provisional founder estimate pending a public scoring rubric and challenge workflow."}
-                    </p>
-                  </details>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </article>
         </section>
