@@ -876,6 +876,10 @@ function SummaryFocusNotice({
         activeScoreSliceLabel === reference.scoreSliceLabel
       ),
   );
+  const scorePressureInterpretation =
+    activeScoreLabel && contribution
+      ? getScorePressureInterpretation(contribution)
+      : null;
 
   return (
     <div className={styles.summaryFocusNotice}>
@@ -908,6 +912,14 @@ function SummaryFocusNotice({
         sourceScoreLabel={activeScoreLabel}
         sourceScoreSliceLabel={activeScoreSliceLabel}
       />
+      {scorePressureInterpretation ? (
+        <div className={styles.summaryReferenceBlock}>
+          <span className={styles.metaParagraph}>
+            {scorePressureInterpretation.label}
+          </span>
+          <p className={styles.metaParagraph}>{scorePressureInterpretation.note}</p>
+        </div>
+      ) : null}
       {activeScoreLabel ? (
         <div className={styles.summaryReferenceBlock}>
           <span className={styles.metaParagraph}>Score context</span>
