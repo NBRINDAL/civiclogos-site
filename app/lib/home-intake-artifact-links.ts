@@ -1,5 +1,6 @@
 export const HOME_INTAKE_ROOM_CANDIDATES_SECTION_ID = "room-candidates";
 export const HOME_INTAKE_DRAFT_TOPICS_SECTION_ID = "draft-topics";
+export const HOME_INTAKE_TOPIC_CARD_PRESSURE_SECTION_ID = "intake-pressure";
 
 export function getHomeIntakeRoomCandidateAnchor(entryId: string) {
   return `room-candidate-${entryId}`;
@@ -46,5 +47,7 @@ export function getHomeIntakeTopicCardHref(
   params.set("intake", intakeId);
   const nextQuery = params.toString();
 
-  return `${path}${nextQuery ? `?${nextQuery}` : ""}${hash ? `#${hash}` : ""}`;
+  return `${path}${nextQuery ? `?${nextQuery}` : ""}#${
+    hash || HOME_INTAKE_TOPIC_CARD_PRESSURE_SECTION_ID
+  }`;
 }

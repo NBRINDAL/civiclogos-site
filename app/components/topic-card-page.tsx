@@ -11,6 +11,7 @@ import {
 import {
   getHomeIntakeDraftTopicsHref,
   getHomeIntakeRoomCandidatesHref,
+  HOME_INTAKE_TOPIC_CARD_PRESSURE_SECTION_ID,
 } from "../lib/home-intake-artifact-links";
 import { getHomeIntakeClosestMapPath } from "../lib/home-intake-map-path";
 import { getHomeIntakeEntry } from "../lib/home-intake-store";
@@ -1556,7 +1557,10 @@ export default async function TopicCardPage({
 
       <main className={styles.main}>
         {topicIntakeMatchesCard && topicIntakeEntry ? (
-          <section className={styles.panel} id="intake-pressure">
+          <section
+            className={`${styles.panel} ${styles.intakePressurePanel}`}
+            id={HOME_INTAKE_TOPIC_CARD_PRESSURE_SECTION_ID}
+          >
             <span className={styles.eyebrow}>Intake pressure</span>
             <h2>
               {topicIntakeEntry.routing.routeKind === "room-topic-draft"
