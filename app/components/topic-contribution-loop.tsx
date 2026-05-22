@@ -44,6 +44,10 @@ type TopicContributionLoopProps = {
     intakeArtifactHref: string;
     routingHref: string;
   } | null;
+  pilotInquiryContext?: {
+    returnHref: string;
+    sectionHref: string;
+  } | null;
   scoreReferences?: Record<
     string,
     Array<{ scoreLabel: string; scoreSliceLabel: string }>
@@ -596,8 +600,9 @@ function getSummaryReferenceHref(
   scoreLabel?: string,
   scoreSliceLabel?: string,
   intakeId?: string,
+  pilotInquiry?: boolean,
 ) {
-  if (!scoreLabel && !scoreSliceLabel && !intakeId) {
+  if (!scoreLabel && !scoreSliceLabel && !intakeId && !pilotInquiry) {
     return href;
   }
 
@@ -615,6 +620,10 @@ function getSummaryReferenceHref(
 
   if (intakeId) {
     nextSearchParams.set("intake", intakeId);
+  }
+
+  if (pilotInquiry) {
+    nextSearchParams.set("pilotInquiry", "1");
   }
 
   const nextQuery = nextSearchParams.toString();
@@ -679,6 +688,7 @@ export default function TopicContributionLoop({
   initialStoreMode,
   initialStoreNote,
   intakeContext = null,
+  pilotInquiryContext = null,
   scoreReferences = {},
   summaryReferences = {},
 }: TopicContributionLoopProps) {
@@ -981,6 +991,10 @@ export default function TopicContributionLoop({
   );
   const activeIntakeId = useMemo(
     () => searchParams.get("intake")?.trim() || undefined,
+    [searchParams],
+  );
+  const activePilotInquiry = useMemo(
+    () => searchParams.get("pilotInquiry")?.trim() === "1",
     [searchParams],
   );
   const activeScoreRelatedSlices = useMemo(
@@ -1702,6 +1716,38 @@ export default function TopicContributionLoop({
         </div>
 
         <div className={styles.filterBlock}>
+          {activePilotInquiry && pilotInquiryContext ? (
+            <div className={styles.focusNotice}>
+              <div>
+                <span className={styles.sectionLabel}>
+                  Viewed under institutional inquiry
+                </span>
+                <p>
+                  This ledger is being read as part of the active institutional
+                  pilot snapshot for <strong>{topicTitle}</strong>, so the exact
+                  public-record entry below remains tied to that live inquiry
+                  handoff rather than acting like an isolated record.
+                </p>
+              </div>
+              <div className={styles.focusReferenceBlock}>
+                <span className={styles.sectionLabel}>Return path</span>
+                <div className={styles.summaryReferenceList}>
+                  <a
+                    className={styles.summaryReferenceLink}
+                    href={pilotInquiryContext.returnHref}
+                  >
+                    Return to institutional inquiry snapshot
+                  </a>
+                  <a
+                    className={styles.summaryReferenceLink}
+                    href={pilotInquiryContext.sectionHref}
+                  >
+                    Return to pilot-ready topic section
+                  </a>
+                </div>
+              </div>
+            </div>
+          ) : null}
           {intakeContext ? (
             <div className={styles.focusNotice}>
               <div>
@@ -1856,6 +1902,7 @@ export default function TopicContributionLoop({
                             activeScoreLabel,
                             activeScoreSliceLabel,
                             activeIntakeId,
+                            activePilotInquiry,
                           )}
                         >
                           {highlightedSourceSummaryReference.label}
@@ -1875,6 +1922,7 @@ export default function TopicContributionLoop({
                               activeScoreLabel,
                               activeScoreSliceLabel,
                               activeIntakeId,
+                              activePilotInquiry,
                             )}
                             key={`focus-${highlightedVisibleContribution.id}-${reference.href}-${reference.label}`}
                           >
@@ -1952,6 +2000,7 @@ export default function TopicContributionLoop({
                             activeScoreLabel,
                             activeScoreSliceLabel,
                             activeIntakeId,
+                            activePilotInquiry,
                           )}
                         >
                           {highlightedSourceSummaryReference.label}
@@ -1971,6 +2020,7 @@ export default function TopicContributionLoop({
                               activeScoreLabel,
                               activeScoreSliceLabel,
                               activeIntakeId,
+                              activePilotInquiry,
                             )}
                             key={`hidden-focus-${highlightedContribution.id}-${reference.href}-${reference.label}`}
                           >
@@ -2265,6 +2315,7 @@ export default function TopicContributionLoop({
                               activeScoreLabel,
                               activeScoreSliceLabel,
                               activeIntakeId,
+                              activePilotInquiry,
                             )}
                             key={`${item.id}-${reference.href}-${reference.label}`}
                           >

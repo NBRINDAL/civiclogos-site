@@ -786,6 +786,18 @@ function getScoreAwareSummaryHref(
   return `${path}${nextQuery ? `?${nextQuery}` : ""}${nextHash}`;
 }
 
+function setSearchParamInHref(href: string, key: string, value: string) {
+  const [pathAndQuery, hashFragment] = href.split("#");
+  const [path, query = ""] = pathAndQuery.split("?");
+  const nextSearchParams = new URLSearchParams(query);
+  nextSearchParams.set(key, value);
+
+  const nextQuery = nextSearchParams.toString();
+  const nextHash = hashFragment ? `#${hashFragment}` : "";
+
+  return `${path}${nextQuery ? `?${nextQuery}` : ""}${nextHash}`;
+}
+
 function matchesContributionSlice(
   contribution: PublicContribution,
   slice: Omit<ContributionSliceDefinition, "label">,
@@ -2067,6 +2079,12 @@ export default async function TopicCardPage({
 
     return `${baseHref}${query ? `?${query}` : ""}${hash}`;
   })();
+  const getInstitutionalPilotTopicHref = (href: string) =>
+    `${getRoomTopicHref(roomSlug, card.id)}${setSearchParamInHref(
+      href,
+      "pilotInquiry",
+      "1",
+    )}`;
   const institutionalPilotInquiryHref = (() => {
     const params = new URLSearchParams({
       interest: "Institutional pilot",
@@ -2122,7 +2140,7 @@ export default async function TopicCardPage({
         params.append("sourceExactRecordPublicUptakeLinkLabel", link.label);
         params.append(
           "sourceExactRecordPublicUptakeLinkHref",
-          `${getRoomTopicHref(roomSlug, card.id)}${link.href}`,
+          getInstitutionalPilotTopicHref(link.href),
         );
       }
       params.set(
@@ -2143,13 +2161,15 @@ export default async function TopicCardPage({
       );
       params.set(
         "sourceExactRecordHref",
-        `${getRoomTopicHref(roomSlug, card.id)}${getExactContributionLedgerHref(
-          institutionalPilotRecordContext.contribution,
-          undefined,
-          activeScoreItem?.label,
-          institutionalPilotRecordContext.sliceLabel,
-          activeIntakeContextId,
-        )}`,
+        getInstitutionalPilotTopicHref(
+          getExactContributionLedgerHref(
+            institutionalPilotRecordContext.contribution,
+            undefined,
+            activeScoreItem?.label,
+            institutionalPilotRecordContext.sliceLabel,
+            activeIntakeContextId,
+          ),
+        ),
       );
 
       if (institutionalPilotRecordInterpretation) {
@@ -2166,13 +2186,15 @@ export default async function TopicCardPage({
       if (institutionalPilotRecordContext.publicUptakeContribution) {
         params.set(
           "sourceExactRecordPublicUptakeHref",
-          `${getRoomTopicHref(roomSlug, card.id)}${getExactContributionLedgerHref(
-            institutionalPilotRecordContext.publicUptakeContribution,
-            undefined,
-            activeScoreItem?.label,
-            institutionalPilotRecordContext.sliceLabel,
-            activeIntakeContextId,
-          )}`,
+          getInstitutionalPilotTopicHref(
+            getExactContributionLedgerHref(
+              institutionalPilotRecordContext.publicUptakeContribution,
+              undefined,
+              activeScoreItem?.label,
+              institutionalPilotRecordContext.sliceLabel,
+              activeIntakeContextId,
+            ),
+          ),
         );
       }
 
@@ -2188,14 +2210,16 @@ export default async function TopicCardPage({
         if (draftSource.messageId) {
           params.set(
             "sourceExactRecordSourceTurnHref",
-            `${getRoomTopicHref(roomSlug, card.id)}${getTopicChatMessageHref(
-              draftSource.messageId,
-              institutionalPilotRecordContext.contribution,
-              undefined,
-              activeScoreItem?.label,
-              institutionalPilotRecordContext.sliceLabel,
-              activeIntakeContextId,
-            )}`,
+            getInstitutionalPilotTopicHref(
+              getTopicChatMessageHref(
+                draftSource.messageId,
+                institutionalPilotRecordContext.contribution,
+                undefined,
+                activeScoreItem?.label,
+                institutionalPilotRecordContext.sliceLabel,
+                activeIntakeContextId,
+              ),
+            ),
           );
         }
       }
@@ -2204,7 +2228,7 @@ export default async function TopicCardPage({
         params.append("sourceExactRecordSummaryLabel", reference.label);
         params.append(
           "sourceExactRecordSummaryHref",
-          `${getRoomTopicHref(roomSlug, card.id)}${reference.href}`,
+          getInstitutionalPilotTopicHref(reference.href),
         );
       }
 
@@ -2215,18 +2239,20 @@ export default async function TopicCardPage({
         );
         params.append(
           "sourceExactRecordScoreHref",
-          `${getRoomTopicHref(roomSlug, card.id)}${getScoreItemHref(
-            reference.scoreLabel,
-            reference.scoreSliceLabel,
-            searchParams,
-          )}`,
+          getInstitutionalPilotTopicHref(
+            getScoreItemHref(
+              reference.scoreLabel,
+              reference.scoreSliceLabel,
+              searchParams,
+            ),
+          ),
         );
       }
       for (const link of institutionalPilotRecordScorePressureLinks.slice(0, 4)) {
         params.append("sourceExactRecordScorePressureLabel", link.label);
         params.append(
           "sourceExactRecordScorePressureHref",
-          `${getRoomTopicHref(roomSlug, card.id)}${link.href}`,
+          getInstitutionalPilotTopicHref(link.href),
         );
       }
     } else if (activeScoreLabel) {
@@ -4321,6 +4347,14 @@ export default async function TopicCardPage({
           initialStoreMode={contributionStoreMetadata.mode}
           initialStoreNote={contributionStoreMetadata.note}
           intakeContext={topicContributionIntakeContext}
+          pilotInquiryContext={
+            showInstitutionalPilotCta
+              ? {
+                  returnHref: institutionalPilotInquiryHref,
+                  sectionHref: institutionalPilotSourceTopicHref,
+                }
+              : null
+          }
           openQuestions={card.openQuestions}
           roomSlug={roomSlug}
           scoreReferences={contributionScoreReferences}
