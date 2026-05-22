@@ -31,6 +31,11 @@ type TopicCardLink = {
   href: string;
 };
 
+type ContributionSummaryReference = {
+  label: string;
+  href: string;
+};
+
 type LanePressureItem = {
   lane: (typeof debateLaneOptions)[number];
   label: string;
@@ -328,6 +333,24 @@ function ContributionAiOriginContext({
   );
 }
 
+function addContributionSummaryReference(
+  map: Map<string, ContributionSummaryReference[]>,
+  contribution: PublicContribution | null | undefined,
+  label: string,
+  href: string,
+) {
+  if (!contribution) {
+    return;
+  }
+
+  const existing = map.get(contribution.id) ?? [];
+
+  if (!existing.some((item) => item.label === label && item.href === href)) {
+    existing.push({ label, href });
+    map.set(contribution.id, existing);
+  }
+}
+
 export default async function TopicCardPage({
   roomSlug,
   card,
@@ -469,6 +492,113 @@ export default async function TopicCardPage({
 
       return acc;
     }, []);
+  const contributionSummaryReferences = (() => {
+    const map = new Map<string, ContributionSummaryReference[]>();
+
+    for (const item of incorporatedAssumptions.slice(0, 3)) {
+      addContributionSummaryReference(map, item, "Assumption layer", "#assumption-layer");
+      addContributionSummaryReference(map, item, "Review-driven record", "#review-driven-record");
+    }
+
+    for (const item of incorporatedEvidence.slice(0, 3)) {
+      addContributionSummaryReference(map, item, "Evidence layer", "#evidence-layer");
+    }
+
+    for (const item of documentBackedContributions.slice(0, 4)) {
+      addContributionSummaryReference(
+        map,
+        item,
+        "Visible evidence record",
+        "#document-evidence-record",
+      );
+    }
+
+    addContributionSummaryReference(
+      map,
+      contributorObjectionThatChangedCard,
+      "Objection layer",
+      "#objection-layer",
+    );
+    addContributionSummaryReference(
+      map,
+      strongestLiveContributorObjection,
+      "Objection layer",
+      "#objection-layer",
+    );
+
+    for (const item of [...incorporatedEvidence, ...incorporatedQuestions].slice(0, 4)) {
+      addContributionSummaryReference(map, item, "Review-driven record", "#review-driven-record");
+    }
+
+    for (const item of needsAttentionContributions.slice(0, 4)) {
+      addContributionSummaryReference(map, item, "Open pressure", "#open-pressure");
+    }
+
+    for (const item of incorporatedQuestions.slice(0, 3)) {
+      addContributionSummaryReference(
+        map,
+        item,
+        "Open-question layer",
+        "#open-question-layer",
+      );
+    }
+
+    for (const item of lanePressure) {
+      addContributionSummaryReference(
+        map,
+        item.latestUnresolved,
+        "Pressure by lane",
+        "#pressure-by-lane",
+      );
+    }
+
+    for (const item of changedCardContributions.slice(0, 3)) {
+      addContributionSummaryReference(
+        map,
+        item,
+        "Manual cycle - Changed card",
+        "#manual-cycle",
+      );
+    }
+
+    for (const item of needsAttentionContributions.slice(0, 3)) {
+      addContributionSummaryReference(
+        map,
+        item,
+        "Manual cycle - Needs attention",
+        "#manual-cycle",
+      );
+    }
+
+    for (const item of assistedRecordContributions.slice(0, 4)) {
+      addContributionSummaryReference(
+        map,
+        item,
+        "AI-assisted record activity",
+        "#ai-assisted-record-activity",
+      );
+    }
+
+    for (const item of reviewedContributions.slice(0, 4)) {
+      addContributionSummaryReference(
+        map,
+        item,
+        "Recent human review decisions",
+        "#recent-human-review-decisions",
+      );
+    }
+
+    for (const item of changedCardContributions.slice(0, 4)) {
+      addContributionSummaryReference(
+        map,
+        item,
+        "Contribution-driven trace",
+        "#contribution-driven-trace",
+      );
+    }
+
+    return Object.fromEntries(map.entries());
+  })();
   const previousCard =
     currentTopicIndex > 0 ? roomCards[currentTopicIndex - 1] : null;
   const nextCard =
@@ -533,12 +663,12 @@ export default async function TopicCardPage({
             <h2>Why this topic card matters even before it is proven</h2>
             <p>{card.currentRead}</p>
 
-            <div className={styles.copyBlock}>
+            <div className={styles.copyBlock} id="assumption-layer">
               <h3>The problem it is trying to solve</h3>
               <p>{card.problemStatement}</p>
             </div>
 
-            <div className={styles.copyBlock}>
+            <div className={styles.copyBlock} id="objection-layer">
               <h3>The proposed move</h3>
               <p>{card.proposedSolution}</p>
             </div>
@@ -586,7 +716,7 @@ export default async function TopicCardPage({
               ))}
             </ol>
 
-            <div className={styles.copyBlock}>
+            <div className={styles.copyBlock} id="evidence-layer">
               <h3>Expected upside</h3>
               <ul className={styles.bulletList}>
                 {card.benefits.map((item) => (
@@ -605,7 +735,7 @@ export default async function TopicCardPage({
               ))}
             </ul>
 
-            <div className={styles.copyBlock}>
+            <div className={styles.copyBlock} id="document-evidence-record">
               <h3>Stakeholders already in the blast radius</h3>
               <div className={styles.tagList}>
                 {card.stakeholders.map((item) => (
@@ -663,7 +793,7 @@ export default async function TopicCardPage({
           </article>
         </section>
 
-        <section className={styles.gridSection}>
+        <section className={styles.gridSection} id="review-driven-record">
           <article className={styles.panel}>
             <span className={styles.eyebrow}>Stress test</span>
             <h2>Where the topic could fail or misfire</h2>
@@ -673,7 +803,7 @@ export default async function TopicCardPage({
               ))}
             </ul>
 
-            <div className={styles.copyBlock}>
+            <div className={styles.copyBlock} id="open-question-layer">
               <h3>Anticipated objection</h3>
               <p>{card.anticipatedObjection ?? card.strongestObjection}</p>
             </div>
@@ -919,7 +1049,7 @@ export default async function TopicCardPage({
           </article>
         </section>
 
-        <section className={styles.gridSection}>
+        <section className={styles.gridSection} id="open-pressure">
           <article className={styles.panel}>
             <span className={styles.eyebrow}>Review-driven record</span>
             <h2>Human review should change the visible object, not just the queue.</h2>
@@ -928,7 +1058,7 @@ export default async function TopicCardPage({
               marked as changing the card&apos;s public reasoning record.
             </p>
 
-            <div className={styles.copyBlock}>
+            <div className={styles.copyBlock} id="pressure-by-lane">
               <h3>Assumptions now under live pressure</h3>
               {incorporatedAssumptions.length ? (
                 <div className={styles.historyList}>
@@ -1198,7 +1328,7 @@ export default async function TopicCardPage({
           </section>
         ) : null}
 
-        <section className={styles.gridSection}>
+        <section className={styles.gridSection} id="manual-cycle">
           <article className={styles.panel}>
             <span className={styles.eyebrow}>Review cycle</span>
             <h2>This card should show what is waiting on human judgment.</h2>
@@ -1261,7 +1391,7 @@ export default async function TopicCardPage({
               </article>
             </div>
 
-            <div className={styles.copyBlock}>
+            <div className={styles.copyBlock} id="ai-assisted-record-activity">
               <h3>Review status breakdown</h3>
               <div className={styles.reviewPills}>
                 <Link
@@ -1297,7 +1427,7 @@ export default async function TopicCardPage({
               </div>
             </div>
 
-            <div className={styles.copyBlock}>
+            <div className={styles.copyBlock} id="recent-human-review-decisions">
               <h3>Record origins</h3>
               <p>
                 The visible record can now be inspected not just by review
@@ -1783,6 +1913,7 @@ export default async function TopicCardPage({
           initialStoreNote={contributionStoreMetadata.note}
           openQuestions={card.openQuestions}
           roomSlug={roomSlug}
+          summaryReferences={contributionSummaryReferences}
           topicId={card.id}
           topicTitle={card.title}
           whatWouldStrengthen={card.whatWouldStrengthen}
@@ -1852,7 +1983,7 @@ export default async function TopicCardPage({
             ))}
           </div>
 
-          <div className={styles.copyBlock}>
+          <div className={styles.copyBlock} id="contribution-driven-trace">
             <h3>Contribution-driven trace</h3>
             {changedCardContributions.length ? (
               <div className={styles.historyList}>

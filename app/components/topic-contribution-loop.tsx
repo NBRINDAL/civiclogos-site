@@ -34,6 +34,7 @@ type TopicContributionLoopProps = {
   initialContributions: PublicContribution[];
   initialStoreMode: "prototype" | "database" | "fallback";
   initialStoreNote: string;
+  summaryReferences?: Record<string, Array<{ label: string; href: string }>>;
 };
 
 type SubmissionState = {
@@ -444,6 +445,7 @@ export default function TopicContributionLoop({
   initialContributions,
   initialStoreMode,
   initialStoreNote,
+  summaryReferences = {},
 }: TopicContributionLoopProps) {
   const pathname = usePathname();
   const router = useRouter();
@@ -1532,6 +1534,7 @@ export default function TopicContributionLoop({
               const criticRead = getCompletedReader(item, "anthropic");
               const changedCardValue =
                 item.review?.changedSynthesis ?? item.aiIntake?.changedSynthesisLikely;
+              const summaryReferencesForItem = summaryReferences[item.id] ?? [];
 
               return (
                 <article
@@ -1619,6 +1622,23 @@ export default function TopicContributionLoop({
                       </div>
                     </dl>
                   </div>
+
+                  {summaryReferencesForItem.length ? (
+                    <div className={styles.recordSection}>
+                      <span className={styles.sectionLabel}>Card summaries using this record</span>
+                      <div className={styles.summaryReferenceList}>
+                        {summaryReferencesForItem.map((reference) => (
+                          <a
+                            className={styles.summaryReferenceLink}
+                            href={reference.href}
+                            key={`${item.id}-${reference.href}-${reference.label}`}
+                          >
+                            {reference.label}
+                          </a>
+                        ))}
+                      </div>
+                    </div>
+                  ) : null}
 
                   {item.evidenceSource?.url ? (
                     <div className={styles.recordSection}>
