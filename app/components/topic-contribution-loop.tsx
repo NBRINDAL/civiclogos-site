@@ -710,6 +710,17 @@ export default function TopicContributionLoop({
         : null,
     [filteredContributions, highlightedContributionId],
   );
+  const highlightedSummaryReferences = useMemo(() => {
+    if (highlightedVisibleContribution) {
+      return summaryReferences[highlightedVisibleContribution.id] ?? [];
+    }
+
+    if (highlightedContribution) {
+      return summaryReferences[highlightedContribution.id] ?? [];
+    }
+
+    return [];
+  }, [highlightedContribution, highlightedVisibleContribution, summaryReferences]);
 
   function handleFilterPick(filter: ContributionFilter) {
     const nextSearchParams = new URLSearchParams(searchParams.toString());
@@ -1358,6 +1369,22 @@ export default function TopicContributionLoop({
                 · {statusLabels[highlightedVisibleContribution.status]} ·{" "}
                 {getDebateLaneLabel(highlightedVisibleContribution.lane)}
               </p>
+              {highlightedSummaryReferences.length ? (
+                <div className={styles.focusReferenceBlock}>
+                  <span className={styles.sectionLabel}>Card summaries using this record</span>
+                  <div className={styles.summaryReferenceList}>
+                    {highlightedSummaryReferences.map((reference) => (
+                      <a
+                        className={styles.summaryReferenceLink}
+                        href={reference.href}
+                        key={`focus-${highlightedVisibleContribution.id}-${reference.href}-${reference.label}`}
+                      >
+                        {reference.label}
+                      </a>
+                    ))}
+                  </div>
+                </div>
+              ) : null}
             </div>
           ) : highlightedContribution ? (
             <div className={`${styles.focusNotice} ${styles.focusMissing}`}>
@@ -1378,6 +1405,22 @@ export default function TopicContributionLoop({
                   Show exact record entry
                 </button>
               </div>
+              {highlightedSummaryReferences.length ? (
+                <div className={styles.focusReferenceBlock}>
+                  <span className={styles.sectionLabel}>Card summaries using this record</span>
+                  <div className={styles.summaryReferenceList}>
+                    {highlightedSummaryReferences.map((reference) => (
+                      <a
+                        className={styles.summaryReferenceLink}
+                        href={reference.href}
+                        key={`hidden-focus-${highlightedContribution.id}-${reference.href}-${reference.label}`}
+                      >
+                        {reference.label}
+                      </a>
+                    ))}
+                  </div>
+                </div>
+              ) : null}
             </div>
           ) : highlightedContributionId ? (
             <div className={`${styles.focusNotice} ${styles.focusMissing}`}>

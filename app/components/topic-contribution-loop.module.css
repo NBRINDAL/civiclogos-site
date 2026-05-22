@@ -375,6 +375,13 @@
   gap: 12px;
 }
 
+.focusReferenceBlock {
+  display: grid;
+  gap: 10px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(18, 33, 39, 0.08);
+}
+
 .summaryReferenceList {
   display: flex;
   flex-wrap: wrap;
