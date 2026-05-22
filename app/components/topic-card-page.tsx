@@ -1382,6 +1382,11 @@ export default async function TopicCardPage({
                       latestScoreContribution.contribution.id
                     ] ?? [])
                   : [];
+                const latestScoreSummaryReferences = latestScoreContribution
+                  ? (contributionSummaryReferences[
+                      latestScoreContribution.contribution.id
+                    ] ?? [])
+                  : [];
 
                 return (
                   <div
@@ -1519,6 +1524,32 @@ export default async function TopicCardPage({
                                       latestScoreContribution.slice.label
                                       ? " · current"
                                       : ""}
+                                  </Link>
+                                ))}
+                              </div>
+                            </div>
+                          ) : null}
+                          {latestScoreSummaryReferences.length ? (
+                            <div className={styles.scoreTransparency}>
+                              <span className={styles.scoreTransparencyLabel}>
+                                Surfacing in this card
+                              </span>
+                              <p>
+                                This same exact record is currently being used in
+                                the following summary layers on the topic card.
+                              </p>
+                              <div className={styles.scoreSliceList}>
+                                {latestScoreSummaryReferences.map((reference) => (
+                                  <Link
+                                    className={styles.scoreSliceLink}
+                                    href={getScoreAwareSummaryHref(
+                                      reference.href,
+                                      item.label,
+                                      latestScoreContribution.slice.label,
+                                    )}
+                                    key={`${item.label}-${latestScoreContribution.contribution.id}-${reference.label}`}
+                                  >
+                                    {reference.label}
                                   </Link>
                                 ))}
                               </div>
