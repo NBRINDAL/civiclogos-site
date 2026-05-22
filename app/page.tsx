@@ -357,12 +357,9 @@ export default async function Home({
     initialInterest === "Institutional pilot"
       ? "Return to pilot-ready topic section"
       : "Open current topic card";
-  const contactContextLinks = [
+  const contactSnapshotGroundingLinks = [
     sourceExactRecordHref
       ? { label: "Open exact public record entry", href: sourceExactRecordHref }
-      : null,
-    sourceTopicHref
-      ? { label: sourceTopicLinkLabel, href: sourceTopicHref }
       : null,
     sourceExactRecordSourceTurnHref
       ? { label: "Open source AI turn", href: sourceExactRecordSourceTurnHref }
@@ -382,6 +379,11 @@ export default async function Home({
       label: `Open ${item.label}`,
       href: item.href,
     })),
+  ].filter((item): item is { label: string; href: string } => Boolean(item));
+  const contactSnapshotReturnLinks = [
+    sourceTopicHref
+      ? { label: sourceTopicLinkLabel, href: sourceTopicHref }
+      : null,
     sourceIntakeExactArtifactHref
       ? { label: "Open exact held artifact", href: sourceIntakeExactArtifactHref }
       : null,
@@ -395,6 +397,10 @@ export default async function Home({
       ? { label: "Open prompt history", href: sourceIntakePromptHistoryHref }
       : null,
   ].filter((item): item is { label: string; href: string } => Boolean(item));
+  const contactContextLinks = [
+    ...contactSnapshotGroundingLinks,
+    ...contactSnapshotReturnLinks,
+  ];
   const showInstitutionalPilotSnapshot =
     initialInterest === "Institutional pilot" &&
     Boolean(
@@ -787,17 +793,40 @@ export default async function Home({
                       {sourceIntakeRelationship}
                     </p>
                   ) : null}
-                  {contactContextLinks.length ? (
-                    <div className={styles.contactSnapshotLinks}>
-                      {contactContextLinks.slice(0, 8).map((item) => (
-                        <Link
-                          className={styles.contactSnapshotLink}
-                          href={item.href}
-                          key={item.href}
-                        >
-                          {item.label}
-                        </Link>
-                      ))}
+                  {contactSnapshotGroundingLinks.length ? (
+                    <div className={styles.contactSnapshotSection}>
+                      <span className={styles.contactSnapshotSectionTitle}>
+                        Grounding links
+                      </span>
+                      <div className={styles.contactSnapshotLinks}>
+                        {contactSnapshotGroundingLinks.slice(0, 8).map((item) => (
+                          <Link
+                            className={styles.contactSnapshotLink}
+                            href={item.href}
+                            key={item.href}
+                          >
+                            {item.label}
+                          </Link>
+                        ))}
+                      </div>
+                    </div>
+                  ) : null}
+                  {contactSnapshotReturnLinks.length ? (
+                    <div className={styles.contactSnapshotSection}>
+                      <span className={styles.contactSnapshotSectionTitle}>
+                        Return paths
+                      </span>
+                      <div className={styles.contactSnapshotLinks}>
+                        {contactSnapshotReturnLinks.slice(0, 6).map((item) => (
+                          <Link
+                            className={styles.contactSnapshotLink}
+                            href={item.href}
+                            key={item.href}
+                          >
+                            {item.label}
+                          </Link>
+                        ))}
+                      </div>
                     </div>
                   ) : null}
                 </article>
