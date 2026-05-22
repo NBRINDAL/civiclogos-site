@@ -1677,6 +1677,14 @@ export default async function TopicCardPage({
   const activeScoreItem = activeScoreLabel
     ? card.scorecard.find((item) => item.label === activeScoreLabel) ?? null
     : null;
+  const activeHeldIntakeRelationship =
+    topicIntakeMatchesCard && topicIntakeEntry
+      ? topicIntakeEntry.routing.routeKind === "room-topic-draft"
+        ? "Held as a durable draft topic because the live card path still needs clearer public uptake."
+        : topicIntakeEntry.routing.routeKind === "new-room-draft"
+          ? "Held as a room candidate because the active map still does not absorb it cleanly enough."
+          : "Still being read through a current intake route into the live room map."
+      : null;
   const showInstitutionalPilotCta =
     roomSlug === "institutional-trust" && card.id === "topic-001";
   const institutionalPilotSourceTopicHref = (() => {
@@ -1736,6 +1744,42 @@ export default async function TopicCardPage({
           ? "Still unresolved public pressure"
           : "No unresolved public pressure currently linked",
       );
+    }
+
+    if (topicIntakeMatchesCard && topicContributionIntakeContext) {
+      params.set(
+        "sourceIntakeArtifactTitle",
+        topicContributionIntakeContext.artifactTitle,
+      );
+      params.set(
+        "sourceIntakePromptCount",
+        String(topicContributionIntakeContext.promptCount),
+      );
+      params.set(
+        "sourceIntakeHeldQuestionCount",
+        String(topicContributionIntakeContext.heldQuestionCount),
+      );
+      params.set(
+        "sourceIntakeRelationship",
+        activeHeldIntakeRelationship ??
+          "Still being read through held intake pressure.",
+      );
+      params.set(
+        "sourceIntakeExactArtifactHref",
+        topicContributionIntakeContext.exactArtifactHref,
+      );
+      params.set(
+        "sourceIntakeArtifactHref",
+        topicContributionIntakeContext.intakeArtifactHref,
+      );
+      params.set("sourceIntakeRoutingHref", topicContributionIntakeContext.routingHref);
+
+      if (topicContributionIntakeContext.promptHistoryHref) {
+        params.set(
+          "sourceIntakePromptHistoryHref",
+          topicContributionIntakeContext.promptHistoryHref,
+        );
+      }
     }
 
     return `/?${params.toString()}#contact`;

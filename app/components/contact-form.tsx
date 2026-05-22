@@ -44,6 +44,11 @@ type ContactContextFact = {
   value: string;
 };
 
+type ContactContextLink = {
+  label: string;
+  href: string;
+};
+
 export function ContactForm({
   initialInterest,
   initialMessage,
@@ -51,6 +56,8 @@ export function ContactForm({
   initialContextNote,
   initialContextFacts = [],
   initialContextHref,
+  initialContextLinks = [],
+  initialContextRelationshipNote,
 }: {
   initialInterest?: string;
   initialMessage?: string;
@@ -58,6 +65,8 @@ export function ContactForm({
   initialContextNote?: string;
   initialContextFacts?: ContactContextFact[];
   initialContextHref?: string;
+  initialContextLinks?: ContactContextLink[];
+  initialContextRelationshipNote?: string;
 }) {
   const seededInterest =
     initialInterest && allowedInterests.has(initialInterest)
@@ -148,12 +157,23 @@ export function ContactForm({
               ))}
             </dl>
           ) : null}
+          {initialContextRelationshipNote ? (
+            <p className={styles.contextNote}>{initialContextRelationshipNote}</p>
+          ) : null}
           <div className={styles.contextLinks}>
-            {initialContextHref ? (
-              <a className={styles.contextLink} href={initialContextHref}>
-                Open current topic card
-              </a>
-            ) : null}
+            {initialContextLinks.length
+              ? initialContextLinks.map((item) => (
+                  <a className={styles.contextLink} href={item.href} key={item.href}>
+                    {item.label}
+                  </a>
+                ))
+              : initialContextHref
+                ? (
+                    <a className={styles.contextLink} href={initialContextHref}>
+                      Open current topic card
+                    </a>
+                  )
+                : null}
             {isInstitutionalPilot ? (
               <span className={styles.contextTrustNote}>
                 Paying funds review capacity, not authority over the synthesis.

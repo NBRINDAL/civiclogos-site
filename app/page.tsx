@@ -99,6 +99,14 @@ export default async function Home({
     sourceScoreValue?: string | string[];
     sourceScoreSlice?: string | string[];
     sourceScoreOpenPressure?: string | string[];
+    sourceIntakeArtifactTitle?: string | string[];
+    sourceIntakePromptCount?: string | string[];
+    sourceIntakeHeldQuestionCount?: string | string[];
+    sourceIntakeRelationship?: string | string[];
+    sourceIntakeExactArtifactHref?: string | string[];
+    sourceIntakeArtifactHref?: string | string[];
+    sourceIntakeRoutingHref?: string | string[];
+    sourceIntakePromptHistoryHref?: string | string[];
   }>;
 }) {
   const resolvedSearchParams = await searchParams;
@@ -120,6 +128,30 @@ export default async function Home({
   const sourceScoreOpenPressure = getFirstValue(
     resolvedSearchParams.sourceScoreOpenPressure,
   );
+  const sourceIntakeArtifactTitle = getFirstValue(
+    resolvedSearchParams.sourceIntakeArtifactTitle,
+  );
+  const sourceIntakePromptCount = getFirstValue(
+    resolvedSearchParams.sourceIntakePromptCount,
+  );
+  const sourceIntakeHeldQuestionCount = getFirstValue(
+    resolvedSearchParams.sourceIntakeHeldQuestionCount,
+  );
+  const sourceIntakeRelationship = getFirstValue(
+    resolvedSearchParams.sourceIntakeRelationship,
+  );
+  const sourceIntakeExactArtifactHref = getFirstValue(
+    resolvedSearchParams.sourceIntakeExactArtifactHref,
+  );
+  const sourceIntakeArtifactHref = getFirstValue(
+    resolvedSearchParams.sourceIntakeArtifactHref,
+  );
+  const sourceIntakeRoutingHref = getFirstValue(
+    resolvedSearchParams.sourceIntakeRoutingHref,
+  );
+  const sourceIntakePromptHistoryHref = getFirstValue(
+    resolvedSearchParams.sourceIntakePromptHistoryHref,
+  );
   const liveCardIndex = getLiveCardIndex();
   const contactContextTitle = sourceTopic
     ? `${sourceTopic}${sourceRoom ? ` in ${sourceRoom}` : ""}`
@@ -129,8 +161,12 @@ export default async function Home({
       ? `${sourceScoreLabel} · ${sourceScoreValue}`
       : sourceScoreLabel
     : null;
-  const contactContextScopeSuffix = sourceScoreLabel
-    ? " plus the focused score context"
+  const contactContextScopeParts = [
+    sourceScoreLabel ? "focused score context" : null,
+    sourceIntakeArtifactTitle ? "held intake pressure" : null,
+  ].filter((part): part is string => Boolean(part));
+  const contactContextScopeSuffix = contactContextScopeParts.length
+    ? ` plus ${contactContextScopeParts.join(" and ")}`
     : "";
   const contactContextNote =
     sourceTopic && sourceRoom
@@ -154,7 +190,33 @@ export default async function Home({
     sourceScoreOpenPressure
       ? { label: "Open review pressure", value: sourceScoreOpenPressure }
       : null,
+    sourceIntakeArtifactTitle
+      ? { label: "Held artifact", value: sourceIntakeArtifactTitle }
+      : null,
+    sourceIntakePromptCount
+      ? { label: "Held prompts", value: sourceIntakePromptCount }
+      : null,
+    sourceIntakeHeldQuestionCount
+      ? { label: "Held questions", value: sourceIntakeHeldQuestionCount }
+      : null,
   ].filter((item): item is { label: string; value: string } => Boolean(item));
+  const contactContextLinks = [
+    sourceTopicHref
+      ? { label: "Open current topic card", href: sourceTopicHref }
+      : null,
+    sourceIntakeExactArtifactHref
+      ? { label: "Open exact held artifact", href: sourceIntakeExactArtifactHref }
+      : null,
+    sourceIntakeArtifactHref
+      ? { label: "Open intake artifact", href: sourceIntakeArtifactHref }
+      : null,
+    sourceIntakeRoutingHref
+      ? { label: "Open routing AIs", href: sourceIntakeRoutingHref }
+      : null,
+    sourceIntakePromptHistoryHref
+      ? { label: "Open prompt history", href: sourceIntakePromptHistoryHref }
+      : null,
+  ].filter((item): item is { label: string; href: string } => Boolean(item));
   const initialMessage =
     initialInterest === "Institutional pilot" && sourceTopic
       ? [
@@ -173,6 +235,18 @@ export default async function Home({
           sourceScoreSlice ? `- Score slice: ${sourceScoreSlice}` : null,
           sourceScoreOpenPressure
             ? `- Open review pressure: ${sourceScoreOpenPressure}`
+            : null,
+          sourceIntakeArtifactTitle
+            ? `- Held artifact: ${sourceIntakeArtifactTitle}`
+            : null,
+          sourceIntakePromptCount
+            ? `- Held prompts: ${sourceIntakePromptCount}`
+            : null,
+          sourceIntakeHeldQuestionCount
+            ? `- Held questions: ${sourceIntakeHeldQuestionCount}`
+            : null,
+          sourceIntakeRelationship
+            ? `- Held intake relationship: ${sourceIntakeRelationship}`
             : null,
           "",
           "What I want to explore:",
@@ -457,7 +531,9 @@ export default async function Home({
               <ContactForm
                 initialContextFacts={contactContextFacts}
                 initialContextHref={sourceTopicHref}
+                initialContextLinks={contactContextLinks}
                 initialContextNote={contactContextNote}
+                initialContextRelationshipNote={sourceIntakeRelationship}
                 initialContextTitle={contactContextTitle}
                 initialInterest={initialInterest}
                 initialMessage={initialMessage}
