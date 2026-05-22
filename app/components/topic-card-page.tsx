@@ -1365,6 +1365,39 @@ export default async function TopicCardPage({
                           item.review?.publicRecordNote,
                           "Marked as changing the card.",
                         )}
+                        <p className={styles.metaParagraph}>
+                          Debate lane:{" "}
+                          <Link
+                            className={styles.sourceLink}
+                            href={getContributionLedgerHref({
+                              recordView: "changed-card",
+                              lane: item.lane,
+                            })}
+                          >
+                            {debateLaneLabels[item.lane]}
+                          </Link>
+                          . Origin:{" "}
+                          <Link
+                            className={styles.sourceLink}
+                            href={getContributionLedgerHref({
+                              recordView: "changed-card",
+                              origin: getContributionOrigin(item),
+                            })}
+                          >
+                            {getContributionOriginLabel(getContributionOrigin(item))}
+                          </Link>
+                          . Public record target:{" "}
+                          <Link
+                            className={styles.sourceLink}
+                            href={getContributionLedgerHref({
+                              recordView: "changed-card",
+                              attachment: getContributionAttachmentFilter(item),
+                            })}
+                          >
+                            {getContributionAttachmentLabel(getContributionAttachmentFilter(item))}
+                          </Link>
+                          .
+                        </p>
                       </li>
                     ))}
                   </ul>
@@ -1407,6 +1440,39 @@ export default async function TopicCardPage({
                         </strong>{" "}
                         {item.aiIntake?.reviewerNote ??
                           "Awaiting clearer human placement, acceptance, or rejection."}
+                        <p className={styles.metaParagraph}>
+                          Debate lane:{" "}
+                          <Link
+                            className={styles.sourceLink}
+                            href={getContributionLedgerHref({
+                              recordView: "needs-review",
+                              lane: item.lane,
+                            })}
+                          >
+                            {debateLaneLabels[item.lane]}
+                          </Link>
+                          . Origin:{" "}
+                          <Link
+                            className={styles.sourceLink}
+                            href={getContributionLedgerHref({
+                              recordView: "needs-review",
+                              origin: getContributionOrigin(item),
+                            })}
+                          >
+                            {getContributionOriginLabel(getContributionOrigin(item))}
+                          </Link>
+                          . Current record target:{" "}
+                          <Link
+                            className={styles.sourceLink}
+                            href={getContributionLedgerHref({
+                              recordView: "needs-review",
+                              attachment: getContributionAttachmentFilter(item),
+                            })}
+                          >
+                            {getContributionAttachmentLabel(getContributionAttachmentFilter(item))}
+                          </Link>
+                          .
+                        </p>
                       </li>
                     ))}
                   </ul>
