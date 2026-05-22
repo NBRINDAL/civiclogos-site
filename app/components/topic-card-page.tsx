@@ -936,59 +936,8 @@ export default async function TopicCardPage({
                           "This reviewed contribution was marked as changing an assumption on the card.",
                         )}
                       </p>
-                      <p className={styles.metaParagraph}>
-                        Debate lane:{" "}
-                        <Link
-                          className={styles.sourceLink}
-                          href={getContributionLedgerHref({
-                            recordView: "changed-card",
-                            lane: item.lane,
-                          })}
-                        >
-                          {debateLaneLabels[item.lane]}
-                        </Link>
-                        . Origin:{" "}
-                        <Link
-                          className={styles.sourceLink}
-                          href={getContributionLedgerHref({
-                            recordView: "changed-card",
-                            origin: getContributionOrigin(item),
-                          })}
-                        >
-                          {getContributionOriginLabel(getContributionOrigin(item))}
-                        </Link>
-                        . Public record target:{" "}
-                        <Link
-                          className={styles.sourceLink}
-                          href={getContributionLedgerHref({
-                            recordView: "changed-card",
-                            attachment: getContributionAttachmentFilter(item),
-                          })}
-                        >
-                          {getContributionAttachmentSummary(item)}
-                        </Link>
-                        .
-                      </p>
-                      {item.draftSource ? (
-                        <p className={styles.metaParagraph}>
-                          AI origin: {item.draftSource.providerLabel}
-                          {item.draftSource.model
-                            ? ` (${item.draftSource.model})`
-                            : ""}{" "}
-                          on {formatTimestamp(item.draftSource.generatedAt)}.
-                          {item.draftSource.messageId ? (
-                            <>
-                              {" "}
-                              <Link
-                                className={styles.sourceLink}
-                                href={getTopicChatMessageHref(item.draftSource.messageId)}
-                              >
-                                Open source AI turn
-                              </Link>
-                            </>
-                          ) : null}
-                        </p>
-                      ) : null}
+                      <ContributionRecordContext contribution={item} recordView="changed-card" />
+                      <ContributionAiOriginContext contribution={item} />
                     </article>
                   ))}
                 </div>
@@ -1035,59 +984,8 @@ export default async function TopicCardPage({
                             "This reviewed contribution was marked as changing the card's visible record.",
                           )}
                         </p>
-                        <p className={styles.metaParagraph}>
-                          Debate lane:{" "}
-                          <Link
-                            className={styles.sourceLink}
-                            href={getContributionLedgerHref({
-                              recordView: "changed-card",
-                              lane: item.lane,
-                            })}
-                          >
-                            {debateLaneLabels[item.lane]}
-                          </Link>
-                          . Origin:{" "}
-                          <Link
-                            className={styles.sourceLink}
-                            href={getContributionLedgerHref({
-                              recordView: "changed-card",
-                              origin: getContributionOrigin(item),
-                            })}
-                          >
-                            {getContributionOriginLabel(getContributionOrigin(item))}
-                          </Link>
-                          . Public record target:{" "}
-                          <Link
-                            className={styles.sourceLink}
-                            href={getContributionLedgerHref({
-                              recordView: "changed-card",
-                              attachment: getContributionAttachmentFilter(item),
-                            })}
-                          >
-                            {getContributionAttachmentSummary(item)}
-                          </Link>
-                          .
-                        </p>
-                        {item.draftSource ? (
-                          <p className={styles.metaParagraph}>
-                            AI origin: {item.draftSource.providerLabel}
-                            {item.draftSource.model
-                              ? ` (${item.draftSource.model})`
-                              : ""}{" "}
-                            on {formatTimestamp(item.draftSource.generatedAt)}.
-                            {item.draftSource.messageId ? (
-                              <>
-                                {" "}
-                                <Link
-                                  className={styles.sourceLink}
-                                  href={getTopicChatMessageHref(item.draftSource.messageId)}
-                                >
-                                  Open source AI turn
-                              </Link>
-                            </>
-                          ) : null}
-                        </p>
-                        ) : null}
+                        <ContributionRecordContext contribution={item} recordView="changed-card" />
+                        <ContributionAiOriginContext contribution={item} />
                       </article>
                     ))}
                 </div>
@@ -1154,7 +1052,17 @@ export default async function TopicCardPage({
                         {debateLaneLabels[item.lane]}
                       </Link>
                       . Current record target: {getContributionAttachmentSummary(item)}. Origin:{" "}
-                      {getContributionOriginLabel(getContributionOrigin(item))}.
+                      <Link
+                        className={styles.sourceLink}
+                        href={getContributionLedgerHref({
+                          recordView: "needs-review",
+                          lane: item.lane,
+                          origin: getContributionOrigin(item),
+                        })}
+                      >
+                        {getContributionOriginLabel(getContributionOrigin(item))}
+                      </Link>
+                      .
                     </p>
                     {item.draftSource ? (
                       <p className={styles.metaParagraph}>
