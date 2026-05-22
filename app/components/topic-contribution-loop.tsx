@@ -368,6 +368,30 @@ function getChangedCardLabel(value: boolean | null | undefined) {
   return "Not decided yet";
 }
 
+function getContributionInterpretation(contribution: PublicContribution) {
+  if (contribution.review?.reviewedAt) {
+    return {
+      label: "Human review read",
+      note:
+        contribution.review.publicRecordNote ??
+        contribution.review.decisionReason ??
+        "Human review resolved this contribution without a public note yet.",
+    };
+  }
+
+  if (contribution.aiIntake?.reviewerNote || contribution.aiIntake?.summary) {
+    return {
+      label: "AI sorting read",
+      note:
+        contribution.aiIntake.reviewerNote ??
+        contribution.aiIntake.summary ??
+        "This contribution still needs a human review decision.",
+    };
+  }
+
+  return null;
+}
+
 function getSourceAiTurnHref(
   pathname: string,
   searchParams: { toString(): string },
@@ -832,6 +856,17 @@ export default function TopicContributionLoop({
       ),
     [activeScoreLabel, activeScoreSliceLabel, highlightedScoreReferences],
   );
+  const highlightedContributionInterpretation = useMemo(() => {
+    if (highlightedVisibleContribution) {
+      return getContributionInterpretation(highlightedVisibleContribution);
+    }
+
+    if (highlightedContribution) {
+      return getContributionInterpretation(highlightedContribution);
+    }
+
+    return null;
+  }, [highlightedContribution, highlightedVisibleContribution]);
   const scoreReturnHref = useMemo(() => {
     if (!activeScoreLabel) {
       return "";
@@ -1518,6 +1553,14 @@ export default function TopicContributionLoop({
                 · {statusLabels[highlightedVisibleContribution.status]} ·{" "}
                 {getDebateLaneLabel(highlightedVisibleContribution.lane)}
               </p>
+              {highlightedContributionInterpretation ? (
+                <div className={styles.focusReferenceBlock}>
+                  <span className={styles.sectionLabel}>
+                    {highlightedContributionInterpretation.label}
+                  </span>
+                  <p>{highlightedContributionInterpretation.note}</p>
+                </div>
+              ) : null}
               {highlightedSourceSummaryReference || alternateHighlightedSummaryReferences.length ? (
                 <div className={styles.focusReferenceBlock}>
                   {highlightedSourceSummaryReference ? (
@@ -1604,6 +1647,14 @@ export default function TopicContributionLoop({
                   Show exact record entry
                 </button>
               </div>
+              {highlightedContributionInterpretation ? (
+                <div className={styles.focusReferenceBlock}>
+                  <span className={styles.sectionLabel}>
+                    {highlightedContributionInterpretation.label}
+                  </span>
+                  <p>{highlightedContributionInterpretation.note}</p>
+                </div>
+              ) : null}
               {highlightedSourceSummaryReference || alternateHighlightedSummaryReferences.length ? (
                 <div className={styles.focusReferenceBlock}>
                   {highlightedSourceSummaryReference ? (
