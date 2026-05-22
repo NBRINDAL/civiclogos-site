@@ -1889,6 +1889,12 @@ export default async function TopicCardPage({
           institutionalPilotRecordContext.contribution.id
         ] ?? []
       : [];
+  const institutionalPilotRecordScoreReferences =
+    institutionalPilotRecordContext
+      ? contributionScoreReferences[
+          institutionalPilotRecordContext.contribution.id
+        ] ?? []
+      : [];
   const activeHeldIntakeRelationship =
     topicIntakeMatchesCard && topicIntakeEntry
       ? topicIntakeEntry.routing.routeKind === "room-topic-draft"
@@ -2037,6 +2043,21 @@ export default async function TopicCardPage({
         params.append(
           "sourceExactRecordSummaryHref",
           `${getRoomTopicHref(roomSlug, card.id)}${reference.href}`,
+        );
+      }
+
+      for (const reference of institutionalPilotRecordScoreReferences.slice(0, 4)) {
+        params.append(
+          "sourceExactRecordScoreLabel",
+          `${reference.scoreLabel} · ${reference.scoreSliceLabel}`,
+        );
+        params.append(
+          "sourceExactRecordScoreHref",
+          `${getRoomTopicHref(roomSlug, card.id)}${getScoreItemHref(
+            reference.scoreLabel,
+            reference.scoreSliceLabel,
+            searchParams,
+          )}`,
         );
       }
     } else if (activeScoreLabel) {
@@ -3312,6 +3333,32 @@ export default async function TopicCardPage({
                               key={`${institutionalPilotRecordContext.contribution.id}-${reference.label}`}
                             >
                               {reference.label}
+                            </Link>
+                          ))}
+                        </div>
+                      </div>
+                    ) : null}
+                    {institutionalPilotRecordScoreReferences.length ? (
+                      <div className={styles.scoreTransparency}>
+                        <span className={styles.scoreTransparencyLabel}>
+                          Scorecard use of this record
+                        </span>
+                        <p>
+                          This same exact record is currently helping ground the
+                          following visible scorecard slices on the topic card.
+                        </p>
+                        <div className={styles.scoreSliceList}>
+                          {institutionalPilotRecordScoreReferences.map((reference) => (
+                            <Link
+                              className={styles.scoreSliceLink}
+                              href={getScoreItemHref(
+                                reference.scoreLabel,
+                                reference.scoreSliceLabel,
+                                searchParams,
+                              )}
+                              key={`${institutionalPilotRecordContext.contribution.id}-${reference.scoreLabel}-${reference.scoreSliceLabel}`}
+                            >
+                              {reference.scoreLabel} · {reference.scoreSliceLabel}
                             </Link>
                           ))}
                         </div>

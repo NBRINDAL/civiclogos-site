@@ -111,6 +111,8 @@ export default async function Home({
     sourceExactRecordSourceTurnHref?: string | string[];
     sourceExactRecordSummaryLabel?: string | string[];
     sourceExactRecordSummaryHref?: string | string[];
+    sourceExactRecordScoreLabel?: string | string[];
+    sourceExactRecordScoreHref?: string | string[];
     sourceIntakeArtifactTitle?: string | string[];
     sourceIntakePromptCount?: string | string[];
     sourceIntakeHeldQuestionCount?: string | string[];
@@ -182,6 +184,18 @@ export default async function Home({
     .map((label, index) => ({
       label,
       href: sourceExactRecordSummaryHrefs[index] ?? "",
+    }))
+    .filter((item): item is { label: string; href: string } => Boolean(item.href));
+  const sourceExactRecordScoreLabels = getAllValues(
+    resolvedSearchParams.sourceExactRecordScoreLabel,
+  );
+  const sourceExactRecordScoreHrefs = getAllValues(
+    resolvedSearchParams.sourceExactRecordScoreHref,
+  );
+  const sourceExactRecordScoreLinks = sourceExactRecordScoreLabels
+    .map((label, index) => ({
+      label,
+      href: sourceExactRecordScoreHrefs[index] ?? "",
     }))
     .filter((item): item is { label: string; href: string } => Boolean(item.href));
   const sourceIntakeArtifactTitle = getFirstValue(
@@ -280,6 +294,12 @@ export default async function Home({
           value: sourceExactRecordSummaryLinks.map((item) => item.label).join(", "),
         }
       : null,
+    sourceExactRecordScoreLinks.length
+      ? {
+          label: "Scorecard use of this record",
+          value: sourceExactRecordScoreLinks.map((item) => item.label).join(", "),
+        }
+      : null,
     sourceIntakeArtifactTitle
       ? { label: "Held artifact", value: sourceIntakeArtifactTitle }
       : null,
@@ -298,6 +318,10 @@ export default async function Home({
       ? { label: "Open source AI turn", href: sourceExactRecordSourceTurnHref }
       : null,
     ...sourceExactRecordSummaryLinks.map((item) => ({
+      label: `Open ${item.label}`,
+      href: item.href,
+    })),
+    ...sourceExactRecordScoreLinks.map((item) => ({
       label: `Open ${item.label}`,
       href: item.href,
     })),
@@ -362,6 +386,11 @@ export default async function Home({
             : null,
           sourceExactRecordSummaryLinks.length
             ? `- Surfacing in card: ${sourceExactRecordSummaryLinks
+                .map((item) => item.label)
+                .join(", ")}`
+            : null,
+          sourceExactRecordScoreLinks.length
+            ? `- Scorecard use of this record: ${sourceExactRecordScoreLinks
                 .map((item) => item.label)
                 .join(", ")}`
             : null,
