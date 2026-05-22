@@ -98,6 +98,8 @@ function getContributionLedgerHref({
   lane,
   contributionId,
   sourceSummary,
+  sourceScoreLabel,
+  sourceScoreSliceLabel,
 }: {
   recordView?: ContributionRecordView;
   attachment?: ContributionAttachmentFilter;
@@ -106,6 +108,8 @@ function getContributionLedgerHref({
   lane?: DebateLane;
   contributionId?: string;
   sourceSummary?: string;
+  sourceScoreLabel?: string;
+  sourceScoreSliceLabel?: string;
 }) {
   const params = new URLSearchParams();
 
@@ -131,6 +135,14 @@ function getContributionLedgerHref({
 
   if (sourceSummary) {
     params.set("sourceSummary", sourceSummary);
+  }
+
+  if (sourceScoreLabel) {
+    params.set("scoreLabel", sourceScoreLabel);
+  }
+
+  if (sourceScoreSliceLabel) {
+    params.set("scoreSlice", sourceScoreSliceLabel);
   }
 
   const query = params.toString();
@@ -308,6 +320,13 @@ function getContributionSummaryHref(
   params.set("summaryLabel", label);
 
   return `?${params.toString()}${hash}`;
+}
+
+function getScoreAnchorId(label: string) {
+  return `score-${label
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")}`;
 }
 
 function matchesContributionSlice(
@@ -1012,7 +1031,11 @@ export default async function TopicCardPage({
                 );
 
                 return (
-                  <div className={styles.scoreItem} key={item.label}>
+                  <div
+                    className={styles.scoreItem}
+                    id={getScoreAnchorId(item.label)}
+                    key={item.label}
+                  >
                     <div className={styles.scoreTop}>
                       <span>{item.label}</span>
                       <strong>{item.value}</strong>
@@ -1036,7 +1059,15 @@ export default async function TopicCardPage({
                               <Link
                                 key={`${item.label}-${slice.label}`}
                                 className={styles.scoreSliceLink}
-                                href={slice.href}
+                                href={getContributionLedgerHref({
+                                  recordView: slice.recordView,
+                                  attachment: slice.attachment,
+                                  reviewStatus: slice.reviewStatus,
+                                  origin: slice.origin,
+                                  lane: slice.lane,
+                                  sourceScoreLabel: item.label,
+                                  sourceScoreSliceLabel: slice.label,
+                                })}
                               >
                                 {slice.label} · {slice.count}
                               </Link>

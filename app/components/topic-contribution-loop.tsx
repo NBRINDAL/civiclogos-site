@@ -423,6 +423,13 @@ function getHighlightedContributionId(hash: string) {
   return decodeURIComponent(hash.slice("#contribution-".length));
 }
 
+function getScoreAnchorId(label: string) {
+  return `score-${label
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")}`;
+}
+
 function formatBytes(value: number) {
   if (value < 1024) {
     return `${value} B`;
@@ -725,6 +732,14 @@ export default function TopicContributionLoop({
     () => searchParams.get("sourceSummary")?.trim() || undefined,
     [searchParams],
   );
+  const activeScoreLabel = useMemo(
+    () => searchParams.get("scoreLabel")?.trim() || undefined,
+    [searchParams],
+  );
+  const activeScoreSliceLabel = useMemo(
+    () => searchParams.get("scoreSlice")?.trim() || undefined,
+    [searchParams],
+  );
   const highlightedSourceSummaryReference = useMemo(() => {
     if (!activeSourceSummaryLabel) {
       return null;
@@ -745,6 +760,15 @@ export default function TopicContributionLoop({
         : highlightedSummaryReferences,
     [highlightedSourceSummaryReference, highlightedSummaryReferences],
   );
+  const scoreReturnHref = useMemo(() => {
+    if (!activeScoreLabel) {
+      return "";
+    }
+
+    const nextQuery = searchParams.toString();
+
+    return `${pathname}${nextQuery ? `?${nextQuery}` : ""}#${getScoreAnchorId(activeScoreLabel)}`;
+  }, [activeScoreLabel, pathname, searchParams]);
 
   function handleFilterPick(filter: ContributionFilter) {
     const nextSearchParams = new URLSearchParams(searchParams.toString());
@@ -1377,6 +1401,32 @@ export default function TopicContributionLoop({
         </div>
 
         <div className={styles.filterBlock}>
+          {activeScoreLabel ? (
+            <div className={styles.focusNotice}>
+              <div>
+                <span className={styles.sectionLabel}>Returned from scorecard</span>
+                <p>
+                  This ledger view was opened from the healthcare score{" "}
+                  <strong>{activeScoreLabel}</strong>
+                  {activeScoreSliceLabel ? (
+                    <>
+                      {" "}
+                      through the slice <strong>{activeScoreSliceLabel}</strong>
+                    </>
+                  ) : null}
+                  . Use the visible record below to challenge or refine that score.
+                </p>
+              </div>
+              <div className={styles.focusReferenceBlock}>
+                <span className={styles.sectionLabel}>Return path</span>
+                <div className={styles.summaryReferenceList}>
+                  <a className={styles.summaryReferenceLink} href={scoreReturnHref}>
+                    Return to {activeScoreLabel}
+                  </a>
+                </div>
+              </div>
+            </div>
+          ) : null}
           {highlightedVisibleContribution ? (
             <div className={styles.focusNotice}>
               <div>
