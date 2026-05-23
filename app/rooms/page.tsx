@@ -133,6 +133,7 @@ export default async function RoomsPage({
           <nav className={styles.nav}>
             <Link href="/">Home</Link>
             <Link href="/healthcare">Healthcare room</Link>
+            <Link href="/press">Press</Link>
             <Link href="/institutions">Institutions</Link>
             <a href="#room-grid">Room grid</a>
             <a href="#card-index">Card index</a>

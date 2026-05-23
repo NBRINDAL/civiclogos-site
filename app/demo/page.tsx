@@ -240,6 +240,7 @@ export default async function DemoPage() {
           <nav className={styles.nav}>
             <Link href="/">Home</Link>
             <Link href="/healthcare">Healthcare room</Link>
+            <Link href="/press">Press</Link>
             <Link href="/institutions">Institutions</Link>
           </nav>
         </div>

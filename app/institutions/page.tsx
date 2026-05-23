@@ -248,6 +248,7 @@ export default async function InstitutionsPage({
           <div className={styles.navLinks}>
             <Link href="/">Home</Link>
             <Link href="/demo">Demo</Link>
+            <Link href="/press">Press</Link>
             <a href="#offers">Offers</a>
             <a href="#model">Public Review Stake</a>
             <a href="#example">Healthcare example</a>

@@ -2568,6 +2568,7 @@ export default async function TopicCardPage({
             <nav className={styles.nav}>
               <Link href="/">Home</Link>
               <Link href={roomHref}>{roomLabel}</Link>
+              <Link href="/press">Press</Link>
               <Link href="/institutions">Institutions</Link>
               <a href="#reader-view">Reader view</a>
               <Link href={ledgerViewHref}>Ledger view</Link>
@@ -3017,6 +3018,7 @@ export default async function TopicCardPage({
           <nav className={styles.nav}>
             <Link href="/">Home</Link>
             <Link href={roomHref}>{roomLabel}</Link>
+            <Link href="/press">Press</Link>
             <Link href="/institutions">Institutions</Link>
             <a href="#room-context">Room context</a>
             <a href="#debate">Debate lanes</a>
