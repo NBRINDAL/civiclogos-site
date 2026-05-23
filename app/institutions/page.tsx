@@ -231,6 +231,12 @@ export default async function InstitutionsPage({
   const changedCardExamples = healthcareContributions.filter(
     (item) => item.review?.changedSynthesis === true,
   );
+  const publicSubmissionExamples = healthcareContributions.filter(
+    (item) => !item.isSeedExample && !item.draftSource,
+  );
+  const prototypeExamples = healthcareContributions.filter(
+    (item) => item.isSeedExample,
+  );
   const humanReviewExamples = healthcareContributions.filter(
     (item) => Boolean(item.review?.reviewedAt),
   );
@@ -430,13 +436,20 @@ export default async function InstitutionsPage({
             <article className={styles.proofCard}>
               <span className={styles.proofLabel}>Visible sample counts</span>
               <div className={styles.proofMeta}>
-                <strong>{visibleContributionExamples.length} visible contribution examples</strong>
-                <strong>{pendingReviewExamples.slice(0, 2).length} pending review items</strong>
-                <strong>{changedCardExamples.slice(0, 2).length} card-changing records</strong>
+                <strong>{visibleContributionExamples.length} visible records</strong>
+                <strong>{pendingReviewExamples.length} pending review</strong>
+                <strong>{changedCardExamples.length} changed-card records</strong>
+                <strong>{publicSubmissionExamples.length} outside public submissions</strong>
+                <strong>{prototypeExamples.length} prototype examples</strong>
               </div>
               <p>
                 The sample below uses the current visible healthcare record instead
                 of a fabricated showcase dataset.
+              </p>
+              <p className={styles.proofDisclosure}>
+                {publicSubmissionExamples.length
+                  ? "Outside public submissions are now visible in this pilot snapshot."
+                  : "No outside public submission has been reviewed into this snapshot yet; the visible records are still prototype-led and labeled that way."}
               </p>
             </article>
 

@@ -290,6 +290,14 @@
   padding-left: 18px;
 }
 
+.proofDisclosure {
+  padding: 12px 14px;
+  border: 1px solid rgba(var(--brand-blue-rgb), 0.14);
+  border-radius: 18px;
+  background: rgba(244, 250, 255, 0.58);
+  font-size: 0.92rem;
+}
+
 .proofLinkList,
 .snapshotLinks {
   display: flex;
