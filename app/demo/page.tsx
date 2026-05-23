@@ -41,13 +41,67 @@ function getStatusLabel(status: PublicContribution["status"]) {
     : status[0].toUpperCase() + status.slice(1);
 }
 
-function getAttachmentLabel(contribution: PublicContribution) {
+function getContributionAttachmentKind(contribution: PublicContribution) {
   const kind =
     contribution.review?.assignedToKind ?? contribution.aiIntake?.suggestedAssignmentKind;
+
+  if (!kind || kind === "unclear") {
+    return "none-yet";
+  }
+
+  return kind;
+}
+
+function getContributionReviewStatus(contribution: PublicContribution) {
+  return contribution.status === "needs review" ? "needs-review" : contribution.status;
+}
+
+function getContributionRecordView(contribution: PublicContribution) {
+  if (contribution.draftSource) {
+    return "ai-assisted";
+  }
+
+  if (isActualCardChange(contribution)) {
+    return "changed-card";
+  }
+
+  if (contribution.evidenceDocument) {
+    return "document-backed";
+  }
+
+  if (contribution.status === "pending" || contribution.status === "needs review") {
+    return "needs-review";
+  }
+
+  return undefined;
+}
+
+function getExactContributionHref(
+  topicHref: string,
+  contribution: PublicContribution,
+) {
+  const params = new URLSearchParams({
+    view: "ledger",
+    reviewStatus: getContributionReviewStatus(contribution),
+    attachment: getContributionAttachmentKind(contribution),
+    origin: getContributionOrigin(contribution),
+    lane: contribution.lane,
+  });
+  const recordView = getContributionRecordView(contribution);
+
+  if (recordView) {
+    params.set("recordView", recordView);
+  }
+
+  return `${topicHref}?${params.toString()}#contribution-${contribution.id}`;
+}
+
+function getAttachmentLabel(contribution: PublicContribution) {
+  const kind = getContributionAttachmentKind(contribution);
   const label =
     contribution.review?.assignedToLabel ?? contribution.aiIntake?.suggestedAssignmentLabel;
 
-  if (!kind || kind === "unclear") {
+  if (kind === "none-yet") {
     return "None yet";
   }
 
@@ -102,7 +156,7 @@ export default async function DemoPage() {
     healthcareCard.revisionHistory[healthcareCard.revisionHistory.length - 1];
   const providerLabels = getProviderLabels(demoContribution);
   const contributionHref = demoContribution
-    ? `${topicHref}?view=ledger#contribution-${demoContribution.id}`
+    ? getExactContributionHref(topicHref, demoContribution)
     : `${topicHref}?view=ledger#contribution-record`;
 
   const demoSteps = [
@@ -292,9 +346,9 @@ export default async function DemoPage() {
                 </dl>
                 <Link
                   className={styles.inlineLink}
-                  href={`${topicHref}?view=ledger#contribution-${item.id}`}
+                  href={getExactContributionHref(topicHref, item)}
                 >
-                  Open this record
+                  Open synced ledger slice
                 </Link>
               </article>
             ))}
