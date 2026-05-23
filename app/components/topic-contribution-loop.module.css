@@ -298,6 +298,83 @@
   color: var(--foreground);
 }
 
+.starterKit {
+  display: grid;
+  gap: 14px;
+  padding: 16px 18px;
+  border: 1px solid rgba(18, 33, 39, 0.1);
+  border-radius: 20px;
+  background:
+    radial-gradient(circle at top left, rgba(var(--brand-blue-rgb), 0.08), transparent 48%),
+    rgba(255, 251, 245, 0.9);
+}
+
+.starterKitHeader {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.starterKitHeader h4 {
+  margin: 8px 0 0;
+  color: var(--foreground);
+  font-family: var(--font-serif), serif;
+  font-size: 1.18rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+
+.starterKitHeader p {
+  max-width: 280px;
+  color: var(--muted);
+  font-size: 0.9rem;
+  line-height: 1.62;
+}
+
+.starterGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.starterCard {
+  display: grid;
+  gap: 8px;
+  min-height: 100%;
+  padding: 14px;
+  border: 1px solid rgba(18, 33, 39, 0.12);
+  border-radius: 18px;
+  background: rgba(255, 252, 247, 0.92);
+  color: var(--foreground);
+  text-align: left;
+  cursor: pointer;
+  transition:
+    transform 180ms ease,
+    border-color 180ms ease,
+    background 180ms ease;
+}
+
+.starterCard span {
+  color: var(--signal);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.starterCard strong {
+  font-size: 0.96rem;
+  line-height: 1.25;
+}
+
+.starterCard small {
+  color: var(--muted);
+  font-size: 0.82rem;
+  line-height: 1.5;
+}
+
 .reviewPath {
   display: grid;
   gap: 12px;
@@ -755,14 +832,16 @@
   .sourceLink:hover,
   .filterChip:hover,
   .activeFilterChip:hover,
-  .filterReset:hover {
+  .filterReset:hover,
+  .starterCard:hover {
     transform: translateY(-1px);
   }
 
   .laneButton:hover,
   .sourceLink:hover,
   .filterChip:hover,
-  .filterReset:hover {
+  .filterReset:hover,
+  .starterCard:hover {
     border-color: rgba(18, 33, 39, 0.24);
     background: rgba(255, 251, 245, 0.96);
   }
@@ -780,14 +859,17 @@
   .fieldGrid,
   .readerGrid,
   .reviewStepGrid,
+  .starterGrid,
   .sectionHeader,
   .formHeader,
+  .starterKitHeader,
   .formFooter {
     grid-template-columns: 1fr;
   }
 
   .sectionHeader,
   .formHeader,
+  .starterKitHeader,
   .formFooter {
     display: grid;
   }
@@ -815,7 +897,8 @@
   .sourceLink,
   .filterChip,
   .activeFilterChip,
-  .filterReset {
+  .filterReset,
+  .starterCard {
     transition: none;
   }
 }

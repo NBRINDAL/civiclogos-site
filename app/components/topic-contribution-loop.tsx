@@ -116,6 +116,16 @@ type ScoreContributionSlice = {
   lane?: DebateLane;
 };
 
+type ContributionStarterKit = {
+  lane: DebateLane;
+  label: string;
+  title: string;
+  body: string;
+  evidenceLabel?: string;
+  evidenceUrl?: string;
+  note: string;
+};
+
 type FormState = {
   lane: FormLane;
   title: string;
@@ -449,6 +459,126 @@ function getContributionCue(lane: DebateLane | "") {
         avoid: "Avoid trying to settle the whole healthcare debate in one contribution.",
       };
   }
+}
+
+function getContributionStarterKits({
+  roomSlug,
+  topicId,
+  topicTitle,
+}: {
+  roomSlug: IssueRoomSlug;
+  topicId: string;
+  topicTitle: string;
+}): ContributionStarterKit[] {
+  if (roomSlug === "healthcare" && topicId === "topic-001") {
+    return [
+      {
+        lane: "objection",
+        label: "Challenge the savings claim",
+        title: "Administrative savings may not reach patients or clinicians",
+        body: [
+          "Claim pressured: The card assumes administrative simplification can create savings that are measurable and reinvestable.",
+          "",
+          "Why this might be wrong:",
+          "- ",
+          "",
+          "What would make the objection stronger:",
+          "- A source, example, or mechanism showing where savings are captured instead.",
+          "",
+          "Suggested attachment: objection / economic assumption.",
+        ].join("\n"),
+        note: "Best if you can name who captures the savings: payers, hospitals, vendors, employers, patients, or clinicians.",
+      },
+      {
+        lane: "evidence",
+        label: "Add one concrete source",
+        title: "Evidence on administrative overhead, prior authorization, or documentation burden",
+        body: [
+          "Source claim:",
+          "- ",
+          "",
+          "What the source shows:",
+          "- ",
+          "",
+          "How it should affect the card:",
+          "- It supports the current synthesis / challenges the current synthesis / narrows the claim.",
+          "",
+          "Suggested attachment: evidence.",
+        ].join("\n"),
+        evidenceLabel: "Administrative overhead / prior authorization evidence",
+        note: "A single useful source is enough if you explain what the room should learn from it.",
+      },
+      {
+        lane: "correction",
+        label: "Correct the AI triage boundary",
+        title: "Clarify what AI-assisted triage is allowed to decide",
+        body: [
+          "Possible correction:",
+          "- The card should distinguish low-risk routing support from clinical judgment or denial decisions.",
+          "",
+          "Why this matters:",
+          "- ",
+          "",
+          "Replacement wording or constraint:",
+          "- ",
+          "",
+          "Suggested attachment: synthesis / assumption.",
+        ].join("\n"),
+        note: "Useful if the card is currently too broad about what AI should do before human escalation.",
+      },
+    ];
+  }
+
+  return [
+    {
+      lane: "objection",
+      label: "Write one objection",
+      title: `One objection to ${topicTitle}`,
+      body: [
+        "Claim pressured:",
+        "- ",
+        "",
+        "Why this might be wrong or overstated:",
+        "- ",
+        "",
+        "What would make the objection stronger:",
+        "- ",
+      ].join("\n"),
+      note: "Choose one claim and make the pressure easy to attach.",
+    },
+    {
+      lane: "evidence",
+      label: "Add one source",
+      title: `One evidence source for ${topicTitle}`,
+      body: [
+        "Source claim:",
+        "- ",
+        "",
+        "What the source shows:",
+        "- ",
+        "",
+        "How it should affect the card:",
+        "- ",
+      ].join("\n"),
+      note: "A source is useful when it says what the room should learn.",
+    },
+    {
+      lane: "correction",
+      label: "Make one correction",
+      title: `One correction to ${topicTitle}`,
+      body: [
+        "Exact issue:",
+        "- ",
+        "",
+        "Replacement or narrowing language:",
+        "- ",
+        "",
+        "Why this improves the public record:",
+        "- ",
+      ].join("\n"),
+      note: "Small precise fixes are better than rewriting the whole card.",
+    },
+  ];
 }
 
 function getSubmissionRecordType(contribution: PublicContribution) {
@@ -1158,6 +1288,10 @@ export default function TopicContributionLoop({
     () => getQuickStartNotice(quickStartSource, quickStartLane),
     [quickStartLane, quickStartSource],
   );
+  const contributionStarterKits = useMemo(
+    () => getContributionStarterKits({ roomSlug, topicId, topicTitle }),
+    [roomSlug, topicId, topicTitle],
+  );
   const contributionBodyPlaceholder = useMemo(
     () => getContributionBodyPlaceholder(selectedContributionLane),
     [selectedContributionLane],
@@ -1541,6 +1675,23 @@ export default function TopicContributionLoop({
     });
   }
 
+  function handleStarterPick(starter: ContributionStarterKit) {
+    setFormState((current) => ({
+      ...current,
+      lane: starter.lane,
+      title: starter.title,
+      body: starter.body,
+      evidenceLabel: starter.evidenceLabel ?? current.evidenceLabel,
+      evidenceUrl: starter.evidenceUrl ?? current.evidenceUrl,
+    }));
+    setSubmissionState({ kind: "idle" });
+
+    requestAnimationFrame(() => {
+      titleRef.current?.focus();
+      titleRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+    });
+  }
+
   function resetContributionFields() {
     setFormState((current) => ({
       ...current,
@@ -1746,6 +1897,34 @@ export default function TopicContributionLoop({
                 <p>
                   <strong>Avoid:</strong> {contributionCue.avoid}
                 </p>
+              </div>
+            </div>
+
+            <div className={styles.starterKit}>
+              <div className={styles.starterKitHeader}>
+                <div>
+                  <span className={styles.sectionLabel}>Three-minute starter</span>
+                  <h4>Start with one narrow move, then edit it in your own voice.</h4>
+                </div>
+                <p>
+                  These buttons only prefill a draft. Nothing enters the public
+                  record until you revise and submit it.
+                </p>
+              </div>
+              <div className={styles.starterGrid}>
+                {contributionStarterKits.map((starter) => (
+                  <button
+                    className={styles.starterCard}
+                    data-contribution-starter={starter.lane}
+                    key={starter.label}
+                    onClick={() => handleStarterPick(starter)}
+                    type="button"
+                  >
+                    <span>{getDebateLaneLabel(starter.lane)}</span>
+                    <strong>{starter.label}</strong>
+                    <small>{starter.note}</small>
+                  </button>
+                ))}
               </div>
             </div>
 
