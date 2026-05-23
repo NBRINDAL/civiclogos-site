@@ -16,6 +16,11 @@ import {
   isProposedCardChange,
 } from "../lib/contribution-impact";
 import {
+  getContributionOrigin,
+  getContributionOriginLabel,
+  type ContributionOrigin,
+} from "../lib/contribution-origin";
+import {
   debateLaneLabels,
   getDebateLaneLabel,
   normalizeDebateLane,
@@ -94,9 +99,7 @@ type ContributionFilter =
 
 type ContributionOriginFilter =
   | "all-origins"
-  | "human-submitted"
-  | "ai-origin"
-  | "seed-example";
+  | ContributionOrigin;
 
 type ContributionStatusFilter =
   | "all-statuses"
@@ -189,9 +192,10 @@ const contributionAttachmentFilterLabels: Record<ContributionAttachmentFilter, s
 
 const contributionOriginFilterLabels: Record<ContributionOriginFilter, string> = {
   "all-origins": "All origins",
-  "human-submitted": "Public submission",
-  "ai-origin": "AI-origin",
-  "seed-example": "Prototype example",
+  "human-submitted": getContributionOriginLabel("human-submitted"),
+  "founder-submitted": getContributionOriginLabel("founder-submitted"),
+  "ai-origin": getContributionOriginLabel("ai-origin"),
+  "seed-example": getContributionOriginLabel("seed-example"),
 };
 
 const contributionStatusFilterLabels: Record<ContributionStatusFilter, string> = {
@@ -241,6 +245,7 @@ function normalizeContributionOriginFilter(
   if (
     value === "all-origins" ||
     value === "human-submitted" ||
+    value === "founder-submitted" ||
     value === "ai-origin" ||
     value === "seed-example"
   ) {
@@ -329,18 +334,6 @@ function getVisibleAttachmentFilter(contribution: PublicContribution): Contribut
   }
 
   return normalizedKind;
-}
-
-function getContributionOrigin(contribution: PublicContribution): ContributionOriginFilter {
-  if (contribution.isSeedExample) {
-    return "seed-example";
-  }
-
-  if (contribution.draftSource) {
-    return "ai-origin";
-  }
-
-  return "human-submitted";
 }
 
 function getQuickStartNotice(source: string | undefined, lane: DebateLane | null) {
@@ -594,7 +587,9 @@ function getSubmissionRecordType(contribution: PublicContribution) {
       ? "Prototype example"
       : origin === "ai-origin"
         ? "AI-origin contribution"
-        : "Public submission";
+        : origin === "founder-submitted"
+          ? "Founder-submitted contribution"
+          : "Public submission";
 
   if (contribution.evidenceDocument) {
     return `${type} - Document-backed submission`;
@@ -612,6 +607,10 @@ function getAdminReviewNote(contribution: PublicContribution) {
 
   if (origin === "ai-origin") {
     return "AI-origin draft. It can help form a contribution, but human review decides whether it attaches or changes the card.";
+  }
+
+  if (origin === "founder-submitted") {
+    return "Founder-submitted record. It is non-prototype evidence or review work, but it is not counted as outside public usage.";
   }
 
   if (contribution.evidenceDocument) {
@@ -792,7 +791,7 @@ function getScoreTransparencySliceDefinitions(
       ];
     case "Public value":
       return [
-        { label: "Public submissions", origin: "human-submitted" },
+        { label: "Outside public submissions", origin: "human-submitted" },
         { label: "Changed-card record", recordView: "changed-card" },
       ];
     default:
@@ -927,11 +926,7 @@ function getExactContributionLedgerHref(
     nextSearchParams.delete("attachment");
   }
 
-  if (originFilter !== "all-origins") {
-    nextSearchParams.set("origin", originFilter);
-  } else {
-    nextSearchParams.delete("origin");
-  }
+  nextSearchParams.set("origin", originFilter);
 
   nextSearchParams.set("lane", contribution.lane);
 
@@ -1206,6 +1201,9 @@ export default function TopicContributionLoop({
       ).length,
       "ai-origin": attachmentFilteredContributions.filter(
         (item) => getContributionOrigin(item) === "ai-origin",
+      ).length,
+      "founder-submitted": attachmentFilteredContributions.filter(
+        (item) => getContributionOrigin(item) === "founder-submitted",
       ).length,
       "seed-example": attachmentFilteredContributions.filter(
         (item) => getContributionOrigin(item) === "seed-example",

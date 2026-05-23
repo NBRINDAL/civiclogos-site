@@ -12,6 +12,12 @@ import {
   isActualCardChange,
 } from "@/app/lib/contribution-impact";
 import {
+  getContributionOrigin,
+  getContributionOriginLabel,
+  isFounderSubmittedContribution,
+  isOutsidePublicContribution,
+} from "@/app/lib/contribution-origin";
+import {
   debateLaneOptions,
   debateLaneLabels,
   reviewStatusOptions,
@@ -22,8 +28,6 @@ import { updateContributionReview } from "./actions";
 import styles from "./page.module.css";
 
 export const dynamic = "force-dynamic";
-
-type ContributionOrigin = "seed-example" | "ai-origin" | "human-submitted";
 
 function isRoomSlug(value: string): value is IssueRoomSlug {
   return value in issueRooms;
@@ -40,40 +44,6 @@ const reviewStatusPriority: Record<string, number> = {
   incorporated: 3,
   rejected: 4,
 };
-
-function getContributionOrigin(contribution: {
-  draftSource?: unknown;
-  isSeedExample?: boolean;
-}): ContributionOrigin {
-  if (contribution.isSeedExample) {
-    return "seed-example";
-  }
-
-  if (contribution.draftSource) {
-    return "ai-origin";
-  }
-
-  return "human-submitted";
-}
-
-function getContributionOriginLabel(origin: ContributionOrigin) {
-  switch (origin) {
-    case "ai-origin":
-      return "AI-origin";
-    case "seed-example":
-      return "Prototype example";
-    case "human-submitted":
-    default:
-      return "Public submission";
-  }
-}
-
-function isPublicSubmission(contribution: {
-  draftSource?: unknown;
-  isSeedExample?: boolean;
-}) {
-  return !contribution.isSeedExample && !contribution.draftSource;
-}
 
 function getContributionStatusFilter(status: string) {
   return status === "needs review" ? "needs-review" : status;
@@ -198,6 +168,10 @@ function getTopicChatMessageHref(item: {
   evidenceDocument?: unknown;
   id: string;
   isSeedExample?: boolean;
+  author: {
+    name?: string;
+    expertise?: string;
+  };
   lane: string;
   review?: {
     assignedToKind?: string | null;
@@ -325,7 +299,7 @@ export default async function ContributionReviewPage({
       new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime()
     );
   });
-  const publicSubmissions = sortedContributions.filter(isPublicSubmission);
+  const publicSubmissions = sortedContributions.filter(isOutsidePublicContribution);
   const publicReviewQueue = publicSubmissions.filter(isReviewableContribution);
   const publicSpotlightItems = (
     publicReviewQueue.length ? publicReviewQueue : publicSubmissions
@@ -338,6 +312,7 @@ export default async function ContributionReviewPage({
     rejected: sortedContributions.filter((item) => item.status === "rejected").length,
     reviewable: sortedContributions.filter(isReviewableContribution).length,
     publicSubmissions: publicSubmissions.length,
+    founderSubmitted: sortedContributions.filter(isFounderSubmittedContribution).length,
     prototypeExamples: sortedContributions.filter((item) => item.isSeedExample).length,
     aiOrigin: sortedContributions.filter((item) => item.draftSource).length,
     documentBacked: sortedContributions.filter((item) => item.evidenceDocument).length,
@@ -385,9 +360,14 @@ export default async function ContributionReviewPage({
 
           <div className={styles.provenanceGrid}>
             <article className={styles.provenanceCard}>
-              <span>Public submissions</span>
+              <span>Outside public submissions</span>
               <strong>{summary.publicSubmissions}</strong>
               <p>Non-prototype, non-AI-origin records from outside contributors.</p>
+            </article>
+            <article className={styles.provenanceCard}>
+              <span>Founder-submitted</span>
+              <strong>{summary.founderSubmitted}</strong>
+              <p>Non-prototype founder records used for evidence and review work without implying outside traction.</p>
             </article>
             <article className={styles.provenanceCard}>
               <span>Needs human review</span>
@@ -424,7 +404,7 @@ export default async function ContributionReviewPage({
                   <h2>
                     {publicReviewQueue.length
                       ? "Review these outside submissions first."
-                      : "Public submissions are present in the record."}
+                      : "Outside public submissions are present in the record."}
                   </h2>
                 </div>
                 {publicReviewQueue.length ? (
@@ -495,7 +475,8 @@ export default async function ContributionReviewPage({
                 When someone submits a real objection, evidence source, or correction,
                 it will appear with its lane, AI sorting, suggested attachment, and
                 human-review status. Prototype examples stay labeled separately so
-                Civic Logos never has to pretend seeded records are public use.
+                Civic Logos never has to pretend seeded or founder-submitted
+                records are outside public use.
               </p>
             </div>
           )}

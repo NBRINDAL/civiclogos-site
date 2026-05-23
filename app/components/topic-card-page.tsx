@@ -31,6 +31,11 @@ import {
 } from "../lib/contribution-store";
 import { isActualCardChange } from "../lib/contribution-impact";
 import {
+  getContributionOrigin,
+  getContributionOriginLabel,
+  type ContributionOrigin,
+} from "../lib/contribution-origin";
+import {
   debateLaneLabels,
   debateLaneOptions,
   normalizeDebateLane,
@@ -80,9 +85,7 @@ type ContributionStatusFilter =
   | "incorporated"
   | "rejected";
 type ContributionOriginFilter =
-  | "human-submitted"
-  | "ai-origin"
-  | "seed-example";
+  ContributionOrigin;
 type TopicCardView = "reader" | "ledger";
 
 const INSTITUTIONAL_PILOT_SECTION_ID = "institutional-pilot";
@@ -237,6 +240,10 @@ function getPilotInquiryRecordContext({
       return "public submission";
     }
 
+    if (origin === "founder-submitted") {
+      return "founder-submitted record";
+    }
+
     return "prototype example";
   };
 
@@ -298,6 +305,9 @@ function getPilotInquiryRecordContext({
     const publicSubmissionCount = liveContributions.filter(
       (item) => getContributionOrigin(item) === "human-submitted",
     ).length;
+    const founderSubmittedCount = liveContributions.filter(
+      (item) => getContributionOrigin(item) === "founder-submitted",
+    ).length;
     const aiOriginCount = liveContributions.filter(
       (item) => getContributionOrigin(item) === "ai-origin",
     ).length;
@@ -315,8 +325,12 @@ function getPilotInquiryRecordContext({
       reviewedNonSeedContributions[0] ?? null;
     const publicUptakeLinks = [
       {
-        label: `Public submissions · ${publicSubmissionCount}`,
+        label: `Outside public submissions · ${publicSubmissionCount}`,
         href: getContributionLedgerHref({ origin: "human-submitted" }),
+      },
+      {
+        label: `Founder-submitted records · ${founderSubmittedCount}`,
+        href: getContributionLedgerHref({ origin: "founder-submitted" }),
       },
       {
         label: `AI-origin record · ${aiOriginCount}`,
@@ -328,29 +342,55 @@ function getPilotInquiryRecordContext({
     );
     let publicUptakeLabel = "No public uptake yet";
     let publicUptakeNote =
-      "The visible healthcare record is still entirely prototype-led; no public submission or AI-origin contribution is visible on this card yet.";
+      "The visible healthcare record is still waiting for outside public uptake; prototype, founder-submitted, and AI-origin records stay labeled separately.";
     let publicUptakeContribution: PublicContribution | null = null;
 
-    if (origin !== "seed-example" && contribution.review?.reviewedAt) {
-      publicUptakeLabel = "Reviewed public uptake is visible";
+    if (origin === "human-submitted" && contribution.review?.reviewedAt) {
+      publicUptakeLabel = "Reviewed outside public uptake is visible";
       publicUptakeNote = `This pilot-facing record is already being grounded by a reviewed ${getOriginNounPhrase(
         contribution,
       )}.`;
       publicUptakeContribution = contribution;
-    } else if (origin !== "seed-example") {
-      publicUptakeLabel = "Visible public uptake is still awaiting review";
+    } else if (origin === "human-submitted") {
+      publicUptakeLabel = "Outside public uptake is still awaiting review";
       publicUptakeNote = `This pilot-facing record already comes from a visible ${getOriginNounPhrase(
         contribution,
-      )}, but it still needs human review before it can count as reviewed public uptake.`;
+      )}, but it still needs human review before it can count as reviewed outside public uptake.`;
+      publicUptakeContribution = contribution;
+    } else if (origin === "founder-submitted" && contribution.review?.reviewedAt) {
+      publicUptakeLabel = "Founder-submitted review record is visible";
+      publicUptakeNote =
+        "This pilot-facing record is non-prototype and human-reviewed, but it is founder-submitted and should not be counted as outside public uptake.";
+      publicUptakeContribution = contribution;
+    } else if (origin === "founder-submitted") {
+      publicUptakeLabel = "Founder-submitted record is awaiting review";
+      publicUptakeNote =
+        "This visible record can improve the proof object after human review, but it does not imply outside public participation.";
+      publicUptakeContribution = contribution;
+    } else if (origin === "ai-origin" && contribution.review?.reviewedAt) {
+      publicUptakeLabel = "Reviewed AI-origin record is visible";
+      publicUptakeNote =
+        "This pilot-facing record came from an AI-assisted draft and has human review attached; it is not treated as outside public uptake.";
+      publicUptakeContribution = contribution;
+    } else if (origin === "ai-origin") {
+      publicUptakeLabel = "AI-origin record is still awaiting review";
+      publicUptakeNote =
+        "This pilot-facing record came from an AI-assisted draft and still needs human review before it can affect the card.";
       publicUptakeContribution = contribution;
     } else if (strongestReviewedNonSeedContribution) {
-      publicUptakeLabel = "Reviewed public uptake is visible elsewhere on this card";
+      publicUptakeLabel =
+        getContributionOrigin(strongestReviewedNonSeedContribution) === "human-submitted"
+          ? "Reviewed outside public uptake is visible elsewhere on this card"
+          : "Reviewed non-prototype record is visible elsewhere on this card";
       publicUptakeNote = `A reviewed ${getOriginNounPhrase(
         strongestReviewedNonSeedContribution,
       )} is already visible on this card, but the current pilot-facing record is still prototype-led.`;
       publicUptakeContribution = strongestReviewedNonSeedContribution;
     } else if (strongestVisibleNonSeedContribution) {
-      publicUptakeLabel = "Visible public uptake is still awaiting review";
+      publicUptakeLabel =
+        getContributionOrigin(strongestVisibleNonSeedContribution) === "human-submitted"
+          ? "Visible outside public uptake is still awaiting review"
+          : "Visible non-prototype record is still awaiting review";
       publicUptakeNote = `A ${getOriginNounPhrase(
         strongestVisibleNonSeedContribution,
       )} is already visible on this card, but no non-seed record has yet been reviewed into a stronger live object.`;
@@ -362,8 +402,8 @@ function getPilotInquiryRecordContext({
         contribution,
         sliceLabel,
         pilotGrounding: hasReviewedNonSeedRecord
-          ? "A public-submission or AI-origin record is now visible, but this prototype example is still the strongest reviewed live object currently carrying the pilot handoff."
-          : "The strongest visible pilot-facing record is still a prototype example because no public submission or AI-origin contribution has yet been reviewed into a stronger live object.",
+          ? "A non-prototype record is now visible, but this prototype example is still the strongest reviewed live object currently carrying the pilot handoff."
+          : "The strongest visible pilot-facing record is still a prototype example because no outside public, founder-submitted, or AI-origin contribution has yet been reviewed into a stronger live object.",
         publicUptakeLabel,
         publicUptakeNote,
         publicUptakeContribution,
@@ -593,30 +633,6 @@ function getContributionAttachmentSummary(contribution: PublicContribution) {
   }
 
   return `${baseLabel} - ${specificLabel}`;
-}
-
-function getContributionOrigin(contribution: PublicContribution): ContributionOriginFilter {
-  if (contribution.isSeedExample) {
-    return "seed-example";
-  }
-
-  if (contribution.draftSource) {
-    return "ai-origin";
-  }
-
-  return "human-submitted";
-}
-
-function getContributionOriginLabel(origin: ContributionOriginFilter) {
-  switch (origin) {
-    case "ai-origin":
-      return "AI-origin";
-    case "seed-example":
-      return "Prototype example";
-    case "human-submitted":
-    default:
-      return "Public submission";
-  }
 }
 
 function getContributionStatusFilter(status: PublicContribution["status"]): ContributionStatusFilter {
@@ -1024,7 +1040,7 @@ function getScoreTransparencySliceDefinitions(
       ];
     case "Public value":
       return [
-        { label: "Public submissions", origin: "human-submitted" },
+        { label: "Outside public submissions", origin: "human-submitted" },
         { label: "Changed-card record", recordView: "changed-card" },
       ];
     default:
@@ -1840,6 +1856,9 @@ export default async function TopicCardPage({
   const publicSubmissionContributions = liveContributions.filter(
     (item) => getContributionOrigin(item) === "human-submitted",
   );
+  const founderSubmittedContributions = liveContributions.filter(
+    (item) => getContributionOrigin(item) === "founder-submitted",
+  );
   const prototypeExampleContributions = liveContributions.filter(
     (item) => getContributionOrigin(item) === "seed-example",
   );
@@ -1895,7 +1914,7 @@ export default async function TopicCardPage({
     (item) => isActualCardChange(item),
   );
   const originCounts = (
-    ["human-submitted", "ai-origin", "seed-example"] as const
+    ["human-submitted", "founder-submitted", "ai-origin", "seed-example"] as const
   )
     .map((origin) => ({
       origin,
@@ -2600,6 +2619,10 @@ export default async function TopicCardPage({
                   <span>Outside submissions</span>
                   <strong>{publicSubmissionContributions.length}</strong>
                 </div>
+                <div>
+                  <span>Founder-submitted</span>
+                  <strong>{founderSubmittedContributions.length}</strong>
+                </div>
               </div>
             </aside>
           </div>
@@ -2704,16 +2727,26 @@ export default async function TopicCardPage({
                     <h3>
                       {publicSubmissionContributions.length
                         ? "Outside public submissions are now visible on this card."
+                        : founderSubmittedContributions.length
+                          ? "A founder-submitted record is visible, but outside public review is still the next proof step."
                         : "This card is still waiting for its first outside public submission."}
                     </h3>
                     <p>
                       {publicSubmissionContributions.length
                         ? `${publicSubmissionContributions.length} outside submission${
                             publicSubmissionContributions.length === 1 ? "" : "s"
-                          } visible. Prototype examples and AI-origin records remain labeled so the ledger does not pretend to have more public uptake than it has.`
+                          } visible. Prototype examples, founder-submitted records, and AI-origin records remain labeled so the ledger does not pretend to have more public uptake than it has.`
+                        : founderSubmittedContributions.length
+                          ? `${founderSubmittedContributions.length} founder-submitted record${
+                              founderSubmittedContributions.length === 1 ? "" : "s"
+                            } and ${assistedRecordContributions.length} AI-origin record${
+                              assistedRecordContributions.length === 1 ? "" : "s"
+                            } are visible. The next useful move is still one outside objection, evidence source, or correction that can enter human review.`
                         : `${prototypeExampleContributions.length} prototype example${
                             prototypeExampleContributions.length === 1 ? "" : "s"
-                          } and ${assistedRecordContributions.length} AI-origin record${
+                          }, ${founderSubmittedContributions.length} founder-submitted record${
+                            founderSubmittedContributions.length === 1 ? "" : "s"
+                          }, and ${assistedRecordContributions.length} AI-origin record${
                             assistedRecordContributions.length === 1 ? "" : "s"
                           } are visible. The next useful move is one real objection, evidence source, or correction that can enter human review.`}
                     </p>

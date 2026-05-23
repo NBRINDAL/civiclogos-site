@@ -9,6 +9,11 @@ import {
 } from "../lib/contribution-impact";
 import type { PublicContribution } from "../lib/contribution-types";
 import {
+  getContributionOrigin,
+  getContributionOriginLabel,
+  type ContributionOrigin,
+} from "../lib/contribution-origin";
+import {
   getDebateLaneLabel,
   normalizeReviewTargetKind,
   type DebateLane,
@@ -115,11 +120,6 @@ type ContributionFilter =
   | "changed-card"
   | "ai-assisted"
   | "document-backed";
-
-type ContributionOriginFilter =
-  | "human-submitted"
-  | "ai-origin"
-  | "seed-example";
 
 const quickChallengePrompts = [
   "Which assumption is carrying the most hidden risk in this card right now?",
@@ -244,17 +244,17 @@ function getContributionStatusLabel(filter: ContributionStatusFilter) {
   }
 }
 
-function getContributionOriginLabel(origin: string) {
-  switch (origin) {
-    case "ai-origin":
-      return "AI-origin";
-    case "seed-example":
-      return "Prototype example";
-    case "human-submitted":
-      return "Public submission";
-    default:
-      return origin;
+function getContributionOriginContextLabel(origin: string) {
+  if (
+    origin === "human-submitted" ||
+    origin === "founder-submitted" ||
+    origin === "ai-origin" ||
+    origin === "seed-example"
+  ) {
+    return getContributionOriginLabel(origin as ContributionOrigin);
   }
+
+  return origin;
 }
 
 function getVisibleAttachmentFilter(
@@ -269,20 +269,6 @@ function getVisibleAttachmentFilter(
   }
 
   return normalizedKind;
-}
-
-function getContributionOriginFilter(
-  contribution: PublicContribution,
-): ContributionOriginFilter {
-  if (contribution.isSeedExample) {
-    return "seed-example";
-  }
-
-  if (contribution.draftSource) {
-    return "ai-origin";
-  }
-
-  return "human-submitted";
 }
 
 function getContributionStatusFilter(
@@ -549,7 +535,7 @@ function getExactContributionRecordHref(
   const recordView = getContributionRecordView(contribution);
   const reviewStatus = getContributionStatusFilter(contribution.status);
   const attachment = getVisibleAttachmentFilter(contribution);
-  const origin = getContributionOriginFilter(contribution);
+  const origin = getContributionOrigin(contribution);
 
   if (recordView) {
     nextSearchParams.set("recordView", recordView);
@@ -675,7 +661,7 @@ export default function TopicAiPanel({
       attachment: sourceAttachment
         ? getPromotionAttachmentFilterLabel(sourceAttachment as PromotionAttachmentFilter)
         : null,
-      origin: sourceOrigin ? getContributionOriginLabel(sourceOrigin) : null,
+      origin: sourceOrigin ? getContributionOriginContextLabel(sourceOrigin) : null,
       lane: sourceLane ? getDebateLaneLabel(sourceLane as DebateLane) : null,
     };
   }, [searchParams]);

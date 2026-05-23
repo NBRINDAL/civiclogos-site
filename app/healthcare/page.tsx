@@ -16,6 +16,10 @@ import {
 } from "../lib/contribution-store";
 import { isActualCardChange } from "../lib/contribution-impact";
 import {
+  isFounderSubmittedContribution,
+  isOutsidePublicContribution,
+} from "../lib/contribution-origin";
+import {
   getHomeIntakeCookieName,
   parseHomeIntakeCookie,
 } from "../lib/home-intake-cookie";
@@ -137,7 +141,10 @@ export default async function HealthcareIssueRoomPage({
     (item) => isActualCardChange(item),
   ).length;
   const publicSubmissionCount = pressureTestContributions.filter(
-    (item) => !item.isSeedExample && !item.draftSource,
+    isOutsidePublicContribution,
+  ).length;
+  const founderSubmittedCount = pressureTestContributions.filter(
+    isFounderSubmittedContribution,
   ).length;
   const prototypeExampleCount = pressureTestContributions.filter(
     (item) => item.isSeedExample,
@@ -260,14 +267,19 @@ export default async function HealthcareIssueRoomPage({
                 <dd>{changedCardCount}</dd>
               </div>
               <div>
-                <dt>Public submissions</dt>
+                <dt>Outside submissions</dt>
                 <dd>{publicSubmissionCount}</dd>
+              </div>
+              <div>
+                <dt>Founder-submitted</dt>
+                <dd>{founderSubmittedCount}</dd>
               </div>
             </dl>
 
             <p className={styles.pressureRecordNote}>
               Current record mode: <strong>{contributionMetadata.mode}</strong>.
               Prototype examples visible: <strong>{prototypeExampleCount}</strong>.
+              Founder-submitted records: <strong>{founderSubmittedCount}</strong>.
               Outside public submissions: <strong>{publicSubmissionCount}</strong>.
             </p>
           </div>

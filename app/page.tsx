@@ -8,6 +8,10 @@ import {
   listPublicContributions,
 } from "./lib/contribution-store";
 import { isActualCardChange } from "./lib/contribution-impact";
+import {
+  isFounderSubmittedContribution,
+  isOutsidePublicContribution,
+} from "./lib/contribution-origin";
 import styles from "./page.module.css";
 
 const distinctions = [
@@ -558,9 +562,8 @@ export default async function Home({
     changedCard: campaignContributions.filter(
       (item) => isActualCardChange(item),
     ).length,
-    publicSubmissions: campaignContributions.filter(
-      (item) => !item.isSeedExample && !item.draftSource,
-    ).length,
+    publicSubmissions: campaignContributions.filter(isOutsidePublicContribution).length,
+    founderSubmitted: campaignContributions.filter(isFounderSubmittedContribution).length,
     prototypeExamples: campaignContributions.filter((item) => item.isSeedExample).length,
   };
 
@@ -771,12 +774,18 @@ export default async function Home({
                 <dt>Outside submissions</dt>
                 <dd>{campaignRecordStats.publicSubmissions}</dd>
               </div>
+              <div>
+                <dt>Founder-submitted</dt>
+                <dd>{campaignRecordStats.founderSubmitted}</dd>
+              </div>
             </dl>
             <p className={styles.campaignRecordNote}>
               Current record mode: <strong>{campaignContributionMetadata.mode}</strong>.
               Prototype examples visible:{" "}
-              <strong>{campaignRecordStats.prototypeExamples}</strong>. Outside
-              public submissions stay at{" "}
+              <strong>{campaignRecordStats.prototypeExamples}</strong>.
+              Founder-submitted records visible:{" "}
+              <strong>{campaignRecordStats.founderSubmitted}</strong>. Outside
+              public submissions stay separate at{" "}
               <strong>{campaignRecordStats.publicSubmissions}</strong> until a real
               contributor enters the review loop.
             </p>

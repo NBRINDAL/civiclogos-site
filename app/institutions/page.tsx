@@ -10,6 +10,12 @@ import {
 import { topicCardVisibleContributionLimit } from "../lib/contribution-constants";
 import { getContributionStoreMetadata, listPublicContributions } from "../lib/contribution-store";
 import { isActualCardChange } from "../lib/contribution-impact";
+import {
+  getContributionOrigin,
+  getContributionOriginLabel,
+  isFounderSubmittedContribution,
+  isOutsidePublicContribution,
+} from "../lib/contribution-origin";
 import type { PublicContribution } from "../lib/contribution-types";
 import { debateLaneLabels } from "../lib/reasoning-types";
 import styles from "./page.module.css";
@@ -72,32 +78,6 @@ const revenueFirewallItems = [
     body: "The monetization architecture is money for scrutiny, not money for credibility laundering.",
   },
 ] as const;
-
-function getContributionOrigin(contribution: PublicContribution) {
-  if (contribution.isSeedExample) {
-    return "seed-example" as const;
-  }
-
-  if (contribution.draftSource) {
-    return "ai-origin" as const;
-  }
-
-  return "human-submitted" as const;
-}
-
-function getContributionOriginLabel(contribution: PublicContribution) {
-  const origin = getContributionOrigin(contribution);
-
-  if (origin === "ai-origin") {
-    return "AI-origin";
-  }
-
-  if (origin === "human-submitted") {
-    return "Public submission";
-  }
-
-  return "Prototype example";
-}
 
 function getContributionStatusLabel(status: PublicContribution["status"]) {
   return status === "needs review"
@@ -233,7 +213,10 @@ export default async function InstitutionsPage({
     (item) => isActualCardChange(item),
   );
   const publicSubmissionExamples = healthcareContributions.filter(
-    (item) => !item.isSeedExample && !item.draftSource,
+    isOutsidePublicContribution,
+  );
+  const founderSubmittedExamples = healthcareContributions.filter(
+    isFounderSubmittedContribution,
   );
   const prototypeExamples = healthcareContributions.filter(
     (item) => item.isSeedExample,
@@ -441,6 +424,7 @@ export default async function InstitutionsPage({
                 <strong>{pendingReviewExamples.length} pending review</strong>
                 <strong>{changedCardExamples.length} changed-card records</strong>
                 <strong>{publicSubmissionExamples.length} outside public submissions</strong>
+                <strong>{founderSubmittedExamples.length} founder-submitted records</strong>
                 <strong>{prototypeExamples.length} prototype examples</strong>
               </div>
               <p>
@@ -450,7 +434,9 @@ export default async function InstitutionsPage({
               <p className={styles.proofDisclosure}>
                 {publicSubmissionExamples.length
                   ? "Outside public submissions are now visible in this pilot snapshot."
-                  : "No outside public submission has been reviewed into this snapshot yet; the visible records are still prototype-led and labeled that way."}
+                  : founderSubmittedExamples.length
+                    ? "Founder-submitted records are visible in this pilot snapshot, but outside public submissions remain separate and are not implied."
+                    : "No outside public submission has been reviewed into this snapshot yet; the visible records are still prototype-led and labeled that way."}
               </p>
             </article>
 
@@ -470,7 +456,7 @@ export default async function InstitutionsPage({
                     <p className={styles.proofMeta}>
                       <span>{debateLaneLabels[item.lane]}</span>
                       <span>{getContributionStatusLabel(item.status)}</span>
-                      <span>{getContributionOriginLabel(item)}</span>
+                      <span>{getContributionOriginLabel(getContributionOrigin(item))}</span>
                       <span>{getContributionAttachmentSummary(item)}</span>
                     </p>
                   </div>

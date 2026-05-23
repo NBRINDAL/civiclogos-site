@@ -16,6 +16,10 @@ import {
   getPotentialCardImpactLabel,
   isActualCardChange,
 } from "../lib/contribution-impact";
+import {
+  getContributionOrigin,
+  getContributionOriginLabel as getContributionOriginValueLabel,
+} from "../lib/contribution-origin";
 import type { PublicContribution } from "../lib/contribution-types";
 import { debateLaneLabels } from "../lib/reasoning-types";
 import styles from "./page.module.css";
@@ -27,16 +31,8 @@ function formatTimestamp(value: string) {
   }).format(new Date(value));
 }
 
-function getContributionOriginLabel(contribution: PublicContribution) {
-  if (contribution.isSeedExample) {
-    return "Prototype example";
-  }
-
-  if (contribution.draftSource) {
-    return "AI-origin contribution";
-  }
-
-  return "Public submission";
+function getContributionOriginDisplayLabel(contribution: PublicContribution) {
+  return getContributionOriginValueLabel(getContributionOrigin(contribution));
 }
 
 function getStatusLabel(status: PublicContribution["status"]) {
@@ -138,7 +134,7 @@ export default async function DemoPage() {
         ? demoContribution.title
         : "No contribution is visible yet, so this step waits for the first public record.",
       detail: demoContribution
-        ? `${getContributionOriginLabel(demoContribution)} - ${debateLaneLabels[demoContribution.lane]} - recorded ${formatTimestamp(demoContribution.createdAt)}.`
+        ? `${getContributionOriginDisplayLabel(demoContribution)} - ${debateLaneLabels[demoContribution.lane]} - recorded ${formatTimestamp(demoContribution.createdAt)}.`
         : "A real submission will enter the public review record once it exists.",
     },
     {
@@ -277,7 +273,7 @@ export default async function DemoPage() {
           <div className={styles.recordGrid}>
             {contributions.slice(0, 3).map((item) => (
               <article className={styles.recordCard} key={item.id}>
-                <span className={styles.recordLabel}>{getContributionOriginLabel(item)}</span>
+                <span className={styles.recordLabel}>{getContributionOriginDisplayLabel(item)}</span>
                 <h3>{item.title}</h3>
                 <p>{getContributionSummary(item)}</p>
                 <dl>
