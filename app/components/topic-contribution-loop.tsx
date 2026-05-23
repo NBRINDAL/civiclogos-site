@@ -615,6 +615,51 @@ function getAdminReviewNote(contribution: PublicContribution) {
   return "Public submission. It enters human review before it can change the visible synthesis, attachment record, or score pressure.";
 }
 
+function getSubmissionSuggestedAttachment(contribution: PublicContribution) {
+  return (
+    formatAttachmentPoint(
+      contribution.review?.assignedToKind ?? contribution.aiIntake?.suggestedAssignmentKind,
+      contribution.review?.assignedToLabel ?? contribution.aiIntake?.suggestedAssignmentLabel,
+    ) ?? "Not assigned yet"
+  );
+}
+
+function getSubmissionImpactReceipt(contribution: PublicContribution) {
+  if (contribution.review?.changedSynthesis === true) {
+    return "Human review marked this as changing the card.";
+  }
+
+  if (contribution.review?.changedSynthesis === false) {
+    return "Human review marked this as visible context, not a card change.";
+  }
+
+  if (contribution.aiIntake?.changedSynthesisLikely === true) {
+    return "AI sorting suggests this may pressure the card; human review still decides.";
+  }
+
+  if (contribution.aiIntake?.changedSynthesisLikely === false) {
+    return "AI sorting does not expect a card change yet; human review can override that.";
+  }
+
+  return "Card impact has not been decided yet.";
+}
+
+function getSubmissionSortingReceipt(contribution: PublicContribution) {
+  if (!contribution.aiIntake) {
+    return "AI sorting is not attached yet. Human review can still classify the record.";
+  }
+
+  if (contribution.aiIntake.state === "completed") {
+    return "AI sorting completed. Treat it as a recommendation, not a verdict.";
+  }
+
+  if (contribution.aiIntake.state === "partial") {
+    return "AI sorting partially completed. Human review decides whether the record attaches.";
+  }
+
+  return "AI sorting is unavailable for this record. Human review remains the authority.";
+}
+
 function getContributionStatusFilter(status: ReviewStatus): ContributionStatusFilter {
   return status === "needs review" ? "needs-review" : status;
 }
@@ -2098,21 +2143,47 @@ export default function TopicContributionLoop({
               >
                 <p>{submissionState.message}</p>
                 {submissionState.kind === "success" && lastSubmittedContribution ? (
-                  <div className={styles.successActions}>
-                    <a
-                      className={styles.sourceLink}
-                      href={getExactContributionLedgerHref(
-                        pathname,
-                        searchParams,
-                        lastSubmittedContribution,
-                      )}
-                    >
-                      Open submitted record
-                    </a>
-                    <a className={styles.sourceLink} href="#contribution-record">
-                      View recent contributions
-                    </a>
-                  </div>
+                  <>
+                    <dl className={styles.successReceipt}>
+                      <div>
+                        <dt>Record type</dt>
+                        <dd>{getSubmissionRecordType(lastSubmittedContribution)}</dd>
+                      </div>
+                      <div>
+                        <dt>Current status</dt>
+                        <dd>{statusLabels[lastSubmittedContribution.status]}</dd>
+                      </div>
+                      <div>
+                        <dt>Suggested attachment</dt>
+                        <dd>{getSubmissionSuggestedAttachment(lastSubmittedContribution)}</dd>
+                      </div>
+                      <div>
+                        <dt>Card impact</dt>
+                        <dd>{getSubmissionImpactReceipt(lastSubmittedContribution)}</dd>
+                      </div>
+                    </dl>
+
+                    <div className={styles.successReviewBoundary}>
+                      <strong>{getSubmissionSortingReceipt(lastSubmittedContribution)}</strong>
+                      <p>{getAdminReviewNote(lastSubmittedContribution)}</p>
+                    </div>
+
+                    <div className={styles.successActions}>
+                      <a
+                        className={styles.sourceLink}
+                        href={getExactContributionLedgerHref(
+                          pathname,
+                          searchParams,
+                          lastSubmittedContribution,
+                        )}
+                      >
+                        Open submitted record
+                      </a>
+                      <a className={styles.sourceLink} href="#contribution-record">
+                        View recent contributions
+                      </a>
+                    </div>
+                  </>
                 ) : null}
               </div>
             ) : null}

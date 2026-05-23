@@ -419,6 +419,58 @@
   margin-top: 12px;
 }
 
+.successReceipt {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.successReceipt div {
+  display: grid;
+  gap: 5px;
+  padding: 12px;
+  border: 1px solid rgba(91, 110, 69, 0.16);
+  border-radius: 16px;
+  background: rgba(255, 252, 247, 0.76);
+}
+
+.successReceipt dt {
+  color: var(--signal);
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.successReceipt dd {
+  margin: 0;
+  color: var(--foreground);
+  font-size: 0.9rem;
+  line-height: 1.55;
+}
+
+.successReviewBoundary {
+  display: grid;
+  gap: 6px;
+  margin-top: 12px;
+  padding: 12px;
+  border: 1px solid rgba(91, 110, 69, 0.16);
+  border-radius: 16px;
+  background: rgba(255, 252, 247, 0.68);
+}
+
+.successReviewBoundary strong {
+  color: var(--foreground);
+  font-size: 0.92rem;
+}
+
+.successReviewBoundary p {
+  color: var(--muted);
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
 .successState,
 .errorState,
 .draftState,
@@ -860,6 +912,7 @@
   .readerGrid,
   .reviewStepGrid,
   .starterGrid,
+  .successReceipt,
   .sectionHeader,
   .formHeader,
   .starterKitHeader,
