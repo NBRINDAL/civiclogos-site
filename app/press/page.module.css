@@ -57,6 +57,7 @@
 .inspectCard,
 .positionCard,
 .hookCard,
+.shareLinkCard,
 .producerSummary,
 .contactBand {
   border: 1px solid rgba(18, 33, 39, 0.12);
@@ -187,6 +188,32 @@
 .section {
   display: grid;
   gap: 18px;
+}
+
+.shareLinkCard {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 30px;
+  background:
+    linear-gradient(120deg, rgba(var(--brand-green-rgb), 0.1), rgba(255, 251, 245, 0.92)),
+    rgba(255, 251, 245, 0.84);
+}
+
+.shareLinkCard h2 {
+  margin-top: 10px;
+  font-family: var(--font-serif), serif;
+  font-size: clamp(1.9rem, 3.5vw, 2.8rem);
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  line-height: 1.04;
+}
+
+.shareLinkCard p {
+  margin-top: 10px;
+  color: var(--muted);
+  line-height: 1.72;
 }
 
 .producerSummary {
@@ -322,6 +349,11 @@
     align-items: flex-start;
     flex-direction: column;
   }
+
+  .shareLinkCard {
+    align-items: flex-start;
+    flex-direction: column;
+  }
 }
 
 @media (max-width: 680px) {
@@ -343,6 +375,7 @@
   .demoCard,
   .positionCard,
   .hookCard,
+  .shareLinkCard,
   .producerSummary,
   .contactBand {
     padding: 22px;

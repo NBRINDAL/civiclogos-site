@@ -101,9 +101,9 @@ export default function PressPage() {
             <div className={styles.heroActions}>
               <Link
                 className={styles.primaryAction}
-                href="/healthcare/topic-001?view=ledger&contributeLane=objection&contributeFrom=press#debate"
+                href="/challenge"
               >
-                Pressure-test the first card
+                Open public challenge
               </Link>
               <Link className={styles.secondaryAction} href="/healthcare/topic-001">
                 Inspect the demo object
@@ -128,6 +128,21 @@ export default function PressPage() {
       </header>
 
       <main className={styles.main}>
+        <section className={styles.shareLinkCard}>
+          <div>
+            <span className={styles.eyebrow}>Best link to send</span>
+            <h2>Use /challenge for media mentions.</h2>
+            <p>
+              The challenge page orients first-time visitors before sending them
+              into the healthcare ledger, preserves optional source tracking,
+              and keeps the first outside contribution as the central ask.
+            </p>
+          </div>
+          <Link className={styles.primaryAction} href="/challenge">
+            Go to /challenge
+          </Link>
+        </section>
+
         <section className={styles.producerSummary}>
           <div className={styles.sectionIntro}>
             <span className={styles.eyebrow}>Copyable producer summary</span>
@@ -243,9 +258,9 @@ export default function PressPage() {
           </div>
           <Link
             className={styles.primaryAction}
-            href="/healthcare/topic-001?view=ledger&contributeLane=objection&contributeFrom=press#debate"
+            href="/challenge"
           >
-            Pressure-test the first card
+            Open public challenge
           </Link>
         </section>
       </main>
