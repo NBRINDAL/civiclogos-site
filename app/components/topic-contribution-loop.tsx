@@ -1345,6 +1345,32 @@ export default function TopicContributionLoop({
     () => getContributionCue(selectedContributionLane),
     [selectedContributionLane],
   );
+  const recordPreviewLabels = useMemo(() => {
+    const labels = ["Public submission"];
+
+    if (draftState) {
+      labels.push("AI-origin draft");
+    }
+
+    if (formState.evidenceFile) {
+      labels.push("Document-backed upload");
+    } else if (formState.evidenceLabel.trim() || formState.evidenceUrl.trim()) {
+      labels.push("Source-linked");
+    }
+
+    return labels;
+  }, [draftState, formState.evidenceFile, formState.evidenceLabel, formState.evidenceUrl]);
+  const recordPreviewLane = selectedContributionLane
+    ? getDebateLaneLabel(selectedContributionLane)
+    : "Choose a lane before submitting";
+  const recordPreviewOriginNote = draftState
+    ? "This will keep its AI-origin provenance attached, even after you revise it in your own voice."
+    : "This will enter as an outside public submission, not a prototype example.";
+  const recordPreviewAttachmentNote = formState.evidenceFile
+    ? `Uploaded document: ${formState.evidenceFile.name}. The file stays attached for review.`
+    : formState.evidenceLabel.trim() || formState.evidenceUrl.trim()
+      ? "The source label or link travels with the record, but it is not treated as an uploaded document."
+      : "No evidence attachment has been added yet. Human review can still assign the record to evidence, objection, assumption, open question, or synthesis.";
   const activeScoreSliceLabel = useMemo(
     () => searchParams.get("scoreSlice")?.trim() || undefined,
     [searchParams],
@@ -2097,6 +2123,30 @@ export default function TopicContributionLoop({
                 value={formState.expertise}
               />
             </label>
+
+            <div className={styles.recordPreview}>
+              <span className={styles.sectionLabel}>Record label preview</span>
+              <div className={styles.recordPreviewChips}>
+                {recordPreviewLabels.map((label) => (
+                  <span key={label}>{label}</span>
+                ))}
+              </div>
+              <div className={styles.recordPreviewGrid}>
+                <p>
+                  <strong>Origin:</strong> {recordPreviewOriginNote}
+                </p>
+                <p>
+                  <strong>Lane:</strong> {recordPreviewLane}
+                </p>
+                <p>
+                  <strong>Attachment:</strong> {recordPreviewAttachmentNote}
+                </p>
+                <p>
+                  <strong>Review boundary:</strong> AI sorting may suggest a target,
+                  but human review decides placement and whether the card changes.
+                </p>
+              </div>
+            </div>
 
             <div className={styles.reviewPath}>
               <span className={styles.sectionLabel}>After you submit</span>
