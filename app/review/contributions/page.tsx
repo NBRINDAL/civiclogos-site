@@ -741,6 +741,11 @@ export default async function ContributionReviewPage({
                   ? "Proposed change"
                   : null,
               ].filter(Boolean) as string[];
+              const visibleContributorParts = [
+                item.author.name,
+                item.author.expertise,
+              ].filter(Boolean);
+              const hasPrivateFollowUpEmail = Boolean(item.author.email);
 
               return (
                 <article
@@ -798,12 +803,15 @@ export default async function ContributionReviewPage({
                       ) : null}
                     </p>
                   ) : null}
-                  {item.author.name || item.author.email || item.author.expertise ? (
+                  {visibleContributorParts.length || hasPrivateFollowUpEmail ? (
                     <p>
                       Contributor:{" "}
-                      {[item.author.name, item.author.email, item.author.expertise]
-                        .filter(Boolean)
-                        .join(" · ")}
+                      {visibleContributorParts.length
+                        ? visibleContributorParts.join(" · ")
+                        : "Anonymous/public name not provided"}
+                      {hasPrivateFollowUpEmail
+                        ? " · Email retained for review follow-up but hidden from this page."
+                        : ""}
                     </p>
                   ) : null}
                   {item.evidenceSource?.url ? (
