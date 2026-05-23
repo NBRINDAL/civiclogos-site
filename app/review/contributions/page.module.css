@@ -17,7 +17,8 @@
 .hero,
 .panel,
 .contribution,
-.reviewForm {
+.reviewForm,
+.emptyState {
   padding: 28px;
   border: 1px solid rgba(18, 33, 39, 0.12);
   border-radius: 28px;
@@ -71,7 +72,11 @@
 .providerCard p,
 .reviewSummary p,
 .contributionBody,
-.topicLink {
+.topicLink,
+.provenanceCard p,
+.publicSubmissionCard p,
+.emptyState p,
+.spotlightFacts dd {
   color: var(--muted);
   line-height: 1.7;
 }
@@ -79,6 +84,121 @@
 .panel {
   display: grid;
   gap: 18px;
+}
+
+.queueHeader {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.queueHeader h2 {
+  margin-top: 12px;
+  color: var(--foreground);
+  font-family: var(--font-serif), serif;
+  font-size: clamp(1.8rem, 3vw, 2.5rem);
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  line-height: 1.06;
+}
+
+.provenanceGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.provenanceCard {
+  display: grid;
+  gap: 10px;
+  padding: 18px;
+  border: 1px solid rgba(18, 33, 39, 0.1);
+  border-radius: 20px;
+  background: rgba(255, 251, 245, 0.92);
+}
+
+.provenanceCard span {
+  color: var(--signal);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.provenanceCard strong {
+  color: var(--foreground);
+  font-family: var(--font-serif), serif;
+  font-size: 2rem;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  line-height: 1;
+}
+
+.publicSubmissionPanel {
+  display: grid;
+  gap: 16px;
+  padding: 20px;
+  border: 1px solid rgba(91, 110, 69, 0.18);
+  border-radius: 24px;
+  background: rgba(91, 110, 69, 0.08);
+}
+
+.publicSubmissionList {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.publicSubmissionCard {
+  display: grid;
+  gap: 12px;
+  padding: 18px;
+  border: 1px solid rgba(18, 33, 39, 0.1);
+  border-radius: 20px;
+  background: rgba(255, 251, 245, 0.94);
+}
+
+.publicSubmissionCard h3 {
+  color: var(--foreground);
+  font-family: var(--font-serif), serif;
+  font-size: 1.35rem;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  line-height: 1.15;
+}
+
+.spotlightFacts {
+  display: grid;
+  gap: 10px;
+}
+
+.spotlightFacts div {
+  display: grid;
+  gap: 3px;
+}
+
+.spotlightFacts dt {
+  color: var(--signal);
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.emptyState {
+  display: grid;
+  gap: 14px;
+  background: rgba(255, 251, 245, 0.72);
+}
+
+.emptyState h2 {
+  color: var(--foreground);
+  font-family: var(--font-serif), serif;
+  font-size: clamp(1.7rem, 3vw, 2.3rem);
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  line-height: 1.08;
 }
 
 .topicSnapshot {
@@ -430,13 +550,16 @@
   .providerList,
   .reviewFields,
   .summaryRow,
+  .provenanceGrid,
+  .publicSubmissionList,
   .topicSnapshotGrid,
   .laneGuidanceGrid,
   .attachmentGrid {
     grid-template-columns: 1fr;
   }
 
-  .topicSnapshotHeader {
+  .topicSnapshotHeader,
+  .queueHeader {
     display: grid;
   }
 }
@@ -449,7 +572,8 @@
   .hero,
   .panel,
   .contribution,
-  .reviewForm {
+  .reviewForm,
+  .emptyState {
     padding: 22px;
     border-radius: 22px;
   }

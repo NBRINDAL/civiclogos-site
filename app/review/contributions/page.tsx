@@ -18,6 +18,8 @@ import styles from "./page.module.css";
 
 export const dynamic = "force-dynamic";
 
+type ContributionOrigin = "seed-example" | "ai-origin" | "human-submitted";
+
 function isRoomSlug(value: string): value is IssueRoomSlug {
   return value in issueRooms;
 }
@@ -37,7 +39,7 @@ const reviewStatusPriority: Record<string, number> = {
 function getContributionOrigin(contribution: {
   draftSource?: unknown;
   isSeedExample?: boolean;
-}) {
+}): ContributionOrigin {
   if (contribution.isSeedExample) {
     return "seed-example";
   }
@@ -47,6 +49,25 @@ function getContributionOrigin(contribution: {
   }
 
   return "human-submitted";
+}
+
+function getContributionOriginLabel(origin: ContributionOrigin) {
+  switch (origin) {
+    case "ai-origin":
+      return "AI-origin";
+    case "seed-example":
+      return "Prototype example";
+    case "human-submitted":
+    default:
+      return "Public submission";
+  }
+}
+
+function isPublicSubmission(contribution: {
+  draftSource?: unknown;
+  isSeedExample?: boolean;
+}) {
+  return !contribution.isSeedExample && !contribution.draftSource;
 }
 
 function getContributionStatusFilter(status: string) {
@@ -124,6 +145,43 @@ function getContributionRecordView(contribution: {
   }
 
   return undefined;
+}
+
+function isReviewableContribution(contribution: { status: string }) {
+  return contribution.status === "pending" || contribution.status === "needs review";
+}
+
+function getReviewQueueHref({
+  lane,
+  roomSlug,
+  status,
+  topicId,
+}: {
+  lane?: DebateLane;
+  roomSlug?: IssueRoomSlug;
+  status?: string;
+  topicId?: string;
+}) {
+  const params = new URLSearchParams();
+
+  if (roomSlug) {
+    params.set("roomSlug", roomSlug);
+  }
+
+  if (topicId) {
+    params.set("topicId", topicId);
+  }
+
+  if (status) {
+    params.set("status", status);
+  }
+
+  if (lane) {
+    params.set("lane", lane);
+  }
+
+  const query = params.toString();
+  return query ? `/review/contributions?${query}` : "/review/contributions";
 }
 
 function getTopicChatMessageHref(item: {
@@ -243,6 +301,7 @@ export default async function ContributionReviewPage({
     listAllContributions({
       roomSlug: scopedRoomSlug,
       topicId: scopedTopicId,
+      limit: 50,
       status: status || undefined,
       lane: scopedLane,
     }),
@@ -261,12 +320,25 @@ export default async function ContributionReviewPage({
       new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime()
     );
   });
+  const publicSubmissions = sortedContributions.filter(isPublicSubmission);
+  const publicReviewQueue = publicSubmissions.filter(isReviewableContribution);
+  const publicSpotlightItems = (
+    publicReviewQueue.length ? publicReviewQueue : publicSubmissions
+  ).slice(0, 3);
   const summary = {
     pending: sortedContributions.filter((item) => item.status === "pending").length,
     needsReview: sortedContributions.filter((item) => item.status === "needs review").length,
     accepted: sortedContributions.filter((item) => item.status === "accepted").length,
     incorporated: sortedContributions.filter((item) => item.status === "incorporated").length,
     rejected: sortedContributions.filter((item) => item.status === "rejected").length,
+    reviewable: sortedContributions.filter(isReviewableContribution).length,
+    publicSubmissions: publicSubmissions.length,
+    prototypeExamples: sortedContributions.filter((item) => item.isSeedExample).length,
+    aiOrigin: sortedContributions.filter((item) => item.draftSource).length,
+    documentBacked: sortedContributions.filter((item) => item.evidenceDocument).length,
+    changedCard: sortedContributions.filter(
+      (item) => item.review?.changedSynthesis === true,
+    ).length,
   };
   const scopeLabel =
     scopedRoomSlug && scopedTopicId
@@ -290,6 +362,136 @@ export default async function ContributionReviewPage({
           <p className={styles.meta}>
             Current scope: <strong>{scopeLabel}</strong>
           </p>
+        </section>
+
+        <section className={styles.panel}>
+          <div className={styles.queueHeader}>
+            <div>
+              <span className={styles.eyebrow}>First public contribution watch</span>
+              <h2>Make outside submissions impossible to miss.</h2>
+            </div>
+            <Link
+              className={styles.topicSnapshotLink}
+              href="/healthcare/topic-001?view=ledger&contributeLane=objection&contributeFrom=first-card#debate"
+            >
+              Open pressure-test path
+            </Link>
+          </div>
+
+          <div className={styles.provenanceGrid}>
+            <article className={styles.provenanceCard}>
+              <span>Public submissions</span>
+              <strong>{summary.publicSubmissions}</strong>
+              <p>Non-prototype, non-AI-origin records from outside contributors.</p>
+            </article>
+            <article className={styles.provenanceCard}>
+              <span>Needs human review</span>
+              <strong>{summary.reviewable}</strong>
+              <p>Pending or needs-review records awaiting maintainer judgment.</p>
+            </article>
+            <article className={styles.provenanceCard}>
+              <span>Prototype examples</span>
+              <strong>{summary.prototypeExamples}</strong>
+              <p>Seed records used to show the product loop without faking usage.</p>
+            </article>
+            <article className={styles.provenanceCard}>
+              <span>AI-origin records</span>
+              <strong>{summary.aiOrigin}</strong>
+              <p>Contributions promoted from assisted reader turns, not final judgments.</p>
+            </article>
+            <article className={styles.provenanceCard}>
+              <span>Document-backed</span>
+              <strong>{summary.documentBacked}</strong>
+              <p>Records with uploaded evidence artifacts or extraction state.</p>
+            </article>
+            <article className={styles.provenanceCard}>
+              <span>Changed card</span>
+              <strong>{summary.changedCard}</strong>
+              <p>Records marked by human review as changing the live synthesis.</p>
+            </article>
+          </div>
+
+          {publicSpotlightItems.length ? (
+            <div className={styles.publicSubmissionPanel}>
+              <div className={styles.queueHeader}>
+                <div>
+                  <span className={styles.eyebrow}>Public submission spotlight</span>
+                  <h2>
+                    {publicReviewQueue.length
+                      ? "Review these outside submissions first."
+                      : "Public submissions are present in the record."}
+                  </h2>
+                </div>
+                {publicReviewQueue.length ? (
+                  <Link
+                    className={styles.topicSnapshotLink}
+                    href={getReviewQueueHref({
+                      roomSlug: scopedRoomSlug,
+                      topicId: scopedTopicId,
+                      lane: scopedLane,
+                    })}
+                  >
+                    Open review queue
+                  </Link>
+                ) : null}
+              </div>
+
+              <div className={styles.publicSubmissionList}>
+                {publicSpotlightItems.map((item) => (
+                  <article className={styles.publicSubmissionCard} key={item.id}>
+                    <div className={styles.statusBar}>
+                      <span className={styles.badge}>{item.status}</span>
+                      <span className={styles.badge}>{debateLaneLabels[item.lane]}</span>
+                      {item.evidenceDocument ? (
+                        <span className={styles.seed}>Document-backed</span>
+                      ) : null}
+                    </div>
+                    <h3>{item.title}</h3>
+                    <p>{item.body}</p>
+                    <dl className={styles.spotlightFacts}>
+                      <div>
+                        <dt>Created</dt>
+                        <dd>
+                          {new Date(item.createdAt).toLocaleString("en-US", {
+                            dateStyle: "medium",
+                            timeStyle: "short",
+                          })}
+                        </dd>
+                      </div>
+                      <div>
+                        <dt>Suggested attachment</dt>
+                        <dd>{getContributionAttachmentSummary(item)}</dd>
+                      </div>
+                      <div>
+                        <dt>Card impact</dt>
+                        <dd>
+                          {item.review?.changedSynthesis === true
+                            ? "Changed card"
+                            : item.aiIntake?.changedSynthesisLikely === true
+                              ? "AI suggests possible card change"
+                              : "Human decision pending"}
+                        </dd>
+                      </div>
+                    </dl>
+                    {item.aiIntake?.reviewerNote ? (
+                      <p className={styles.prefillNote}>{item.aiIntake.reviewerNote}</p>
+                    ) : null}
+                  </article>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <div className={styles.emptyState}>
+              <span className={styles.eyebrow}>No outside public submissions yet</span>
+              <h2>The first public contribution will get its own review lane here.</h2>
+              <p>
+                When someone submits a real objection, evidence source, or correction,
+                it will appear with its lane, AI sorting, suggested attachment, and
+                human-review status. Prototype examples stay labeled separately so
+                Civic Logos never has to pretend seeded records are public use.
+              </p>
+            </div>
+          )}
         </section>
 
         <section className={styles.panel}>
@@ -506,7 +708,7 @@ export default async function ContributionReviewPage({
 
           <h2 className={styles.sectionTitle}>Contribution queue</h2>
           <div className={styles.list}>
-            {sortedContributions.map((item) => {
+            {sortedContributions.length ? sortedContributions.map((item) => {
               const suggestedAssignmentKind =
                 item.review?.assignedToKind ?? item.aiIntake?.suggestedAssignmentKind ?? "";
               const suggestedAssignmentLabel =
@@ -518,13 +720,26 @@ export default async function ContributionReviewPage({
                 Boolean(item.aiIntake?.reviewerNote) ||
                 Boolean(item.aiIntake?.suggestedAssignmentKind) ||
                 Boolean(item.aiIntake?.suggestedAssignmentLabel);
+              const origin = getContributionOrigin(item);
+              const provenanceBadges = [
+                getContributionOriginLabel(origin),
+                item.evidenceDocument ? "Document-backed" : null,
+                item.review?.changedSynthesis === true ? "Changed card" : null,
+              ].filter(Boolean) as string[];
 
               return (
               <article className={styles.contribution} key={item.id}>
                 <div className={styles.statusBar}>
                   <span className={styles.badge}>{item.status}</span>
                   <span className={styles.badge}>{debateLaneLabels[item.lane]}</span>
-                  {item.isSeedExample ? <span className={styles.seed}>Seed example</span> : null}
+                  {provenanceBadges.map((badge) => (
+                    <span
+                      className={badge === "Prototype example" ? styles.seed : styles.badge}
+                      key={`${item.id}-${badge}`}
+                    >
+                      {badge}
+                    </span>
+                  ))}
                   <Link
                     className={styles.topicLink}
                     href={getRoomTopicHref(item.roomSlug, item.topicId)}
@@ -806,7 +1021,16 @@ export default async function ContributionReviewPage({
                   </button>
                 </form>
               </article>
-            )})}
+            )}) : (
+              <div className={styles.emptyState}>
+                <span className={styles.eyebrow}>No matching records</span>
+                <h2>No contributions match this review scope yet.</h2>
+                <p>
+                  Clear the filters or send a test contribution through the healthcare
+                  card to verify the submission, AI sorting, and human review path.
+                </p>
+              </div>
+            )}
           </div>
 
           {suggestedAttachmentTargets ? (
