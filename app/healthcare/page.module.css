@@ -342,6 +342,53 @@
     rgba(255, 251, 245, 0.82);
 }
 
+.pressureTestCopy {
+  display: grid;
+  gap: 14px;
+}
+
+.pressureRecordGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin: 2px 0 0;
+}
+
+.pressureRecordGrid div {
+  display: grid;
+  gap: 4px;
+  padding: 12px 14px;
+  border: 1px solid rgba(18, 33, 39, 0.08);
+  border-radius: 16px;
+  background: rgba(255, 252, 247, 0.82);
+}
+
+.pressureRecordGrid dt {
+  color: var(--muted);
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.pressureRecordGrid dd {
+  margin: 0;
+  color: var(--foreground);
+  font-family: var(--font-serif), serif;
+  font-size: 1.45rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.pressureRecordNote {
+  padding-top: 4px;
+  font-size: 0.93rem;
+}
+
+.pressureRecordNote strong {
+  color: var(--foreground);
+}
+
 .pressurePromptGrid {
   display: grid;
   gap: 10px;
@@ -851,6 +898,7 @@
   .trackGrid,
   .materialsGrid,
   .pressureTestPanel,
+  .pressureRecordGrid,
   .ctaPanel {
     grid-template-columns: 1fr;
   }

@@ -9,6 +9,11 @@ import {
   healthcareIssueRoom,
   issueRoomQuestion,
 } from "../lib/civic-logos";
+import { topicCardVisibleContributionLimit } from "../lib/contribution-constants";
+import {
+  getContributionStoreMetadata,
+  listPublicContributions,
+} from "../lib/contribution-store";
 import {
   getHomeIntakeCookieName,
   parseHomeIntakeCookie,
@@ -116,6 +121,26 @@ export default async function HealthcareIssueRoomPage({
       href: `${pressureTestHref}?view=ledger&contributeLane=correction&contributeFrom=healthcare-room#debate`,
     },
   ] as const;
+  const [contributionMetadata, pressureTestContributions] = await Promise.all([
+    getContributionStoreMetadata(),
+    listPublicContributions({
+      roomSlug: "healthcare",
+      topicId: "topic-001",
+      limit: topicCardVisibleContributionLimit,
+    }),
+  ]);
+  const pendingReviewCount = pressureTestContributions.filter(
+    (item) => item.status === "pending" || item.status === "needs review",
+  ).length;
+  const changedCardCount = pressureTestContributions.filter(
+    (item) => item.review?.changedSynthesis === true,
+  ).length;
+  const publicSubmissionCount = pressureTestContributions.filter(
+    (item) => !item.isSeedExample && !item.draftSource,
+  ).length;
+  const prototypeExampleCount = pressureTestContributions.filter(
+    (item) => item.isSeedExample,
+  ).length;
 
   return (
     <div className={styles.page}>
@@ -210,7 +235,7 @@ export default async function HealthcareIssueRoomPage({
         </nav>
 
         <section className={styles.pressureTestPanel} id="pressure-test">
-          <div>
+          <div className={styles.pressureTestCopy}>
             <span className={styles.eyebrow}>First real contribution</span>
             <h2>Help pressure-test the Administrative Simplification card.</h2>
             <p>
@@ -218,6 +243,31 @@ export default async function HealthcareIssueRoomPage({
               objection, one evidence source, or one precise correction can
               become a public review record and show the Civic Logos loop working
               with outside pressure.
+            </p>
+
+            <dl className={styles.pressureRecordGrid}>
+              <div>
+                <dt>Visible records</dt>
+                <dd>{pressureTestContributions.length}</dd>
+              </div>
+              <div>
+                <dt>Pending review</dt>
+                <dd>{pendingReviewCount}</dd>
+              </div>
+              <div>
+                <dt>Changed card</dt>
+                <dd>{changedCardCount}</dd>
+              </div>
+              <div>
+                <dt>Public submissions</dt>
+                <dd>{publicSubmissionCount}</dd>
+              </div>
+            </dl>
+
+            <p className={styles.pressureRecordNote}>
+              Current record mode: <strong>{contributionMetadata.mode}</strong>.
+              Prototype examples visible: <strong>{prototypeExampleCount}</strong>.
+              Outside public submissions: <strong>{publicSubmissionCount}</strong>.
             </p>
           </div>
 
