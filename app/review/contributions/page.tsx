@@ -478,6 +478,30 @@ export default async function ContributionReviewPage({
                 Civic Logos never has to pretend seeded or founder-submitted
                 records are outside public use.
               </p>
+              <div className={styles.emptyActionGrid}>
+                <Link
+                  className={styles.emptyAction}
+                  href="/healthcare/topic-001?view=ledger&contributeLane=objection&contributeFrom=first-card#debate"
+                >
+                  Start objection draft
+                </Link>
+                <Link
+                  className={styles.emptyAction}
+                  href="/healthcare/topic-001?view=ledger&contributeLane=evidence&contributeFrom=first-card#debate"
+                >
+                  Start evidence draft
+                </Link>
+                <Link
+                  className={styles.emptyAction}
+                  href="/healthcare/topic-001?view=ledger&contributeLane=correction&contributeFrom=first-card#debate"
+                >
+                  Start correction draft
+                </Link>
+              </div>
+              <p>
+                These paths open editable starter drafts on the healthcare ledger;
+                nothing enters the public record until someone submits it for review.
+              </p>
             </div>
           )}
         </section>
