@@ -48,16 +48,22 @@ const notItems = [
 
 const bestFirstContributionExamples = [
   {
+    lane: "objection",
     title: "One strong objection",
     body: "The card assumes administrative simplification lowers costs, but savings may be captured by intermediaries unless the record specifies who receives the benefit.",
+    action: "Start an objection draft",
   },
   {
+    lane: "evidence",
     title: "One concrete evidence source",
     body: "A credible report, policy document, dataset, or paper that measures prior authorization burden, claims friction, documentation time, or triage outcomes.",
+    action: "Start an evidence draft",
   },
   {
+    lane: "correction",
     title: "One correction",
     body: "A specific factual, numeric, definitional, or scope issue that should be changed before the card is treated as a reliable public record.",
+    action: "Start a correction draft",
   },
 ] as const;
 
@@ -262,6 +268,12 @@ export default async function ChallengePage({
               <article className={styles.exampleCard} key={item.title}>
                 <h3>{item.title}</h3>
                 <p>{item.body}</p>
+                <Link
+                  className={styles.exampleAction}
+                  href={contributionHref(item.lane, inboundReferralSource)}
+                >
+                  {item.action}
+                </Link>
               </article>
             ))}
           </div>

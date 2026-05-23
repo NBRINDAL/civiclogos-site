@@ -147,7 +147,8 @@
 }
 
 .primaryAction,
-.secondaryAction {
+.secondaryAction,
+.exampleAction {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -172,6 +173,16 @@
   border: 1px solid rgba(18, 33, 39, 0.14);
   background: rgba(255, 251, 245, 0.9);
   color: var(--foreground);
+}
+
+.exampleAction {
+  align-self: start;
+  min-height: 42px;
+  margin-top: 4px;
+  border: 1px solid rgba(18, 33, 39, 0.14);
+  background: rgba(var(--brand-green-rgb), 0.11);
+  color: var(--foreground);
+  font-size: 0.92rem;
 }
 
 .main {
@@ -298,7 +309,8 @@
 
 @media (hover: hover) {
   .primaryAction:hover,
-  .secondaryAction:hover {
+  .secondaryAction:hover,
+  .exampleAction:hover {
     transform: translateY(-2px);
   }
 }
