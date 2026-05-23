@@ -790,6 +790,8 @@ export default function TopicContributionLoop({
   });
   const [draftState, setDraftState] = useState<DraftState>(null);
   const [contributions, setContributions] = useState<PublicContribution[]>(initialContributions);
+  const [lastSubmittedContribution, setLastSubmittedContribution] =
+    useState<PublicContribution | null>(null);
   const [storeMode, setStoreMode] = useState(initialStoreMode);
   const [storeNote, setStoreNote] = useState(initialStoreNote);
   const [currentHash, setCurrentHash] = useState("");
@@ -1499,6 +1501,7 @@ export default function TopicContributionLoop({
     }
 
     setSubmissionState({ kind: "idle" });
+    setLastSubmittedContribution(null);
 
     startTransition(async () => {
       try {
@@ -1555,6 +1558,7 @@ export default function TopicContributionLoop({
         );
         resetContributionFields();
         setDraftState(null);
+        setLastSubmittedContribution(payload.contribution);
         setSubmissionState({
           kind: "success",
           message: payload.message,
@@ -1781,6 +1785,28 @@ export default function TopicContributionLoop({
               />
             </label>
 
+            <div className={styles.reviewPath}>
+              <span className={styles.sectionLabel}>After you submit</span>
+              <div className={styles.reviewStepGrid}>
+                <div>
+                  <strong>1. Public submission</strong>
+                  <p>The record is labeled by origin, lane, date, and attachment target.</p>
+                </div>
+                <div>
+                  <strong>2. Assisted sorting</strong>
+                  <p>GPT/Claude can propose fit and impact, but they do not decide.</p>
+                </div>
+                <div>
+                  <strong>3. Human review</strong>
+                  <p>A reviewer decides placement and whether the card should change.</p>
+                </div>
+                <div>
+                  <strong>4. Visible trace</strong>
+                  <p>If it changes the card, the ledger keeps the reason inspectable.</p>
+                </div>
+              </div>
+            </div>
+
             <input aria-hidden="true" className={styles.honeypot} name="website" tabIndex={-1} />
 
             <div className={styles.formFooter}>
@@ -1803,6 +1829,23 @@ export default function TopicContributionLoop({
                 role="status"
               >
                 <p>{submissionState.message}</p>
+                {submissionState.kind === "success" && lastSubmittedContribution ? (
+                  <div className={styles.successActions}>
+                    <a
+                      className={styles.sourceLink}
+                      href={getExactContributionLedgerHref(
+                        pathname,
+                        searchParams,
+                        lastSubmittedContribution,
+                      )}
+                    >
+                      Open submitted record
+                    </a>
+                    <a className={styles.sourceLink} href="#contribution-record">
+                      View recent contributions
+                    </a>
+                  </div>
+                ) : null}
               </div>
             ) : null}
           </form>

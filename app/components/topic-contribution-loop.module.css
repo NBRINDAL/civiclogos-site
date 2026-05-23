@@ -262,6 +262,50 @@
   line-height: 1.6;
 }
 
+.reviewPath {
+  display: grid;
+  gap: 12px;
+  padding: 16px 18px;
+  border: 1px solid rgba(var(--brand-blue-rgb), 0.16);
+  border-radius: 20px;
+  background:
+    linear-gradient(180deg, rgba(244, 250, 255, 0.74), rgba(255, 251, 245, 0.9)),
+    rgba(255, 251, 245, 0.86);
+}
+
+.reviewStepGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.reviewStepGrid div {
+  display: grid;
+  gap: 6px;
+  padding: 12px;
+  border: 1px solid rgba(18, 33, 39, 0.08);
+  border-radius: 16px;
+  background: rgba(255, 252, 247, 0.82);
+}
+
+.reviewStepGrid strong {
+  color: var(--foreground);
+  font-size: 0.9rem;
+}
+
+.reviewStepGrid p {
+  color: var(--muted);
+  font-size: 0.85rem;
+  line-height: 1.55;
+}
+
+.successActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 12px;
+}
+
 .successState,
 .errorState,
 .draftState,
@@ -699,6 +743,7 @@
   .debateGrid,
   .fieldGrid,
   .readerGrid,
+  .reviewStepGrid,
   .sectionHeader,
   .formHeader,
   .formFooter {
