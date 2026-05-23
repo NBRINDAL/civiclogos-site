@@ -89,6 +89,7 @@
 .focusCard,
 .trackCard,
 .panel,
+.pressureTestPanel,
 .ctaPanel,
 .perspectiveCard {
   backdrop-filter: blur(12px);
@@ -101,6 +102,7 @@
 .focusCard,
 .trackCard,
 .panel,
+.pressureTestPanel,
 .ctaPanel {
   padding: 32px;
   border: 1px solid rgba(18, 33, 39, 0.12);
@@ -114,6 +116,7 @@
 .focusCard h2,
 .trackCard h3,
 .panel h2,
+.pressureTestPanel h2,
 .ctaPanel h2,
 .structureItem h3 {
   font-family: var(--font-serif), serif;
@@ -146,6 +149,7 @@
 .claimItem p,
 .evidenceItem p,
 .perspectiveCard p,
+.pressureTestPanel p,
 .ctaPanel p,
 .structureItem p {
   color: var(--muted);
@@ -301,6 +305,7 @@
 .section,
 .storySection,
 .materialsSection,
+.pressureTestPanel,
 .twoColumnSection {
   display: grid;
   gap: 20px;
@@ -310,6 +315,7 @@
 .twoColumnSection,
 .section,
 .materialsSection,
+.pressureTestPanel,
 .storySection {
   scroll-margin-top: 24px;
 }
@@ -321,9 +327,41 @@
 .sectionHeading h2,
 .focusCard h2,
 .panel h2,
+.pressureTestPanel h2,
 .ctaPanel h2 {
   margin-top: 14px;
   font-size: clamp(2rem, 4vw, 3.15rem);
+}
+
+.pressureTestPanel {
+  grid-template-columns: minmax(0, 1fr) minmax(280px, 0.46fr);
+  align-items: center;
+  border-color: rgba(var(--brand-green-rgb), 0.22);
+  background:
+    linear-gradient(135deg, rgba(var(--brand-green-rgb), 0.1), rgba(255, 251, 245, 0.9), rgba(var(--brand-blue-rgb), 0.07)),
+    rgba(255, 251, 245, 0.82);
+}
+
+.pressurePromptGrid {
+  display: grid;
+  gap: 10px;
+}
+
+.pressurePrompt {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 46px;
+  padding: 0 16px;
+  border: 1px solid rgba(18, 33, 39, 0.12);
+  border-radius: 999px;
+  background: rgba(255, 251, 245, 0.86);
+  color: var(--foreground);
+  font-weight: 700;
+  transition:
+    transform 180ms ease,
+    border-color 180ms ease,
+    background 180ms ease;
 }
 
 .storyGrid,
@@ -763,6 +801,7 @@
 @media (hover: hover) and (pointer: fine) {
   .primaryAction:hover,
   .secondaryAction:hover,
+  .pressurePrompt:hover,
   .trackItem[href]:hover,
   .sectionRail a:hover {
     transform: translateY(-2px);
@@ -791,6 +830,11 @@
     background: rgba(255, 251, 245, 1);
   }
 
+  .pressurePrompt:hover {
+    border-color: rgba(var(--brand-blue-rgb), 0.28);
+    background: rgba(244, 250, 255, 0.94);
+  }
+
   .sectionRail a:hover {
     border-color: rgba(18, 33, 39, 0.22);
     background: rgba(255, 251, 245, 1);
@@ -806,6 +850,7 @@
   .startHereGrid,
   .trackGrid,
   .materialsGrid,
+  .pressureTestPanel,
   .ctaPanel {
     grid-template-columns: 1fr;
   }
@@ -837,6 +882,7 @@
   .focusCard,
   .trackCard,
   .panel,
+  .pressureTestPanel,
   .ctaPanel,
   .trackItem,
   .structureItem,
@@ -863,6 +909,10 @@
   .secondaryAction,
   .trackItemLink,
   .trackItemSubLink {
+    transition: none;
+  }
+
+  .pressurePrompt {
     transition: none;
   }
 }

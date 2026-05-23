@@ -101,6 +101,21 @@ export default async function HealthcareIssueRoomPage({
         : null;
   const inspectableTopics = getInspectableTopics(healthcareIssueRoom);
   const firstLiveCard = inspectableTopics[0];
+  const pressureTestHref = firstLiveCard?.href ?? "/healthcare/topic-001";
+  const pressureTestActions = [
+    {
+      label: "Strong objection",
+      href: `${pressureTestHref}?view=ledger&contributeLane=objection&contributeFrom=healthcare-room#debate`,
+    },
+    {
+      label: "Evidence source",
+      href: `${pressureTestHref}?view=ledger&contributeLane=evidence&contributeFrom=healthcare-room#debate`,
+    },
+    {
+      label: "Correction",
+      href: `${pressureTestHref}?view=ledger&contributeLane=correction&contributeFrom=healthcare-room#debate`,
+    },
+  ] as const;
 
   return (
     <div className={styles.page}>
@@ -186,12 +201,34 @@ export default async function HealthcareIssueRoomPage({
           <a href="#current-read">Current read</a>
           <a href="#major-frames">Frames</a>
           <a href="#ask-room">Ask room</a>
+          <a href="#pressure-test">Pressure-test</a>
           <a href="#topic-field">Topics</a>
           {inspectableTopics.length ? <a href="#inspectable-cards">Inspect cards</a> : null}
           <a href="#adjacent-rooms">Adjacent rooms</a>
           <a href="#room-structure">Structure</a>
           <a href="#working-materials">Materials</a>
         </nav>
+
+        <section className={styles.pressureTestPanel} id="pressure-test">
+          <div>
+            <span className={styles.eyebrow}>First real contribution</span>
+            <h2>Help pressure-test the Administrative Simplification card.</h2>
+            <p>
+              The room does not need a full healthcare treatise yet. One strong
+              objection, one evidence source, or one precise correction can
+              become a public review record and show the Civic Logos loop working
+              with outside pressure.
+            </p>
+          </div>
+
+          <div className={styles.pressurePromptGrid}>
+            {pressureTestActions.map((item) => (
+              <Link className={styles.pressurePrompt} href={item.href} key={item.label}>
+                {item.label}
+              </Link>
+            ))}
+          </div>
+        </section>
 
         <section className={styles.storySection}>
           <div className={styles.sectionHeading}>
