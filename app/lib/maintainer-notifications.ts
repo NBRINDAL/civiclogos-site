@@ -95,6 +95,7 @@ export async function sendContributionSubmittedNotification(
   const contributorName = contribution.author.name || "Anonymous contributor";
   const contributorEmail = contribution.author.email || "Not provided";
   const contributorExpertise = contribution.author.expertise || "Not provided";
+  const referralSource = contribution.referralSource || "Not provided";
   const evidenceLine = contribution.evidenceSource?.url
     ? `${contribution.evidenceSource.label || "Source"}: ${contribution.evidenceSource.url}`
     : "No evidence/source link provided";
@@ -116,6 +117,7 @@ export async function sendContributionSubmittedNotification(
       `Contributor: ${contributorName}`,
       `Email: ${contributorEmail}`,
       `Expertise/context: ${contributorExpertise}`,
+      `Heard about Civic Logos: ${referralSource}`,
       "",
       `Title: ${contribution.title}`,
       "",
@@ -136,6 +138,7 @@ export async function sendContributionSubmittedNotification(
         <p><strong>Contributor:</strong> ${escapeHtml(contributorName)}</p>
         <p><strong>Email:</strong> ${escapeHtml(contributorEmail)}</p>
         <p><strong>Expertise/context:</strong> ${escapeHtml(contributorExpertise)}</p>
+        <p><strong>Heard about Civic Logos:</strong> ${escapeHtml(referralSource)}</p>
         <p><strong>Title:</strong> ${safeTitle}</p>
         <p><strong>Contribution:</strong><br />${safeBody}</p>
         <p><strong>Evidence/source:</strong> ${escapeHtml(evidenceLine)}</p>

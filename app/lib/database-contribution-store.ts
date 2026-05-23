@@ -8,6 +8,7 @@ import type {
   PublicContribution,
   ReviewContributionInput,
 } from "./contribution-types";
+import { toPublicContributionRecord } from "./contribution-types";
 import { buildContributionAiIntake } from "./contribution-ai";
 import type { IssueRoomSlug } from "./civic-logos";
 import type { DebateLane } from "./reasoning-types";
@@ -31,6 +32,7 @@ type ContributionRow = {
   evidence_source: Contribution["evidenceSource"] | null;
   evidence_document: Contribution["evidenceDocument"] | null;
   author: Contribution["author"];
+  referral_source: Contribution["referralSource"] | null;
   draft_source: Contribution["draftSource"] | null;
   status: Contribution["status"];
   created_at: string | Date;
@@ -115,6 +117,7 @@ async function ensureContributionTable() {
           evidence_source jsonb,
           evidence_document jsonb,
           author jsonb not null,
+          referral_source text,
           draft_source jsonb,
           status text not null,
           created_at timestamptz not null,
@@ -128,6 +131,11 @@ async function ensureContributionTable() {
       await sql`
         alter table civiclogos_contributions
         add column if not exists evidence_document jsonb
+      `;
+
+      await sql`
+        alter table civiclogos_contributions
+        add column if not exists referral_source text
       `;
 
       await sql`
@@ -160,6 +168,7 @@ async function ensureContributionTable() {
               evidence_source,
               evidence_document,
               author,
+              referral_source,
               status,
               created_at,
               updated_at,
@@ -177,6 +186,7 @@ async function ensureContributionTable() {
               ${sql.json(contribution.evidenceSource ?? null)},
               ${sql.json(contribution.evidenceDocument ?? null)},
               ${sql.json(contribution.author)},
+              ${contribution.referralSource ?? null},
               ${contribution.status},
               ${contribution.createdAt},
               ${contribution.updatedAt},
@@ -227,6 +237,7 @@ function rowToContribution(row: ContributionRow): Contribution {
     evidenceSource: row.evidence_source ?? undefined,
     evidenceDocument: row.evidence_document ?? undefined,
     author: row.author,
+    referralSource: row.referral_source ?? undefined,
     draftSource: row.draft_source ?? undefined,
     status: row.status,
     createdAt: normalizeDate(row.created_at),
@@ -234,16 +245,6 @@ function rowToContribution(row: ContributionRow): Contribution {
     isSeedExample: row.is_seed_example,
     aiIntake: row.ai_intake ?? undefined,
     review: row.review ?? undefined,
-  };
-}
-
-function toPublicContribution(item: Contribution): PublicContribution {
-  return {
-    ...item,
-    author: {
-      name: item.author.name,
-      expertise: item.author.expertise,
-    },
   };
 }
 
@@ -278,7 +279,7 @@ export function createDatabaseContributionStore(): DatabaseContributionStore {
 
     async listPublicContributions(filters = {}) {
       const rows = await listRows(filters);
-      return rows.map((row) => toPublicContribution(rowToContribution(row)));
+      return rows.map((row) => toPublicContributionRecord(rowToContribution(row)));
     },
 
     async listAllContributions(filters = {}) {
@@ -303,6 +304,8 @@ export function createDatabaseContributionStore(): DatabaseContributionStore {
         evidenceSource: input.evidenceSource ?? undefined,
         evidenceDocument: input.evidenceDocument ?? undefined,
         author: input.author,
+        referralSource: input.referralSource,
+        draftSource: input.draftSource,
         status: "pending",
         createdAt: timestamp,
         updatedAt: timestamp,
@@ -321,6 +324,7 @@ export function createDatabaseContributionStore(): DatabaseContributionStore {
           evidence_source,
           evidence_document,
           author,
+          referral_source,
           draft_source,
           status,
           created_at,
@@ -339,6 +343,7 @@ export function createDatabaseContributionStore(): DatabaseContributionStore {
           ${sql.json(contribution.evidenceSource ?? null)},
           ${sql.json(contribution.evidenceDocument ?? null)},
           ${sql.json(contribution.author)},
+          ${contribution.referralSource ?? null},
           ${sql.json(contribution.draftSource ?? null)},
           ${contribution.status},
           ${contribution.createdAt},
@@ -349,7 +354,7 @@ export function createDatabaseContributionStore(): DatabaseContributionStore {
         )
       `;
 
-      return toPublicContribution(contribution);
+      return toPublicContributionRecord(contribution);
     },
 
     async reviewContribution(id, input) {

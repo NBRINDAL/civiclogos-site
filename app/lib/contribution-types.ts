@@ -20,6 +20,27 @@ export type ContributionAuthor = {
   expertise?: string;
 };
 
+export const contributionReferralSources = [
+  "Redacted",
+  "Tucker Carlson Network",
+  "YouTube",
+  "X / Twitter",
+  "Substack",
+  "Friend",
+  "Other",
+] as const;
+
+export type ContributionReferralSource = (typeof contributionReferralSources)[number];
+
+export function normalizeContributionReferralSource(value: unknown) {
+  if (typeof value !== "string") {
+    return undefined;
+  }
+
+  const trimmed = value.trim();
+  return contributionReferralSources.find((item) => item === trimmed);
+}
+
 export type AssistedDraftSource = {
   messageId?: string;
   provider: AiProvider;
@@ -89,6 +110,7 @@ export type Contribution = TopicCardReference & {
   evidenceSource?: EvidenceSource | null;
   evidenceDocument?: EvidenceDocument | null;
   author: ContributionAuthor;
+  referralSource?: ContributionReferralSource;
   draftSource?: AssistedDraftSource;
   status: ReviewStatus;
   createdAt: string;
@@ -105,6 +127,7 @@ export type CreateContributionInput = TopicCardReference & {
   evidenceSource?: EvidenceSource | null;
   evidenceDocument?: EvidenceDocument | null;
   author: ContributionAuthor;
+  referralSource?: ContributionReferralSource;
   draftSource?: AssistedDraftSource;
 };
 
@@ -118,9 +141,34 @@ export type ReviewContributionInput = {
   reviewerNote?: string;
 };
 
-export type PublicContribution = Omit<Contribution, "author"> & {
+export type PublicContribution = Omit<Contribution, "author" | "referralSource"> & {
   author: Omit<ContributionAuthor, "email">;
 };
+
+export function toPublicContributionRecord(item: Contribution): PublicContribution {
+  return {
+    id: item.id,
+    roomSlug: item.roomSlug,
+    topicId: item.topicId,
+    topicTitle: item.topicTitle,
+    lane: item.lane,
+    title: item.title,
+    body: item.body,
+    evidenceSource: item.evidenceSource,
+    evidenceDocument: item.evidenceDocument,
+    author: {
+      name: item.author.name,
+      expertise: item.author.expertise,
+    },
+    draftSource: item.draftSource,
+    status: item.status,
+    createdAt: item.createdAt,
+    updatedAt: item.updatedAt,
+    isSeedExample: item.isSeedExample,
+    aiIntake: item.aiIntake,
+    review: item.review,
+  };
+}
 
 export type ContributionStoreDocument = {
   prototype: true;

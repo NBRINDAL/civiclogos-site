@@ -6,8 +6,13 @@ import type { DebatePrompt, IssueRoomSlug } from "../lib/civic-logos";
 import { topicCardVisibleContributionLimit } from "../lib/contribution-constants";
 import type {
   AiProvider,
+  ContributionReferralSource,
   ProviderContributionAiIntake,
   PublicContribution,
+} from "../lib/contribution-types";
+import {
+  contributionReferralSources,
+  normalizeContributionReferralSource,
 } from "../lib/contribution-types";
 import {
   getActualCardChangeLabel,
@@ -144,6 +149,7 @@ type FormState = {
   name: string;
   email: string;
   expertise: string;
+  referralSource: ContributionReferralSource | "";
   evidenceFile: File | null;
 };
 
@@ -156,6 +162,7 @@ const initialFormState: FormState = {
   name: "",
   email: "",
   expertise: "",
+  referralSource: "",
   evidenceFile: null,
 };
 
@@ -364,6 +371,13 @@ function getQuickStartNotice(source: string | undefined, lane: DebateLane | null
     return {
       title: "Pressure-test from the press brief",
       body: `You came from the press page. A starter ${laneLabel.toLowerCase()} is loaded below so this can become a concrete challenge, source, or correction rather than a general reaction.`,
+    };
+  }
+
+  if (source === "challenge") {
+    return {
+      title: "Public challenge starter",
+      body: `You came from the challenge page. A starter ${laneLabel.toLowerCase()} is loaded below; revise it into one contribution that can make the healthcare record more accurate, complete, or honest.`,
     };
   }
 
@@ -1055,7 +1069,14 @@ export default function TopicContributionLoop({
   const pathname = usePathname();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [formState, setFormState] = useState<FormState>(initialFormState);
+  const initialReferralSource =
+    normalizeContributionReferralSource(
+      searchParams.get("referralSource") ?? searchParams.get("heardFrom"),
+    ) ?? "";
+  const [formState, setFormState] = useState<FormState>(() => ({
+    ...initialFormState,
+    referralSource: initialReferralSource,
+  }));
   const [submissionState, setSubmissionState] = useState<SubmissionState>({
     kind: "idle",
   });
@@ -1874,6 +1895,7 @@ export default function TopicContributionLoop({
       body: "",
       evidenceLabel: "",
       evidenceUrl: "",
+      referralSource: current.referralSource,
       evidenceFile: null,
     }));
   }
@@ -1917,6 +1939,7 @@ export default function TopicContributionLoop({
             formData.set("name", formState.name);
             formData.set("email", formState.email);
             formData.set("expertise", formState.expertise);
+            formData.set("referralSource", formState.referralSource);
             formData.set("website", website);
 
             if (draftState) {
@@ -2225,6 +2248,30 @@ export default function TopicContributionLoop({
                 placeholder="Optional lived experience, field knowledge, or implementation context"
                 value={formState.expertise}
               />
+            </label>
+
+            <label className={styles.field}>
+              <span>How did you hear about Civic Logos?</span>
+              <select
+                onChange={(event) =>
+                  handleFieldChange(
+                    "referralSource",
+                    normalizeContributionReferralSource(event.target.value) ?? "",
+                  )
+                }
+                value={formState.referralSource}
+              >
+                <option value="">Optional source tracking</option>
+                {contributionReferralSources.map((source) => (
+                  <option key={source} value={source}>
+                    {source}
+                  </option>
+                ))}
+              </select>
+              <small className={styles.fieldHelp}>
+                Used only to understand where serious contributors came from. It
+                is not used to rank, score, or prioritize contributions.
+              </small>
             </label>
 
             <div className={styles.visibilityNote}>

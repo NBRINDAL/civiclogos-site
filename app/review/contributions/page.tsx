@@ -814,6 +814,12 @@ export default async function ContributionReviewPage({
                         : ""}
                     </p>
                   ) : null}
+                  {item.referralSource ? (
+                    <p>
+                      Source tracking: {item.referralSource}. This is for outreach
+                      learning only, not contribution ranking or scoring.
+                    </p>
+                  ) : null}
                   {item.evidenceSource?.url ? (
                     <p>
                       Source:{" "}

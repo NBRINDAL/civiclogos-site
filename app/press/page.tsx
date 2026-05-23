@@ -54,6 +54,7 @@ const hooks = [
 
 const directLinks = [
   { label: "Homepage", href: "/" },
+  { label: "Public challenge", href: "/challenge" },
   { label: "Healthcare Reader View", href: "/healthcare/topic-001" },
   {
     label: "Healthcare Ledger View",
@@ -76,6 +77,7 @@ export default function PressPage() {
           <SiteBrand className={styles.brand} href="/" subtitle="Press brief" />
           <div className={styles.navLinks}>
             <Link href="/">Home</Link>
+            <Link href="/challenge">Challenge</Link>
             <Link href="/healthcare/topic-001">Healthcare card</Link>
             <Link href="/healthcare/topic-001?view=ledger#contribution-record">
               Ledger

@@ -8,6 +8,7 @@ import {
   type IssueRoomSlug,
 } from "@/app/lib/civic-logos";
 import type { AssistedDraftSource } from "@/app/lib/contribution-types";
+import { normalizeContributionReferralSource } from "@/app/lib/contribution-types";
 import { topicCardVisibleContributionLimit } from "@/app/lib/contribution-constants";
 import { createContribution, getContributionStoreMetadata, listPublicContributions } from "@/app/lib/contribution-store";
 import { createEvidenceDocument } from "@/app/lib/evidence-document-store";
@@ -27,6 +28,7 @@ type ContributionPayload = {
   name?: unknown;
   email?: unknown;
   expertise?: unknown;
+  referralSource?: unknown;
   draftSource?: unknown;
   website?: unknown;
 };
@@ -167,6 +169,7 @@ export async function POST(request: NextRequest) {
         name: formData.get("name"),
         email: formData.get("email"),
         expertise: formData.get("expertise"),
+        referralSource: formData.get("referralSource"),
         draftSource: formData.get("draftSource"),
         website: formData.get("website"),
       };
@@ -187,6 +190,7 @@ export async function POST(request: NextRequest) {
   const name = asTrimmedString(payload.name);
   const email = asTrimmedString(payload.email);
   const expertise = asTrimmedString(payload.expertise);
+  const referralSource = normalizeContributionReferralSource(payload.referralSource);
   const draftSource = parseDraftSource(payload.draftSource);
   const website = asTrimmedString(payload.website);
 
@@ -287,11 +291,13 @@ export async function POST(request: NextRequest) {
       email: email || undefined,
       expertise: expertise || undefined,
     },
+    referralSource,
     draftSource,
   });
 
   void sendContributionSubmittedNotification({
     ...contribution,
+    referralSource,
     author: {
       name: name || undefined,
       email: email || undefined,

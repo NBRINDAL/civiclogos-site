@@ -7,9 +7,9 @@ import type {
   Contribution,
   ContributionStoreDocument,
   CreateContributionInput,
-  PublicContribution,
   ReviewContributionInput,
 } from "./contribution-types";
+import { toPublicContributionRecord } from "./contribution-types";
 import { buildContributionAiIntake } from "./contribution-ai";
 import type { IssueRoomSlug } from "./civic-logos";
 import type { DebateLane } from "./reasoning-types";
@@ -111,16 +111,6 @@ function sortNewestFirst<T extends { createdAt: string }>(items: readonly T[]) {
   );
 }
 
-function toPublicContribution(item: Contribution): PublicContribution {
-  return {
-    ...item,
-    author: {
-      name: item.author.name,
-      expertise: item.author.expertise,
-    },
-  };
-}
-
 export async function getContributionStoreMetadata() {
   const storePath = await resolveStorePath();
   return {
@@ -154,7 +144,7 @@ export async function listPublicContributions(filters: ListContributionFilters =
       return true;
     })
     .slice(0, filters.limit ?? 12)
-    .map(toPublicContribution);
+    .map(toPublicContributionRecord);
 }
 
 export async function listAllContributions(filters: ListContributionFilters = {}) {
@@ -198,6 +188,7 @@ export async function createContribution(input: CreateContributionInput) {
       evidenceSource: input.evidenceSource ?? undefined,
       evidenceDocument: input.evidenceDocument ?? undefined,
       author: input.author,
+      referralSource: input.referralSource,
       draftSource: input.draftSource,
       status: "pending",
       createdAt: timestamp,
@@ -208,7 +199,7 @@ export async function createContribution(input: CreateContributionInput) {
     document.contributions.push(contribution);
     await writeStoreDocument(document);
 
-    return toPublicContribution(contribution);
+    return toPublicContributionRecord(contribution);
   });
 }
 
