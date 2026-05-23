@@ -33,6 +33,7 @@ import {
 } from "@/app/lib/home-intake-map-path";
 import { summarizeHomeIntakeRoutingConsensus } from "@/app/lib/home-intake-routing-consensus";
 import { getHomeIntakeEntry, getHomeIntakeStoreMetadata } from "@/app/lib/home-intake-store";
+import type { HomeIntakeRouteKind } from "@/app/lib/home-intake-types";
 import styles from "./page.module.css";
 
 export const dynamic = "force-dynamic";
@@ -53,6 +54,45 @@ function getStorageModeLabel(mode: "prototype" | "database" | "fallback") {
   }
 
   return "Prototype";
+}
+
+function getIntakeArtifactState(routeKind?: HomeIntakeRouteKind) {
+  switch (routeKind) {
+    case "existing-room":
+      return "Routed room context";
+    case "room-topic-draft":
+      return "Draft topic held inside a current room";
+    case "new-room-draft":
+      return "Room candidate held outside the active map";
+    default:
+      return "Routing receipt";
+  }
+}
+
+function getIntakeReviewState(routeKind?: HomeIntakeRouteKind) {
+  switch (routeKind) {
+    case "existing-room":
+      return "Attached to the closest current room for visible follow-up.";
+    case "room-topic-draft":
+      return "Awaiting human map review before it can become a live topic card.";
+    case "new-room-draft":
+      return "Awaiting human map review before any room expansion decision.";
+    default:
+      return "Awaiting review.";
+  }
+}
+
+function getIntakeNextDecision(routeKind?: HomeIntakeRouteKind) {
+  switch (routeKind) {
+    case "existing-room":
+      return "Watch whether repeated prompts create enough pressure for a new or revised topic card.";
+    case "room-topic-draft":
+      return "Decide whether this draft becomes a live card, merges into an existing card, or stays held.";
+    case "new-room-draft":
+      return "Decide whether the candidate belongs in a current room, remains held, or eventually warrants a room.";
+    default:
+      return "Review the routing record and decide the next map action.";
+  }
 }
 
 export default async function IntakeEntryPage({
@@ -201,6 +241,47 @@ export default async function IntakeEntryPage({
       </header>
 
       <main className={styles.main}>
+        <section className={styles.receiptPanel} aria-labelledby="intake-receipt-heading">
+          <div className={styles.receiptHeader}>
+            <div>
+              <span className={styles.eyebrow}>Durable intake receipt</span>
+              <h2 id="intake-receipt-heading">This idea stays inspectable while the map catches up.</h2>
+            </div>
+            <p>
+              Intake routing creates a traceable artifact. It does not create a
+              new room casually, and it does not let AI decide what becomes live.
+            </p>
+          </div>
+
+          <div className={styles.receiptGrid}>
+            <article className={styles.receiptCard}>
+              <span>Artifact state</span>
+              <strong>{getIntakeArtifactState(entry.routing.routeKind)}</strong>
+            </article>
+            <article className={styles.receiptCard}>
+              <span>Review state</span>
+              <strong>{getIntakeReviewState(entry.routing.routeKind)}</strong>
+            </article>
+            <article className={styles.receiptCard}>
+              <span>Prompt pressure</span>
+              <strong>
+                {entry.routing.routeKind === "existing-room"
+                  ? "Room context attached"
+                  : `${promptCount} prompt${promptCount === 1 ? "" : "s"} held`}
+              </strong>
+            </article>
+            <article className={styles.receiptCard}>
+              <span>Model role</span>
+              <strong>AI routing is advisory; human review controls promotion.</strong>
+            </article>
+          </div>
+
+          <div className={styles.nextDecision}>
+            <span>Next maintainer decision</span>
+            <p>{getIntakeNextDecision(entry.routing.routeKind)}</p>
+          </div>
+        </section>
+
         <section className={styles.panel}>
           <span className={styles.eyebrow}>What the intake engine saw</span>
           <h2>

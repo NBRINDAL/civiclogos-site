@@ -84,6 +84,7 @@
 .heroCopy,
 .heroPanel,
 .panel,
+.receiptPanel,
 .providerCard {
   padding: 32px;
   border: 1px solid rgba(18, 33, 39, 0.12);
@@ -95,7 +96,8 @@
 
 .heroCopy h1,
 .sectionHeading h2,
-.panel h2 {
+.panel h2,
+.receiptHeader h2 {
   margin-top: 14px;
   font-family: var(--font-serif), serif;
   font-size: clamp(2rem, 4vw, 3.35rem);
@@ -131,6 +133,8 @@
 .heroPanel p,
 .questionCard p,
 .listBlock p,
+.receiptHeader p,
+.nextDecision p,
 .providerCard p {
   color: var(--muted);
   line-height: 1.74;
@@ -169,8 +173,71 @@
 }
 
 .panel,
+.receiptPanel,
 .section {
   scroll-margin-top: 24px;
+}
+
+.receiptPanel {
+  display: grid;
+  gap: 18px;
+  background:
+    linear-gradient(180deg, rgba(var(--brand-blue-rgb), 0.08), rgba(255, 251, 245, 0.84)),
+    rgba(255, 251, 245, 0.78);
+}
+
+.receiptHeader {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.receiptHeader h2 {
+  font-size: clamp(1.8rem, 3.2vw, 2.5rem);
+}
+
+.receiptHeader p {
+  max-width: 340px;
+}
+
+.receiptGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.receiptCard {
+  display: grid;
+  gap: 8px;
+  padding: 16px;
+  border: 1px solid rgba(18, 33, 39, 0.1);
+  border-radius: 20px;
+  background: rgba(255, 251, 245, 0.86);
+}
+
+.receiptCard span,
+.nextDecision span {
+  color: var(--signal);
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.receiptCard strong {
+  color: var(--foreground);
+  font-size: 0.98rem;
+  line-height: 1.45;
+}
+
+.nextDecision {
+  display: grid;
+  gap: 8px;
+  padding: 16px 18px;
+  border: 1px solid rgba(var(--brand-blue-rgb), 0.14);
+  border-radius: 20px;
+  background: rgba(244, 250, 255, 0.56);
 }
 
 .questionCard {
@@ -385,12 +452,17 @@
 
 @media (max-width: 960px) {
   .hero,
-  .providerGrid {
+  .providerGrid,
+  .receiptGrid {
     grid-template-columns: 1fr;
   }
 
   .promptHistoryMeta {
     grid-template-columns: 1fr;
+  }
+
+  .receiptHeader {
+    display: grid;
   }
 }
 
@@ -407,6 +479,7 @@
   .heroCopy,
   .heroPanel,
   .panel,
+  .receiptPanel,
   .providerCard {
     padding: 22px;
     border-radius: 24px;
