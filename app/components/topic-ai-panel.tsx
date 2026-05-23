@@ -165,7 +165,7 @@ function getIntakeContextPrimaryActionLabel(
 
 function getPromotionLabel(state: TopicChatPromotionState) {
   if (state === "auto-recorded") {
-    return "Auto-recorded";
+    return "System-recorded";
   }
 
   if (state === "sent-to-review") {
@@ -615,7 +615,7 @@ export default function TopicAiPanel({
   const [messages, setMessages] = useState<TopicChatMessage[]>(initialMessages);
   const [issues, setIssues] = useState<TopicAiIssue[]>([]);
   const [disclaimer, setDisclaimer] = useState(
-    "These AIs stay visible as separate AIs. The room only changes when Civic Logos records an obvious update or sends a proposal to human review.",
+    "These AIs stay visible as separate AIs. The room only changes when Civic Logos system-records an AI-origin update with provenance or sends a proposal to human review.",
   );
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [activeProvider, setActiveProvider] = useState<ProviderRequest | null>(null);
@@ -1226,11 +1226,12 @@ export default function TopicAiPanel({
 
         <div className={styles.sessionImpactGrid}>
           <article className={styles.sessionImpactCard}>
-            <span className={styles.sessionImpactLabel}>Auto-recorded</span>
+            <span className={styles.sessionImpactLabel}>System-recorded</span>
             <strong>{sessionImpact.autoRecordedCount}</strong>
             <p>
-              Narrow AI turns Civic Logos treated as obvious enough to enter
-              the live record without waiting on human review.
+              Narrow AI-origin suggestions recorded with provenance under the
+              current review policy. They remain inspectable and challengeable;
+              AI is not the final judge.
             </p>
             {sessionImpact.autoRecordedCount ? (
               <>

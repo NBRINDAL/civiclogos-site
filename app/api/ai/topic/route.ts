@@ -135,13 +135,13 @@ async function promoteAnswerToRecord(args: {
       changedSynthesis: proposal.changedSynthesis ?? true,
       publicRecordNote:
         proposal.publicRecordNote ||
-        "A narrow update from the live topic chat was auto-recorded because the change was treated as obvious within the current card context.",
+        "A narrow update from the live topic chat was system-recorded with AI-origin provenance under the current review policy.",
       decisionReason:
         proposal.publicRecordNote ||
-        "Auto-recorded from live topic chat under the obvious-update policy.",
+        "System-recorded from live topic chat under the AI-origin capture policy; the record remains inspectable and challengeable.",
       reviewerNote:
         proposal.reviewerNote ||
-        `Auto-recorded from ${args.answer.provider} topic chat because the proposed update was narrow enough to enter the public record without waiting on human review.`,
+        `System-recorded from ${args.answer.provider} topic chat because the proposed update was narrow enough for AI-origin record capture; future human review or public challenge can still revise it.`,
     });
 
     if (reviewedContribution) {
@@ -155,7 +155,7 @@ async function promoteAnswerToRecord(args: {
         state: "auto-recorded",
         note:
           proposal.publicRecordNote ||
-          "A narrow update from this topic chat was auto-recorded into the live card.",
+          "A narrow update from this topic chat was system-recorded with AI-origin provenance and remains open to review.",
         contributionId: contribution.id,
         contributionStatus: proposal.changedSynthesis === false ? "accepted" : "incorporated",
         lane: proposal.lane,
