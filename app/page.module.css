@@ -120,7 +120,9 @@
 .releaseCard,
 .contactCard,
 .quoteBand,
-.manifestoItem {
+.manifestoItem,
+.institutionCta,
+.campaignBand {
   backdrop-filter: blur(14px);
 }
 
@@ -282,6 +284,67 @@
   font-style: italic;
   line-height: 1.35;
   text-wrap: balance;
+}
+
+.institutionCta {
+  display: grid;
+  grid-template-columns: minmax(0, 1.24fr) minmax(280px, 0.76fr);
+  gap: 18px;
+  align-items: stretch;
+  padding: 30px;
+  border: 1px solid rgba(var(--brand-blue-rgb), 0.2);
+  border-radius: 30px;
+  background:
+    linear-gradient(135deg, rgba(255, 251, 245, 0.92), rgba(var(--brand-blue-rgb), 0.1), rgba(var(--brand-green-rgb), 0.1)),
+    rgba(255, 251, 245, 0.84);
+  box-shadow: 0 22px 48px rgba(var(--brand-blue-rgb), 0.09);
+}
+
+.institutionCopy {
+  display: grid;
+  gap: 14px;
+}
+
+.institutionCopy h2,
+.campaignBand h2 {
+  font-family: var(--font-serif), serif;
+  font-size: clamp(2rem, 3.8vw, 3rem);
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  line-height: 1.04;
+  text-wrap: balance;
+}
+
+.institutionCopy p,
+.institutionNote p,
+.campaignBand p {
+  max-width: 68ch;
+  color: var(--muted);
+  line-height: 1.72;
+}
+
+.institutionActions,
+.campaignActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  margin-top: 6px;
+}
+
+.institutionNote {
+  display: grid;
+  gap: 10px;
+  align-content: start;
+  padding: 22px;
+  border: 1px solid rgba(18, 33, 39, 0.1);
+  border-radius: 24px;
+  background: rgba(255, 251, 245, 0.78);
+}
+
+.institutionNote strong {
+  color: var(--foreground);
+  font-size: 1rem;
 }
 
 .splitSection {
@@ -455,6 +518,25 @@
 .liveCard .secondaryAction {
   min-height: 48px;
   padding: 0 18px;
+}
+
+.campaignBand {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 22px;
+  align-items: center;
+  padding: 30px;
+  border: 1px solid rgba(var(--brand-green-rgb), 0.2);
+  border-radius: 30px;
+  background:
+    linear-gradient(135deg, rgba(var(--brand-green-rgb), 0.1), rgba(255, 251, 245, 0.9), rgba(var(--brand-red-rgb), 0.06)),
+    rgba(255, 251, 245, 0.84);
+  box-shadow: 0 22px 46px rgba(18, 33, 39, 0.06);
+}
+
+.campaignActions {
+  justify-content: flex-end;
+  min-width: 270px;
 }
 
 .compareCard h3,
@@ -648,6 +730,8 @@
 
 @media (max-width: 1100px) {
   .heroGrid,
+  .institutionCta,
+  .campaignBand,
   .releaseLayout,
   .contactCard,
   .splitSection,
@@ -672,6 +756,11 @@
   .contactActions {
     justify-content: flex-start;
   }
+
+  .campaignActions {
+    justify-content: flex-start;
+    min-width: 0;
+  }
 }
 
 @media (max-width: 720px) {
@@ -690,6 +779,8 @@
 
   .heroCopy,
   .heroPanel,
+  .institutionCta,
+  .campaignBand,
   .splitCard,
   .distinctionCard,
   .releaseCard,

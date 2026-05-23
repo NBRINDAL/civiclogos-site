@@ -151,6 +151,7 @@ export default async function IntakeEntryPage({
           <nav className={styles.nav}>
             <Link href="/">Home</Link>
             <Link href="/rooms">All rooms</Link>
+            <Link href="/institutions">Institutions</Link>
           </nav>
         </div>
 

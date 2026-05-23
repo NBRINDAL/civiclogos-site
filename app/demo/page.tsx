@@ -1,0 +1,329 @@
+import Link from "next/link";
+import { notFound } from "next/navigation";
+import { SiteBrand } from "../components/site-brand";
+import {
+  getRoomTopicCard,
+  getRoomTopicHref,
+  issueRoomQuestion,
+} from "../lib/civic-logos";
+import { topicCardVisibleContributionLimit } from "../lib/contribution-constants";
+import {
+  getContributionStoreMetadata,
+  listPublicContributions,
+} from "../lib/contribution-store";
+import type { PublicContribution } from "../lib/contribution-types";
+import { debateLaneLabels } from "../lib/reasoning-types";
+import styles from "./page.module.css";
+
+function formatTimestamp(value: string) {
+  return new Intl.DateTimeFormat("en-US", {
+    dateStyle: "medium",
+    timeStyle: "short",
+  }).format(new Date(value));
+}
+
+function getContributionOriginLabel(contribution: PublicContribution) {
+  if (contribution.isSeedExample) {
+    return "Prototype example";
+  }
+
+  if (contribution.draftSource) {
+    return "AI-origin contribution";
+  }
+
+  return "Public submission";
+}
+
+function getStatusLabel(status: PublicContribution["status"]) {
+  return status === "needs review"
+    ? "Needs review"
+    : status[0].toUpperCase() + status.slice(1);
+}
+
+function getAttachmentLabel(contribution: PublicContribution) {
+  const kind =
+    contribution.review?.assignedToKind ?? contribution.aiIntake?.suggestedAssignmentKind;
+  const label =
+    contribution.review?.assignedToLabel ?? contribution.aiIntake?.suggestedAssignmentLabel;
+
+  if (!kind || kind === "unclear") {
+    return "None yet";
+  }
+
+  const readableKind = kind === "claim" ? "synthesis" : kind.replaceAll("-", " ");
+  return label ? `${readableKind}: ${label}` : readableKind;
+}
+
+function getContributionSummary(contribution: PublicContribution) {
+  return (
+    contribution.review?.publicRecordNote ??
+    contribution.review?.decisionReason ??
+    contribution.aiIntake?.reviewerNote ??
+    contribution.aiIntake?.summary ??
+    contribution.body
+  );
+}
+
+function getProviderLabels(contribution: PublicContribution | null) {
+  const providers =
+    contribution?.aiIntake?.providers
+      .filter((provider) => provider.state === "completed")
+      .map((provider) => (provider.provider === "anthropic" ? "Claude" : "GPT")) ?? [];
+
+  return Array.from(new Set(providers));
+}
+
+export default async function DemoPage() {
+  const healthcareCard = getRoomTopicCard("healthcare", "topic-001");
+
+  if (!healthcareCard) {
+    notFound();
+  }
+
+  const topicHref = getRoomTopicHref("healthcare", "topic-001");
+  const [metadata, contributions] = await Promise.all([
+    getContributionStoreMetadata(),
+    listPublicContributions({
+      roomSlug: "healthcare",
+      topicId: "topic-001",
+      limit: topicCardVisibleContributionLimit,
+    }),
+  ]);
+  const demoContribution =
+    contributions.find((item) => item.review?.changedSynthesis === true) ??
+    contributions.find((item) => item.review?.reviewedAt) ??
+    contributions[0] ??
+    null;
+  const pendingContribution = contributions.find(
+    (item) => item.status === "pending" || item.status === "needs review",
+  );
+  const latestRevision =
+    healthcareCard.revisionHistory[healthcareCard.revisionHistory.length - 1];
+  const providerLabels = getProviderLabels(demoContribution);
+  const contributionHref = demoContribution
+    ? `${topicHref}?view=ledger#contribution-${demoContribution.id}`
+    : `${topicHref}?view=ledger#contribution-record`;
+
+  const demoSteps = [
+    {
+      label: "01",
+      title: "Original question",
+      body: issueRoomQuestion,
+      detail:
+        "The walkthrough begins with a broad healthcare question that is too large for one post and needs a durable room.",
+    },
+    {
+      label: "02",
+      title: "Room routing",
+      body:
+        "The question is routed into the Healthcare Reform room, then narrowed into an existing topic instead of creating a new room.",
+      detail: "Route result: Healthcare Reform -> Administrative Simplification and AI-Assisted Triage.",
+    },
+    {
+      label: "03",
+      title: "Topic card creation",
+      body: healthcareCard.thesis,
+      detail:
+        "The card gives the idea a stable object: thesis, risks, evidence pressure, assumptions, scorecard, and revision history.",
+    },
+    {
+      label: "04",
+      title: "Contribution submitted",
+      body: demoContribution
+        ? demoContribution.title
+        : "No contribution is visible yet, so this step waits for the first public record.",
+      detail: demoContribution
+        ? `${getContributionOriginLabel(demoContribution)} - ${debateLaneLabels[demoContribution.lane]} - recorded ${formatTimestamp(demoContribution.createdAt)}.`
+        : "A real submission will enter the public review record once it exists.",
+    },
+    {
+      label: "05",
+      title: "GPT/Claude assisted sorting",
+      body: demoContribution?.aiIntake?.summary ?? "AI-assisted sorting is available when a contribution enters the record.",
+      detail: providerLabels.length
+        ? `${providerLabels.join(" and ")} proposed lane fit, attachment, and likely synthesis impact. Human review still decides placement.`
+        : "Assisted readers can structure a record, but they are not final judges.",
+    },
+    {
+      label: "06",
+      title: "Human review decision",
+      body: demoContribution?.review?.publicRecordNote ?? demoContribution?.review?.decisionReason ?? "Pending human review.",
+      detail: demoContribution
+        ? `Current status: ${getStatusLabel(demoContribution.status)}. Changed card: ${
+            demoContribution.review?.changedSynthesis === true
+              ? "yes"
+              : demoContribution.review?.changedSynthesis === false
+                ? "no"
+                : "not decided"
+          }.`
+        : "No review decision exists until a contribution is submitted.",
+    },
+    {
+      label: "07",
+      title: "Public record attachment",
+      body: demoContribution
+        ? getAttachmentLabel(demoContribution)
+        : "No attachment target yet.",
+      detail:
+        "Attachments keep the contribution connected to evidence, assumptions, objections, open questions, or synthesis rather than leaving it in a feed.",
+    },
+    {
+      label: "08",
+      title: "Revision trace",
+      body: latestRevision ? `${latestRevision.version}: ${latestRevision.note}` : "No visible revisions yet.",
+      detail:
+        "The card should show what changed, why it changed, and which record created the pressure.",
+    },
+  ];
+
+  return (
+    <div className={styles.page}>
+      <div className={styles.backdrop} aria-hidden="true" />
+
+      <header className={styles.header}>
+        <div className={styles.headerBar}>
+          <SiteBrand className={styles.brand} href="/" subtitle="Guided demo" />
+
+          <nav className={styles.nav}>
+            <Link href="/">Home</Link>
+            <Link href="/healthcare">Healthcare room</Link>
+            <Link href="/institutions">Institutions</Link>
+          </nav>
+        </div>
+
+        <section className={styles.hero}>
+          <div className={styles.heroCopy}>
+            <span className={styles.eyebrow}>Prototype demo data</span>
+            <h1>Watch one idea move through Civic Logos</h1>
+            <p>
+              This walkthrough uses the healthcare card to show the platform
+              loop: route a question, create a topic card, record a contribution,
+              sort it with GPT/Claude assisted readers, apply human review, attach
+              the record, and keep the revision trace visible.
+            </p>
+            <p className={styles.prototypeNote}>
+              This is prototype data, not fake public usage. It is labeled this
+              way so the mechanism can be inspected without pretending outside
+              adoption has happened yet. Contribution store mode:{" "}
+              <strong>{metadata.mode}</strong>.
+            </p>
+            <div className={styles.heroActions}>
+              <Link className={styles.primaryAction} href={topicHref}>
+                Open the healthcare card
+              </Link>
+              <Link className={styles.secondaryAction} href={contributionHref}>
+                Inspect the ledger record
+              </Link>
+            </div>
+          </div>
+
+          <aside className={styles.heroPanel}>
+            <span className={styles.panelLabel}>Proof object</span>
+            <h2>{healthcareCard.title}</h2>
+            <p>{healthcareCard.currentRead}</p>
+            <div className={styles.heroMeta}>
+              <div>
+                <span>Visible records</span>
+                <strong>{contributions.length}</strong>
+              </div>
+              <div>
+                <span>Pending review</span>
+                <strong>{pendingContribution ? "Visible" : "None visible"}</strong>
+              </div>
+              <div>
+                <span>Revision trace</span>
+                <strong>{healthcareCard.revisionHistory.length} updates</strong>
+              </div>
+            </div>
+          </aside>
+        </section>
+      </header>
+
+      <main className={styles.main}>
+        <section className={styles.timelineSection}>
+          <div className={styles.sectionIntro}>
+            <span className={styles.eyebrow}>Guided path</span>
+            <h2>One idea, eight inspectable steps.</h2>
+            <p>
+              The demo stays deliberately narrow: no popularity mechanics, no
+              paid ranking, and no AI as final judge. The work is visible because
+              the record is visible.
+            </p>
+          </div>
+
+          <ol className={styles.timeline}>
+            {demoSteps.map((step) => (
+              <li className={styles.timelineItem} key={step.title}>
+                <span className={styles.stepNumber}>{step.label}</span>
+                <div>
+                  <h3>{step.title}</h3>
+                  <p>{step.body}</p>
+                  <span>{step.detail}</span>
+                </div>
+              </li>
+            ))}
+          </ol>
+        </section>
+
+        <section className={styles.recordsSection}>
+          <div className={styles.sectionIntro}>
+            <span className={styles.eyebrow}>Visible records</span>
+            <h2>The demo points back to the same ledger used by the topic card.</h2>
+          </div>
+
+          <div className={styles.recordGrid}>
+            {contributions.slice(0, 3).map((item) => (
+              <article className={styles.recordCard} key={item.id}>
+                <span className={styles.recordLabel}>{getContributionOriginLabel(item)}</span>
+                <h3>{item.title}</h3>
+                <p>{getContributionSummary(item)}</p>
+                <dl>
+                  <div>
+                    <dt>Lane</dt>
+                    <dd>{debateLaneLabels[item.lane]}</dd>
+                  </div>
+                  <div>
+                    <dt>Status</dt>
+                    <dd>{getStatusLabel(item.status)}</dd>
+                  </div>
+                  <div>
+                    <dt>Attachment</dt>
+                    <dd>{getAttachmentLabel(item)}</dd>
+                  </div>
+                </dl>
+                <Link
+                  className={styles.inlineLink}
+                  href={`${topicHref}?view=ledger#contribution-${item.id}`}
+                >
+                  Open this record
+                </Link>
+              </article>
+            ))}
+          </div>
+        </section>
+
+        <section className={styles.ctaBand}>
+          <div>
+            <span className={styles.eyebrow}>First outside contribution</span>
+            <h2>Help pressure-test the first card.</h2>
+            <p>
+              A strong objection, evidence source, or correction can become the
+              first real public contribution that improves this card.
+            </p>
+          </div>
+          <div className={styles.ctaActions}>
+            <Link
+              className={styles.primaryAction}
+              href="/healthcare/topic-001?contributeFrom=demo#debate"
+            >
+              Contribute to the healthcare card
+            </Link>
+            <Link className={styles.secondaryAction} href="/institutions">
+              Request an institutional review pilot
+            </Link>
+          </div>
+        </section>
+      </main>
+    </div>
+  );
+}

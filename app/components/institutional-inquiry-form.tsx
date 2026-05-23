@@ -161,6 +161,12 @@ export function InstitutionalInquiryForm({
           Paying for a room funds examination, review capacity, and synthesis work.
           It does not buy favorable conclusions.
         </p>
+        <p className={styles.disclosureNote}>
+          Inquiry details are private by default. If a public room is launched,
+          sponsor identity, relevant constraints, and review conditions must be
+          disclosed. Payment funds review capacity and synthesis labor; it does
+          not buy favorable scoring, legitimacy, or quiet review outcomes.
+        </p>
         {contextTitle || contextNote || contextFacts.length ? (
           <>
             {contextTitle ? (

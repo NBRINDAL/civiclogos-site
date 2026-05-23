@@ -198,6 +198,7 @@ export default async function IssueRoomPage({
           <nav className={styles.nav}>
             <Link href="/">Home</Link>
             <Link href="/rooms">All rooms</Link>
+            <Link href="/institutions">Institutions</Link>
             <a href="#working-materials">Working materials</a>
           </nav>
         </div>

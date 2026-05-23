@@ -327,6 +327,40 @@ function getContributionOrigin(contribution: PublicContribution): ContributionOr
   return "human-submitted";
 }
 
+function getSubmissionRecordType(contribution: PublicContribution) {
+  const origin = getContributionOrigin(contribution);
+  const type =
+    origin === "seed-example"
+      ? "Prototype example"
+      : origin === "ai-origin"
+        ? "AI-origin contribution"
+        : "Public submission";
+
+  if (contribution.evidenceDocument) {
+    return `${type} - Document-backed submission`;
+  }
+
+  return type;
+}
+
+function getAdminReviewNote(contribution: PublicContribution) {
+  const origin = getContributionOrigin(contribution);
+
+  if (origin === "seed-example") {
+    return "Prototype example used to show the review mechanics; it is not presented as public usage.";
+  }
+
+  if (origin === "ai-origin") {
+    return "AI-origin draft. It can help form a contribution, but human review decides whether it attaches or changes the card.";
+  }
+
+  if (contribution.evidenceDocument) {
+    return "Public submission with an uploaded document. The document stays attached while human review decides placement and synthesis impact.";
+  }
+
+  return "Public submission. It enters human review before it can change the visible synthesis, attachment record, or score pressure.";
+}
+
 function getContributionStatusFilter(status: ReviewStatus): ContributionStatusFilter {
   return status === "needs review" ? "needs-review" : status;
 }
@@ -2325,6 +2359,14 @@ export default function TopicContributionLoop({
                       <div className={styles.recordRow}>
                         <dt>Contribution origin</dt>
                         <dd>{contributionOriginFilterLabels[getContributionOrigin(item)]}</dd>
+                      </div>
+                      <div className={styles.recordRow}>
+                        <dt>Submission type</dt>
+                        <dd>{getSubmissionRecordType(item)}</dd>
+                      </div>
+                      <div className={styles.recordRow}>
+                        <dt>Admin / review note</dt>
+                        <dd>{getAdminReviewNote(item)}</dd>
                       </div>
                       <div className={styles.recordRow}>
                         <dt>Attachment target</dt>

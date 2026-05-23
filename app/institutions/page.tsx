@@ -257,6 +257,7 @@ export default async function InstitutionsPage({
           <SiteBrand href="/" subtitle="Institutional pilots" />
           <div className={styles.navLinks}>
             <Link href="/">Home</Link>
+            <Link href="/demo">Demo</Link>
             <a href="#offers">Offers</a>
             <a href="#model">Public Review Stake</a>
             <a href="#example">Healthcare example</a>

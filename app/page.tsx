@@ -549,6 +549,8 @@ export default async function Home({
           <div className={styles.navLinks}>
             <Link href="/rooms">Room library</Link>
             <Link href="/healthcare">Healthcare room</Link>
+            <Link href="/demo">Demo</Link>
+            <Link href="/institutions">Institutions</Link>
             <a href="#live-cards">Live cards</a>
             <a href="#manifesto">Manifesto</a>
             <a href="#contact">Early access</a>
@@ -604,6 +606,36 @@ export default async function Home({
             what to think. The goal is to create a platform where civilization
             can think better in public.&quot;
           </p>
+        </section>
+
+        <section className={`${styles.institutionCta} ${styles.reveal}`} id="institutions">
+          <div className={styles.institutionCopy}>
+            <span className={styles.cardLabel}>Institutional pilots</span>
+            <h2>For institutions: fund scrutiny without buying authority.</h2>
+            <p>
+              Civic Logos helps institutions turn hard public questions into
+              living issue rooms with claims, objections, evidence, AI-assisted
+              sorting, human review, and visible revision history. Paying funds
+              examination, not favorable conclusions.
+            </p>
+            <div className={styles.institutionActions}>
+              <Link className={styles.primaryAction} href="/institutions">
+                Request an institutional review pilot
+              </Link>
+              <Link className={styles.secondaryAction} href="/demo">
+                Watch one idea move through Civic Logos
+              </Link>
+            </div>
+          </div>
+
+          <aside className={styles.institutionNote}>
+            <strong>Public Review Stake</strong>
+            <p>
+              The monetization path is review capacity, not paid legitimacy:
+              funder identity and constraints must be disclosed, objections
+              remain visible, and human review notes stay inspectable.
+            </p>
+          </aside>
         </section>
 
         <section className={`${styles.splitSection} ${styles.reveal}`}>
@@ -664,6 +696,29 @@ export default async function Home({
                 </div>
               </article>
             ))}
+          </div>
+        </section>
+
+        <section className={`${styles.campaignBand} ${styles.reveal}`} id="first-contribution">
+          <div>
+            <span className={styles.cardLabel}>First real contribution</span>
+            <h2>Help pressure-test the first card.</h2>
+            <p>
+              We are looking for one strong objection, one evidence source, or
+              one correction that can improve the Administrative Simplification
+              card and become part of the public review record.
+            </p>
+          </div>
+          <div className={styles.campaignActions}>
+            <Link
+              className={styles.primaryAction}
+              href="/healthcare/topic-001?contributeFrom=first-card#debate"
+            >
+              Help pressure-test the first card
+            </Link>
+            <Link className={styles.secondaryAction} href="/healthcare/topic-001">
+              Read the healthcare card
+            </Link>
           </div>
         </section>
 
