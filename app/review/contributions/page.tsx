@@ -743,8 +743,12 @@ export default async function ContributionReviewPage({
               ].filter(Boolean) as string[];
 
               return (
-              <article className={styles.contribution} key={item.id}>
-                <div className={styles.statusBar}>
+                <article
+                  className={styles.contribution}
+                  id={`review-${item.id}`}
+                  key={item.id}
+                >
+                  <div className={styles.statusBar}>
                   <span className={styles.badge}>{item.status}</span>
                   <span className={styles.badge}>{debateLaneLabels[item.lane]}</span>
                   {provenanceBadges.map((badge) => (

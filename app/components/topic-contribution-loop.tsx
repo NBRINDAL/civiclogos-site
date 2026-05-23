@@ -933,6 +933,21 @@ function getExactContributionLedgerHref(
   return `${pathname}?${nextSearchParams.toString()}#contribution-${contribution.id}`;
 }
 
+function getSubmittedContributionReviewHref(
+  roomSlug: string,
+  topicId: string,
+  contribution: PublicContribution,
+) {
+  const params = new URLSearchParams({
+    roomSlug,
+    topicId,
+    status: contribution.status,
+    lane: contribution.lane,
+  });
+
+  return `/review/contributions?${params.toString()}#review-${contribution.id}`;
+}
+
 function getSummaryReferenceHref(
   href: string,
   scoreLabel?: string,
@@ -2305,6 +2320,16 @@ export default function TopicContributionLoop({
                         )}
                       >
                         Open submitted record
+                      </a>
+                      <a
+                        className={styles.sourceLink}
+                        href={getSubmittedContributionReviewHref(
+                          roomSlug,
+                          topicId,
+                          lastSubmittedContribution,
+                        )}
+                      >
+                        Open human review queue
                       </a>
                       <a className={styles.sourceLink} href="#contribution-record">
                         View recent contributions
