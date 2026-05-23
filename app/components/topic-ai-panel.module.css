@@ -483,6 +483,24 @@
     background 180ms ease;
 }
 
+.aiDraftBridge {
+  display: grid;
+  gap: 10px;
+  padding: 14px 16px;
+  border: 1px solid rgba(var(--brand-blue-rgb), 0.14);
+  border-radius: 18px;
+  background:
+    radial-gradient(circle at top right, rgba(var(--brand-blue-rgb), 0.08), transparent 42%),
+    rgba(255, 252, 247, 0.82);
+}
+
+.aiDraftBridge p {
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
 .answerActions {
   display: flex;
   flex-wrap: wrap;

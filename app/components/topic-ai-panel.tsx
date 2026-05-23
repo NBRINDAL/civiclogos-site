@@ -133,9 +133,9 @@ const draftLaneOptions: Array<{
   lane: DebateLane;
   label: string;
 }> = [
-  { lane: "objection", label: "Draft as objection" },
-  { lane: "evidence", label: "Draft as evidence" },
-  { lane: "nuance", label: "Draft as nuance" },
+  { lane: "objection", label: "Draft contribution: objection" },
+  { lane: "evidence", label: "Draft contribution: evidence" },
+  { lane: "nuance", label: "Draft contribution: nuance" },
 ];
 
 function formatTimestamp(value: string) {
@@ -1427,23 +1427,35 @@ export default function TopicAiPanel({
                 ) : null}
 
                 {item.message.role === "assistant" ? (
-                  <div className={styles.answerActions}>
-                    {draftLaneOptions.map((option) => (
-                      <button
-                        className={styles.answerAction}
-                        key={`${item.message.id}-${option.lane}`}
-                        onClick={() =>
-                          sendToContributionDraft(
-                            item.message,
-                            item.sourceQuestion,
-                            option.lane,
-                          )
-                        }
-                        type="button"
-                      >
-                        {option.label}
-                      </button>
-                    ))}
+                  <div className={styles.aiDraftBridge}>
+                    <div>
+                      <span className={styles.quickPromptLabel}>
+                        Turn this answer into a proposed contribution
+                      </span>
+                      <p>
+                        This only loads the AI answer into the contribution
+                        form for human editing and review. It does not publish a
+                        record or change the card by itself.
+                      </p>
+                    </div>
+                    <div className={styles.answerActions}>
+                      {draftLaneOptions.map((option) => (
+                        <button
+                          className={styles.answerAction}
+                          key={`${item.message.id}-${option.lane}`}
+                          onClick={() =>
+                            sendToContributionDraft(
+                              item.message,
+                              item.sourceQuestion,
+                              option.lane,
+                            )
+                          }
+                          type="button"
+                        >
+                          {option.label}
+                        </button>
+                      ))}
+                    </div>
                   </div>
                 ) : null}
               </article>
@@ -1456,6 +1468,12 @@ export default function TopicAiPanel({
               real pressure test, and Civic Logos will keep the conversation
               attached to this topic while deciding whether any update belongs in
               the public record.
+            </p>
+            <p>
+              After an AI answers, draft buttons can load that answer into the
+              contribution form as a proposed record for human editing and
+              review. The AI answer does not publish a record or change the card
+              by itself.
             </p>
           </div>
         )}
