@@ -3,6 +3,10 @@ import { ContactForm } from "./components/contact-form";
 import HomeIntake from "./components/home-intake";
 import { SiteBrand } from "./components/site-brand";
 import { getLiveCardIndex, issueRoomQuestion, roomDirectory } from "./lib/civic-logos";
+import {
+  getContributionStoreMetadata,
+  listPublicContributions,
+} from "./lib/contribution-store";
 import styles from "./page.module.css";
 
 const distinctions = [
@@ -132,6 +136,14 @@ export default async function Home({
   }>;
 }) {
   const resolvedSearchParams = await searchParams;
+  const [campaignContributionMetadata, campaignContributions] = await Promise.all([
+    getContributionStoreMetadata(),
+    listPublicContributions({
+      roomSlug: "healthcare",
+      topicId: "topic-001",
+      limit: 12,
+    }),
+  ]);
   const getFirstValue = (value?: string | string[]) =>
     Array.isArray(value) ? value[0] : value;
   const getAllValues = (value?: string | string[]) =>
@@ -537,6 +549,19 @@ export default async function Home({
           .filter((item): item is string => Boolean(item))
           .join("\n")
       : undefined;
+  const campaignRecordStats = {
+    visibleRecords: campaignContributions.length,
+    pendingReview: campaignContributions.filter(
+      (item) => item.status === "pending" || item.status === "needs review",
+    ).length,
+    changedCard: campaignContributions.filter(
+      (item) => item.review?.changedSynthesis === true,
+    ).length,
+    publicSubmissions: campaignContributions.filter(
+      (item) => !item.isSeedExample && !item.draftSource,
+    ).length,
+    prototypeExamples: campaignContributions.filter((item) => item.isSeedExample).length,
+  };
 
   return (
     <div className={styles.page}>
@@ -728,6 +753,32 @@ export default async function Home({
                 Correction
               </Link>
             </div>
+            <dl className={styles.campaignRecordGrid}>
+              <div>
+                <dt>Visible records</dt>
+                <dd>{campaignRecordStats.visibleRecords}</dd>
+              </div>
+              <div>
+                <dt>Pending review</dt>
+                <dd>{campaignRecordStats.pendingReview}</dd>
+              </div>
+              <div>
+                <dt>Changed card</dt>
+                <dd>{campaignRecordStats.changedCard}</dd>
+              </div>
+              <div>
+                <dt>Outside submissions</dt>
+                <dd>{campaignRecordStats.publicSubmissions}</dd>
+              </div>
+            </dl>
+            <p className={styles.campaignRecordNote}>
+              Current record mode: <strong>{campaignContributionMetadata.mode}</strong>.
+              Prototype examples visible:{" "}
+              <strong>{campaignRecordStats.prototypeExamples}</strong>. Outside
+              public submissions stay at{" "}
+              <strong>{campaignRecordStats.publicSubmissions}</strong> until a real
+              contributor enters the review loop.
+            </p>
           </div>
           <div className={styles.campaignActions}>
             <Link

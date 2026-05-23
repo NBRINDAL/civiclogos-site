@@ -563,6 +563,52 @@
     background 180ms ease;
 }
 
+.campaignRecordGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.campaignRecordGrid div {
+  display: grid;
+  gap: 4px;
+  padding: 12px 14px;
+  border: 1px solid rgba(18, 33, 39, 0.08);
+  border-radius: 18px;
+  background: rgba(255, 251, 245, 0.74);
+}
+
+.campaignRecordGrid dt {
+  color: var(--signal);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.campaignRecordGrid dd {
+  margin: 0;
+  color: var(--foreground);
+  font-family: var(--font-serif), serif;
+  font-size: 1.35rem;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  line-height: 1;
+}
+
+.campaignRecordNote {
+  max-width: 780px;
+  margin-top: 12px;
+  color: var(--muted);
+  font-size: 0.92rem;
+  line-height: 1.68;
+}
+
+.campaignRecordNote strong {
+  color: var(--foreground);
+}
+
 .compareCard h3,
 .loopCard h3,
 .distinctionCard h3,
@@ -763,6 +809,7 @@
   .institutionCta,
   .campaignBand,
   .releaseLayout,
+  .campaignRecordGrid,
   .contactCard,
   .splitSection,
   .manifestoGrid,
