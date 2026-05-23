@@ -985,6 +985,15 @@ export default function TopicContributionLoop({
     () => searchParams.get("scoreLabel")?.trim() || undefined,
     [searchParams],
   );
+  const quickStartLane = useMemo(
+    () => normalizeDebateLane(searchParams.get("contributeLane") ?? ""),
+    [searchParams],
+  );
+  const quickStartSource = useMemo(
+    () => searchParams.get("contributeFrom")?.trim() || undefined,
+    [searchParams],
+  );
+  const selectedContributionLane = formState.lane || quickStartLane || "";
   const activeScoreSliceLabel = useMemo(
     () => searchParams.get("scoreSlice")?.trim() || undefined,
     [searchParams],
@@ -1273,6 +1282,20 @@ export default function TopicContributionLoop({
   }, [roomSlug, topicId, initialContributions.length]);
 
   useEffect(() => {
+    if (currentHash !== "#debate" || !quickStartLane) {
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      titleRef.current?.focus();
+    }, 150);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [currentHash, quickStartLane]);
+
+  useEffect(() => {
     function handleAiDraft(event: Event) {
       const customEvent = event as CustomEvent<TopicAiDraftDetail>;
       const detail = customEvent.detail;
@@ -1370,7 +1393,7 @@ export default function TopicContributionLoop({
       return;
     }
 
-    if (!formState.lane) {
+    if (!selectedContributionLane) {
       setSubmissionState({
         kind: "error",
         message: "Choose the debate lane your contribution belongs in.",
@@ -1388,7 +1411,7 @@ export default function TopicContributionLoop({
             const formData = new FormData();
             formData.set("roomSlug", roomSlug);
             formData.set("topicId", topicId);
-            formData.set("lane", formState.lane);
+            formData.set("lane", selectedContributionLane);
             formData.set("title", formState.title);
             formData.set("body", formState.body);
             formData.set("evidenceLabel", formState.evidenceLabel);
@@ -1468,8 +1491,19 @@ export default function TopicContributionLoop({
           </div>
 
           <div className={styles.debateGrid}>
+            {quickStartLane && quickStartSource === "reader" ? (
+              <div className={styles.quickStartNotice}>
+                <strong>Quick start from Reader View</strong>
+                <p>
+                  You opened the contribution form through the{" "}
+                  <strong>{getDebateLaneLabel(quickStartLane)}</strong> lane. One
+                  useful move is enough here. You do not need to resolve the whole
+                  topic before contributing.
+                </p>
+              </div>
+            ) : null}
             {prompts.map((item) => {
-              const isActive = formState.lane === item.lane;
+              const isActive = selectedContributionLane === item.lane;
 
               return (
                 <article className={styles.debateCard} key={item.lane}>
@@ -1540,7 +1574,7 @@ export default function TopicContributionLoop({
                       normalizeDebateLane(event.target.value) ?? "",
                     )
                   }
-                  value={formState.lane}
+                  value={selectedContributionLane}
                 >
                   <option value="">Choose the reasoning lane for this contribution</option>
                   {prompts.map((item) => (

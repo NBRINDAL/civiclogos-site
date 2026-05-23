@@ -285,6 +285,46 @@
   margin-top: 24px;
 }
 
+.readerStarterGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 4px;
+}
+
+.readerStarterCard {
+  display: grid;
+  gap: 12px;
+  padding: 18px;
+  border: 1px solid rgba(18, 33, 39, 0.1);
+  border-radius: 24px;
+  background: rgba(255, 251, 245, 0.84);
+}
+
+.readerStarterCard h3 {
+  font-size: 1.12rem;
+}
+
+.readerStarterAction {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  width: fit-content;
+  padding: 0 14px;
+  border: 1px solid rgba(18, 33, 39, 0.14);
+  border-radius: 999px;
+  background: rgba(255, 251, 245, 0.92);
+  color: var(--foreground);
+  font-size: 0.84rem;
+  font-weight: 700;
+  text-decoration: none;
+  transition:
+    transform 180ms ease,
+    border-color 180ms ease,
+    background 180ms ease;
+}
+
 .summaryFocusNotice {
   display: grid;
   gap: 10px;
@@ -965,7 +1005,8 @@
   .scoreSliceLink:hover,
   .reviewPillLink:hover,
   .relatedCardItem:hover,
-  .lanePressureLink:hover {
+  .lanePressureLink:hover,
+  .readerStarterAction:hover {
     transform: translateY(-2px);
   }
 
@@ -979,7 +1020,8 @@
   .scoreSliceLink:hover,
   .reviewPillLink:hover,
   .relatedCardItem:hover,
-  .lanePressureLink:hover {
+  .lanePressureLink:hover,
+  .readerStarterAction:hover {
     border-color: rgba(var(--brand-blue-rgb), 0.26);
     background: rgba(255, 251, 245, 0.96);
   }
@@ -988,6 +1030,7 @@
 @media (max-width: 1100px) {
   .hero,
   .gridSection,
+  .readerStarterGrid,
   .evidenceList,
   .aiGrid,
   .debateGrid,
@@ -1026,7 +1069,8 @@
   .evidenceCard,
   .aiCard,
   .debateCard,
-  .historyItem {
+  .historyItem,
+  .readerStarterCard {
     padding: 22px;
     border-radius: 24px;
   }
@@ -1048,7 +1092,8 @@
   .roomActionPrimary,
   .roomActionSecondary,
   .reviewPillLink,
-  .relatedCardItem {
+  .relatedCardItem,
+  .readerStarterAction {
     transition: none;
   }
 }

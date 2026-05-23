@@ -3,7 +3,7 @@ import Link from "next/link";
 import TopicContributionLoop from "./topic-contribution-loop";
 import TopicAiPanel from "./topic-ai-panel";
 import { SiteBrand } from "./site-brand";
-import type { IssueRoomSlug, TopicCardData } from "../lib/civic-logos";
+import type { DebatePrompt, IssueRoomSlug, TopicCardData } from "../lib/civic-logos";
 import {
   getHomeIntakeCookieName,
   parseHomeIntakeCookie,
@@ -32,6 +32,7 @@ import {
 import {
   debateLaneLabels,
   debateLaneOptions,
+  normalizeDebateLane,
   type DebateLane,
   type ReviewTargetKind,
 } from "../lib/reasoning-types";
@@ -102,6 +103,13 @@ type ScoreTransparencySlice = ContributionSliceDefinition & {
 type ContributionScoreReference = {
   scoreLabel: string;
   scoreSliceLabel: string;
+};
+
+type ReaderContributionStarter = {
+  lane: DebateLane;
+  title: string;
+  description: string;
+  href: string;
 };
 
 type ScorePressureContext = {
@@ -831,6 +839,107 @@ function getTopicCardViewHref({
   const query = params.toString();
 
   return `${getRoomTopicHref(roomSlug, topicId)}${query ? `?${query}` : ""}${hash ? `#${hash}` : ""}`;
+}
+
+function getTopicCardContributionStarterHref({
+  roomSlug,
+  topicId,
+  lane,
+  intakeId,
+  pilotInquiry,
+}: {
+  roomSlug: IssueRoomSlug;
+  topicId: string;
+  lane: DebateLane;
+  intakeId?: string;
+  pilotInquiry?: boolean;
+}) {
+  const params = new URLSearchParams();
+  params.set("view", "ledger");
+  params.set("contributeLane", lane);
+  params.set("contributeFrom", "reader");
+
+  if (intakeId) {
+    params.set("intake", intakeId);
+  }
+
+  if (pilotInquiry) {
+    params.set("pilotInquiry", "1");
+  }
+
+  const query = params.toString();
+
+  return `${getRoomTopicHref(roomSlug, topicId)}${query ? `?${query}` : ""}#debate`;
+}
+
+function getReaderContributionStarters({
+  debatePrompts,
+  roomSlug,
+  topicId,
+  intakeId,
+  pilotInquiry,
+}: {
+  debatePrompts: readonly DebatePrompt[];
+  roomSlug: IssueRoomSlug;
+  topicId: string;
+  intakeId?: string;
+  pilotInquiry?: boolean;
+}): ReaderContributionStarter[] {
+  const promptsByLane = new Map<DebateLane, { title: string; description: string }>();
+
+  for (const prompt of debatePrompts) {
+    const lane = prompt.id ?? normalizeDebateLane(prompt.title);
+
+    if (!lane || promptsByLane.has(lane)) {
+      continue;
+    }
+
+    promptsByLane.set(lane, {
+      title: prompt.title,
+      description: prompt.description,
+    });
+  }
+
+  const preferredLaneOrder: readonly DebateLane[] = [
+    "objection",
+    "evidence",
+    "correction",
+    "nuance",
+    "implementation-concern",
+    "economic-assumption-challenge",
+    "support",
+    "personal-perspective",
+    "alternate-topic",
+  ];
+
+  const starters: ReaderContributionStarter[] = [];
+
+  for (const lane of preferredLaneOrder) {
+    const prompt = promptsByLane.get(lane);
+
+    if (!prompt) {
+      continue;
+    }
+
+    starters.push({
+      lane,
+      title: prompt.title,
+      description: prompt.description,
+      href: getTopicCardContributionStarterHref({
+        roomSlug,
+        topicId,
+        lane,
+        intakeId,
+        pilotInquiry,
+      }),
+    });
+
+    if (starters.length === 3) {
+      break;
+    }
+  }
+
+  return starters;
 }
 
 function matchesContributionSlice(
@@ -2382,6 +2491,13 @@ export default async function TopicCardPage({
     intakeId: activeIntakeContextId,
     pilotInquiry: activePilotInquiry,
   });
+  const readerContributionStarters = getReaderContributionStarters({
+    debatePrompts: card.debatePrompts,
+    roomSlug,
+    topicId: card.id,
+    intakeId: activeIntakeContextId,
+    pilotInquiry: activePilotInquiry,
+  });
   const summaryFocusLedgerHref = getSummaryFocusLedgerHref(searchParams);
   const scoreFocusHref = getScoreFocusHref(searchParams);
   const summaryFocusedContribution =
@@ -2563,6 +2679,30 @@ export default async function TopicCardPage({
                   ))}
                 </ul>
               </div>
+
+              {readerContributionStarters.length ? (
+                <div className={styles.copyBlock}>
+                  <h3>Quick ways to pressure-test this card</h3>
+                  <p>
+                    You do not need to settle the whole topic. Pick one lane,
+                    make one sharp move, and let the ledger handle the rest.
+                  </p>
+                  <div className={styles.readerStarterGrid}>
+                    {readerContributionStarters.map((starter) => (
+                      <article className={styles.readerStarterCard} key={starter.lane}>
+                        <span className={styles.panelLabel}>
+                          {debateLaneLabels[starter.lane]}
+                        </span>
+                        <h3>{starter.title}</h3>
+                        <p>{starter.description}</p>
+                        <Link className={styles.readerStarterAction} href={starter.href}>
+                          Start in this lane
+                        </Link>
+                      </article>
+                    ))}
+                  </div>
+                </div>
+              ) : null}
 
               <div className={styles.roomActions}>
                 <Link className={styles.roomActionPrimary} href={contributeHref}>
