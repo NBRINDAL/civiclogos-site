@@ -602,6 +602,63 @@
   gap: 10px;
 }
 
+.impactBoundaryPanel {
+  display: grid;
+  gap: 16px;
+  padding: 18px;
+  border: 1px solid rgba(var(--brand-blue-rgb), 0.18);
+  border-radius: 22px;
+  background:
+    radial-gradient(circle at top right, rgba(var(--brand-blue-rgb), 0.1), transparent 40%),
+    linear-gradient(180deg, rgba(255, 251, 245, 0.96), rgba(244, 250, 255, 0.9));
+}
+
+.impactBoundaryPanel h3 {
+  margin-top: 6px;
+  font-size: 1.18rem;
+}
+
+.impactBoundaryPanel p {
+  color: var(--muted);
+  line-height: 1.65;
+}
+
+.impactBoundaryGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.impactBoundaryGrid div {
+  display: grid;
+  gap: 6px;
+  padding: 12px;
+  border: 1px solid rgba(18, 33, 39, 0.1);
+  border-radius: 16px;
+  background: rgba(255, 252, 247, 0.84);
+}
+
+.impactBoundaryGrid dt {
+  color: var(--signal);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+
+.impactBoundaryGrid dd {
+  margin: 0;
+  color: var(--foreground);
+  font-size: 1.45rem;
+  font-weight: 800;
+}
+
+.impactBoundaryNote {
+  padding-top: 12px;
+  border-top: 1px solid rgba(18, 33, 39, 0.08);
+  font-size: 0.92rem;
+}
+
 .focusNotice {
   display: grid;
   gap: 10px;
@@ -959,6 +1016,7 @@
   .readerGrid,
   .recordPreviewGrid,
   .reviewStepGrid,
+  .impactBoundaryGrid,
   .starterGrid,
   .successReceipt,
   .sectionHeader,

@@ -1091,6 +1091,29 @@ export default function TopicContributionLoop({
     }),
     [contributions],
   );
+  const impactBoundaryStats = useMemo(() => {
+    const isOpenReview = (contribution: PublicContribution) =>
+      contribution.status === "pending" || contribution.status === "needs review";
+
+    return {
+      potentialImpact: contributions.filter(
+        (item) => item.aiIntake?.changedSynthesisLikely === true,
+      ).length,
+      proposedCardChange: contributions.filter(
+        (item) => item.review?.changedSynthesis === true && !isActualCardChange(item),
+      ).length,
+      actualCardChange: contributions.filter((item) => isActualCardChange(item)).length,
+      openReviewPotential: contributions.filter(
+        (item) =>
+          isOpenReview(item) &&
+          (item.aiIntake?.changedSynthesisLikely === true ||
+            item.review?.changedSynthesis === true),
+      ).length,
+      openReviewCountedAsChanged: contributions.filter(
+        (item) => isOpenReview(item) && isActualCardChange(item),
+      ).length,
+    };
+  }, [contributions]);
   const activeFilter = useMemo(
     () => normalizeContributionFilter(searchParams.get("recordView")),
     [searchParams],
@@ -2279,6 +2302,43 @@ export default function TopicContributionLoop({
             <h2>Contribution, assisted reading, review, and synthesis impact.</h2>
           </div>
           <p className={styles.metaNote}>{recentContributionNote}</p>
+        </div>
+
+        <div className={styles.impactBoundaryPanel}>
+          <div>
+            <span className={styles.sectionLabel}>Impact boundary</span>
+            <h3>Potential pressure is not the same thing as a card change.</h3>
+            <p>
+              AI readers can estimate likely impact, and human reviewers can mark
+              a proposed change. A record only counts as an actual card change
+              after accepted or incorporated human review.
+            </p>
+          </div>
+          <dl className={styles.impactBoundaryGrid}>
+            <div>
+              <dt>Potential impact</dt>
+              <dd>{impactBoundaryStats.potentialImpact}</dd>
+            </div>
+            <div>
+              <dt>Proposed change</dt>
+              <dd>{impactBoundaryStats.proposedCardChange}</dd>
+            </div>
+            <div>
+              <dt>Actual card change</dt>
+              <dd>{impactBoundaryStats.actualCardChange}</dd>
+            </div>
+            <div>
+              <dt>Open review pressure</dt>
+              <dd>{impactBoundaryStats.openReviewPotential}</dd>
+            </div>
+          </dl>
+          <p className={styles.impactBoundaryNote}>
+            {impactBoundaryStats.openReviewCountedAsChanged
+              ? `${impactBoundaryStats.openReviewCountedAsChanged} open-review record${
+                  impactBoundaryStats.openReviewCountedAsChanged === 1 ? "" : "s"
+                } need cleanup because they are currently counted as changed-card.`
+              : "Guardrail clean: no pending or needs-review record is counted as an actual changed-card record."}
+          </p>
         </div>
 
         <div className={styles.filterBlock}>
