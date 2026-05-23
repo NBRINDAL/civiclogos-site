@@ -351,6 +351,13 @@ function getQuickStartNotice(source: string | undefined, lane: DebateLane | null
     };
   }
 
+  if (source === "healthcare-room") {
+    return {
+      title: "Pressure-test from the healthcare room",
+      body: `You came from the healthcare room's pressure-test path. Add one focused ${laneLabel.toLowerCase()} that can help move the Administrative Simplification card from prototype record toward real public review.`,
+    };
+  }
+
   if (lane) {
     return {
       title: `${laneLabel} lane selected`,
