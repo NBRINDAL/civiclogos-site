@@ -148,71 +148,65 @@ async function ensureContributionTable() {
         on civiclogos_contributions (status, created_at desc)
       `;
 
-      const rowCountResult = await sql<{ count: string }[]>`
-        select count(*)::text as count
-        from civiclogos_contributions
-      `;
-      const rowCount = Number(rowCountResult[0]?.count ?? "0");
-
-      if (rowCount === 0 && seedDocument.contributions.length) {
-        for (const contribution of seedDocument.contributions) {
-          await sql`
-            insert into civiclogos_contributions (
-              id,
-              room_slug,
-              topic_id,
-              topic_title,
-              lane,
-              title,
-              body,
-              evidence_source,
-              evidence_document,
-              author,
-              referral_source,
-              status,
-              created_at,
-              updated_at,
-              is_seed_example,
-              ai_intake,
-              review
-            ) values (
-              ${contribution.id},
-              ${contribution.roomSlug},
-              ${contribution.topicId},
-              ${contribution.topicTitle},
-              ${contribution.lane},
-              ${contribution.title},
-              ${contribution.body},
-              ${sql.json(contribution.evidenceSource ?? null)},
-              ${sql.json(contribution.evidenceDocument ?? null)},
-              ${sql.json(contribution.author)},
-              ${contribution.referralSource ?? null},
-              ${contribution.status},
-              ${contribution.createdAt},
-              ${contribution.updatedAt},
-              ${Boolean(contribution.isSeedExample)},
-              ${sql.json(contribution.aiIntake ?? null)},
-              ${sql.json(contribution.review ?? null)}
-            )
-            on conflict (id) do nothing
-          `;
-        }
-      }
-
       for (const contribution of seedDocument.contributions) {
-        const publicRecordNote = contribution.review?.publicRecordNote;
-
-        if (!publicRecordNote) {
-          continue;
-        }
-
         await sql`
-          update civiclogos_contributions
-          set review = coalesce(review, '{}'::jsonb) || ${sql.json({
-            publicRecordNote,
-          })}
-          where id = ${contribution.id}
-            and coalesce(review ->> 'publicRecordNote', '') = ''
+          insert into civiclogos_contributions (
+            id,
+            room_slug,
+            topic_id,
+            topic_title,
+            lane,
+            title,
+            body,
+            evidence_source,
+            evidence_document,
+            author,
+            referral_source,
+            draft_source,
+            status,
+            created_at,
+            updated_at,
+            is_seed_example,
+            ai_intake,
+            review
+          ) values (
+            ${contribution.id},
+            ${contribution.roomSlug},
+            ${contribution.topicId},
+            ${contribution.topicTitle},
+            ${contribution.lane},
+            ${contribution.title},
+            ${contribution.body},
+            ${sql.json(contribution.evidenceSource ?? null)},
+            ${sql.json(contribution.evidenceDocument ?? null)},
+            ${sql.json(contribution.author)},
+            ${contribution.referralSource ?? null},
+            ${sql.json(contribution.draftSource ?? null)},
+            ${contribution.status},
+            ${contribution.createdAt},
+            ${contribution.updatedAt},
+            ${Boolean(contribution.isSeedExample)},
+            ${sql.json(contribution.aiIntake ?? null)},
+            ${sql.json(contribution.review ?? null)}
+          )
+          on conflict (id) do update
+          set room_slug = excluded.room_slug,
+            topic_id = excluded.topic_id,
+            topic_title = excluded.topic_title,
+            lane = excluded.lane,
+            title = excluded.title,
+            body = excluded.body,
+            evidence_source = excluded.evidence_source,
+            evidence_document = excluded.evidence_document,
+            author = excluded.author,
+            referral_source = excluded.referral_source,
+            draft_source = excluded.draft_source,
+            status = excluded.status,
+            created_at = excluded.created_at,
+            updated_at = excluded.updated_at,
+            is_seed_example = excluded.is_seed_example,
+            ai_intake = excluded.ai_intake,
+            review = excluded.review
         `;
       }
     })();
