@@ -1836,6 +1836,12 @@ export default async function TopicCardPage({
   const assistedRecordContributions = liveContributions.filter(
     (item) => item.draftSource,
   );
+  const publicSubmissionContributions = liveContributions.filter(
+    (item) => getContributionOrigin(item) === "human-submitted",
+  );
+  const prototypeExampleContributions = liveContributions.filter(
+    (item) => getContributionOrigin(item) === "seed-example",
+  );
   const assistedPendingContributions = assistedRecordContributions.filter(
     (item) => item.status === "pending" || item.status === "needs review",
   );
@@ -2589,6 +2595,10 @@ export default async function TopicCardPage({
                   <span>Visible ledger depth</span>
                   <strong>{liveContributions.length} contribution records</strong>
                 </div>
+                <div>
+                  <span>Outside submissions</span>
+                  <strong>{publicSubmissionContributions.length}</strong>
+                </div>
               </div>
             </aside>
           </div>
@@ -2688,6 +2698,25 @@ export default async function TopicCardPage({
                     You do not need to settle the whole topic. Pick one lane,
                     make one sharp move, and let the ledger handle the rest.
                   </p>
+                  <div className={styles.readerContributionStatus}>
+                    <span className={styles.panelLabel}>Public contribution state</span>
+                    <h3>
+                      {publicSubmissionContributions.length
+                        ? "Outside public submissions are now visible on this card."
+                        : "This card is still waiting for its first outside public submission."}
+                    </h3>
+                    <p>
+                      {publicSubmissionContributions.length
+                        ? `${publicSubmissionContributions.length} outside submission${
+                            publicSubmissionContributions.length === 1 ? "" : "s"
+                          } visible. Prototype examples and AI-origin records remain labeled so the ledger does not pretend to have more public uptake than it has.`
+                        : `${prototypeExampleContributions.length} prototype example${
+                            prototypeExampleContributions.length === 1 ? "" : "s"
+                          } and ${assistedRecordContributions.length} AI-origin record${
+                            assistedRecordContributions.length === 1 ? "" : "s"
+                          } are visible. The next useful move is one real objection, evidence source, or correction that can enter human review.`}
+                    </p>
+                  </div>
                   <div className={styles.readerStarterGrid}>
                     {readerContributionStarters.map((starter) => (
                       <article className={styles.readerStarterCard} key={starter.lane}>
