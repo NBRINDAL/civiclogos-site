@@ -10,6 +10,12 @@ import type {
   PublicContribution,
 } from "../lib/contribution-types";
 import {
+  getActualCardChangeLabel,
+  getPotentialCardImpactLabel,
+  isActualCardChange,
+  isProposedCardChange,
+} from "../lib/contribution-impact";
+import {
   debateLaneLabels,
   getDebateLaneLabel,
   normalizeDebateLane,
@@ -625,8 +631,12 @@ function getSubmissionSuggestedAttachment(contribution: PublicContribution) {
 }
 
 function getSubmissionImpactReceipt(contribution: PublicContribution) {
-  if (contribution.review?.changedSynthesis === true) {
-    return "Human review marked this as changing the card.";
+  if (isActualCardChange(contribution)) {
+    return "Human review accepted or incorporated this as an actual card change.";
+  }
+
+  if (isProposedCardChange(contribution)) {
+    return "Human review proposed a card change, but the status is not accepted/incorporated yet.";
   }
 
   if (contribution.review?.changedSynthesis === false) {
@@ -671,7 +681,7 @@ function getContributionRecordView(
     return "ai-assisted";
   }
 
-  if (contribution.review?.changedSynthesis === true) {
+  if (isActualCardChange(contribution)) {
     return "changed-card";
   }
 
@@ -712,16 +722,16 @@ function getCompletedReader(
   );
 }
 
-function getChangedCardLabel(value: boolean | null | undefined) {
-  if (value === true) {
-    return "Yes";
+function getProposedCardChangeLabel(contribution: PublicContribution) {
+  if (contribution.review?.changedSynthesis === true) {
+    return "Human review proposes a card change";
   }
 
-  if (value === false) {
-    return "No";
+  if (contribution.review?.changedSynthesis === false) {
+    return "Human review says no card change";
   }
 
-  return "Not decided yet";
+  return "No human proposal yet";
 }
 
 function getContributionInterpretation(contribution: PublicContribution) {
@@ -1079,7 +1089,7 @@ export default function TopicContributionLoop({
         (item) => item.status === "pending" || item.status === "needs review",
       ).length,
       "changed-card": contributions.filter(
-        (item) => item.review?.changedSynthesis === true,
+        (item) => isActualCardChange(item),
       ).length,
       "ai-assisted": contributions.filter((item) => item.draftSource).length,
       "document-backed": contributions.filter((item) => item.evidenceDocument).length,
@@ -1119,7 +1129,7 @@ export default function TopicContributionLoop({
             (item) => item.status === "pending" || item.status === "needs review",
           );
         case "changed-card":
-          return contributions.filter((item) => item.review?.changedSynthesis === true);
+          return contributions.filter((item) => isActualCardChange(item));
         case "ai-assisted":
           return contributions.filter((item) => item.draftSource);
         case "document-backed":
@@ -2769,8 +2779,6 @@ export default function TopicContributionLoop({
                 reviewedAttachmentPoint ?? proposedAttachmentPoint ?? "None yet";
               const structurerRead = getCompletedReader(item, "openai");
               const criticRead = getCompletedReader(item, "anthropic");
-              const changedCardValue =
-                item.review?.changedSynthesis ?? item.aiIntake?.changedSynthesisLikely;
               const summaryReferencesForItem = summaryReferences[item.id] ?? [];
               const scoreReferencesForItem = scoreReferences[item.id] ?? [];
 
@@ -2863,8 +2871,16 @@ export default function TopicContributionLoop({
                         <dd>{visibleAttachmentPoint}</dd>
                       </div>
                       <div className={styles.recordRow}>
-                        <dt>Whether it changed the card</dt>
-                        <dd>{getChangedCardLabel(changedCardValue)}</dd>
+                        <dt>Potential impact</dt>
+                        <dd>{getPotentialCardImpactLabel(item.aiIntake?.changedSynthesisLikely)}</dd>
+                      </div>
+                      <div className={styles.recordRow}>
+                        <dt>Proposed card change</dt>
+                        <dd>{getProposedCardChangeLabel(item)}</dd>
+                      </div>
+                      <div className={styles.recordRow}>
+                        <dt>Actual card change</dt>
+                        <dd>{getActualCardChangeLabel(item)}</dd>
                       </div>
                     </dl>
                   </div>
@@ -2978,7 +2994,11 @@ export default function TopicContributionLoop({
                         </div>
                         <div className={styles.recordRow}>
                           <dt>Likely synthesis impact</dt>
-                          <dd>{getChangedCardLabel(item.aiIntake.changedSynthesisLikely)}</dd>
+                          <dd>
+                            {getPotentialCardImpactLabel(
+                              item.aiIntake.changedSynthesisLikely,
+                            )}
+                          </dd>
                         </div>
                       </dl>
 
@@ -3023,8 +3043,12 @@ export default function TopicContributionLoop({
                           </div>
                         ) : null}
                         <div className={styles.recordRow}>
-                          <dt>Whether it changed the card</dt>
-                          <dd>{getChangedCardLabel(item.review.changedSynthesis)}</dd>
+                          <dt>Proposed card change</dt>
+                          <dd>{getProposedCardChangeLabel(item)}</dd>
+                        </div>
+                        <div className={styles.recordRow}>
+                          <dt>Actual card change</dt>
+                          <dd>{getActualCardChangeLabel(item)}</dd>
                         </div>
                       </dl>
 

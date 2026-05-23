@@ -11,6 +11,11 @@ import {
   getContributionStoreMetadata,
   listPublicContributions,
 } from "../lib/contribution-store";
+import {
+  getActualCardChangeLabel,
+  getPotentialCardImpactLabel,
+  isActualCardChange,
+} from "../lib/contribution-impact";
 import type { PublicContribution } from "../lib/contribution-types";
 import { debateLaneLabels } from "../lib/reasoning-types";
 import styles from "./page.module.css";
@@ -90,7 +95,7 @@ export default async function DemoPage() {
     }),
   ]);
   const demoContribution =
-    contributions.find((item) => item.review?.changedSynthesis === true) ??
+    contributions.find((item) => isActualCardChange(item)) ??
     contributions.find((item) => item.review?.reviewedAt) ??
     contributions[0] ??
     null;
@@ -149,13 +154,11 @@ export default async function DemoPage() {
       title: "Human review decision",
       body: demoContribution?.review?.publicRecordNote ?? demoContribution?.review?.decisionReason ?? "Pending human review.",
       detail: demoContribution
-        ? `Current status: ${getStatusLabel(demoContribution.status)}. Changed card: ${
-            demoContribution.review?.changedSynthesis === true
-              ? "yes"
-              : demoContribution.review?.changedSynthesis === false
-                ? "no"
-                : "not decided"
-          }.`
+        ? `Current status: ${getStatusLabel(
+            demoContribution.status,
+          )}. Potential impact: ${getPotentialCardImpactLabel(
+            demoContribution.aiIntake?.changedSynthesisLikely,
+          )}. Actual card change: ${getActualCardChangeLabel(demoContribution)}.`
         : "No review decision exists until a contribution is submitted.",
     },
     {

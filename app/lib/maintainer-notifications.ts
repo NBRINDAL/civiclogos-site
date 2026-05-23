@@ -1,4 +1,5 @@
 import nodemailer from "nodemailer";
+import { getActualCardChangeLabel } from "./contribution-impact";
 import type { Contribution } from "./contribution-types";
 
 type NotificationResult =
@@ -173,7 +174,7 @@ export async function sendContributionReviewedNotification(
       `Topic title: ${contribution.topicTitle}`,
       `Status: ${contribution.status}`,
       `Reviewed at: ${review.reviewedAt}`,
-      `Changed the card: ${review.changedSynthesis === true ? "Yes" : review.changedSynthesis === false ? "No" : "Undetermined"}`,
+      `Actual card change: ${getActualCardChangeLabel(contribution)}`,
       `Assigned to: ${review.assignedToKind || "Unassigned"}${review.assignedToLabel ? ` / ${review.assignedToLabel}` : ""}`,
       "",
       `Public record note: ${publicRecordNote}`,
@@ -190,8 +191,8 @@ export async function sendContributionReviewedNotification(
         <p><strong>Topic title:</strong> ${escapeHtml(contribution.topicTitle)}</p>
         <p><strong>Status:</strong> ${escapeHtml(contribution.status)}</p>
         <p><strong>Reviewed at:</strong> ${escapeHtml(review.reviewedAt)}</p>
-        <p><strong>Changed the card:</strong> ${escapeHtml(
-          review.changedSynthesis === true ? "Yes" : review.changedSynthesis === false ? "No" : "Undetermined",
+        <p><strong>Actual card change:</strong> ${escapeHtml(
+          getActualCardChangeLabel(contribution),
         )}</p>
         <p><strong>Assigned to:</strong> ${escapeHtml(
           review.assignedToKind || "Unassigned",

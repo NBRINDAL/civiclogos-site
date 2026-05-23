@@ -8,6 +8,7 @@ import {
   getRoomTopicLabel,
   type IssueRoomSlug,
 } from "./civic-logos";
+import { isActualCardChange } from "./contribution-impact";
 import { listPublicContributions } from "./contribution-store";
 import type { TopicChatMessage, TopicChatPromotion } from "./topic-chat-types";
 
@@ -109,7 +110,7 @@ export async function getTopicCardReaderContext(
   });
 
   const contributorObjection = contributions.find(
-    (item) => item.lane === "objection" && item.review?.changedSynthesis === true,
+    (item) => item.lane === "objection" && isActualCardChange(item),
   );
   const liveObjection = contributions.find((item) => item.lane === "objection");
 
@@ -131,7 +132,7 @@ export async function getTopicCardReaderContext(
               ? `  Extracted excerpt: ${item.evidenceDocument.extraction.excerpt}`
               : null,
             item.aiIntake?.summary ? `  AI sorting: ${item.aiIntake.summary}` : null,
-            item.review?.changedSynthesis === true
+            isActualCardChange(item)
               ? "  Human review: changed the card."
               : item.review?.changedSynthesis === false
                 ? "  Human review: did not change the card."

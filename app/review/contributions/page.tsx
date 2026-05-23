@@ -7,6 +7,11 @@ import {
 } from "@/app/lib/civic-logos";
 import { getContributionStoreMetadata, listAllContributions } from "@/app/lib/contribution-store";
 import {
+  getActualCardChangeLabel,
+  getPotentialCardImpactLabel,
+  isActualCardChange,
+} from "@/app/lib/contribution-impact";
+import {
   debateLaneOptions,
   debateLaneLabels,
   reviewStatusOptions,
@@ -132,7 +137,7 @@ function getContributionRecordView(contribution: {
     return "ai-assisted";
   }
 
-  if (contribution.review?.changedSynthesis === true) {
+  if (isActualCardChange(contribution)) {
     return "changed-card";
   }
 
@@ -337,7 +342,7 @@ export default async function ContributionReviewPage({
     aiOrigin: sortedContributions.filter((item) => item.draftSource).length,
     documentBacked: sortedContributions.filter((item) => item.evidenceDocument).length,
     changedCard: sortedContributions.filter(
-      (item) => item.review?.changedSynthesis === true,
+      (item) => isActualCardChange(item),
     ).length,
   };
   const scopeLabel =
@@ -465,11 +470,13 @@ export default async function ContributionReviewPage({
                       <div>
                         <dt>Card impact</dt>
                         <dd>
-                          {item.review?.changedSynthesis === true
-                            ? "Changed card"
-                            : item.aiIntake?.changedSynthesisLikely === true
-                              ? "AI suggests possible card change"
-                              : "Human decision pending"}
+                          {isActualCardChange(item)
+                            ? "Actual card change"
+                            : item.review?.changedSynthesis === true
+                              ? "Proposed card change"
+                              : item.aiIntake?.changedSynthesisLikely === true
+                                ? "Potential impact"
+                                : "Human decision pending"}
                         </dd>
                       </div>
                     </dl>
@@ -724,7 +731,10 @@ export default async function ContributionReviewPage({
               const provenanceBadges = [
                 getContributionOriginLabel(origin),
                 item.evidenceDocument ? "Document-backed" : null,
-                item.review?.changedSynthesis === true ? "Changed card" : null,
+                isActualCardChange(item) ? "Changed card" : null,
+                !isActualCardChange(item) && item.review?.changedSynthesis === true
+                  ? "Proposed change"
+                  : null,
               ].filter(Boolean) as string[];
 
               return (
@@ -871,7 +881,9 @@ export default async function ContributionReviewPage({
                       ) : null}
                       {typeof item.review.changedSynthesis === "boolean" ? (
                         <p>
-                          Changed synthesis: {item.review.changedSynthesis ? "yes" : "no"}
+                          Proposed synthesis change:{" "}
+                          {item.review.changedSynthesis ? "yes" : "no"}
+                          {" "}· Actual card change: {getActualCardChangeLabel(item)}
                         </p>
                       ) : null}
                       {item.review.publicRecordNote ? (
@@ -887,6 +899,11 @@ export default async function ContributionReviewPage({
                   {hasAiReviewSuggestion ? (
                     <div className={styles.suggestionSummary}>
                       <strong>Assisted-review recommendation</strong>
+                      <p>
+                        AI output is potential impact only. It does not become
+                        an actual card change unless human review accepts or
+                        incorporates the record.
+                      </p>
                       {item.aiIntake?.summary ? <p>{item.aiIntake.summary}</p> : null}
                       {item.aiIntake?.suggestedAssignmentLabel ? (
                         <p>
@@ -902,10 +919,10 @@ export default async function ContributionReviewPage({
                       ) : null}
                       {typeof item.aiIntake?.changedSynthesisLikely === "boolean" ? (
                         <p>
-                          Suggested synthesis impact:{" "}
-                          {item.aiIntake.changedSynthesisLikely
-                            ? "Likely to change the card"
-                            : "Unlikely to change the card"}
+                          Potential impact:{" "}
+                          {getPotentialCardImpactLabel(
+                            item.aiIntake.changedSynthesisLikely,
+                          )}
                         </p>
                       ) : null}
                       {item.aiIntake?.reviewerNote ? (
@@ -959,18 +976,14 @@ export default async function ContributionReviewPage({
                     </label>
 
                     <label className={styles.field}>
-                      <span>Changed synthesis?</span>
+                      <span>Proposed card change?</span>
                       <select
                         defaultValue={
                           item.review?.changedSynthesis === true
                             ? "yes"
                           : item.review?.changedSynthesis === false
                               ? "no"
-                              : suggestedChangedSynthesis === true
-                                ? "yes"
-                                : suggestedChangedSynthesis === false
-                                  ? "no"
-                                  : "undecided"
+                              : "undecided"
                         }
                         name="changedSynthesis"
                       >
@@ -985,7 +998,13 @@ export default async function ContributionReviewPage({
                     <p className={styles.prefillNote}>
                       The placement fields above were prefilled from the AI
                       suggestion. Keep, revise, or clear them before saving the human
-                      review decision.
+                      review decision. Changed synthesis stays undecided until a
+                      human reviewer explicitly marks it.
+                      {typeof suggestedChangedSynthesis === "boolean"
+                        ? ` AI estimated potential impact as ${
+                            suggestedChangedSynthesis ? "likely" : "unlikely"
+                          }, but that is not an actual card change.`
+                        : ""}
                     </p>
                   ) : null}
 

@@ -7,6 +7,7 @@ import {
   getContributionStoreMetadata,
   listPublicContributions,
 } from "./lib/contribution-store";
+import { isActualCardChange } from "./lib/contribution-impact";
 import styles from "./page.module.css";
 
 const distinctions = [
@@ -555,7 +556,7 @@ export default async function Home({
       (item) => item.status === "pending" || item.status === "needs review",
     ).length,
     changedCard: campaignContributions.filter(
-      (item) => item.review?.changedSynthesis === true,
+      (item) => isActualCardChange(item),
     ).length,
     publicSubmissions: campaignContributions.filter(
       (item) => !item.isSeedExample && !item.draftSource,

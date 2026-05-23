@@ -9,6 +9,7 @@ import {
 } from "../lib/civic-logos";
 import { topicCardVisibleContributionLimit } from "../lib/contribution-constants";
 import { getContributionStoreMetadata, listPublicContributions } from "../lib/contribution-store";
+import { isActualCardChange } from "../lib/contribution-impact";
 import type { PublicContribution } from "../lib/contribution-types";
 import { debateLaneLabels } from "../lib/reasoning-types";
 import styles from "./page.module.css";
@@ -151,7 +152,7 @@ function getContributionRecordView(contribution: PublicContribution) {
     return "ai-assisted";
   }
 
-  if (contribution.review?.changedSynthesis === true) {
+  if (isActualCardChange(contribution)) {
     return "changed-card";
   }
 
@@ -229,7 +230,7 @@ export default async function InstitutionsPage({
     (item) => item.status === "pending" || item.status === "needs review",
   );
   const changedCardExamples = healthcareContributions.filter(
-    (item) => item.review?.changedSynthesis === true,
+    (item) => isActualCardChange(item),
   );
   const publicSubmissionExamples = healthcareContributions.filter(
     (item) => !item.isSeedExample && !item.draftSource,

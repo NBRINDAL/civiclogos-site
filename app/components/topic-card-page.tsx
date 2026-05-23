@@ -29,6 +29,7 @@ import {
   getContributionStoreMetadata,
   listPublicContributions,
 } from "../lib/contribution-store";
+import { isActualCardChange } from "../lib/contribution-impact";
 import {
   debateLaneLabels,
   debateLaneOptions,
@@ -242,7 +243,7 @@ function getPilotInquiryRecordContext({
   const getPilotCandidateStrength = (contribution: PublicContribution) => {
     let score = 0;
 
-    if (contribution.review?.changedSynthesis === true) {
+    if (isActualCardChange(contribution)) {
       score += 4;
     }
 
@@ -629,7 +630,7 @@ function getContributionRecordView(contribution: PublicContribution):
     return "ai-assisted";
   }
 
-  if (contribution.review?.changedSynthesis === true) {
+  if (isActualCardChange(contribution)) {
     return "changed-card";
   }
 
@@ -1810,13 +1811,13 @@ export default async function TopicCardPage({
         } satisfies TopicCardIntakeContext)
       : null;
   const contributorObjectionThatChangedCard = liveContributions.find(
-    (item) => item.lane === "objection" && item.review?.changedSynthesis === true,
+    (item) => item.lane === "objection" && isActualCardChange(item),
   );
   const strongestLiveContributorObjection = liveContributions.find(
     (item) => item.lane === "objection",
   );
   const incorporatedContributions = liveContributions.filter(
-    (item) => item.review?.changedSynthesis === true,
+    (item) => isActualCardChange(item),
   );
   const incorporatedAssumptions = incorporatedContributions.filter(
     (item) => item.review?.assignedToKind === "assumption",
@@ -1846,7 +1847,7 @@ export default async function TopicCardPage({
     (item) => item.status === "pending" || item.status === "needs review",
   );
   const assistedChangedContributions = assistedRecordContributions.filter(
-    (item) => item.review?.changedSynthesis === true,
+    (item) => isActualCardChange(item),
   );
   const assistedStatusCounts = (
     ["pending", "needs-review", "accepted", "incorporated", "rejected"] as const
@@ -1891,7 +1892,7 @@ export default async function TopicCardPage({
     rejected: liveContributions.filter((item) => item.status === "rejected").length,
   };
   const changedCardContributions = liveContributions.filter(
-    (item) => item.review?.changedSynthesis === true,
+    (item) => isActualCardChange(item),
   );
   const originCounts = (
     ["human-submitted", "ai-origin", "seed-example"] as const

@@ -4,6 +4,258 @@
   "updatedAt": "2026-05-21T08:12:00.000Z",
   "contributions": [
     {
+      "id": "founder-healthcare-topic-001-document-caqh-index",
+      "roomSlug": "healthcare",
+      "topicId": "topic-001",
+      "topicTitle": "Administrative Simplification and AI-Assisted Triage",
+      "lane": "evidence",
+      "title": "CAQH Index gives the card a document-backed administrative burden anchor",
+      "body": "Founder-submitted evidence record: the CAQH Index is useful because it gives the healthcare card a concrete administrative-transaction lens instead of leaving simplification as a general efficiency claim. The source supports keeping eligibility, prior authorization, claims, and related workflow automation inside the evidence layer while still requiring the card to prove net savings and patient-facing benefit.",
+      "evidenceSource": {
+        "label": "CAQH 2024 Index Report",
+        "url": "https://www.caqh.org/hubfs/Index/2024%20Index%20Report/CAQH_IndexReport_2024_FINAL.pdf"
+      },
+      "evidenceDocument": {
+        "id": "doc-founder-healthcare-caqh-2024-index",
+        "fileName": "CAQH_IndexReport_2024_FINAL.pdf",
+        "mimeType": "application/pdf",
+        "sizeBytes": 5249414,
+        "uploadedAt": "2026-05-23T18:24:00.000Z",
+        "downloadHref": "https://www.caqh.org/hubfs/Index/2024%20Index%20Report/CAQH_IndexReport_2024_FINAL.pdf",
+        "extraction": {
+          "status": "unavailable",
+          "excerpt": "External PDF attached as a document-backed evidence source. Civic Logos uses it as an administrative burden anchor, not as proof that all proposed savings are already verified.",
+          "note": "External PDF metadata checked May 23, 2026. Full extraction is not bundled in the seed record."
+        }
+      },
+      "author": {
+        "name": "Civic Logos founder",
+        "expertise": "Founder-submitted evidence record"
+      },
+      "status": "incorporated",
+      "createdAt": "2026-05-23T18:24:00.000Z",
+      "updatedAt": "2026-05-23T18:30:00.000Z",
+      "aiIntake": {
+        "state": "completed",
+        "summary": "Sorted as document-backed evidence for the administrative simplification claim. The source strengthens the card's evidence layer while preserving pressure to distinguish transaction automation from verified total-cost savings.",
+        "suggestedAssignmentKind": "evidence",
+        "suggestedAssignmentLabel": "Administrative transaction burden can be measured and targeted",
+        "laneFit": "evidence",
+        "changedSynthesisLikely": true,
+        "reviewerNote": "Use as an evidence anchor for administrative transaction burden, not as a conclusion that simplification alone captures savings for patients or clinicians.",
+        "providers": [
+          {
+            "provider": "openai",
+            "state": "completed",
+            "model": "gpt-5.5",
+            "summary": "The document is a strong structuring source because it gives the card a transaction-level administrative burden frame. It should attach to evidence and narrow the claim toward measurable workflow domains.",
+            "suggestedAssignmentKind": "evidence",
+            "suggestedAssignmentLabel": "Administrative transaction burden can be measured and targeted",
+            "laneFit": "evidence",
+            "changedSynthesisLikely": true,
+            "reviewerNote": "Treat as evidence that administrative simplification is measurable, not as proof of final net savings."
+          },
+          {
+            "provider": "anthropic",
+            "state": "completed",
+            "model": "claude-opus-4-7",
+            "summary": "The source improves the card by anchoring administrative simplification in concrete transaction categories. Its weakness is that transaction burden does not automatically establish patient-facing savings, so that caveat should remain visible.",
+            "suggestedAssignmentKind": "evidence",
+            "suggestedAssignmentLabel": "Administrative transaction burden can be measured and targeted",
+            "laneFit": "evidence",
+            "changedSynthesisLikely": true,
+            "reviewerNote": "Good evidence anchor if paired with a caveat about net savings and distribution of benefits."
+          }
+        ]
+      },
+      "review": {
+        "assignedToKind": "evidence",
+        "assignedToLabel": "Administrative transaction burden can be measured and targeted",
+        "changedSynthesis": true,
+        "publicRecordNote": "Incorporated as the first non-prototype, document-backed healthcare record. It strengthens the evidence layer by grounding administrative simplification in measurable transaction burden while preserving the open question of who captures savings.",
+        "decisionReason": "Accepted as founder-submitted evidence because the source gives the card a concrete administrative burden anchor and a document attachment readers can inspect.",
+        "reviewerNote": "Keep this visible as founder-submitted evidence, not outside public usage. The card should still ask whether transaction savings become patient, clinician, or system-level benefit.",
+        "reviewedAt": "2026-05-23T18:30:00.000Z"
+      }
+    },
+    {
+      "id": "seed-trust-topic-001-objection-scope-control",
+      "roomSlug": "institutional-trust",
+      "topicId": "topic-001",
+      "topicTitle": "Public Review Stake for Institutional Claims",
+      "lane": "objection",
+      "title": "A sponsor could still control the review by narrowing the question",
+      "body": "Prototype example: even if sponsors cannot buy the conclusion, they might still shape the review by defining the room too narrowly, excluding the hardest objections, or framing the success criteria around favorable evidence. The model needs an explicit scope challenge before money enters the review process.",
+      "author": {
+        "name": "Prototype example",
+        "expertise": "Monetization objection"
+      },
+      "status": "accepted",
+      "createdAt": "2026-05-23T18:32:00.000Z",
+      "updatedAt": "2026-05-23T18:36:00.000Z",
+      "isSeedExample": true,
+      "aiIntake": {
+        "state": "completed",
+        "summary": "Sorted as a core objection to the Public Review Stake model. The contribution pressures the difference between paying for scrutiny and quietly shaping the boundaries of scrutiny.",
+        "suggestedAssignmentKind": "objection",
+        "suggestedAssignmentLabel": "Sponsors may control scope even without controlling conclusions",
+        "laneFit": "objection",
+        "changedSynthesisLikely": false,
+        "reviewerNote": "Keep visible near the revenue firewall and any institutional pilot explanation.",
+        "providers": [
+          {
+            "provider": "openai",
+            "state": "completed",
+            "model": "gpt-5.5",
+            "summary": "This is a clean objection because it identifies a capture path that survives the stated firewall. It should attach to scope-setting and review conditions.",
+            "suggestedAssignmentKind": "objection",
+            "suggestedAssignmentLabel": "Sponsors may control scope even without controlling conclusions",
+            "laneFit": "objection",
+            "changedSynthesisLikely": false,
+            "reviewerNote": "Use as a test for any pilot intake terms."
+          },
+          {
+            "provider": "anthropic",
+            "state": "completed",
+            "model": "claude-opus-4-7",
+            "summary": "The objection is strong because it attacks process design rather than motives. A sponsor can distort a review without ever demanding a friendly final score.",
+            "suggestedAssignmentKind": "objection",
+            "suggestedAssignmentLabel": "Sponsors may control scope even without controlling conclusions",
+            "laneFit": "objection",
+            "changedSynthesisLikely": false,
+            "reviewerNote": "Require visible scope constraints and challenge rights."
+          }
+        ]
+      },
+      "review": {
+        "assignedToKind": "objection",
+        "assignedToLabel": "Sponsors may control scope even without controlling conclusions",
+        "changedSynthesis": false,
+        "publicRecordNote": "Accepted as a standing objection: the model must disclose and challenge sponsor scope constraints, not only final conclusions.",
+        "decisionReason": "Kept visible because scope capture is one of the cleanest ways a review-stake model could fail.",
+        "reviewerNote": "Attach to revenue firewall and pilot terms.",
+        "reviewedAt": "2026-05-23T18:36:00.000Z"
+      }
+    },
+    {
+      "id": "seed-trust-topic-001-assumption-disclosure-before-launch",
+      "roomSlug": "institutional-trust",
+      "topicId": "topic-001",
+      "topicTitle": "Public Review Stake for Institutional Claims",
+      "lane": "nuance",
+      "title": "Funder identity and review constraints need to be visible before the room launches",
+      "body": "Prototype example: the Public Review Stake model becomes more credible if sponsor identity, funding purpose, review constraints, and non-control terms are visible before a room begins. Disclosure after publication is weaker because readers cannot tell whether the process was already shaped upstream.",
+      "author": {
+        "name": "Prototype example",
+        "expertise": "Disclosure design"
+      },
+      "status": "incorporated",
+      "createdAt": "2026-05-23T18:34:00.000Z",
+      "updatedAt": "2026-05-23T18:38:00.000Z",
+      "isSeedExample": true,
+      "aiIntake": {
+        "state": "completed",
+        "summary": "Sorted as a nuance that changes the model by moving disclosure earlier in the process. It turns funder transparency from an after-the-fact note into a launch condition.",
+        "suggestedAssignmentKind": "assumption",
+        "suggestedAssignmentLabel": "Disclosure must precede sponsored room launch",
+        "laneFit": "nuance",
+        "changedSynthesisLikely": true,
+        "reviewerNote": "This should alter the card's operating condition for institutional pilots.",
+        "providers": [
+          {
+            "provider": "openai",
+            "state": "completed",
+            "model": "gpt-5.5",
+            "summary": "This contribution should attach to the assumption layer because it specifies a process precondition. The model is stronger if disclosure happens before review begins.",
+            "suggestedAssignmentKind": "assumption",
+            "suggestedAssignmentLabel": "Disclosure must precede sponsored room launch",
+            "laneFit": "nuance",
+            "changedSynthesisLikely": true,
+            "reviewerNote": "Good operational constraint for pilot inquiry flow."
+          },
+          {
+            "provider": "anthropic",
+            "state": "completed",
+            "model": "claude-opus-4-7",
+            "summary": "This is not just a transparency preference; it affects whether readers can evaluate process independence. Late disclosure may be too late to preserve trust.",
+            "suggestedAssignmentKind": "assumption",
+            "suggestedAssignmentLabel": "Disclosure must precede sponsored room launch",
+            "laneFit": "nuance",
+            "changedSynthesisLikely": true,
+            "reviewerNote": "Make pre-launch disclosure part of the trust model."
+          }
+        ]
+      },
+      "review": {
+        "assignedToKind": "assumption",
+        "assignedToLabel": "Disclosure must precede sponsored room launch",
+        "changedSynthesis": true,
+        "publicRecordNote": "Changed the card by making sponsor identity and review constraints a pre-launch condition, not merely a post-publication disclosure.",
+        "decisionReason": "Incorporated because the timing of disclosure materially affects whether the Public Review Stake can resist capture.",
+        "reviewerNote": "Carry this into /institutions and pilot inquiry language.",
+        "reviewedAt": "2026-05-23T18:38:00.000Z"
+      }
+    },
+    {
+      "id": "seed-trust-topic-001-open-question-reviewer-selection",
+      "roomSlug": "institutional-trust",
+      "topicId": "topic-001",
+      "topicTitle": "Public Review Stake for Institutional Claims",
+      "lane": "implementation-concern",
+      "title": "Reviewer selection and appeal rights remain unresolved",
+      "body": "Prototype example: the model still needs a clearer reviewer-selection rule. If Civic Logos alone chooses reviewers, it may become the authority it is trying not to sell. If sponsors can choose reviewers, the firewall weakens. The open design question is how reviewers are selected, challenged, replaced, and audited.",
+      "author": {
+        "name": "Prototype example",
+        "expertise": "Governance implementation concern"
+      },
+      "status": "needs review",
+      "createdAt": "2026-05-23T18:35:00.000Z",
+      "updatedAt": "2026-05-23T18:39:00.000Z",
+      "isSeedExample": true,
+      "aiIntake": {
+        "state": "completed",
+        "summary": "Sorted as an implementation concern and open question. The contribution identifies reviewer selection as a governance dependency that must be designed before the model can scale.",
+        "suggestedAssignmentKind": "open-question",
+        "suggestedAssignmentLabel": "How should reviewers be selected, challenged, and audited?",
+        "laneFit": "implementation-concern",
+        "changedSynthesisLikely": true,
+        "reviewerNote": "Strong enough to hold open, but not yet resolved into a concrete governance rule.",
+        "providers": [
+          {
+            "provider": "openai",
+            "state": "completed",
+            "model": "gpt-5.5",
+            "summary": "This should attach to the open-question layer because it names the governance bottleneck behind review legitimacy.",
+            "suggestedAssignmentKind": "open-question",
+            "suggestedAssignmentLabel": "How should reviewers be selected, challenged, and audited?",
+            "laneFit": "implementation-concern",
+            "changedSynthesisLikely": true,
+            "reviewerNote": "Needs a concrete reviewer governance model before incorporation."
+          },
+          {
+            "provider": "anthropic",
+            "state": "completed",
+            "model": "claude-opus-4-7",
+            "summary": "The concern is important because reviewer selection is where the model either becomes trustworthy infrastructure or a new gatekeeping layer.",
+            "suggestedAssignmentKind": "open-question",
+            "suggestedAssignmentLabel": "How should reviewers be selected, challenged, and audited?",
+            "laneFit": "implementation-concern",
+            "changedSynthesisLikely": true,
+            "reviewerNote": "Hold as unresolved pressure on governance design."
+          }
+        ]
+      },
+      "review": {
+        "assignedToKind": "open-question",
+        "assignedToLabel": "How should reviewers be selected, challenged, and audited?",
+        "changedSynthesis": null,
+        "publicRecordNote": "Held as an unresolved governance question: reviewer selection and appeal rights need a clearer rule before the model scales.",
+        "decisionReason": "Marked needs review because the concern is central but not yet specific enough to revise the mechanism.",
+        "reviewerNote": "Next pass should propose a reviewer-selection and challenge workflow.",
+        "reviewedAt": "2026-05-23T18:39:00.000Z"
+      }
+    },
+    {
       "id": "seed-healthcare-topic-001-objection-price-power",
       "roomSlug": "healthcare",
       "topicId": "topic-001",

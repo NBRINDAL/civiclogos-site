@@ -14,6 +14,7 @@ import {
   getContributionStoreMetadata,
   listPublicContributions,
 } from "../lib/contribution-store";
+import { isActualCardChange } from "../lib/contribution-impact";
 import {
   getHomeIntakeCookieName,
   parseHomeIntakeCookie,
@@ -133,7 +134,7 @@ export default async function HealthcareIssueRoomPage({
     (item) => item.status === "pending" || item.status === "needs review",
   ).length;
   const changedCardCount = pressureTestContributions.filter(
-    (item) => item.review?.changedSynthesis === true,
+    (item) => isActualCardChange(item),
   ).length;
   const publicSubmissionCount = pressureTestContributions.filter(
     (item) => !item.isSeedExample && !item.draftSource,

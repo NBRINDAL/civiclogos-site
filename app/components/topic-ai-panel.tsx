@@ -3,6 +3,10 @@
 import { useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState, useTransition } from "react";
 import type { IssueRoomSlug } from "../lib/civic-logos";
+import {
+  isActualCardChange,
+  isFinalReviewStatus,
+} from "../lib/contribution-impact";
 import type { PublicContribution } from "../lib/contribution-types";
 import {
   getDebateLaneLabel,
@@ -294,7 +298,7 @@ function getContributionRecordView(
     return "ai-assisted";
   }
 
-  if (contribution.review?.changedSynthesis === true) {
+  if (isActualCardChange(contribution)) {
     return "changed-card";
   }
 
@@ -351,7 +355,12 @@ function getContributionRecordHref(
     promotion.state === "sent-to-review"
   ) {
     searchParams.set("recordView", "needs-review");
-  } else if (promotion.state === "auto-recorded" && promotion.changedSynthesis === true) {
+  } else if (
+    promotion.state === "auto-recorded" &&
+    promotion.changedSynthesis === true &&
+    promotion.contributionStatus &&
+    isFinalReviewStatus(promotion.contributionStatus)
+  ) {
     searchParams.set("recordView", "changed-card");
   } else {
     searchParams.set("recordView", "ai-assisted");
@@ -1389,7 +1398,14 @@ export default function TopicAiPanel({
                         {item.message.promotion.changedSynthesis !== undefined &&
                         item.message.promotion.changedSynthesis !== null ? (
                           <div>
-                            <dt>Changed card</dt>
+                            <dt>
+                              {item.message.promotion.contributionStatus &&
+                              isFinalReviewStatus(
+                                item.message.promotion.contributionStatus,
+                              )
+                                ? "Actual card change"
+                                : "Proposed card change"}
+                            </dt>
                             <dd>{item.message.promotion.changedSynthesis ? "Yes" : "No"}</dd>
                           </div>
                         ) : null}
