@@ -67,6 +67,9 @@ const directLinks = [
   { label: "Institutional pilot model", href: "/institutions#model" },
 ] as const;
 
+const producerSummary =
+  "Civic Logos is a public reasoning platform that turns important claims into living records with objections, evidence, AI-assisted sorting, human review, and visible revision history. The first public challenge asks whether readers can submit one objection, source, or correction that improves the first healthcare card and becomes part of the public record.";
+
 export default function PressPage() {
   return (
     <div className={styles.page}>
@@ -125,6 +128,19 @@ export default function PressPage() {
       </header>
 
       <main className={styles.main}>
+        <section className={styles.producerSummary}>
+          <div className={styles.sectionIntro}>
+            <span className={styles.eyebrow}>Copyable producer summary</span>
+            <h2>One paragraph for show notes, booking threads, or prep docs.</h2>
+          </div>
+          <textarea
+            aria-label="Copyable Civic Logos producer summary"
+            className={styles.summaryTextarea}
+            readOnly
+            value={producerSummary}
+          />
+        </section>
+
         <section className={styles.section}>
           <div className={styles.sectionIntro}>
             <span className={styles.eyebrow}>Why this matters</span>

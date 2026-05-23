@@ -9,35 +9,22 @@
       "topicId": "topic-001",
       "topicTitle": "Administrative Simplification and AI-Assisted Triage",
       "lane": "evidence",
-      "title": "CAQH Index gives the card a document-backed administrative burden anchor",
-      "body": "Founder-submitted evidence record: the CAQH Index is useful because it gives the healthcare card a concrete administrative-transaction lens instead of leaving simplification as a general efficiency claim. The source supports keeping eligibility, prior authorization, claims, and related workflow automation inside the evidence layer while still requiring the card to prove net savings and patient-facing benefit.",
+      "title": "Founder-submitted test record: CAQH Index gives the card an administrative burden anchor",
+      "body": "Founder-submitted test evidence record: the CAQH Index is useful because it gives the healthcare card a concrete administrative-transaction lens instead of leaving simplification as a general efficiency claim. The source-link supports keeping eligibility, prior authorization, claims, and related workflow automation inside the evidence layer while still requiring the card to prove net savings and patient-facing benefit.",
       "evidenceSource": {
         "label": "CAQH 2024 Index Report",
         "url": "https://www.caqh.org/hubfs/Index/2024%20Index%20Report/CAQH_IndexReport_2024_FINAL.pdf"
       },
-      "evidenceDocument": {
-        "id": "doc-founder-healthcare-caqh-2024-index",
-        "fileName": "CAQH_IndexReport_2024_FINAL.pdf",
-        "mimeType": "application/pdf",
-        "sizeBytes": 5249414,
-        "uploadedAt": "2026-05-23T18:24:00.000Z",
-        "downloadHref": "https://www.caqh.org/hubfs/Index/2024%20Index%20Report/CAQH_IndexReport_2024_FINAL.pdf",
-        "extraction": {
-          "status": "unavailable",
-          "excerpt": "External PDF attached as a document-backed evidence source. Civic Logos uses it as an administrative burden anchor, not as proof that all proposed savings are already verified.",
-          "note": "External PDF metadata checked May 23, 2026. Full extraction is not bundled in the seed record."
-        }
-      },
       "author": {
         "name": "Civic Logos founder",
-        "expertise": "Founder-submitted evidence record"
+        "expertise": "Founder-submitted test evidence record"
       },
       "status": "incorporated",
       "createdAt": "2026-05-23T18:24:00.000Z",
       "updatedAt": "2026-05-23T18:30:00.000Z",
       "aiIntake": {
         "state": "completed",
-        "summary": "Sorted as document-backed evidence for the administrative simplification claim. The source strengthens the card's evidence layer while preserving pressure to distinguish transaction automation from verified total-cost savings.",
+        "summary": "Sorted as founder-submitted source-linked evidence for the administrative simplification claim. The source strengthens the card's evidence layer while preserving pressure to distinguish transaction automation from verified total-cost savings.",
         "suggestedAssignmentKind": "evidence",
         "suggestedAssignmentLabel": "Administrative transaction burden can be measured and targeted",
         "laneFit": "evidence",
@@ -48,7 +35,7 @@
             "provider": "openai",
             "state": "completed",
             "model": "gpt-5.5",
-            "summary": "The document is a strong structuring source because it gives the card a transaction-level administrative burden frame. It should attach to evidence and narrow the claim toward measurable workflow domains.",
+            "summary": "The source is a strong structuring source because it gives the card a transaction-level administrative burden frame. It should attach to evidence and narrow the claim toward measurable workflow domains.",
             "suggestedAssignmentKind": "evidence",
             "suggestedAssignmentLabel": "Administrative transaction burden can be measured and targeted",
             "laneFit": "evidence",
@@ -72,8 +59,8 @@
         "assignedToKind": "evidence",
         "assignedToLabel": "Administrative transaction burden can be measured and targeted",
         "changedSynthesis": true,
-        "publicRecordNote": "Incorporated as the first non-prototype, document-backed healthcare record. It strengthens the evidence layer by grounding administrative simplification in measurable transaction burden while preserving the open question of who captures savings.",
-        "decisionReason": "Accepted as founder-submitted evidence because the source gives the card a concrete administrative burden anchor and a document attachment readers can inspect.",
+        "publicRecordNote": "Incorporated as the first non-prototype, founder-submitted healthcare record. It strengthens the evidence layer by grounding administrative simplification in measurable transaction burden while preserving the open question of who captures savings.",
+        "decisionReason": "Accepted as founder-submitted test evidence because the source gives the card a concrete administrative burden anchor readers can inspect through the evidence-attachment pathway.",
         "reviewerNote": "Keep this visible as founder-submitted evidence, not outside public usage. The card should still ask whether transaction savings become patient, clinician, or system-level benefit.",
         "reviewedAt": "2026-05-23T18:30:00.000Z"
       }

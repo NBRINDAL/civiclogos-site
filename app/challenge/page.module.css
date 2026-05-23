@@ -55,8 +55,10 @@
 .challengeCard,
 .panel,
 .smallCard,
+.exampleCard,
 .proofCard,
 .ctaStrip,
+.exampleSection,
 .proofSection {
   border: 1px solid rgba(18, 33, 39, 0.12);
   border-radius: 30px;
@@ -199,6 +201,12 @@
   gap: 18px;
 }
 
+.exampleSection {
+  display: grid;
+  gap: 18px;
+  padding: 30px;
+}
+
 .sectionIntro {
   display: grid;
   gap: 10px;
@@ -210,11 +218,35 @@
   gap: 14px;
 }
 
+.exampleGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
 .smallCard {
   padding: 20px;
   color: var(--foreground);
   font-weight: 800;
   line-height: 1.45;
+}
+
+.exampleCard {
+  display: grid;
+  gap: 10px;
+  padding: 20px;
+}
+
+.exampleCard h3 {
+  font-family: var(--font-serif), serif;
+  font-size: 1.35rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.exampleCard p {
+  color: var(--muted);
+  line-height: 1.65;
 }
 
 .stepList,
@@ -278,6 +310,7 @@
   }
 
   .cardGrid,
+  .exampleGrid,
   .proofGrid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -294,6 +327,7 @@
   }
 
   .cardGrid,
+  .exampleGrid,
   .proofGrid {
     grid-template-columns: 1fr;
   }
@@ -301,6 +335,7 @@
   .heroCopy,
   .challengeCard,
   .panel,
+  .exampleSection,
   .proofSection {
     padding: 22px;
     border-radius: 24px;

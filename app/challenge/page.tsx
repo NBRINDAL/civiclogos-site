@@ -4,7 +4,10 @@ import { SiteBrand } from "../components/site-brand";
 import { topicCardVisibleContributionLimit } from "../lib/contribution-constants";
 import { getContributionStoreMetadata, listPublicContributions } from "../lib/contribution-store";
 import { isActualCardChange } from "../lib/contribution-impact";
-import { isOutsidePublicContribution } from "../lib/contribution-origin";
+import {
+  isFounderSubmittedContribution,
+  isOutsidePublicContribution,
+} from "../lib/contribution-origin";
 import { normalizeContributionReferralSource } from "../lib/contribution-types";
 import styles from "./page.module.css";
 
@@ -41,6 +44,21 @@ const notItems = [
   "Not pay-to-win legitimacy",
   "Not a partisan media project",
   "Not an endorsement request",
+] as const;
+
+const bestFirstContributionExamples = [
+  {
+    title: "One strong objection",
+    body: "The card assumes administrative simplification lowers costs, but savings may be captured by intermediaries unless the record specifies who receives the benefit.",
+  },
+  {
+    title: "One concrete evidence source",
+    body: "A credible report, policy document, dataset, or paper that measures prior authorization burden, claims friction, documentation time, or triage outcomes.",
+  },
+  {
+    title: "One correction",
+    body: "A specific factual, numeric, definitional, or scope issue that should be changed before the card is treated as a reliable public record.",
+  },
 ] as const;
 
 function getFirstValue(value: string | string[] | undefined) {
@@ -82,6 +100,7 @@ export default async function ChallengePage({
   );
   const changedCardRecords = contributions.filter(isActualCardChange);
   const outsidePublicSubmissions = contributions.filter(isOutsidePublicContribution);
+  const founderSubmittedRecords = contributions.filter(isFounderSubmittedContribution);
   const proofStats = [
     {
       label: "Prototype records",
@@ -102,6 +121,11 @@ export default async function ChallengePage({
       label: "Outside submissions so far",
       value: String(outsidePublicSubmissions.length),
       note: "The mission is to turn the first real outside contribution into visible public record pressure.",
+    },
+    {
+      label: "Founder-submitted test record",
+      value: String(founderSubmittedRecords.length),
+      note: "Non-prototype records from Civic Logos stay labeled separately and do not count as outside public uptake.",
     },
     {
       label: "Database mode",
@@ -219,6 +243,25 @@ export default async function ChallengePage({
             {strongContributionItems.map((item) => (
               <article className={styles.smallCard} key={item}>
                 <span>{item}</span>
+              </article>
+            ))}
+          </div>
+        </section>
+
+        <section className={styles.exampleSection}>
+          <div className={styles.sectionIntro}>
+            <span className={styles.eyebrow}>Best first contribution</span>
+            <h2>Good contributions are specific enough to review.</h2>
+            <p>
+              The first outside submission does not need to solve healthcare. It
+              needs to make one part of the card more accurate, complete, or honest.
+            </p>
+          </div>
+          <div className={styles.exampleGrid}>
+            {bestFirstContributionExamples.map((item) => (
+              <article className={styles.exampleCard} key={item.title}>
+                <h3>{item.title}</h3>
+                <p>{item.body}</p>
               </article>
             ))}
           </div>

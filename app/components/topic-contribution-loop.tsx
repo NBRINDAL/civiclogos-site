@@ -2277,9 +2277,10 @@ export default function TopicContributionLoop({
             <div className={styles.visibilityNote}>
               <strong>Visibility note</strong>
               <p>
-                The contribution title, body, lane, source details, uploaded evidence,
-                name, and context can appear in the public ledger. Email is kept out
-                of public contribution records and used only for review follow-up.
+                The contribution title, body, lane, source details,
+                evidence-attachment data, name, and context can appear in the
+                public ledger. Email is kept out of public contribution records
+                and used only for review follow-up.
               </p>
             </div>
 

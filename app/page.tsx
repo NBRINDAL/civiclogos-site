@@ -576,12 +576,12 @@ export default async function Home({
           <SiteBrand className={styles.brand} href="#top" subtitle="Phase 1 launch site" />
 
           <div className={styles.navLinks}>
-            <Link href="/rooms">Room library</Link>
-            <Link href="/healthcare">Healthcare room</Link>
             <Link href="/demo">Demo</Link>
             <Link href="/challenge">Challenge</Link>
             <Link href="/press">Press</Link>
             <Link href="/institutions">Institutions</Link>
+            <Link href="/healthcare">Healthcare</Link>
+            <Link href="/rooms">Rooms</Link>
             <a href="#live-cards">Live cards</a>
             <a href="#manifesto">Manifesto</a>
             <a href="#contact">Early access</a>

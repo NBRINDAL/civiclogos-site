@@ -387,7 +387,7 @@ export default async function ContributionReviewPage({
             <article className={styles.provenanceCard}>
               <span>Document-backed</span>
               <strong>{summary.documentBacked}</strong>
-              <p>Records with uploaded evidence artifacts or extraction state.</p>
+              <p>Records with evidence-attachment artifacts or extraction state.</p>
             </article>
             <article className={styles.provenanceCard}>
               <span>Changed card</span>

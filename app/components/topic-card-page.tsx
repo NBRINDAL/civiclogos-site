@@ -3879,7 +3879,7 @@ export default async function TopicCardPage({
             <h2>Human review should change the visible object, not just the queue.</h2>
             <SummaryFocusNotice {...summaryFocusNoticeProps} summaryLabel="Open pressure" />
             <p>
-              These are the reviewed outside contributions that have already been
+              These are the reviewed contribution records that have already been
               marked as changing the card&apos;s public reasoning record.
             </p>
 
@@ -4141,7 +4141,7 @@ export default async function TopicCardPage({
             </h2>
             <p>
               {institutionalPilotCtaVariant === "healthcare"
-                ? "This live healthcare card already behaves like the kind of review object a pilot would need: visible contributions, pending review, AI-assisted sorting, uploaded evidence, and a revisable public record. A pilot here would fund reviewer time, evidence work, synthesis labor, and public memory without buying conclusions."
+                ? "This live healthcare card already behaves like the kind of review object a pilot would need: visible contributions, pending review, AI-assisted sorting, an evidence-attachment pathway, and a revisable public record. A pilot here would fund reviewer time, evidence work, synthesis labor, and public memory without buying conclusions."
                 : "Civic Logos can use a room like this to structure a hard public or institutional question into a living review object. Paying for the pilot funds review capacity, evidence work, synthesis labor, and public memory. It does not buy favorable conclusions."}
             </p>
 
