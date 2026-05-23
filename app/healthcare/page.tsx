@@ -114,15 +114,15 @@ export default async function HealthcareIssueRoomPage({
   const pressureTestHref = firstLiveCard?.href ?? "/healthcare/topic-001";
   const pressureTestActions = [
     {
-      label: "Strong objection",
+      label: "Start with an objection draft",
       href: `${pressureTestHref}?view=ledger&contributeLane=objection&contributeFrom=healthcare-room#debate`,
     },
     {
-      label: "Evidence source",
+      label: "Start with an evidence draft",
       href: `${pressureTestHref}?view=ledger&contributeLane=evidence&contributeFrom=healthcare-room#debate`,
     },
     {
-      label: "Correction",
+      label: "Start with a correction draft",
       href: `${pressureTestHref}?view=ledger&contributeLane=correction&contributeFrom=healthcare-room#debate`,
     },
   ] as const;
@@ -250,7 +250,8 @@ export default async function HealthcareIssueRoomPage({
               The room does not need a full healthcare treatise yet. One strong
               objection, one evidence source, or one precise correction can
               become a public review record and show the Civic Logos loop working
-              with outside pressure.
+              with outside pressure. These prompts open the ledger with an
+              editable starter draft already loaded.
             </p>
 
             <dl className={styles.pressureRecordGrid}>

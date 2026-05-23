@@ -361,26 +361,28 @@ export default async function DemoPage() {
             <h2>Help pressure-test the first card.</h2>
             <p>
               A strong objection, evidence source, or correction can become the
-              first real public contribution that improves this card.
+              first real public contribution that improves this card. Pick a
+              lane to open the healthcare ledger with an editable starter draft
+              already loaded.
             </p>
             <div className={styles.ctaPromptGrid}>
               <Link
                 className={styles.ctaPrompt}
                 href="/healthcare/topic-001?view=ledger&contributeLane=objection&contributeFrom=demo#debate"
               >
-                Strong objection
+                Start with an objection draft
               </Link>
               <Link
                 className={styles.ctaPrompt}
                 href="/healthcare/topic-001?view=ledger&contributeLane=evidence&contributeFrom=demo#debate"
               >
-                Evidence source
+                Start with an evidence draft
               </Link>
               <Link
                 className={styles.ctaPrompt}
                 href="/healthcare/topic-001?view=ledger&contributeLane=correction&contributeFrom=demo#debate"
               >
-                Correction
+                Start with a correction draft
               </Link>
             </div>
           </div>

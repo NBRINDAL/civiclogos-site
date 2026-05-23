@@ -735,26 +735,29 @@ export default async function Home({
             <p>
               We are looking for one strong objection, one evidence source, or
               one correction that can improve the Administrative Simplification
-              card and become part of the public review record.
+              card and become part of the public review record. Each path opens
+              the healthcare ledger with an editable starter draft already
+              loaded, so contributors can revise instead of starting from a
+              blank box.
             </p>
             <div className={styles.campaignPromptGrid}>
               <Link
                 className={styles.campaignPrompt}
                 href="/healthcare/topic-001?view=ledger&contributeLane=objection&contributeFrom=first-card#debate"
               >
-                Strong objection
+                Start with an objection draft
               </Link>
               <Link
                 className={styles.campaignPrompt}
                 href="/healthcare/topic-001?view=ledger&contributeLane=evidence&contributeFrom=first-card#debate"
               >
-                Evidence source
+                Start with an evidence draft
               </Link>
               <Link
                 className={styles.campaignPrompt}
                 href="/healthcare/topic-001?view=ledger&contributeLane=correction&contributeFrom=first-card#debate"
               >
-                Correction
+                Start with a correction draft
               </Link>
             </div>
             <dl className={styles.campaignRecordGrid}>
