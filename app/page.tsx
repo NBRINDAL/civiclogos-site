@@ -579,6 +579,7 @@ export default async function Home({
             <Link href="/rooms">Room library</Link>
             <Link href="/healthcare">Healthcare room</Link>
             <Link href="/demo">Demo</Link>
+            <Link href="/press">Press</Link>
             <Link href="/institutions">Institutions</Link>
             <a href="#live-cards">Live cards</a>
             <a href="#manifesto">Manifesto</a>

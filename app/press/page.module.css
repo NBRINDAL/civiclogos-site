@@ -1,0 +1,329 @@
+.page {
+  position: relative;
+  min-height: 100vh;
+  padding: 24px;
+}
+
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background:
+    radial-gradient(circle at 16% 12%, rgba(var(--brand-blue-rgb), 0.12), transparent 28%),
+    radial-gradient(circle at 88% 16%, rgba(var(--brand-red-rgb), 0.1), transparent 24%),
+    radial-gradient(circle at 42% 90%, rgba(var(--brand-green-rgb), 0.12), transparent 28%),
+    linear-gradient(180deg, rgba(252, 249, 243, 0.96), rgba(242, 238, 229, 0.94));
+}
+
+.header,
+.main {
+  width: min(1160px, 100%);
+  margin: 0 auto;
+}
+
+.header {
+  display: grid;
+  gap: 30px;
+  padding: 16px 0 34px;
+}
+
+.nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.navLinks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  color: var(--muted);
+}
+
+.navLinks a {
+  text-decoration: none;
+}
+
+.hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1.24fr) minmax(320px, 0.78fr);
+  gap: 22px;
+}
+
+.heroCopy,
+.challengeCard,
+.demoCard,
+.inspectCard,
+.positionCard,
+.hookCard,
+.contactBand {
+  border: 1px solid rgba(18, 33, 39, 0.12);
+  border-radius: 30px;
+  background: rgba(255, 251, 245, 0.82);
+  box-shadow: 0 20px 44px rgba(18, 33, 39, 0.08);
+  backdrop-filter: blur(12px);
+}
+
+.heroCopy {
+  padding: clamp(30px, 5vw, 54px);
+}
+
+.challengeCard {
+  display: grid;
+  align-content: center;
+  gap: 14px;
+  padding: 30px;
+  background:
+    linear-gradient(180deg, rgba(var(--brand-red-rgb), 0.08), rgba(255, 251, 245, 0.92)),
+    rgba(255, 251, 245, 0.84);
+}
+
+.eyebrow,
+.cardLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--signal);
+  font-size: 0.82rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.eyebrow::before {
+  content: "";
+  width: 28px;
+  height: 1px;
+  background: currentColor;
+}
+
+.heroCopy h1,
+.challengeCard h2,
+.sectionIntro h2,
+.demoCard h3,
+.inspectCard h3,
+.positionCard h2,
+.hookCard h2,
+.contactBand h2 {
+  font-family: var(--font-serif), serif;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  line-height: 1.04;
+  text-wrap: balance;
+}
+
+.heroCopy h1 {
+  margin-top: 16px;
+  font-size: clamp(2.8rem, 5.8vw, 5.2rem);
+}
+
+.oneLine {
+  margin-top: 18px;
+  color: var(--foreground);
+  font-size: 1.14rem;
+  line-height: 1.72;
+}
+
+.challengeCard h2 {
+  font-size: clamp(1.75rem, 3.3vw, 2.55rem);
+}
+
+.challengeCard p,
+.sectionIntro p,
+.demoCard p,
+.inspectCard p,
+.positionCard p,
+.contactBand p {
+  color: var(--muted);
+  line-height: 1.72;
+}
+
+.heroActions,
+.demoActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-top: 24px;
+}
+
+.primaryAction,
+.secondaryAction,
+.routeCard {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 50px;
+  padding: 0 18px;
+  border-radius: 999px;
+  font-weight: 800;
+  text-decoration: none;
+  transition:
+    transform 180ms ease,
+    border-color 180ms ease,
+    background 180ms ease;
+}
+
+.primaryAction {
+  border: 1px solid transparent;
+  background: var(--accent-dark);
+  color: #fff8ef;
+}
+
+.secondaryAction,
+.routeCard {
+  border: 1px solid rgba(18, 33, 39, 0.14);
+  background: rgba(255, 251, 245, 0.88);
+  color: var(--foreground);
+}
+
+.main {
+  display: grid;
+  gap: 28px;
+  padding-bottom: 72px;
+}
+
+.section {
+  display: grid;
+  gap: 18px;
+}
+
+.sectionIntro {
+  display: grid;
+  gap: 10px;
+}
+
+.sectionIntro h2,
+.positionCard h2,
+.contactBand h2 {
+  font-size: clamp(2rem, 4vw, 3.2rem);
+}
+
+.demoCard {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 20px;
+  align-items: center;
+  padding: 30px;
+}
+
+.demoCard h3 {
+  margin-top: 10px;
+  font-size: clamp(1.7rem, 3vw, 2.5rem);
+}
+
+.inspectGrid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.inspectCard {
+  display: grid;
+  gap: 10px;
+  padding: 22px;
+}
+
+.inspectCard h3 {
+  font-size: 1.2rem;
+}
+
+.positionSection {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(300px, 0.78fr);
+  gap: 18px;
+}
+
+.positionCard,
+.hookCard {
+  padding: 30px;
+}
+
+.hookCard {
+  background:
+    linear-gradient(180deg, rgba(var(--brand-blue-rgb), 0.08), rgba(255, 251, 245, 0.92)),
+    rgba(255, 251, 245, 0.84);
+}
+
+.hookList {
+  display: grid;
+  gap: 12px;
+  margin: 18px 0 0;
+  padding-left: 20px;
+  color: var(--foreground);
+  line-height: 1.65;
+}
+
+.linksSection {
+  display: grid;
+  gap: 18px;
+}
+
+.linkGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.contactBand {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 30px;
+}
+
+.contactBand a:not(.primaryAction) {
+  color: var(--foreground);
+  font-weight: 800;
+}
+
+@media (hover: hover) {
+  .primaryAction:hover,
+  .secondaryAction:hover,
+  .routeCard:hover {
+    transform: translateY(-2px);
+  }
+}
+
+@media (max-width: 940px) {
+  .hero,
+  .demoCard,
+  .positionSection {
+    grid-template-columns: 1fr;
+  }
+
+  .inspectGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .contactBand {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 680px) {
+  .page {
+    padding: 16px;
+  }
+
+  .nav {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .inspectGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .heroCopy,
+  .challengeCard,
+  .demoCard,
+  .positionCard,
+  .hookCard,
+  .contactBand {
+    padding: 22px;
+    border-radius: 24px;
+  }
+}

@@ -360,6 +360,13 @@ function getQuickStartNotice(source: string | undefined, lane: DebateLane | null
     };
   }
 
+  if (source === "press") {
+    return {
+      title: "Pressure-test from the press brief",
+      body: `You came from the press page. A starter ${laneLabel.toLowerCase()} is loaded below so this can become a concrete challenge, source, or correction rather than a general reaction.`,
+    };
+  }
+
   if (source === "healthcare-room") {
     return {
       title: "Pressure-test from the healthcare room",
@@ -1732,25 +1739,20 @@ export default function TopicContributionLoop({
     }
 
     const prefillKey = `${quickStartSource}:${quickStartStarter.lane}`;
+    const hasManualContent =
+      formState.title.trim() ||
+      formState.body.trim() ||
+      formState.evidenceLabel.trim() ||
+      formState.evidenceUrl.trim() ||
+      formState.evidenceFile;
 
-    if (quickStartPrefillKeyRef.current === prefillKey) {
+    if (quickStartPrefillKeyRef.current === prefillKey || hasManualContent) {
       return;
     }
 
     quickStartPrefillKeyRef.current = prefillKey;
 
     setFormState((current) => {
-      const hasManualContent =
-        current.title.trim() ||
-        current.body.trim() ||
-        current.evidenceLabel.trim() ||
-        current.evidenceUrl.trim() ||
-        current.evidenceFile;
-
-      if (hasManualContent) {
-        return current;
-      }
-
       return {
         ...current,
         lane: quickStartStarter.lane,
@@ -1762,7 +1764,16 @@ export default function TopicContributionLoop({
     });
 
     setSubmissionState({ kind: "idle" });
-  }, [draftState, quickStartSource, quickStartStarter]);
+  }, [
+    draftState,
+    formState.body,
+    formState.evidenceFile,
+    formState.evidenceLabel,
+    formState.evidenceUrl,
+    formState.title,
+    quickStartSource,
+    quickStartStarter,
+  ]);
 
   useEffect(() => {
     function handleAiDraft(event: Event) {
