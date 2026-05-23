@@ -2721,6 +2721,8 @@ export default async function TopicCardPage({
                   <p>
                     You do not need to settle the whole topic. Pick one lane,
                     make one sharp move, and let the ledger handle the rest.
+                    Each button opens Ledger View with an editable starter draft
+                    already loaded.
                   </p>
                   <div className={styles.readerContributionStatus}>
                     <span className={styles.panelLabel}>Public contribution state</span>
@@ -2760,7 +2762,7 @@ export default async function TopicCardPage({
                         <h3>{starter.title}</h3>
                         <p>{starter.description}</p>
                         <Link className={styles.readerStarterAction} href={starter.href}>
-                          Start in this lane
+                          Open editable draft
                         </Link>
                       </article>
                     ))}
