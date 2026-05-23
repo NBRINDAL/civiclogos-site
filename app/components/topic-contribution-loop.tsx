@@ -382,6 +382,68 @@ function getContributionBodyPlaceholder(lane: DebateLane | "") {
   }
 }
 
+function getContributionCue(lane: DebateLane | "") {
+  switch (lane) {
+    case "objection":
+      return {
+        title: "A useful objection pressures one claim.",
+        useful:
+          "Name the claim that overreaches, then explain the failure mode clearly enough that a reviewer can attach it to the card.",
+        target: "Best target: savings claims, AI-triage safety, provider burden, or price-power assumptions.",
+        avoid:
+          "Avoid broad ideological rejection unless it identifies a specific card claim that should change.",
+      };
+    case "evidence":
+      return {
+        title: "A useful evidence source changes confidence.",
+        useful:
+          "Summarize what the source shows, whether it supports or challenges the card, and where it should attach.",
+        target: "Best target: administrative overhead, transition cost, patient routing, or clinical escalation evidence.",
+        avoid: "Avoid dumping a link without saying what the room should learn from it.",
+      };
+    case "correction":
+      return {
+        title: "A useful correction is precise.",
+        useful:
+          "Point to the exact factual, numerical, definitional, or citation problem and propose a replacement.",
+        target: "Best target: overstated savings, unclear definitions, incorrect source framing, or missing caveats.",
+        avoid: "Avoid rewriting the whole card; isolate the smallest fix that improves accuracy.",
+      };
+    case "implementation-concern":
+      return {
+        title: "A useful implementation concern names the blocker.",
+        useful:
+          "Describe the practical constraint that would stop the proposal from working in a real institution.",
+        target: "Best target: workflow adoption, liability, procurement, rural access, staffing, or interoperability.",
+        avoid: "Avoid saying it is hard without naming the mechanism that makes it hard.",
+      };
+    case "economic-assumption-challenge":
+      return {
+        title: "A useful economic challenge tests the math.",
+        useful:
+          "Name the cost, savings, incentive, or transition assumption that needs stronger evidence.",
+        target: "Best target: gross savings versus net savings, transition cost, redirection of savings, or payer incentives.",
+        avoid: "Avoid generic cost skepticism unless it identifies the assumption that should be revised.",
+      };
+    case "nuance":
+      return {
+        title: "A useful nuance adds a condition.",
+        useful:
+          "Explain when the card is right, when it fails, and what condition should be made visible.",
+        target: "Best target: edge cases, patient safety, provider capacity, trust, or governance conditions.",
+        avoid: "Avoid adding complexity that does not change how a reader should understand the card.",
+      };
+    default:
+      return {
+        title: "A useful contribution makes one inspectable move.",
+        useful:
+          "Choose a lane, make one clear point, and name what part of the card it should pressure or improve.",
+        target: "Best target: objection, evidence, correction, implementation concern, or economic assumption.",
+        avoid: "Avoid trying to settle the whole healthcare debate in one contribution.",
+      };
+  }
+}
+
 function getSubmissionRecordType(contribution: PublicContribution) {
   const origin = getContributionOrigin(contribution);
   const type =
@@ -1093,6 +1155,10 @@ export default function TopicContributionLoop({
     () => getContributionBodyPlaceholder(selectedContributionLane),
     [selectedContributionLane],
   );
+  const contributionCue = useMemo(
+    () => getContributionCue(selectedContributionLane),
+    [selectedContributionLane],
+  );
   const activeScoreSliceLabel = useMemo(
     () => searchParams.get("scoreSlice")?.trim() || undefined,
     [searchParams],
@@ -1659,6 +1725,22 @@ export default function TopicContributionLoop({
                 </p>
               </div>
             ) : null}
+
+            <div className={styles.contributionCue}>
+              <span className={styles.sectionLabel}>What counts as useful</span>
+              <h4>{contributionCue.title}</h4>
+              <div className={styles.contributionCueGrid}>
+                <p>
+                  <strong>Useful shape:</strong> {contributionCue.useful}
+                </p>
+                <p>
+                  <strong>Good target:</strong> {contributionCue.target}
+                </p>
+                <p>
+                  <strong>Avoid:</strong> {contributionCue.avoid}
+                </p>
+              </div>
+            </div>
 
             <div className={styles.fieldGrid}>
               <label className={styles.field}>
