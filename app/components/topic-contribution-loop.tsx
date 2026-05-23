@@ -342,28 +342,28 @@ function getQuickStartNotice(source: string | undefined, lane: DebateLane | null
   if (source === "reader") {
     return {
       title: "Quick start from Reader View",
-      body: `You opened the contribution form through the ${laneLabel} lane. One useful move is enough here; you do not need to resolve the whole topic before contributing.`,
+      body: `You opened the contribution form through the ${laneLabel} lane. A starter draft is loaded below when the form is empty, so you can edit one useful move instead of starting from a blank page.`,
     };
   }
 
   if (source === "first-card") {
     return {
       title: "First-card pressure test",
-      body: `You came through the first real contribution campaign. Start with one narrow ${laneLabel.toLowerCase()}: a strong objection, evidence source, or correction that could improve the Administrative Simplification card.`,
+      body: `You came through the first real contribution campaign. A starter ${laneLabel.toLowerCase()} is loaded below when the form is empty; revise it into one narrow objection, evidence source, or correction that could improve the Administrative Simplification card.`,
     };
   }
 
   if (source === "demo") {
     return {
       title: "Turn the demo into a real record",
-      body: `You came from the guided demo. The useful next step is one real ${laneLabel.toLowerCase()} that can enter human review and, if it survives, visibly improve the card.`,
+      body: `You came from the guided demo. The form can start from a concrete ${laneLabel.toLowerCase()} draft, then human review decides whether it enters the ledger and visibly improves the card.`,
     };
   }
 
   if (source === "healthcare-room") {
     return {
       title: "Pressure-test from the healthcare room",
-      body: `You came from the healthcare room's pressure-test path. Add one focused ${laneLabel.toLowerCase()} that can help move the Administrative Simplification card from prototype record toward real public review.`,
+      body: `You came from the healthcare room's pressure-test path. A focused ${laneLabel.toLowerCase()} starter is loaded below when the form is empty so the next step is editing, not inventing the format.`,
     };
   }
 
@@ -1046,6 +1046,7 @@ export default function TopicContributionLoop({
   const [currentHash, setCurrentHash] = useState("");
   const [isPending, startTransition] = useTransition();
   const titleRef = useRef<HTMLInputElement>(null);
+  const quickStartPrefillKeyRef = useRef<string | null>(null);
 
   const prompts = useMemo(
     () =>
@@ -1367,6 +1368,13 @@ export default function TopicContributionLoop({
   const contributionStarterKits = useMemo(
     () => getContributionStarterKits({ roomSlug, topicId, topicTitle }),
     [roomSlug, topicId, topicTitle],
+  );
+  const quickStartStarter = useMemo(
+    () =>
+      quickStartLane
+        ? contributionStarterKits.find((starter) => starter.lane === quickStartLane) ?? null
+        : null,
+    [contributionStarterKits, quickStartLane],
   );
   const contributionBodyPlaceholder = useMemo(
     () => getContributionBodyPlaceholder(selectedContributionLane),
@@ -1702,6 +1710,44 @@ export default function TopicContributionLoop({
       window.clearTimeout(timeoutId);
     };
   }, [currentHash, quickStartLane]);
+
+  useEffect(() => {
+    if (!quickStartSource || !quickStartStarter || draftState) {
+      return;
+    }
+
+    const prefillKey = `${quickStartSource}:${quickStartStarter.lane}`;
+
+    if (quickStartPrefillKeyRef.current === prefillKey) {
+      return;
+    }
+
+    quickStartPrefillKeyRef.current = prefillKey;
+
+    setFormState((current) => {
+      const hasManualContent =
+        current.title.trim() ||
+        current.body.trim() ||
+        current.evidenceLabel.trim() ||
+        current.evidenceUrl.trim() ||
+        current.evidenceFile;
+
+      if (hasManualContent) {
+        return current;
+      }
+
+      return {
+        ...current,
+        lane: quickStartStarter.lane,
+        title: quickStartStarter.title,
+        body: quickStartStarter.body,
+        evidenceLabel: quickStartStarter.evidenceLabel ?? current.evidenceLabel,
+        evidenceUrl: quickStartStarter.evidenceUrl ?? current.evidenceUrl,
+      };
+    });
+
+    setSubmissionState({ kind: "idle" });
+  }, [draftState, quickStartSource, quickStartStarter]);
 
   useEffect(() => {
     function handleAiDraft(event: Event) {
