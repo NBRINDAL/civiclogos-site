@@ -539,6 +539,30 @@
   min-width: 270px;
 }
 
+.campaignPromptGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.campaignPrompt {
+  display: inline-flex;
+  align-items: center;
+  min-height: 40px;
+  padding: 0 14px;
+  border: 1px solid rgba(18, 33, 39, 0.12);
+  border-radius: 999px;
+  background: rgba(255, 251, 245, 0.82);
+  color: var(--foreground);
+  font-size: 0.9rem;
+  font-weight: 700;
+  transition:
+    transform 180ms ease,
+    border-color 180ms ease,
+    background 180ms ease;
+}
+
 .compareCard h3,
 .loopCard h3,
 .distinctionCard h3,
@@ -714,7 +738,8 @@
   }
 
   .primaryAction:hover,
-  .secondaryAction:hover {
+  .secondaryAction:hover,
+  .campaignPrompt:hover {
     transform: translateY(-2px);
   }
 
@@ -725,6 +750,11 @@
   .secondaryAction:hover {
     border-color: rgba(var(--brand-blue-rgb), 0.28);
     background: rgba(255, 251, 245, 0.92);
+  }
+
+  .campaignPrompt:hover {
+    border-color: rgba(var(--brand-blue-rgb), 0.24);
+    background: rgba(244, 250, 255, 0.9);
   }
 }
 
@@ -808,7 +838,8 @@
   .reveal,
   .navLinks a::after,
   .primaryAction,
-  .secondaryAction {
+  .secondaryAction,
+  .campaignPrompt {
     animation: none;
     transition: none;
   }

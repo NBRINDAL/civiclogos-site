@@ -708,11 +708,31 @@ export default async function Home({
               one correction that can improve the Administrative Simplification
               card and become part of the public review record.
             </p>
+            <div className={styles.campaignPromptGrid}>
+              <Link
+                className={styles.campaignPrompt}
+                href="/healthcare/topic-001?view=ledger&contributeLane=objection&contributeFrom=first-card#debate"
+              >
+                Strong objection
+              </Link>
+              <Link
+                className={styles.campaignPrompt}
+                href="/healthcare/topic-001?view=ledger&contributeLane=evidence&contributeFrom=first-card#debate"
+              >
+                Evidence source
+              </Link>
+              <Link
+                className={styles.campaignPrompt}
+                href="/healthcare/topic-001?view=ledger&contributeLane=correction&contributeFrom=first-card#debate"
+              >
+                Correction
+              </Link>
+            </div>
           </div>
           <div className={styles.campaignActions}>
             <Link
               className={styles.primaryAction}
-              href="/healthcare/topic-001?contributeFrom=first-card#debate"
+              href="/healthcare/topic-001?view=ledger&contributeLane=objection&contributeFrom=first-card#debate"
             >
               Help pressure-test the first card
             </Link>

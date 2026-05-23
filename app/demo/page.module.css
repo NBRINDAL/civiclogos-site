@@ -317,10 +317,36 @@
   margin-top: 0;
 }
 
+.ctaPromptGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.ctaPrompt {
+  display: inline-flex;
+  align-items: center;
+  min-height: 40px;
+  padding: 0 14px;
+  border: 1px solid rgba(18, 33, 39, 0.12);
+  border-radius: 999px;
+  background: rgba(255, 251, 245, 0.82);
+  color: var(--foreground);
+  font-size: 0.9rem;
+  font-weight: 700;
+  text-decoration: none;
+  transition:
+    transform 180ms ease,
+    border-color 180ms ease,
+    background 180ms ease;
+}
+
 @media (hover: hover) and (pointer: fine) {
   .primaryAction:hover,
   .secondaryAction:hover,
-  .inlineLink:hover {
+  .inlineLink:hover,
+  .ctaPrompt:hover {
     transform: translateY(-2px);
   }
 
@@ -332,6 +358,11 @@
   .inlineLink:hover {
     border-color: rgba(var(--brand-blue-rgb), 0.28);
     background: rgba(255, 251, 245, 0.94);
+  }
+
+  .ctaPrompt:hover {
+    border-color: rgba(var(--brand-blue-rgb), 0.24);
+    background: rgba(244, 250, 255, 0.9);
   }
 }
 
@@ -375,7 +406,8 @@
 @media (prefers-reduced-motion: reduce) {
   .primaryAction,
   .secondaryAction,
-  .inlineLink {
+  .inlineLink,
+  .ctaPrompt {
     transition: none;
   }
 }

@@ -327,6 +327,61 @@ function getContributionOrigin(contribution: PublicContribution): ContributionOr
   return "human-submitted";
 }
 
+function getQuickStartNotice(source: string | undefined, lane: DebateLane | null) {
+  const laneLabel = lane ? getDebateLaneLabel(lane) : "selected lane";
+
+  if (source === "reader") {
+    return {
+      title: "Quick start from Reader View",
+      body: `You opened the contribution form through the ${laneLabel} lane. One useful move is enough here; you do not need to resolve the whole topic before contributing.`,
+    };
+  }
+
+  if (source === "first-card") {
+    return {
+      title: "First-card pressure test",
+      body: `You came through the first real contribution campaign. Start with one narrow ${laneLabel.toLowerCase()}: a strong objection, evidence source, or correction that could improve the Administrative Simplification card.`,
+    };
+  }
+
+  if (source === "demo") {
+    return {
+      title: "Turn the demo into a real record",
+      body: `You came from the guided demo. The useful next step is one real ${laneLabel.toLowerCase()} that can enter human review and, if it survives, visibly improve the card.`,
+    };
+  }
+
+  if (lane) {
+    return {
+      title: `${laneLabel} lane selected`,
+      body: "The lane is already selected. Add one concrete contribution that can be reviewed, attached, and inspected in the public record.",
+    };
+  }
+
+  return null;
+}
+
+function getContributionBodyPlaceholder(lane: DebateLane | "") {
+  switch (lane) {
+    case "objection":
+      return "State the strongest reason this card might be wrong or overclaiming. Name the specific claim it pressures.";
+    case "evidence":
+      return "Add the source, what it shows, and whether it supports or challenges the current synthesis.";
+    case "correction":
+      return "Identify the exact factual, numeric, definitional, or citation problem and what should replace it.";
+    case "implementation-concern":
+      return "Describe the practical barrier between the proposal and real-world execution.";
+    case "economic-assumption-challenge":
+      return "Challenge a savings, cost, incentive, or transition assumption and explain what evidence would settle it.";
+    case "nuance":
+      return "Add a missing condition or tradeoff that would make the card more accurate without rejecting it entirely.";
+    case "personal-perspective":
+      return "Share lived or professional experience that reveals a blind spot in the current synthesis.";
+    default:
+      return "Add the strongest objection, evidence, correction, or nuance you can.";
+  }
+}
+
 function getSubmissionRecordType(contribution: PublicContribution) {
   const origin = getContributionOrigin(contribution);
   const type =
@@ -1028,6 +1083,14 @@ export default function TopicContributionLoop({
     [searchParams],
   );
   const selectedContributionLane = formState.lane || quickStartLane || "";
+  const quickStartNotice = useMemo(
+    () => getQuickStartNotice(quickStartSource, quickStartLane),
+    [quickStartLane, quickStartSource],
+  );
+  const contributionBodyPlaceholder = useMemo(
+    () => getContributionBodyPlaceholder(selectedContributionLane),
+    [selectedContributionLane],
+  );
   const activeScoreSliceLabel = useMemo(
     () => searchParams.get("scoreSlice")?.trim() || undefined,
     [searchParams],
@@ -1525,15 +1588,10 @@ export default function TopicContributionLoop({
           </div>
 
           <div className={styles.debateGrid}>
-            {quickStartLane && quickStartSource === "reader" ? (
+            {quickStartNotice ? (
               <div className={styles.quickStartNotice}>
-                <strong>Quick start from Reader View</strong>
-                <p>
-                  You opened the contribution form through the{" "}
-                  <strong>{getDebateLaneLabel(quickStartLane)}</strong> lane. One
-                  useful move is enough here. You do not need to resolve the whole
-                  topic before contributing.
-                </p>
+                <strong>{quickStartNotice.title}</strong>
+                <p>{quickStartNotice.body}</p>
               </div>
             ) : null}
             {prompts.map((item) => {
@@ -1637,7 +1695,7 @@ export default function TopicContributionLoop({
               <textarea
                 maxLength={5000}
                 onChange={(event) => handleFieldChange("body", event.target.value)}
-                placeholder="Add the strongest objection, evidence, correction, or nuance you can."
+                placeholder={contributionBodyPlaceholder}
                 required
                 rows={7}
                 value={formState.body}

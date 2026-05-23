@@ -310,11 +310,31 @@ export default async function DemoPage() {
               A strong objection, evidence source, or correction can become the
               first real public contribution that improves this card.
             </p>
+            <div className={styles.ctaPromptGrid}>
+              <Link
+                className={styles.ctaPrompt}
+                href="/healthcare/topic-001?view=ledger&contributeLane=objection&contributeFrom=demo#debate"
+              >
+                Strong objection
+              </Link>
+              <Link
+                className={styles.ctaPrompt}
+                href="/healthcare/topic-001?view=ledger&contributeLane=evidence&contributeFrom=demo#debate"
+              >
+                Evidence source
+              </Link>
+              <Link
+                className={styles.ctaPrompt}
+                href="/healthcare/topic-001?view=ledger&contributeLane=correction&contributeFrom=demo#debate"
+              >
+                Correction
+              </Link>
+            </div>
           </div>
           <div className={styles.ctaActions}>
             <Link
               className={styles.primaryAction}
-              href="/healthcare/topic-001?contributeFrom=demo#debate"
+              href="/healthcare/topic-001?view=ledger&contributeLane=objection&contributeFrom=demo#debate"
             >
               Contribute to the healthcare card
             </Link>
