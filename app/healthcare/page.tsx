@@ -161,6 +161,7 @@ export default async function HealthcareIssueRoomPage({
           <nav className={styles.nav}>
             <Link href="/">Home</Link>
             <Link href="/rooms">All rooms</Link>
+            <Link href="/challenge">Challenge</Link>
             <Link href="/press">Press</Link>
             <Link href="/institutions">Institutions</Link>
             <a href="#working-materials">Working materials</a>
@@ -187,6 +188,9 @@ export default async function HealthcareIssueRoomPage({
               <a className={styles.secondaryAction} href="#topic-field">
                 Scan room topics
               </a>
+              <Link className={styles.secondaryAction} href="/challenge">
+                Public challenge
+              </Link>
               <a className={styles.secondaryAction} href="#working-materials">
                 See working materials
               </a>
