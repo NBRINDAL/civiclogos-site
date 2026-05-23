@@ -458,6 +458,6 @@ export async function askTopicCard(
     answers,
     issues,
     disclaimer:
-      "These are AI responses generated from the current topic card, visible contribution record, and your scoped topic chat in this session. They only change the public record when Civic Logos records a narrow obvious update or sends a proposal into review.",
+      "These are AI responses generated from the current topic card, visible contribution record, and your scoped topic chat in this session. They only affect the public record when Civic Logos sends a proposal into human review or system-records a narrow AI-origin update with provenance under the current capture policy. AI is not the final judge.",
   };
 }

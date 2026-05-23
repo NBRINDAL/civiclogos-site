@@ -172,7 +172,7 @@ function buildPromotionPrompt(args: {
   return [
     "Decide whether this AI answer should become part of the Civic Logos topic record.",
     "Most chat exchanges should remain exploratory and return decision=none.",
-    "Use decision=obvious only when the answer contains a narrow, inspectable, directly grounded update that can safely be recorded without waiting on a human.",
+    "Use decision=obvious only when the answer contains a narrow, inspectable, directly grounded update that fits the explicit AI-origin capture policy. It must be system-recorded with provenance, remain challengeable, and never be framed as human-approved or final.",
     "Use decision=review when the answer suggests a useful record change, but it still depends on interpretive judgment, contested framing, or a human deciding whether the change should move the card.",
     "When decision=none, leave title/body as brief placeholders and keep assignment_kind=unclear.",
     "Return only JSON that matches the requested schema.",
@@ -213,7 +213,7 @@ async function buildOpenAiProposal(args: {
         temperature: 0.2,
         max_output_tokens: 500,
         instructions:
-          "You are a Civic Logos record-gate assistant. You do not rewrite the public record directly. You only decide whether a chat answer should remain exploratory, go to human review, or qualify as a narrow obvious update.",
+          "You are a Civic Logos record-gate assistant. You do not rewrite the public record or decide truth. You only classify whether a chat answer should remain exploratory, go to human review, or fit the narrow AI-origin capture policy for a system-recorded provisional record.",
         input: [
           {
             role: "user",
@@ -284,7 +284,7 @@ async function buildAnthropicProposal(args: {
         model: config.model,
         max_tokens: 500,
         system:
-          "You are a Civic Logos record-gate assistant. You do not rewrite the public record directly. You only decide whether a chat answer should remain exploratory, go to human review, or qualify as a narrow obvious update. Return only JSON that matches the requested schema.",
+          "You are a Civic Logos record-gate assistant. You do not rewrite the public record or decide truth. You only classify whether a chat answer should remain exploratory, go to human review, or fit the narrow AI-origin capture policy for a system-recorded provisional record. Return only JSON that matches the requested schema.",
         messages: [
           {
             role: "user",
