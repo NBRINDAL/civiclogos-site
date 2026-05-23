@@ -19,6 +19,21 @@ const suggestedPrompts = [
   "What would actually restore institutional trust after repeated correction failures?",
 ] as const;
 
+const routingOutcomes = [
+  {
+    title: "Existing room",
+    body: "If a room already fits, the question opens that room with the intake context attached.",
+  },
+  {
+    title: "Draft topic",
+    body: "If the room fits but no live card absorbs the pressure cleanly, the intake creates a durable draft topic inside that room.",
+  },
+  {
+    title: "Room candidate",
+    body: "If no current room fits, the question is held as a candidate that can accumulate related prompts before any room expansion.",
+  },
+] as const;
+
 export default function HomeIntake() {
   const router = useRouter();
   const [prompt, setPrompt] = useState("");
@@ -124,6 +139,21 @@ export default function HomeIntake() {
             </button>
           ))}
         </div>
+
+        <div className={styles.routingOutcomes} aria-label="Possible intake outcomes">
+          {routingOutcomes.map((item) => (
+            <article className={styles.routingOutcome} key={item.title}>
+              <strong>{item.title}</strong>
+              <p>{item.body}</p>
+            </article>
+          ))}
+        </div>
+
+        <p className={styles.routingNote}>
+          AI routing creates a working receipt, not a final judgment. Human review
+          still decides whether a draft topic becomes a live card or a room
+          candidate becomes part of the map.
+        </p>
 
         <div className={styles.footer}>
           <button className={styles.submitButton} disabled={isPending} type="submit">

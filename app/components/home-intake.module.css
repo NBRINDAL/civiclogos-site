@@ -45,6 +45,8 @@
 .header p,
 .field span,
 .help,
+.routingOutcome p,
+.routingNote,
 .suggestedPrompt,
 .successState p,
 .errorState p {
@@ -52,7 +54,9 @@
 }
 
 .header p,
-.help {
+.help,
+.routingOutcome p,
+.routingNote {
   color: var(--muted);
 }
 
@@ -105,6 +109,38 @@
   color: var(--foreground);
   font-size: 0.92rem;
   text-align: left;
+}
+
+.routingOutcomes {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.routingOutcome {
+  display: grid;
+  gap: 8px;
+  padding: 14px;
+  border: 1px solid rgba(18, 33, 39, 0.1);
+  border-radius: 20px;
+  background: rgba(255, 251, 245, 0.72);
+}
+
+.routingOutcome strong {
+  color: var(--foreground);
+  font-size: 0.94rem;
+}
+
+.routingOutcome p,
+.routingNote {
+  font-size: 0.9rem;
+}
+
+.routingNote {
+  padding: 14px 16px;
+  border: 1px solid rgba(var(--brand-blue-rgb), 0.14);
+  border-radius: 18px;
+  background: rgba(244, 250, 255, 0.58);
 }
 
 .footer {
@@ -166,5 +202,9 @@
   .panel {
     padding: 22px;
     border-radius: 24px;
+  }
+
+  .routingOutcomes {
+    grid-template-columns: 1fr;
   }
 }
