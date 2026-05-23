@@ -386,6 +386,27 @@
     rgba(255, 251, 245, 0.86);
 }
 
+.visibilityNote {
+  display: grid;
+  gap: 6px;
+  padding: 14px 16px;
+  border: 1px solid rgba(91, 110, 69, 0.16);
+  border-radius: 18px;
+  background: rgba(91, 110, 69, 0.08);
+}
+
+.visibilityNote strong {
+  color: var(--foreground);
+  font-size: 0.9rem;
+}
+
+.visibilityNote p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+  line-height: 1.58;
+}
+
 .recordPreview {
   display: grid;
   gap: 12px;
