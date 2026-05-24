@@ -270,6 +270,28 @@ const highSalienceKeywords = new Set([
   "inequality",
 ]);
 
+const physicsFoundationKeywords = new Set([
+  "physics",
+  "quantum",
+  "mechanic",
+  "mechanics",
+  "relativity",
+  "planck",
+  "hbar",
+  "gravity",
+  "gr",
+  "qm",
+  "spacetime",
+  "cosmology",
+  "particle",
+  "particles",
+  "field",
+  "fields",
+  "qft",
+  "standardmodel",
+  "standard",
+]);
+
 const intakeSchema = {
   type: "object",
   additionalProperties: false,
@@ -426,8 +448,59 @@ function isHighSaliencePrompt(promptTokens: readonly string[]) {
   return promptTokens.some((token) => highSalienceKeywords.has(token));
 }
 
+function buildPhysicsFoundationsRouting(
+  prompt: string,
+  promptTokens = tokenize(prompt),
+): RoutingDraft | null {
+  const normalizedPrompt = prompt.toLowerCase();
+  const keywordHits = promptTokens.filter((token) =>
+    physicsFoundationKeywords.has(token),
+  );
+  const hasPhysicsPhrase =
+    /general\s+relativity/i.test(prompt) ||
+    /quantum\s+(mechanics|theory|field)/i.test(prompt) ||
+    /planck\s+(unit|units|scale|length|time|mass|energy)/i.test(prompt) ||
+    /standard\s+physics/i.test(prompt);
+  const hasEnoughPhysicsSignal =
+    keywordHits.length >= 2 ||
+    (keywordHits.length >= 1 && hasPhysicsPhrase) ||
+    (normalizedPrompt.includes("quantum") &&
+      normalizedPrompt.includes("relativity"));
+
+  if (!hasEnoughPhysicsSignal) {
+    return null;
+  }
+
+  return {
+    routeKind: "new-room-draft",
+    roomTitle: "Room candidate",
+    routeConfidence: "high",
+    fitSummary:
+      "This prompt is about physics foundations, which sits outside the current active room map. Civic Logos is opening a room candidate instead of forcing it into Healthcare, Governance, Housing, AI, or Institutional Trust.",
+    suggestedCentralQuestion:
+      "How should standard quantum theory, general relativity, and Planck-unit definitions be mapped before evaluating proposed reformulations?",
+    suggestedTopicTitle:
+      "Physics Foundations: Quantum Theory, General Relativity, and Planck Units",
+    suggestedTopicSummary:
+      "A neutral room candidate for standard physics foundations that separates established definitions, empirical domains, unresolved incompatibilities, and open questions before any alternative framework is evaluated.",
+    suggestedFirstQuestions: [
+      "Which definitions are established conventions rather than contested claims?",
+      "Where are quantum theory and general relativity empirically strongest, and where do their domains fail to merge cleanly?",
+      "What would an alternative framework need to predict, explain, or measure before it should pressure the synthesis?",
+    ],
+    whyNotExistingRooms:
+      "The active room map does not yet include a science or physics foundations room. Shared words such as evidence, standards, or models are not enough to place this inside Healthcare or AI.",
+  };
+}
+
 function buildHeuristicRouting(prompt: string): RoutingDraft {
   const promptTokens = tokenize(prompt);
+  const domainGapRouting = buildPhysicsFoundationsRouting(prompt, promptTokens);
+
+  if (domainGapRouting) {
+    return domainGapRouting;
+  }
+
   const roomMatches = roomDirectory.map((room): RoomHeuristicMatch => {
     const roomSlug = room.slug as IssueRoomSlug;
     const roomData = issueRooms[roomSlug];
@@ -893,7 +966,8 @@ async function classifyWithAnthropic(prompt: string): Promise<ProviderHomeIntake
 export async function buildHomeIntakeRouting(
   prompt: string,
 ): Promise<HomeIntakeRouting> {
-  const heuristicRouting = buildHeuristicRouting(prompt);
+  const domainGapRouting = buildPhysicsFoundationsRouting(prompt);
+  const heuristicRouting = domainGapRouting ?? buildHeuristicRouting(prompt);
   const providers = await Promise.all([
     classifyWithOpenAI(prompt),
     classifyWithAnthropic(prompt),
@@ -925,6 +999,14 @@ export async function buildHomeIntakeRouting(
     return {
       state: completedProviders.length === providers.length ? "completed" : "partial",
       ...heuristicRouting,
+      providers,
+    };
+  }
+
+  if (domainGapRouting && primaryProvider.routeKind !== "new-room-draft") {
+    return {
+      state: completedProviders.length === providers.length ? "completed" : "partial",
+      ...domainGapRouting,
       providers,
     };
   }
