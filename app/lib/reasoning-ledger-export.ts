@@ -180,6 +180,20 @@ function synthesisTarget(card: TopicCardData) {
   };
 }
 
+function layerTarget(input: {
+  objectId: string;
+  targetType: Exclude<ProtocolAttachmentTargetType, "none">;
+  targetLabel: string;
+}) {
+  return {
+    target_id: `target:${healthcareRoomSlug}:${healthcareTopicId}:${input.targetType}:${protocolId(input.targetLabel)}`,
+    target_type: input.targetType,
+    target_label: input.targetLabel,
+    referenced_object_id: input.objectId,
+    created_at: baseCreatedAt,
+  };
+}
+
 function contributionTargets(contribution: PublicContribution, card: TopicCardData) {
   const targets = [targetForContribution(contribution)];
 
@@ -591,6 +605,115 @@ function buildActorRecords(contributions: readonly PublicContribution[]) {
   ];
 }
 
+function buildAssumptionRecords(card: TopicCardData) {
+  return card.assumptions.map((assumption, index) => ({
+    assumption_id: `assumption:${healthcareRoomSlug}:${card.id}:${index + 1}`,
+    topic_id: card.id,
+    assumption_text: assumption,
+    status: "visible_unresolved_assumption",
+    created_at: baseCreatedAt,
+  }));
+}
+
+function buildOpenQuestionRecords(card: TopicCardData) {
+  return card.openQuestions.map((question, index) => ({
+    open_question_id: `open-question:${healthcareRoomSlug}:${card.id}:${index + 1}`,
+    topic_id: card.id,
+    question,
+    why_unresolved:
+      "This question remains visible because the current healthcare card does not yet have enough evidence or review consensus to close it.",
+    created_at: baseCreatedAt,
+    status: "open",
+  }));
+}
+
+function buildObjectionRecords(
+  card: TopicCardData,
+  contributions: readonly PublicContribution[],
+) {
+  const baseObjections = [
+    {
+      objection_id: `objection:${healthcareRoomSlug}:${card.id}:strongest`,
+      topic_id: card.id,
+      claim_id: `claim:${healthcareRoomSlug}:${card.id}:primary`,
+      contribution_id: null,
+      objection_text: card.strongestObjection,
+      status: "standing",
+      created_at: baseCreatedAt,
+    },
+  ];
+
+  if (card.anticipatedObjection) {
+    baseObjections.unshift({
+      objection_id: `objection:${healthcareRoomSlug}:${card.id}:anticipated`,
+      topic_id: card.id,
+      claim_id: `claim:${healthcareRoomSlug}:${card.id}:primary`,
+      contribution_id: null,
+      objection_text: card.anticipatedObjection,
+      status: "anticipated",
+      created_at: baseCreatedAt,
+    });
+  }
+  const contributionObjections = contributions
+    .filter(
+      (contribution) =>
+        contribution.lane === "objection" ||
+        contribution.review?.assignedToKind === "objection",
+    )
+    .map((contribution) => ({
+      objection_id: `objection:${contribution.id}`,
+      topic_id: contribution.topicId,
+      claim_id: `claim:${healthcareRoomSlug}:${card.id}:primary`,
+      contribution_id: contribution.id,
+      objection_text: contribution.body,
+      status: mapStatus(contribution.status, contribution),
+      created_at: contribution.createdAt,
+    }));
+
+  return [...baseObjections, ...contributionObjections];
+}
+
+function buildMetricScores(card: TopicCardData) {
+  return card.scorecard.map((score) => ({
+    metric_id: `metric:${healthcareRoomSlug}:${card.id}:${protocolId(score.label)}`,
+    topic_id: card.id,
+    label: score.label,
+    value: score.value,
+    scale: "0-100",
+    basis:
+      score.basis ??
+      "Provisional founder estimate pending public scoring rubric and challenge workflow.",
+    confidence: "provisional",
+    created_at: baseCreatedAt,
+  }));
+}
+
+function layerTargetsForCard(card: TopicCardData) {
+  const assumptionTargets = buildAssumptionRecords(card).map((assumption) =>
+    layerTarget({
+      objectId: assumption.assumption_id,
+      targetType: "assumption",
+      targetLabel: assumption.assumption_text,
+    }),
+  );
+  const openQuestionTargets = buildOpenQuestionRecords(card).map((question) =>
+    layerTarget({
+      objectId: question.open_question_id,
+      targetType: "open_question",
+      targetLabel: question.question,
+    }),
+  );
+  const metricTargets = buildMetricScores(card).map((metric) =>
+    layerTarget({
+      objectId: metric.metric_id,
+      targetType: "metric",
+      targetLabel: metric.label,
+    }),
+  );
+
+  return [...assumptionTargets, ...openQuestionTargets, ...metricTargets];
+}
+
 export async function buildHealthcareTopic001ProtocolExport() {
   const room = issueRooms[healthcareRoomSlug];
   const card = getRoomTopicCard(healthcareRoomSlug, healthcareTopicId);
@@ -619,9 +742,6 @@ export async function buildHealthcareTopic001ProtocolExport() {
     synthesisTarget(card),
     ...contributions.flatMap((contribution) => contributionTargets(contribution, card)),
   ];
-  const uniqueTargets = [
-    ...new Map(allTargets.map((target) => [target.target_id, target])).values(),
-  ];
   const evidenceObjects = contributions.flatMap(evidenceObjectsForContribution);
   const aiReaderNotes = contributions.flatMap(aiReaderNotesForContribution);
   const humanReviewDecisions = contributions
@@ -633,6 +753,27 @@ export async function buildHealthcareTopic001ProtocolExport() {
     )
     .filter(Boolean);
   const actorRecords = buildActorRecords(contributions);
+  const assumptionRecords = buildAssumptionRecords(card);
+  const openQuestionRecords = buildOpenQuestionRecords(card);
+  const objectionRecords = buildObjectionRecords(card, contributions);
+  const metricScores = buildMetricScores(card);
+  const objectTargets = [
+    ...layerTargetsForCard(card),
+    ...objectionRecords.map((objection) =>
+      layerTarget({
+        objectId: objection.objection_id,
+        targetType: "objection",
+        targetLabel: objection.objection_text,
+      }),
+    ),
+  ];
+
+  for (const target of objectTargets) {
+    allTargets.push(target);
+  }
+  const uniqueTargets = [
+    ...new Map(allTargets.map((target) => [target.target_id, target])).values(),
+  ];
 
   return {
     schema_version: "civic-logos-reasoning-ledger-v0.1",
@@ -693,6 +834,10 @@ export async function buildHealthcareTopic001ProtocolExport() {
     },
     synthesis_snapshots: synthesisSnapshots,
     attachment_targets: uniqueTargets,
+    objection_records: objectionRecords,
+    assumption_records: assumptionRecords,
+    open_question_records: openQuestionRecords,
+    metric_scores: metricScores,
     contribution_records: contributions.map((contribution) => ({
       contribution_id: contribution.id,
       topic_id: contribution.topicId,
