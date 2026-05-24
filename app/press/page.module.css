@@ -216,6 +216,13 @@
   line-height: 1.72;
 }
 
+.shareActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: flex-end;
+}
+
 .producerSummary {
   display: grid;
   gap: 16px;
@@ -353,6 +360,10 @@
   .shareLinkCard {
     align-items: flex-start;
     flex-direction: column;
+  }
+
+  .shareActions {
+    justify-content: flex-start;
   }
 }
 

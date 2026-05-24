@@ -138,9 +138,17 @@ export default function PressPage() {
               and keeps the first outside contribution as the central ask.
             </p>
           </div>
-          <Link className={styles.primaryAction} href="/challenge">
-            Go to /challenge
-          </Link>
+          <div className={styles.shareActions}>
+            <Link className={styles.primaryAction} href="/challenge">
+              Go to /challenge
+            </Link>
+            <Link
+              className={styles.secondaryAction}
+              href="/healthcare/topic-001?view=ledger&contributeLane=objection&contributeFrom=press#debate"
+            >
+              Skip to objection draft
+            </Link>
+          </div>
         </section>
 
         <section className={styles.producerSummary}>
