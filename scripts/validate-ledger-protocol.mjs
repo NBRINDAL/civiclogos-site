@@ -165,13 +165,178 @@ function mapById(records, idKey) {
   return new Map(records.map((item) => [item[idKey], item]));
 }
 
+function registerObject(registry, errors, type, id, value) {
+  if (!id) {
+    errors.push(`${type} is missing a public object id.`);
+    return;
+  }
+
+  if (registry.has(id)) {
+    errors.push(`Duplicate public object id ${id}.`);
+    return;
+  }
+
+  registry.set(id, { type, value });
+}
+
+function requireMapEntry(map, id, label, errors) {
+  if (!id || !map.has(id)) {
+    errors.push(`${label} ${id ? JSON.stringify(id) : "(missing)"} does not resolve.`);
+  }
+}
+
+function requireRegisteredObject(registry, id, label, errors, expectedType = null) {
+  if (!id) {
+    errors.push(`${label} is missing an object id.`);
+    return;
+  }
+
+  const registered = registry.get(id);
+  if (!registered) {
+    errors.push(`${label} ${JSON.stringify(id)} does not resolve to a public ledger object.`);
+    return;
+  }
+
+  if (expectedType && registered.type !== expectedType) {
+    errors.push(
+      `${label} ${JSON.stringify(id)} resolves to ${registered.type}, expected ${expectedType}.`,
+    );
+  }
+}
+
 function validateFixtureGraph(fixture) {
   const errors = [];
+  const actors = mapById(fixture.actors ?? [], "actor_id");
+  const room = fixture.room_record;
+  const topic = fixture.topic_record;
+  const claim = fixture.claim_record;
   const contribution = fixture.contribution_record;
   const aiNotes = mapById(fixture.ai_reader_notes ?? [], "ai_reader_note_id");
   const snapshots = mapById(fixture.synthesis_snapshots ?? [], "snapshot_id");
+  const attachmentTargets = mapById(fixture.attachment_targets ?? [], "target_id");
+  const evidenceObjects = mapById(fixture.evidence_objects ?? [], "evidence_object_id");
   const review = fixture.human_review_decision;
   const revision = fixture.revision_event;
+  const publicObjects = new Map();
+
+  for (const actor of fixture.actors ?? []) {
+    registerObject(publicObjects, errors, "ActorRecord", actor.actor_id, actor);
+  }
+  registerObject(publicObjects, errors, "RoomRecord", room?.room_id, room);
+  registerObject(publicObjects, errors, "TopicRecord", topic?.topic_id, topic);
+  registerObject(publicObjects, errors, "ClaimRecord", claim?.claim_id, claim);
+  for (const snapshot of fixture.synthesis_snapshots ?? []) {
+    registerObject(publicObjects, errors, "SynthesisSnapshot", snapshot.snapshot_id, snapshot);
+  }
+  for (const target of fixture.attachment_targets ?? []) {
+    registerObject(publicObjects, errors, "AttachmentTarget", target.target_id, target);
+  }
+  for (const evidenceObject of fixture.evidence_objects ?? []) {
+    registerObject(
+      publicObjects,
+      errors,
+      "EvidenceObject",
+      evidenceObject.evidence_object_id,
+      evidenceObject,
+    );
+  }
+  registerObject(
+    publicObjects,
+    errors,
+    "ContributionRecord",
+    contribution?.contribution_id,
+    contribution,
+  );
+  for (const aiNote of fixture.ai_reader_notes ?? []) {
+    registerObject(publicObjects, errors, "AIReaderNote", aiNote.ai_reader_note_id, aiNote);
+  }
+  registerObject(
+    publicObjects,
+    errors,
+    "HumanReviewDecision",
+    review?.review_decision_id,
+    review,
+  );
+  registerObject(publicObjects, errors, "RevisionEvent", revision?.revision_id, revision);
+
+  if (topic.room_id !== room.room_id) {
+    errors.push("TopicRecord room_id does not resolve to the RoomRecord.");
+  }
+
+  if (claim.topic_id !== topic.topic_id) {
+    errors.push("ClaimRecord topic_id does not resolve to the TopicRecord.");
+  }
+
+  if (!(topic.claim_ids ?? []).includes(claim.claim_id)) {
+    errors.push("TopicRecord claim_ids does not include the fixture ClaimRecord.");
+  }
+
+  requireMapEntry(
+    snapshots,
+    topic.current_synthesis_snapshot_id,
+    "TopicRecord current_synthesis_snapshot_id",
+    errors,
+  );
+  requireMapEntry(
+    snapshots,
+    claim.current_synthesis_snapshot_id,
+    "ClaimRecord current_synthesis_snapshot_id",
+    errors,
+  );
+
+  if (topic.current_synthesis_snapshot_id !== claim.current_synthesis_snapshot_id) {
+    errors.push("TopicRecord and ClaimRecord must agree on the current synthesis snapshot.");
+  }
+
+  for (const targetId of claim.attachment_target_ids ?? []) {
+    requireMapEntry(attachmentTargets, targetId, "ClaimRecord attachment target", errors);
+  }
+
+  for (const target of fixture.attachment_targets ?? []) {
+    if (target.referenced_object_id) {
+      requireRegisteredObject(
+        publicObjects,
+        target.referenced_object_id,
+        `AttachmentTarget ${target.target_id} referenced_object_id`,
+        errors,
+      );
+    }
+  }
+
+  for (const snapshot of fixture.synthesis_snapshots ?? []) {
+    if (snapshot.topic_id !== topic.topic_id) {
+      errors.push(`SynthesisSnapshot ${snapshot.snapshot_id} topic_id does not resolve.`);
+    }
+    if (snapshot.claim_id !== claim.claim_id) {
+      errors.push(`SynthesisSnapshot ${snapshot.snapshot_id} claim_id does not resolve.`);
+    }
+    requireMapEntry(
+      actors,
+      snapshot.created_by_actor_id,
+      `SynthesisSnapshot ${snapshot.snapshot_id} created_by_actor_id`,
+      errors,
+    );
+    if (snapshot.source_revision_event_id) {
+      requireRegisteredObject(
+        publicObjects,
+        snapshot.source_revision_event_id,
+        `SynthesisSnapshot ${snapshot.snapshot_id} source_revision_event_id`,
+        errors,
+        "RevisionEvent",
+      );
+    }
+  }
+
+  if (contribution.topic_id !== topic.topic_id) {
+    errors.push("ContributionRecord topic_id does not resolve to the TopicRecord.");
+  }
+
+  requireMapEntry(
+    actors,
+    contribution.submitted_by_actor_id,
+    "ContributionRecord submitted_by_actor_id",
+    errors,
+  );
 
   for (const noteId of contribution.ai_reader_note_ids ?? []) {
     if (!aiNotes.has(noteId)) {
@@ -183,6 +348,24 @@ function validateFixtureGraph(fixture) {
     errors.push("Only incorporated contributions may link to a RevisionEvent.");
   }
 
+  if (contribution.human_review_decision_id !== review.review_decision_id) {
+    errors.push("ContributionRecord human_review_decision_id does not resolve to the HumanReviewDecision.");
+  }
+
+  if (contribution.revision_event_id) {
+    requireRegisteredObject(
+      publicObjects,
+      contribution.revision_event_id,
+      "ContributionRecord revision_event_id",
+      errors,
+      "RevisionEvent",
+    );
+  }
+
+  for (const evidenceObjectId of contribution.evidence_object_ids ?? []) {
+    requireMapEntry(evidenceObjects, evidenceObjectId, "ContributionRecord evidence object", errors);
+  }
+
   if (review.actual_card_change === true && !review.revision_event_id) {
     errors.push("HumanReviewDecision with actual_card_change true must include revision_event_id.");
   }
@@ -191,12 +374,22 @@ function validateFixtureGraph(fixture) {
     errors.push("HumanReviewDecision revision_event_id does not resolve to the fixture RevisionEvent.");
   }
 
+  requireMapEntry(actors, review.reviewer_id, "HumanReviewDecision reviewer_id", errors);
+
   if (revision.triggering_record_id !== contribution.contribution_id) {
     errors.push("RevisionEvent triggering_record_id does not resolve to the ContributionRecord.");
   }
 
   if (revision.review_decision_id !== review.review_decision_id) {
     errors.push("RevisionEvent review_decision_id does not resolve to the HumanReviewDecision.");
+  }
+
+  if (revision.topic_id !== topic.topic_id) {
+    errors.push("RevisionEvent topic_id does not resolve to the TopicRecord.");
+  }
+
+  if (revision.origin !== contribution.origin) {
+    errors.push("RevisionEvent origin must preserve the triggering ContributionRecord origin.");
   }
 
   const previousSnapshot = snapshots.get(revision.previous_synthesis_snapshot_id);
@@ -217,10 +410,52 @@ function validateFixtureGraph(fixture) {
     errors.push("RevisionEvent must preserve unresolved_after_revision.");
   }
 
+  const validateAttachmentTargetList = (targets, label) => {
+    for (const target of targets ?? []) {
+      const canonicalTarget = attachmentTargets.get(target.target_id);
+      if (!canonicalTarget) {
+        errors.push(`${label} references missing AttachmentTarget ${target.target_id}.`);
+        continue;
+      }
+
+      if (canonicalTarget.target_type !== target.target_type) {
+        errors.push(`${label} ${target.target_id} target_type does not match the canonical target.`);
+      }
+
+      if (target.referenced_object_id) {
+        requireRegisteredObject(
+          publicObjects,
+          target.referenced_object_id,
+          `${label} ${target.target_id} referenced_object_id`,
+          errors,
+        );
+      }
+    }
+  };
+
+  validateAttachmentTargetList(contribution.attachment_targets, "ContributionRecord attachment_targets");
+  validateAttachmentTargetList(review.accepted_attachment_targets, "HumanReviewDecision accepted_attachment_targets");
+
   for (const aiNote of fixture.ai_reader_notes ?? []) {
     if ("revision_event_id" in aiNote || "creates_revision_event" in aiNote) {
       errors.push(`AIReaderNote ${aiNote.ai_reader_note_id} attempts to mutate the public record.`);
     }
+
+    validateAttachmentTargetList(
+      aiNote.proposed_attachment_targets,
+      `AIReaderNote ${aiNote.ai_reader_note_id} proposed_attachment_targets`,
+    );
+  }
+
+  for (const auditEvent of fixture.audit_events ?? []) {
+    requireMapEntry(actors, auditEvent.actor_id, `AuditEvent ${auditEvent.audit_event_id} actor_id`, errors);
+    requireRegisteredObject(
+      publicObjects,
+      auditEvent.object_id,
+      `AuditEvent ${auditEvent.audit_event_id} object_id`,
+      errors,
+      auditEvent.object_type,
+    );
   }
 
   const serializedPublicFixture = JSON.stringify(fixture);
