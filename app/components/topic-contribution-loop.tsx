@@ -200,6 +200,7 @@ const contributionAttachmentFilterLabels: Record<ContributionAttachmentFilter, s
 const contributionOriginFilterLabels: Record<ContributionOriginFilter, string> = {
   "all-origins": "All origins",
   "human-submitted": getContributionOriginLabel("human-submitted"),
+  "founder-maintainer": getContributionOriginLabel("founder-maintainer"),
   "founder-submitted": getContributionOriginLabel("founder-submitted"),
   "ai-origin": getContributionOriginLabel("ai-origin"),
   "seed-example": getContributionOriginLabel("seed-example"),
@@ -252,6 +253,7 @@ function normalizeContributionOriginFilter(
   if (
     value === "all-origins" ||
     value === "human-submitted" ||
+    value === "founder-maintainer" ||
     value === "founder-submitted" ||
     value === "ai-origin" ||
     value === "seed-example"
@@ -608,6 +610,8 @@ function getSubmissionRecordType(contribution: PublicContribution) {
       ? "Prototype example"
       : origin === "ai-origin"
         ? "AI-origin contribution"
+        : origin === "founder-maintainer"
+          ? "Founder-maintainer revision"
         : origin === "founder-submitted"
           ? "Founder-submitted contribution"
           : "Public submission";
@@ -632,6 +636,10 @@ function getAdminReviewNote(contribution: PublicContribution) {
 
   if (origin === "founder-submitted") {
     return "Founder-submitted record. It is non-prototype evidence or review work, but it is not counted as outside public usage.";
+  }
+
+  if (origin === "founder-maintainer") {
+    return "This is a founder-maintainer revision, not an outside public submission. It must pass AI-assisted sorting and human incorporation before it can move the visible synthesis.";
   }
 
   if (contribution.evidenceDocument) {
@@ -1268,6 +1276,9 @@ export default function TopicContributionLoop({
       ).length,
       "ai-origin": attachmentFilteredContributions.filter(
         (item) => getContributionOrigin(item) === "ai-origin",
+      ).length,
+      "founder-maintainer": attachmentFilteredContributions.filter(
+        (item) => getContributionOrigin(item) === "founder-maintainer",
       ).length,
       "founder-submitted": attachmentFilteredContributions.filter(
         (item) => getContributionOrigin(item) === "founder-submitted",
@@ -3260,6 +3271,20 @@ export default function TopicContributionLoop({
                         <div className={styles.reviewCopy}>
                           <span className={styles.sectionLabel}>Decision rationale</span>
                           <p>{item.review.decisionReason}</p>
+                        </div>
+                      ) : null}
+
+                      {item.review.revisionSummary ? (
+                        <div className={styles.reviewCopy}>
+                          <span className={styles.sectionLabel}>Revision summary</span>
+                          <p>{item.review.revisionSummary}</p>
+                        </div>
+                      ) : null}
+
+                      {item.review.synthesisUpdate ? (
+                        <div className={styles.reviewCopy}>
+                          <span className={styles.sectionLabel}>Visible synthesis update</span>
+                          <p>{item.review.synthesisUpdate}</p>
                         </div>
                       ) : null}
 

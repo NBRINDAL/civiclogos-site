@@ -99,6 +99,8 @@ export type ContributionReview = {
   publicRecordNote?: string;
   decisionReason?: string;
   reviewerNote?: string;
+  revisionSummary?: string;
+  synthesisUpdate?: string;
   reviewedAt?: string;
 };
 
@@ -139,6 +141,8 @@ export type ReviewContributionInput = {
   publicRecordNote?: string;
   decisionReason?: string;
   reviewerNote?: string;
+  revisionSummary?: string;
+  synthesisUpdate?: string;
 };
 
 export type PublicContribution = Omit<Contribution, "author" | "referralSource"> & {

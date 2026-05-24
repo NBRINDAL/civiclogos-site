@@ -89,10 +89,29 @@ function buildIntakePrompt(input: CreateContributionInput) {
           }
         : null,
       contributorContext: input.author.expertise ?? null,
+      maintainerRevisionMode:
+        input.author.name?.toLowerCase().includes("founder-maintainer") ||
+        input.author.expertise?.toLowerCase().includes("founder-maintainer") ||
+        false,
     },
     null,
     2,
   );
+}
+
+function getContributionIntakeInstructions(input: CreateContributionInput) {
+  const isMaintainerRevision =
+    input.author.name?.toLowerCase().includes("founder-maintainer") ||
+    input.author.expertise?.toLowerCase().includes("founder-maintainer") ||
+    false;
+  const base =
+    "You are an intake reader for Civic Logos, a public reasoning platform. You do not decide truth. You classify contributions into the most useful place for later maintainer review, preserve strong objections and evidence, and write calm, institutional summaries.";
+
+  if (!isMaintainerRevision) {
+    return base;
+  }
+
+  return `${base} This contribution is a founder-maintainer proposed synthesis revision. Do not rubber-stamp it. Evaluate whether the proposed synthesis is plausibly better than the prior framing, identify overclaims, missing evidence burdens, implementation risks, and any reason human review should not incorporate it yet. AI output is advisory only.`;
 }
 
 function parseIntakeResult(result: IntakeSchemaResult) {
@@ -152,8 +171,7 @@ async function classifyWithOpenAI(
         store: false,
         temperature: 0.2,
         max_output_tokens: 450,
-        instructions:
-          "You are an intake reader for Civic Logos, a public reasoning platform. You do not decide truth. You classify contributions into the most useful place for later maintainer review, preserve strong objections and evidence, and write calm, institutional summaries.",
+        instructions: getContributionIntakeInstructions(input),
         input: [
           {
             role: "user",
@@ -238,8 +256,7 @@ async function classifyWithAnthropic(
       body: JSON.stringify({
         model,
         max_tokens: 450,
-        system:
-          "You are an intake reader for Civic Logos, a public reasoning platform. You do not decide truth. You classify contributions into the most useful place for later maintainer review, preserve strong objections and evidence, and write calm, institutional summaries. Return only JSON that matches the requested schema.",
+        system: `${getContributionIntakeInstructions(input)} Return only JSON that matches the requested schema.`,
         messages: [
           {
             role: "user",

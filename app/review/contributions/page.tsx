@@ -14,6 +14,7 @@ import {
 import {
   getContributionOrigin,
   getContributionOriginLabel,
+  isFounderMaintainerContribution,
   isFounderSubmittedContribution,
   isOutsidePublicContribution,
 } from "@/app/lib/contribution-origin";
@@ -24,7 +25,10 @@ import {
   reviewTargetKindOptions,
   type DebateLane,
 } from "@/app/lib/reasoning-types";
-import { updateContributionReview } from "./actions";
+import {
+  createFounderMaintainerRevision,
+  updateContributionReview,
+} from "./actions";
 import styles from "./page.module.css";
 
 export const dynamic = "force-dynamic";
@@ -312,6 +316,7 @@ export default async function ContributionReviewPage({
     rejected: sortedContributions.filter((item) => item.status === "rejected").length,
     reviewable: sortedContributions.filter(isReviewableContribution).length,
     publicSubmissions: publicSubmissions.length,
+    founderMaintainer: sortedContributions.filter(isFounderMaintainerContribution).length,
     founderSubmitted: sortedContributions.filter(isFounderSubmittedContribution).length,
     prototypeExamples: sortedContributions.filter((item) => item.isSeedExample).length,
     aiOrigin: sortedContributions.filter((item) => item.draftSource).length,
@@ -368,6 +373,11 @@ export default async function ContributionReviewPage({
               <span>Founder-submitted</span>
               <strong>{summary.founderSubmitted}</strong>
               <p>Non-prototype founder records used for evidence and review work without implying outside traction.</p>
+            </article>
+            <article className={styles.provenanceCard}>
+              <span>Founder-maintainer</span>
+              <strong>{summary.founderMaintainer}</strong>
+              <p>Maintainer-authored revision proposals that still require AI-assisted sorting and human incorporation.</p>
             </article>
             <article className={styles.provenanceCard}>
               <span>Needs human review</span>
@@ -475,8 +485,8 @@ export default async function ContributionReviewPage({
                 When someone submits a real objection, evidence source, or correction,
                 it will appear with its lane, AI sorting, suggested attachment, and
                 human-review status. Prototype examples stay labeled separately so
-                Civic Logos never has to pretend seeded or founder-submitted
-                records are outside public use.
+                Civic Logos never has to pretend seeded, founder-maintainer,
+                or founder-submitted records are outside public use.
               </p>
               <div className={styles.emptyActionGrid}>
                 <Link
@@ -521,6 +531,63 @@ export default async function ContributionReviewPage({
                   Open topic card
                 </Link>
               </div>
+
+              <form
+                action={createFounderMaintainerRevision}
+                className={styles.reviewForm}
+              >
+                <input name="roomSlug" type="hidden" value={scopedRoomSlug} />
+                <input name="topicId" type="hidden" value={scopedTopicCard.id} />
+                <input name="lane" type="hidden" value="correction" />
+                <span className={styles.eyebrow}>Founder-maintainer revision path</span>
+                <h3>Propose a synthesis movement for AI-assisted review.</h3>
+                  <p className={styles.prefillNote}>
+                    This creates a founder-maintainer record in the ledger. It does
+                    not change the visible synthesis yet. GPT/Claude-assisted
+                    sorting reads the proposal first, then a human maintainer can
+                    incorporate it as an actual card change. If no AI reader
+                    completes, incorporation is blocked and the record stays in
+                    review.
+                  </p>
+
+                <label className={styles.field}>
+                  <span>Revision title</span>
+                  <input
+                    name="title"
+                    placeholder="Founder synthesis narrowed around verified savings and implementation burden"
+                    required
+                  />
+                </label>
+
+                <label className={styles.field}>
+                  <span>Proposed visible synthesis</span>
+                  <textarea
+                    name="proposedSynthesis"
+                    placeholder="Type the synthesis update you want the AI readers to pressure-test before incorporation."
+                    required
+                  />
+                </label>
+
+                <label className={styles.field}>
+                  <span>Revision summary</span>
+                  <textarea
+                    name="revisionSummary"
+                    placeholder="What would this change, narrow, remove, or make more explicit?"
+                  />
+                </label>
+
+                <label className={styles.field}>
+                  <span>Validation request for AI readers</span>
+                  <textarea
+                    name="reviewerNote"
+                    placeholder="Ask the readers what to test: overclaiming, missing evidence, stakeholder risk, implementation burden, or economic assumptions."
+                  />
+                </label>
+
+                <button className={styles.submitButton} type="submit">
+                  Create proposed revision record
+                </button>
+              </form>
 
               <div className={styles.topicSnapshotGrid}>
                 <article className={styles.topicSnapshotCard}>
@@ -820,6 +887,13 @@ export default async function ContributionReviewPage({
                       learning only, not contribution ranking or scoring.
                     </p>
                   ) : null}
+                  {origin === "founder-maintainer" ? (
+                    <p>
+                      This is a founder-maintainer revision, not an outside public
+                      submission. It can only move the visible synthesis after
+                      AI-assisted sorting and a human incorporated decision.
+                    </p>
+                  ) : null}
                   {item.evidenceSource?.url ? (
                     <p>
                       Source:{" "}
@@ -904,7 +978,7 @@ export default async function ContributionReviewPage({
                       ) : null}
                       {typeof item.review.changedSynthesis === "boolean" ? (
                         <p>
-                          Proposed synthesis change:{" "}
+                          Human synthesis-change decision:{" "}
                           {item.review.changedSynthesis ? "yes" : "no"}
                           {" "}· Actual card change: {getActualCardChangeLabel(item)}
                         </p>
@@ -915,6 +989,12 @@ export default async function ContributionReviewPage({
                         </p>
                       ) : null}
                       {item.review.decisionReason ? <p>{item.review.decisionReason}</p> : null}
+                      {item.review.revisionSummary ? (
+                        <p>Revision summary: {item.review.revisionSummary}</p>
+                      ) : null}
+                      {item.review.synthesisUpdate ? (
+                        <p>Visible synthesis update: {item.review.synthesisUpdate}</p>
+                      ) : null}
                       {item.review.reviewerNote ? <p>{item.review.reviewerNote}</p> : null}
                     </div>
                   ) : null}
@@ -999,7 +1079,7 @@ export default async function ContributionReviewPage({
                     </label>
 
                     <label className={styles.field}>
-                      <span>Proposed card change?</span>
+                      <span>Actual card change?</span>
                       <select
                         defaultValue={
                           item.review?.changedSynthesis === true
@@ -1046,6 +1126,24 @@ export default async function ContributionReviewPage({
                       defaultValue={item.review?.decisionReason ?? ""}
                       name="decisionReason"
                       placeholder="Internal maintainer rationale for the review decision."
+                    />
+                  </label>
+
+                  <label className={styles.field}>
+                    <span>Revision summary</span>
+                    <textarea
+                      defaultValue={item.review?.revisionSummary ?? ""}
+                      name="revisionSummary"
+                      placeholder="If this record changes the card, summarize what moved and why."
+                    />
+                  </label>
+
+                  <label className={styles.field}>
+                    <span>Visible synthesis update</span>
+                    <textarea
+                      defaultValue={item.review?.synthesisUpdate ?? ""}
+                      name="synthesisUpdate"
+                      placeholder="Only used when status is incorporated and actual card change is yes."
                     />
                   </label>
 

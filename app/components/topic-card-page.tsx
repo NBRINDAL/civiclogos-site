@@ -244,6 +244,10 @@ function getPilotInquiryRecordContext({
       return "founder-submitted record";
     }
 
+    if (origin === "founder-maintainer") {
+      return "founder-maintainer revision";
+    }
+
     return "prototype example";
   };
 
@@ -308,6 +312,9 @@ function getPilotInquiryRecordContext({
     const founderSubmittedCount = liveContributions.filter(
       (item) => getContributionOrigin(item) === "founder-submitted",
     ).length;
+    const founderMaintainerCount = liveContributions.filter(
+      (item) => getContributionOrigin(item) === "founder-maintainer",
+    ).length;
     const aiOriginCount = liveContributions.filter(
       (item) => getContributionOrigin(item) === "ai-origin",
     ).length;
@@ -333,6 +340,10 @@ function getPilotInquiryRecordContext({
         href: getContributionLedgerHref({ origin: "founder-submitted" }),
       },
       {
+        label: `Founder-maintainer revisions · ${founderMaintainerCount}`,
+        href: getContributionLedgerHref({ origin: "founder-maintainer" }),
+      },
+      {
         label: `AI-origin record · ${aiOriginCount}`,
         href: getContributionLedgerHref({ origin: "ai-origin" }),
       },
@@ -342,7 +353,7 @@ function getPilotInquiryRecordContext({
     );
     let publicUptakeLabel = "No public uptake yet";
     let publicUptakeNote =
-      "The visible healthcare record is still waiting for outside public uptake; prototype, founder-submitted, and AI-origin records stay labeled separately.";
+      "The visible healthcare record is still waiting for outside public uptake; prototype, founder-submitted, founder-maintainer, and AI-origin records stay labeled separately.";
     let publicUptakeContribution: PublicContribution | null = null;
 
     if (origin === "human-submitted" && contribution.review?.reviewedAt) {
@@ -366,6 +377,16 @@ function getPilotInquiryRecordContext({
       publicUptakeLabel = "Founder-submitted record is awaiting review";
       publicUptakeNote =
         "This visible record can improve the proof object after human review, but it does not imply outside public participation.";
+      publicUptakeContribution = contribution;
+    } else if (origin === "founder-maintainer" && contribution.review?.reviewedAt) {
+      publicUptakeLabel = "Founder-maintainer revision is visible";
+      publicUptakeNote =
+        "This is a founder-maintainer revision, not an outside public submission. It can move the card only after AI-assisted sorting and human incorporation.";
+      publicUptakeContribution = contribution;
+    } else if (origin === "founder-maintainer") {
+      publicUptakeLabel = "Founder-maintainer revision is awaiting review";
+      publicUptakeNote =
+        "This proposed maintainer revision is waiting for AI-assisted sorting and human incorporation before it can change the visible synthesis.";
       publicUptakeContribution = contribution;
     } else if (origin === "ai-origin" && contribution.review?.reviewedAt) {
       publicUptakeLabel = "Reviewed AI-origin record is visible";
@@ -403,7 +424,7 @@ function getPilotInquiryRecordContext({
         sliceLabel,
         pilotGrounding: hasReviewedNonSeedRecord
           ? "A non-prototype record is now visible, but this prototype example is still the strongest reviewed live object currently carrying the pilot handoff."
-          : "The strongest visible pilot-facing record is still a prototype example because no outside public, founder-submitted, or AI-origin contribution has yet been reviewed into a stronger live object.",
+          : "The strongest visible pilot-facing record is still a prototype example because no outside public, founder-submitted, founder-maintainer, or AI-origin contribution has yet been reviewed into a stronger live object.",
         publicUptakeLabel,
         publicUptakeNote,
         publicUptakeContribution,
@@ -1859,6 +1880,9 @@ export default async function TopicCardPage({
   const founderSubmittedContributions = liveContributions.filter(
     (item) => getContributionOrigin(item) === "founder-submitted",
   );
+  const founderMaintainerContributions = liveContributions.filter(
+    (item) => getContributionOrigin(item) === "founder-maintainer",
+  );
   const prototypeExampleContributions = liveContributions.filter(
     (item) => getContributionOrigin(item) === "seed-example",
   );
@@ -1913,8 +1937,28 @@ export default async function TopicCardPage({
   const changedCardContributions = liveContributions.filter(
     (item) => isActualCardChange(item),
   );
+  const appliedSynthesisRevision =
+    [...changedCardContributions]
+      .filter(
+        (item) =>
+          getContributionOrigin(item) === "founder-maintainer" &&
+          item.review?.synthesisUpdate,
+      )
+      .sort(
+        (left, right) =>
+          new Date(right.review?.reviewedAt ?? right.updatedAt).getTime() -
+          new Date(left.review?.reviewedAt ?? left.updatedAt).getTime(),
+      )[0] ?? null;
+  const visibleSynthesis =
+    appliedSynthesisRevision?.review?.synthesisUpdate ?? card.thesis;
   const originCounts = (
-    ["human-submitted", "founder-submitted", "ai-origin", "seed-example"] as const
+    [
+      "human-submitted",
+      "founder-maintainer",
+      "founder-submitted",
+      "ai-origin",
+      "seed-example",
+    ] as const
   )
     .map((origin) => ({
       origin,
@@ -2581,7 +2625,17 @@ export default async function TopicCardPage({
               <span className={styles.eyebrow}>Working topic card</span>
               <h1>{card.title}</h1>
               <p className={styles.subtitle}>{card.subtitle}</p>
-              <p className={styles.thesis}>{card.thesis}</p>
+              <p className={styles.thesis}>{visibleSynthesis}</p>
+              {appliedSynthesisRevision ? (
+                <p className={styles.viewToggleNote}>
+                  Current synthesis is attached to{" "}
+                  <Link href={getExactContributionLedgerHref(appliedSynthesisRevision)}>
+                    {appliedSynthesisRevision.title}
+                  </Link>
+                  . This is a founder-maintainer revision, not an outside
+                  public submission.
+                </p>
+              ) : null}
 
               <div className={styles.viewToggle}>
                 <Link className={styles.viewToggleActive} href={readerViewHref}>
@@ -2620,6 +2674,10 @@ export default async function TopicCardPage({
                 <div>
                   <span>Outside submissions</span>
                   <strong>{publicSubmissionContributions.length}</strong>
+                </div>
+                <div>
+                  <span>Founder-maintainer</span>
+                  <strong>{founderMaintainerContributions.length}</strong>
                 </div>
                 <div>
                   <span>Founder-submitted</span>
@@ -2701,7 +2759,16 @@ export default async function TopicCardPage({
             <article className={styles.panel}>
               <span className={styles.eyebrow}>Reader view</span>
               <h2>Start with the current visible synthesis.</h2>
-              <p>{card.thesis}</p>
+              <p>{visibleSynthesis}</p>
+              {appliedSynthesisRevision ? (
+                <p className={styles.viewToggleNote}>
+                  This synthesis is active because human review incorporated a
+                  founder-maintainer revision after AI-assisted sorting.{" "}
+                  <Link href={getExactContributionLedgerHref(appliedSynthesisRevision)}>
+                    Inspect the source record.
+                  </Link>
+                </p>
+              ) : null}
 
               <div className={styles.copyBlock}>
                 <h3>Why the card currently reads this way</h3>
@@ -2731,6 +2798,8 @@ export default async function TopicCardPage({
                     <h3>
                       {publicSubmissionContributions.length
                         ? "Outside public submissions are now visible on this card."
+                        : founderMaintainerContributions.length
+                          ? "A founder-maintainer revision is visible, but outside public review is still the next proof step."
                         : founderSubmittedContributions.length
                           ? "A founder-submitted record is visible, but outside public review is still the next proof step."
                         : "This card is still waiting for its first outside public submission."}
@@ -2739,7 +2808,15 @@ export default async function TopicCardPage({
                       {publicSubmissionContributions.length
                         ? `${publicSubmissionContributions.length} outside submission${
                             publicSubmissionContributions.length === 1 ? "" : "s"
-                          } visible. Prototype examples, founder-submitted records, and AI-origin records remain labeled so the ledger does not pretend to have more public uptake than it has.`
+                          } visible. Prototype examples, founder-maintainer revisions, founder-submitted records, and AI-origin records remain labeled so the ledger does not pretend to have more public uptake than it has.`
+                        : founderMaintainerContributions.length
+                          ? `${founderMaintainerContributions.length} founder-maintainer revision${
+                              founderMaintainerContributions.length === 1 ? "" : "s"
+                            }, ${founderSubmittedContributions.length} founder-submitted record${
+                              founderSubmittedContributions.length === 1 ? "" : "s"
+                            }, and ${assistedRecordContributions.length} AI-origin record${
+                              assistedRecordContributions.length === 1 ? "" : "s"
+                            } are visible. Maintainer revisions can move the card only after AI-assisted sorting and human incorporation; the next useful move is still one outside objection, evidence source, or correction.`
                         : founderSubmittedContributions.length
                           ? `${founderSubmittedContributions.length} founder-submitted record${
                               founderSubmittedContributions.length === 1 ? "" : "s"
@@ -2748,6 +2825,8 @@ export default async function TopicCardPage({
                             } are visible. The next useful move is still one outside objection, evidence source, or correction that can enter human review.`
                         : `${prototypeExampleContributions.length} prototype example${
                             prototypeExampleContributions.length === 1 ? "" : "s"
+                          }, ${founderMaintainerContributions.length} founder-maintainer revision${
+                            founderMaintainerContributions.length === 1 ? "" : "s"
                           }, ${founderSubmittedContributions.length} founder-submitted record${
                             founderSubmittedContributions.length === 1 ? "" : "s"
                           }, and ${assistedRecordContributions.length} AI-origin record${
@@ -3032,7 +3111,7 @@ export default async function TopicCardPage({
             <span className={styles.eyebrow}>Working topic card</span>
             <h1>{card.title}</h1>
             <p className={styles.subtitle}>{card.subtitle}</p>
-            <p className={styles.thesis}>{card.thesis}</p>
+            <p className={styles.thesis}>{visibleSynthesis}</p>
 
             <div className={styles.viewToggle}>
               <Link className={styles.viewToggleLink} href={readerViewHref}>
@@ -5160,6 +5239,18 @@ export default async function TopicCardPage({
                         item.review?.publicRecordNote,
                       )}
                     </p>
+                    {item.review?.revisionSummary ? (
+                      <p>
+                        <strong>Revision summary:</strong>{" "}
+                        {item.review.revisionSummary}
+                      </p>
+                    ) : null}
+                    {item.review?.synthesisUpdate ? (
+                      <p>
+                        <strong>Visible synthesis update:</strong>{" "}
+                        {item.review.synthesisUpdate}
+                      </p>
+                    ) : null}
                     <ContributionRecordContext contribution={item} recordView="changed-card" />
                     <ContributionAiOriginContext
                       contribution={item}
@@ -5170,9 +5261,10 @@ export default async function TopicCardPage({
               </div>
             ) : (
               <p>
-                No reviewed outside contribution has been marked as changing this
+                No reviewed contribution record has been marked as changing this
                 card yet. When that happens, the change should appear here as part
-                of the visible public revision trail.
+                of the visible public revision trail without pretending it came
+                from outside public uptake.
               </p>
             )}
           </div>

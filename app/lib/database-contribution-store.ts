@@ -362,6 +362,8 @@ export function createDatabaseContributionStore(): DatabaseContributionStore {
         publicRecordNote: input.publicRecordNote,
         decisionReason: input.decisionReason,
         reviewerNote: input.reviewerNote,
+        revisionSummary: input.revisionSummary,
+        synthesisUpdate: input.synthesisUpdate,
         reviewedAt,
       };
 

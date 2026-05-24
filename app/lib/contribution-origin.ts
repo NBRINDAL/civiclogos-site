@@ -8,12 +8,33 @@ type ContributionOriginInput = {
 
 export type ContributionOrigin =
   | "human-submitted"
+  | "founder-maintainer"
   | "founder-submitted"
   | "ai-origin"
   | "seed-example";
 
-export function isFounderSubmittedContribution(contribution: ContributionOriginInput) {
+export function isFounderMaintainerContribution(
+  contribution: ContributionOriginInput,
+) {
   if (contribution.isSeedExample || contribution.draftSource) {
+    return false;
+  }
+
+  const authorName = contribution.author.name?.toLowerCase() ?? "";
+  const authorExpertise = contribution.author.expertise?.toLowerCase() ?? "";
+
+  return (
+    authorName.includes("civic logos founder-maintainer") ||
+    authorExpertise.includes("founder-maintainer")
+  );
+}
+
+export function isFounderSubmittedContribution(contribution: ContributionOriginInput) {
+  if (
+    contribution.isSeedExample ||
+    contribution.draftSource ||
+    isFounderMaintainerContribution(contribution)
+  ) {
     return false;
   }
 
@@ -37,6 +58,10 @@ export function getContributionOrigin(
     return "ai-origin";
   }
 
+  if (isFounderMaintainerContribution(contribution)) {
+    return "founder-maintainer";
+  }
+
   if (isFounderSubmittedContribution(contribution)) {
     return "founder-submitted";
   }
@@ -48,6 +73,8 @@ export function getContributionOriginLabel(origin: ContributionOrigin) {
   switch (origin) {
     case "ai-origin":
       return "AI-origin";
+    case "founder-maintainer":
+      return "Founder-maintainer";
     case "founder-submitted":
       return "Founder-submitted";
     case "seed-example":
