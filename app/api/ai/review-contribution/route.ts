@@ -1,6 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getRoomTopicCard } from "@/app/lib/civic-logos";
-import { getContributionById } from "@/app/lib/contribution-store";
+import { revalidatePath } from "next/cache";
+import {
+  getRoomHref,
+  getRoomTopicCard,
+  getRoomTopicHref,
+} from "@/app/lib/civic-logos";
+import {
+  getContributionById,
+  updateContributionEvidenceDocument,
+} from "@/app/lib/contribution-store";
+import { refreshEvidenceDocumentExtraction } from "@/app/lib/evidence-document-store";
 import {
   getAnthropicProviderConfig,
   getOpenAIProviderConfig,
@@ -106,6 +115,33 @@ function buildReviewContext({
     null,
     2,
   );
+}
+
+async function refreshReadableEvidenceIfNeeded(
+  contribution: NonNullable<Awaited<ReturnType<typeof getContributionById>>>,
+) {
+  const evidenceDocument = contribution.evidenceDocument;
+
+  if (!evidenceDocument || evidenceDocument.extraction.status === "completed") {
+    return contribution;
+  }
+
+  const refreshedDocument = await refreshEvidenceDocumentExtraction(evidenceDocument.id);
+
+  if (!refreshedDocument) {
+    return contribution;
+  }
+
+  const updatedContribution = await updateContributionEvidenceDocument(
+    contribution.id,
+    refreshedDocument,
+  );
+
+  revalidatePath("/review/contributions");
+  revalidatePath(getRoomHref(contribution.roomSlug));
+  revalidatePath(getRoomTopicHref(contribution.roomSlug, contribution.topicId));
+
+  return updatedContribution ?? { ...contribution, evidenceDocument: refreshedDocument };
 }
 
 function getReviewInstructions() {
@@ -337,7 +373,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Choose a valid AI reader." }, { status: 400 });
   }
 
-  const contribution = await getContributionById(contributionId);
+  let contribution = await getContributionById(contributionId);
 
   if (!contribution) {
     return NextResponse.json({ error: "Contribution not found." }, { status: 404 });
@@ -348,6 +384,8 @@ export async function POST(request: NextRequest) {
   if (!topic) {
     return NextResponse.json({ error: "Topic card not found." }, { status: 404 });
   }
+
+  contribution = await refreshReadableEvidenceIfNeeded(contribution);
 
   const context = buildReviewContext({
     contribution,
