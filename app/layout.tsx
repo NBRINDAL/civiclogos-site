@@ -17,6 +17,15 @@ export const metadata: Metadata = {
   title: "Civic Logos | Where civilization thinks in public.",
   description:
     "A public reasoning platform for living ideas, built to structure disagreement, improve public memory, and make ideas clearer than feeds can.",
+  icons: {
+    icon: [
+      {
+        url: "/icon.svg",
+        type: "image/svg+xml",
+      },
+    ],
+    shortcut: "/icon.svg",
+  },
 };
 
 export default function RootLayout({
