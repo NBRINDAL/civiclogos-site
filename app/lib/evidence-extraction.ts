@@ -37,7 +37,53 @@ function isPdf(fileName: string, mimeType: string) {
   return mimeType === "application/pdf" || fileName.toLowerCase().endsWith(".pdf");
 }
 
-async function extractPdfText(bytes: Buffer) {
+function normalizeDocumentBytes(bytes: Buffer | Uint8Array | ArrayBuffer | string) {
+  if (Buffer.isBuffer(bytes)) {
+    return bytes;
+  }
+
+  if (bytes instanceof Uint8Array) {
+    return Buffer.from(bytes);
+  }
+
+  if (bytes instanceof ArrayBuffer) {
+    return Buffer.from(bytes);
+  }
+
+  const value = bytes.trim();
+
+  if (/^\\x[0-9a-f]+$/i.test(value)) {
+    return Buffer.from(value.slice(2), "hex");
+  }
+
+  if (/^[0-9a-f]+$/i.test(value) && value.length % 2 === 0) {
+    return Buffer.from(value, "hex");
+  }
+
+  return Buffer.from(value, "binary");
+}
+
+async function extractPdfTextWithPdfParse(bytes: Buffer) {
+  const { PDFParse } = await import("pdf-parse");
+  const parser = new PDFParse({ data: bytes });
+
+  try {
+    const result = await parser.getText();
+
+    return {
+      text: result.text ?? "",
+      pageCount: result.total ?? result.pages?.length,
+    };
+  } finally {
+    try {
+      await parser.destroy();
+    } catch (error) {
+      console.warn("PDF parser cleanup failed", error);
+    }
+  }
+}
+
+async function extractPdfTextWithPdfJs(bytes: Buffer) {
   const pdfjs = await import("pdfjs-dist/legacy/build/pdf.mjs");
   const document = await pdfjs.getDocument({
     data: new Uint8Array(bytes),
@@ -68,10 +114,31 @@ async function extractPdfText(bytes: Buffer) {
   }
 }
 
+async function extractPdfText(bytes: Buffer | Uint8Array | ArrayBuffer | string) {
+  const normalizedBytes = normalizeDocumentBytes(bytes);
+  const errors: string[] = [];
+
+  try {
+    return await extractPdfTextWithPdfParse(normalizedBytes);
+  } catch (error) {
+    console.error("PDF extraction failed with pdf-parse", error);
+    errors.push(error instanceof Error ? error.message : String(error));
+  }
+
+  try {
+    return await extractPdfTextWithPdfJs(normalizedBytes);
+  } catch (error) {
+    console.error("PDF extraction failed with PDF.js", error);
+    errors.push(error instanceof Error ? error.message : String(error));
+  }
+
+  throw new Error(`PDF extraction failed in all parsers: ${errors.join(" | ")}`);
+}
+
 export async function extractEvidenceDocument(
   fileName: string,
   mimeType: string,
-  bytes: Buffer,
+  bytes: Buffer | Uint8Array | ArrayBuffer | string,
 ): Promise<EvidenceExtraction> {
   if (isPdf(fileName, mimeType)) {
     try {
