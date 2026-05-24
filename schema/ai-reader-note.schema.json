@@ -1,0 +1,93 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://civiclogos.com/schema/ai-reader-note.schema.json",
+  "title": "AIReaderNote",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "ai_reader_note_id",
+    "model_provider",
+    "model_name",
+    "model_version_if_available",
+    "reader_role",
+    "prompt_category",
+    "input_scope",
+    "used_external_sources",
+    "source_list",
+    "output_summary",
+    "proposed_lane",
+    "proposed_attachment_targets",
+    "proposed_review_status",
+    "confidence",
+    "limitations",
+    "human_decision_status",
+    "created_at"
+  ],
+  "properties": {
+    "ai_reader_note_id": { "type": "string", "minLength": 1 },
+    "model_provider": { "type": "string", "minLength": 1 },
+    "model_name": { "type": "string", "minLength": 1 },
+    "model_version_if_available": { "type": ["string", "null"] },
+    "reader_role": {
+      "type": "string",
+      "enum": ["structurer", "critic", "evidence_reader", "synthesis_checker", "routing_reader", "other"]
+    },
+    "prompt_category": {
+      "type": "string",
+      "enum": ["classification", "critique", "evidence_read", "synthesis_review", "routing", "other"]
+    },
+    "input_scope": { "type": "string", "minLength": 1 },
+    "used_external_sources": { "type": "boolean" },
+    "source_list": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "output_summary": { "type": "string", "minLength": 1 },
+    "proposed_lane": {
+      "type": "string",
+      "enum": [
+        "support",
+        "objection",
+        "evidence",
+        "correction",
+        "nuance",
+        "implementation_concern",
+        "economic_assumption_challenge",
+        "alternate_topic",
+        "personal_perspective"
+      ]
+    },
+    "proposed_attachment_targets": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "attachment-target.schema.json" }
+    },
+    "proposed_review_status": {
+      "type": "string",
+      "enum": ["needs_human_review", "accepted", "incorporated", "rejected", "unresolved"]
+    },
+    "confidence": { "type": "number", "minimum": 0, "maximum": 1 },
+    "limitations": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "human_decision_status": {
+      "type": "string",
+      "enum": ["not_reviewed", "accepted", "partially_accepted", "rejected", "superseded"]
+    },
+    "created_at": { "type": "string", "format": "date-time" }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": { "used_external_sources": { "const": true } },
+        "required": ["used_external_sources"]
+      },
+      "then": {
+        "properties": {
+          "source_list": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 1 } }
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://civiclogos.com/schema/attachment-target.schema.json",
+  "title": "AttachmentTarget",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["target_id", "target_type", "target_label", "created_at"],
+  "properties": {
+    "target_id": { "type": "string", "minLength": 1 },
+    "target_type": {
+      "type": "string",
+      "enum": [
+        "claim",
+        "evidence",
+        "objection",
+        "assumption",
+        "open_question",
+        "synthesis",
+        "scorecard",
+        "metric",
+        "stakeholder_map",
+        "revision_history",
+        "none"
+      ]
+    },
+    "target_label": { "type": "string", "minLength": 1 },
+    "referenced_object_id": { "type": ["string", "null"] },
+    "created_at": { "type": "string", "format": "date-time" }
+  }
+}

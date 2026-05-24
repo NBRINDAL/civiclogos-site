@@ -1,0 +1,65 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://civiclogos.com/schema/human-review-decision.schema.json",
+  "title": "HumanReviewDecision",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "review_decision_id",
+    "decision_status",
+    "accepted_lane",
+    "accepted_attachment_targets",
+    "actual_card_change",
+    "public_record_note",
+    "decision_reason",
+    "created_at"
+  ],
+  "properties": {
+    "review_decision_id": { "type": "string", "minLength": 1 },
+    "reviewer_id": { "type": ["string", "null"] },
+    "reviewer_label": { "type": ["string", "null"] },
+    "decision_status": {
+      "type": "string",
+      "enum": ["needs_human_review", "accepted", "incorporated", "rejected", "archived", "superseded"]
+    },
+    "accepted_lane": {
+      "type": "string",
+      "enum": [
+        "support",
+        "objection",
+        "evidence",
+        "correction",
+        "nuance",
+        "implementation_concern",
+        "economic_assumption_challenge",
+        "alternate_topic",
+        "personal_perspective"
+      ]
+    },
+    "accepted_attachment_targets": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "attachment-target.schema.json" }
+    },
+    "actual_card_change": { "type": "boolean" },
+    "public_record_note": { "type": "string", "minLength": 1 },
+    "decision_reason": { "type": "string", "minLength": 1 },
+    "revision_event_id": { "type": ["string", "null"] },
+    "created_at": { "type": "string", "format": "date-time" }
+  },
+  "anyOf": [
+    { "required": ["reviewer_id"] },
+    { "required": ["reviewer_label"] }
+  ],
+  "allOf": [
+    {
+      "if": { "properties": { "actual_card_change": { "const": true } }, "required": ["actual_card_change"] },
+      "then": {
+        "required": ["revision_event_id"],
+        "properties": {
+          "revision_event_id": { "type": "string", "minLength": 1 }
+        }
+      }
+    }
+  ]
+}

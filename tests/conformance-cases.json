@@ -1,0 +1,109 @@
+{
+  "schema_version": "civic-logos-reasoning-ledger-v0.1",
+  "fixture_under_test": "../examples/healthcare-topic-001-founder-maintainer-revision.fixture.json",
+  "cases": [
+    {
+      "id": "state-machine-pending-not-changed",
+      "category": "state_machine",
+      "description": "Pending or needs-human-review records cannot count as changed-card records.",
+      "input": {
+        "state": "needs_human_review",
+        "actual_card_change": true,
+        "revision_event_id": null
+      },
+      "expected_valid": false,
+      "required_error": "actual_card_change cannot be true before incorporation and revision event creation."
+    },
+    {
+      "id": "incorporated-change-requires-revision",
+      "category": "revision_event_integrity",
+      "description": "An incorporated public-record change must link to a RevisionEvent.",
+      "input": {
+        "state": "incorporated",
+        "actual_card_change": true,
+        "revision_event_id": null
+      },
+      "expected_valid": false,
+      "required_error": "actual_card_change true requires revision_event_id."
+    },
+    {
+      "id": "revision-event-reconstructs-before-after",
+      "category": "revision_event_integrity",
+      "description": "A RevisionEvent must link triggering record, human review decision, previous snapshot, new snapshot, changed fields, reason, and unresolved remainder.",
+      "input": {
+        "revision_id": "revision:healthcare-topic-001:founder-narrowing-v0-2",
+        "triggering_record_id": "contribution:healthcare-topic-001:founder-synthesis-narrowing",
+        "review_decision_id": "review:healthcare-topic-001:founder-narrowing",
+        "previous_synthesis_snapshot_id": "snapshot:healthcare-topic-001:v0.1",
+        "new_synthesis_snapshot_id": "snapshot:healthcare-topic-001:v0.2",
+        "changed_fields": ["topic.current_synthesis"],
+        "unresolved_after_revision": ["Transition costs remain unresolved."]
+      },
+      "expected_valid": true
+    },
+    {
+      "id": "ai-reader-note-transparency",
+      "category": "ai_reader_transparency",
+      "description": "AI-reader notes must disclose model/provider, role, input scope, source use, proposal fields, confidence, limitations, and human decision status.",
+      "input": {
+        "model_provider": "OpenAI",
+        "model_name": "configured OpenAI reasoning model",
+        "reader_role": "structurer",
+        "input_scope": "Prior synthesis and proposed revision.",
+        "used_external_sources": false,
+        "source_list": [],
+        "output_summary": "The revision narrows overclaiming.",
+        "proposed_lane": "correction",
+        "proposed_review_status": "incorporated",
+        "confidence": 0.74,
+        "limitations": ["No independent source read."],
+        "human_decision_status": "partially_accepted"
+      },
+      "expected_valid": true
+    },
+    {
+      "id": "ai-reader-note-cannot-mutate-synthesis",
+      "category": "ai_reader_transparency",
+      "description": "AI output cannot create a synthesis snapshot or revision event without human review.",
+      "input": {
+        "ai_reader_note_id": "ai-note:invalid-direct-mutation",
+        "creates_revision_event": true,
+        "human_review_decision_id": null
+      },
+      "expected_valid": false,
+      "required_error": "AIReaderNote cannot directly mutate public synthesis."
+    },
+    {
+      "id": "evidence-url-requires-url",
+      "category": "evidence_object_validation",
+      "description": "URL evidence must include a valid URL.",
+      "input": {
+        "source_type": "url",
+        "url": null
+      },
+      "expected_valid": false,
+      "required_error": "source_type url requires url."
+    },
+    {
+      "id": "public-private-boundary-email-redaction",
+      "category": "public_private_field_boundary",
+      "description": "Public contribution records must not expose private contributor email.",
+      "input": {
+        "public_record_fields": ["title", "body", "lane", "author.email"]
+      },
+      "expected_valid": false,
+      "required_error": "author.email is private follow-up metadata and must not appear in public records."
+    },
+    {
+      "id": "origin-label-preserved",
+      "category": "public_private_field_boundary",
+      "description": "Founder-maintainer, founder-submitted, AI-origin, and prototype records must stay labeled separately from outside public submissions.",
+      "input": {
+        "origin": "founder_maintainer",
+        "counts_as_outside_public_submission": true
+      },
+      "expected_valid": false,
+      "required_error": "founder_maintainer records cannot count as outside public uptake."
+    }
+  ]
+}

@@ -1,0 +1,328 @@
+{
+  "schema_version": "civic-logos-reasoning-ledger-v0.1",
+  "fixture_status": "prototype_example_not_public_usage",
+  "description": "Canonical fixture for a founder-maintainer synthesis narrowing on healthcare topic-001. It models contribution -> AI-reader notes -> human review -> attachment targets -> before/after synthesis snapshots -> revision event.",
+  "actors": [
+    {
+      "actor_id": "actor:civic-logos-founder-maintainer",
+      "actor_type": "founder_maintainer",
+      "public_label": "Civic Logos founder-maintainer",
+      "disclosure_note": "Maintainer-origin protocol fixture; not an outside public submission.",
+      "conflict_disclosures": [
+        "Civic Logos maintainer has project-level authorship interest."
+      ],
+      "created_at": "2026-05-24T00:00:00.000Z"
+    },
+    {
+      "actor_id": "actor:human-reviewer-prototype",
+      "actor_type": "reviewer",
+      "public_label": "Prototype human reviewer",
+      "disclosure_note": "Fixture reviewer used to demonstrate required review fields.",
+      "conflict_disclosures": [
+        "Reviewer is internal to the prototype fixture."
+      ],
+      "created_at": "2026-05-24T00:00:00.000Z"
+    }
+  ],
+  "room_record": {
+    "room_id": "healthcare",
+    "title": "Healthcare",
+    "description": "A Civic Logos room for healthcare administration, access, cost, governance, and implementation questions.",
+    "scope_note": "Fixture is limited to Administrative Simplification and AI-Assisted Triage.",
+    "created_at": "2026-05-24T00:00:00.000Z",
+    "status": "live"
+  },
+  "topic_record": {
+    "topic_id": "topic-001",
+    "room_id": "healthcare",
+    "title": "Administrative Simplification and AI-Assisted Triage",
+    "current_synthesis_snapshot_id": "snapshot:healthcare-topic-001:v0.2",
+    "claim_ids": [
+      "claim:healthcare-topic-001:administrative-simplification"
+    ],
+    "status": "live",
+    "created_at": "2026-05-24T00:00:00.000Z",
+    "updated_at": "2026-05-24T00:10:00.000Z"
+  },
+  "claim_record": {
+    "claim_id": "claim:healthcare-topic-001:administrative-simplification",
+    "topic_id": "topic-001",
+    "title": "Administrative simplification and AI-assisted triage could reduce cost and access friction",
+    "claim_text": "Standardized administrative flows and guarded AI-assisted intake may reduce healthcare cost and access friction if savings, safety thresholds, and implementation burdens are evidenced.",
+    "status": "contested",
+    "current_synthesis_snapshot_id": "snapshot:healthcare-topic-001:v0.2",
+    "attachment_target_ids": [
+      "target:synthesis:healthcare-topic-001",
+      "target:assumption:healthcare-topic-001:savings-capture",
+      "target:open-question:healthcare-topic-001:net-savings"
+    ],
+    "created_at": "2026-05-24T00:00:00.000Z",
+    "updated_at": "2026-05-24T00:10:00.000Z"
+  },
+  "synthesis_snapshots": [
+    {
+      "snapshot_id": "snapshot:healthcare-topic-001:v0.1",
+      "topic_id": "topic-001",
+      "claim_id": "claim:healthcare-topic-001:administrative-simplification",
+      "synthesis_text": "The United States can reduce healthcare cost and access friction by standardizing administrative flows, using AI-assisted intake and triage for low-risk routing, and reinvesting verified savings into primary and preventive care.",
+      "version_label": "v0.1",
+      "created_at": "2026-05-24T00:00:00.000Z",
+      "created_by_actor_id": "actor:civic-logos-founder-maintainer",
+      "source_revision_event_id": null,
+      "content_hash": "sha256:1111111111111111111111111111111111111111111111111111111111111111",
+      "unresolved_items": [
+        "Administrative-cost baselines are not yet attached.",
+        "Transition costs are not yet bounded.",
+        "Savings-capture rules remain unclear.",
+        "Human escalation thresholds for AI-assisted triage remain unresolved."
+      ]
+    },
+    {
+      "snapshot_id": "snapshot:healthcare-topic-001:v0.2",
+      "topic_id": "topic-001",
+      "claim_id": "claim:healthcare-topic-001:administrative-simplification",
+      "synthesis_text": "Administrative simplification and AI-assisted triage remain plausible reform levers, but the card should not treat net savings, access gains, or clinician-time recovery as established until administrative-cost baselines, transition costs, savings-capture rules, human-escalation thresholds, and provider-time impacts are attached to evidence.",
+      "version_label": "v0.2",
+      "created_at": "2026-05-24T00:10:00.000Z",
+      "created_by_actor_id": "actor:human-reviewer-prototype",
+      "source_revision_event_id": "revision:healthcare-topic-001:founder-narrowing-v0-2",
+      "content_hash": "sha256:2222222222222222222222222222222222222222222222222222222222222222",
+      "unresolved_items": [
+        "Administrative-cost baselines must be attached to evidence.",
+        "Transition costs must be estimated before net savings are asserted.",
+        "Savings-capture rules must identify who receives benefit.",
+        "Human-escalation thresholds for AI-assisted triage need review.",
+        "Provider-time impacts remain unverified."
+      ]
+    }
+  ],
+  "attachment_targets": [
+    {
+      "target_id": "target:synthesis:healthcare-topic-001",
+      "target_type": "synthesis",
+      "target_label": "Visible healthcare topic synthesis",
+      "referenced_object_id": "snapshot:healthcare-topic-001:v0.1",
+      "created_at": "2026-05-24T00:02:00.000Z"
+    },
+    {
+      "target_id": "target:assumption:healthcare-topic-001:savings-capture",
+      "target_type": "assumption",
+      "target_label": "Savings capture must be evidenced before net savings are treated as established",
+      "referenced_object_id": null,
+      "created_at": "2026-05-24T00:02:00.000Z"
+    },
+    {
+      "target_id": "target:open-question:healthcare-topic-001:net-savings",
+      "target_type": "open_question",
+      "target_label": "What evidence would establish net savings after transition costs?",
+      "referenced_object_id": null,
+      "created_at": "2026-05-24T00:02:00.000Z"
+    }
+  ],
+  "contribution_record": {
+    "contribution_id": "contribution:healthcare-topic-001:founder-synthesis-narrowing",
+    "topic_id": "topic-001",
+    "origin": "founder_maintainer",
+    "lane": "correction",
+    "state": "incorporated",
+    "title": "Founder synthesis narrowed around verified savings and implementation burden",
+    "body": "The visible synthesis should be narrowed so the card does not treat net savings, access gains, or clinician-time recovery as established before administrative-cost baselines, transition costs, savings-capture rules, human-escalation thresholds, and provider-time impacts are attached to evidence.",
+    "submitted_by_actor_id": "actor:civic-logos-founder-maintainer",
+    "submitted_at": "2026-05-24T00:02:00.000Z",
+    "evidence_object_ids": [],
+    "attachment_targets": [
+      {
+        "target_id": "target:synthesis:healthcare-topic-001",
+        "target_type": "synthesis",
+        "target_label": "Visible healthcare topic synthesis",
+        "referenced_object_id": "snapshot:healthcare-topic-001:v0.1",
+        "created_at": "2026-05-24T00:02:00.000Z"
+      },
+      {
+        "target_id": "target:assumption:healthcare-topic-001:savings-capture",
+        "target_type": "assumption",
+        "target_label": "Savings capture must be evidenced before net savings are treated as established",
+        "referenced_object_id": null,
+        "created_at": "2026-05-24T00:02:00.000Z"
+      },
+      {
+        "target_id": "target:open-question:healthcare-topic-001:net-savings",
+        "target_type": "open_question",
+        "target_label": "What evidence would establish net savings after transition costs?",
+        "referenced_object_id": null,
+        "created_at": "2026-05-24T00:02:00.000Z"
+      }
+    ],
+    "ai_reader_note_ids": [
+      "ai-note:healthcare-topic-001:openai-structurer",
+      "ai-note:healthcare-topic-001:claude-critic"
+    ],
+    "human_review_decision_id": "review:healthcare-topic-001:founder-narrowing",
+    "revision_event_id": "revision:healthcare-topic-001:founder-narrowing-v0-2"
+  },
+  "ai_reader_notes": [
+    {
+      "ai_reader_note_id": "ai-note:healthcare-topic-001:openai-structurer",
+      "model_provider": "OpenAI",
+      "model_name": "configured OpenAI reasoning model",
+      "model_version_if_available": null,
+      "reader_role": "structurer",
+      "prompt_category": "synthesis_review",
+      "input_scope": "Prior synthesis, founder-maintainer proposed revision, existing evidence/assumption/open-question layers.",
+      "used_external_sources": false,
+      "source_list": [],
+      "output_summary": "The proposed narrowing is structurally better because it changes the claim from an established savings assertion to a bounded hypothesis requiring baselines, transition costs, savings-capture rules, escalation thresholds, and provider-time evidence.",
+      "proposed_lane": "correction",
+      "proposed_attachment_targets": [
+        {
+          "target_id": "target:synthesis:healthcare-topic-001",
+          "target_type": "synthesis",
+          "target_label": "Visible healthcare topic synthesis",
+          "referenced_object_id": "snapshot:healthcare-topic-001:v0.1",
+          "created_at": "2026-05-24T00:04:00.000Z"
+        },
+        {
+          "target_id": "target:assumption:healthcare-topic-001:savings-capture",
+          "target_type": "assumption",
+          "target_label": "Savings capture must be evidenced before net savings are treated as established",
+          "referenced_object_id": null,
+          "created_at": "2026-05-24T00:04:00.000Z"
+        }
+      ],
+      "proposed_review_status": "incorporated",
+      "confidence": 0.74,
+      "limitations": [
+        "No independent cost study was read in this fixture.",
+        "The note evaluates claim structure, not final healthcare policy truth."
+      ],
+      "human_decision_status": "partially_accepted",
+      "created_at": "2026-05-24T00:04:00.000Z"
+    },
+    {
+      "ai_reader_note_id": "ai-note:healthcare-topic-001:claude-critic",
+      "model_provider": "Anthropic",
+      "model_name": "configured Claude reasoning model",
+      "model_version_if_available": null,
+      "reader_role": "critic",
+      "prompt_category": "critique",
+      "input_scope": "Prior synthesis, founder-maintainer proposed revision, existing evidence/assumption/open-question layers.",
+      "used_external_sources": false,
+      "source_list": [],
+      "output_summary": "The revision reduces overclaiming, but the ledger should keep unresolved pressure visible: baseline costs, transition costs, safety thresholds, provider-time effects, and the distribution of savings remain open.",
+      "proposed_lane": "correction",
+      "proposed_attachment_targets": [
+        {
+          "target_id": "target:synthesis:healthcare-topic-001",
+          "target_type": "synthesis",
+          "target_label": "Visible healthcare topic synthesis",
+          "referenced_object_id": "snapshot:healthcare-topic-001:v0.1",
+          "created_at": "2026-05-24T00:05:00.000Z"
+        },
+        {
+          "target_id": "target:open-question:healthcare-topic-001:net-savings",
+          "target_type": "open_question",
+          "target_label": "What evidence would establish net savings after transition costs?",
+          "referenced_object_id": null,
+          "created_at": "2026-05-24T00:05:00.000Z"
+        }
+      ],
+      "proposed_review_status": "incorporated",
+      "confidence": 0.71,
+      "limitations": [
+        "No external source verification occurred in this fixture.",
+        "The note should not be treated as a final review decision."
+      ],
+      "human_decision_status": "partially_accepted",
+      "created_at": "2026-05-24T00:05:00.000Z"
+    }
+  ],
+  "human_review_decision": {
+    "review_decision_id": "review:healthcare-topic-001:founder-narrowing",
+    "reviewer_id": "actor:human-reviewer-prototype",
+    "reviewer_label": "Prototype human reviewer",
+    "decision_status": "incorporated",
+    "accepted_lane": "correction",
+    "accepted_attachment_targets": [
+      {
+        "target_id": "target:synthesis:healthcare-topic-001",
+        "target_type": "synthesis",
+        "target_label": "Visible healthcare topic synthesis",
+        "referenced_object_id": "snapshot:healthcare-topic-001:v0.1",
+        "created_at": "2026-05-24T00:09:00.000Z"
+      },
+      {
+        "target_id": "target:assumption:healthcare-topic-001:savings-capture",
+        "target_type": "assumption",
+        "target_label": "Savings capture must be evidenced before net savings are treated as established",
+        "referenced_object_id": null,
+        "created_at": "2026-05-24T00:09:00.000Z"
+      },
+      {
+        "target_id": "target:open-question:healthcare-topic-001:net-savings",
+        "target_type": "open_question",
+        "target_label": "What evidence would establish net savings after transition costs?",
+        "referenced_object_id": null,
+        "created_at": "2026-05-24T00:09:00.000Z"
+      }
+    ],
+    "actual_card_change": true,
+    "public_record_note": "This is a founder-maintainer revision, not an outside public submission. It narrows the visible synthesis after AI-assisted review and human incorporation.",
+    "decision_reason": "Incorporated because the revision makes the topic more falsifiable and prevents overclaiming savings, access gains, or clinician-time recovery before evidence is attached.",
+    "revision_event_id": "revision:healthcare-topic-001:founder-narrowing-v0-2",
+    "created_at": "2026-05-24T00:09:00.000Z"
+  },
+  "revision_event": {
+    "revision_id": "revision:healthcare-topic-001:founder-narrowing-v0-2",
+    "topic_id": "topic-001",
+    "triggering_record_id": "contribution:healthcare-topic-001:founder-synthesis-narrowing",
+    "previous_synthesis_snapshot_id": "snapshot:healthcare-topic-001:v0.1",
+    "new_synthesis_snapshot_id": "snapshot:healthcare-topic-001:v0.2",
+    "changed_fields": [
+      "topic.current_synthesis",
+      "claim.current_synthesis_snapshot_id",
+      "topic.current_synthesis_snapshot_id"
+    ],
+    "reason_for_change": "The prior public synthesis was too likely to read as an established savings/access claim. The new synthesis keeps the reform levers alive while making evidence burdens and implementation risks explicit.",
+    "reviewer_note": "This revision narrows the card to avoid overclaiming. It keeps the topic alive while making the evidence burden and implementation risk more explicit.",
+    "review_decision_id": "review:healthcare-topic-001:founder-narrowing",
+    "origin": "founder_maintainer",
+    "created_at": "2026-05-24T00:10:00.000Z",
+    "content_hash": "sha256:3333333333333333333333333333333333333333333333333333333333333333",
+    "unresolved_after_revision": [
+      "Administrative-cost baselines are still not attached to evidence.",
+      "Transition costs remain unresolved.",
+      "Savings-capture rules remain unresolved.",
+      "Human escalation thresholds for AI-assisted triage remain unresolved.",
+      "Provider-time impacts remain unresolved."
+    ]
+  },
+  "audit_events": [
+    {
+      "audit_event_id": "audit:healthcare-topic-001:founder-narrowing-submitted",
+      "event_type": "contribution_submitted",
+      "actor_id": "actor:civic-logos-founder-maintainer",
+      "object_type": "ContributionRecord",
+      "object_id": "contribution:healthcare-topic-001:founder-synthesis-narrowing",
+      "created_at": "2026-05-24T00:02:00.000Z",
+      "summary": "Founder-maintainer proposed synthesis narrowing entered the ledger."
+    },
+    {
+      "audit_event_id": "audit:healthcare-topic-001:founder-narrowing-reviewed",
+      "event_type": "human_review_decision_created",
+      "actor_id": "actor:human-reviewer-prototype",
+      "object_type": "HumanReviewDecision",
+      "object_id": "review:healthcare-topic-001:founder-narrowing",
+      "created_at": "2026-05-24T00:09:00.000Z",
+      "summary": "Human review incorporated the revision with actual_card_change true."
+    },
+    {
+      "audit_event_id": "audit:healthcare-topic-001:founder-narrowing-revised",
+      "event_type": "revision_event_created",
+      "actor_id": "actor:human-reviewer-prototype",
+      "object_type": "RevisionEvent",
+      "object_id": "revision:healthcare-topic-001:founder-narrowing-v0-2",
+      "created_at": "2026-05-24T00:10:00.000Z",
+      "summary": "Before/after synthesis snapshots were linked through a revision event."
+    }
+  ]
+}

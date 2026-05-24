@@ -10,15 +10,22 @@ export const metadata: Metadata = {
 };
 
 const coreObjects = [
+  "RoomRecord",
+  "TopicRecord",
   "ClaimRecord",
+  "SynthesisSnapshot",
   "ContributionRecord",
   "EvidenceObject",
   "ObjectionRecord",
+  "AssumptionRecord",
+  "OpenQuestionRecord",
   "AIReaderNote",
   "HumanReviewDecision",
   "AttachmentTarget",
   "RevisionEvent",
-  "SynthesisSnapshot",
+  "MetricScore",
+  "AuditEvent",
+  "ActorRecord",
 ] as const;
 
 const workflowSteps = [
@@ -50,6 +57,22 @@ const reuseAudiences = [
 ] as const;
 
 const directLinks = [
+  {
+    label: "Protocol charter",
+    href: "https://github.com/NBRINDAL/civiclogos-site/tree/main/spec",
+  },
+  {
+    label: "JSON schemas",
+    href: "https://github.com/NBRINDAL/civiclogos-site/tree/main/schema",
+  },
+  {
+    label: "Example fixtures",
+    href: "https://github.com/NBRINDAL/civiclogos-site/tree/main/examples",
+  },
+  {
+    label: "Conformance tests",
+    href: "https://github.com/NBRINDAL/civiclogos-site/tree/main/tests",
+  },
   {
     label: "Healthcare ledger",
     href: "/healthcare/topic-001?view=ledger#contribution-record",
@@ -139,11 +162,13 @@ export default function LedgerPage() {
 
           <article className={styles.panel}>
             <span className={styles.eyebrow}>Current status</span>
-            <h2>Visible prototype, proposed extraction.</h2>
+            <h2>Visible prototype, protocol v0.1 in progress.</h2>
             <p>
-              Prototype ledger concepts are visible in the healthcare card now.
-              The open-source extraction and specification are proposed as the
-              next phase, not presented as a completed release.
+              Prototype ledger concepts are visible in the healthcare card now,
+              and protocol v0.1 is being formalized in the repository through
+              specs, schemas, fixtures, and conformance cases. A reference
+              implementation is the next phase; the open-source release is
+              planned, not presented as complete.
             </p>
           </article>
         </section>

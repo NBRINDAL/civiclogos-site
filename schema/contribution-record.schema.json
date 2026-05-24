@@ -1,0 +1,93 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://civiclogos.com/schema/contribution-record.schema.json",
+  "title": "ContributionRecord",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contribution_id",
+    "topic_id",
+    "origin",
+    "lane",
+    "state",
+    "title",
+    "body",
+    "submitted_at",
+    "attachment_targets",
+    "ai_reader_note_ids"
+  ],
+  "properties": {
+    "contribution_id": { "type": "string", "minLength": 1 },
+    "topic_id": { "type": "string", "minLength": 1 },
+    "origin": {
+      "type": "string",
+      "enum": [
+        "outside_public_submission",
+        "founder_submitted",
+        "founder_maintainer",
+        "ai_origin",
+        "prototype_fixture",
+        "institutional_pilot"
+      ]
+    },
+    "lane": {
+      "type": "string",
+      "enum": [
+        "support",
+        "objection",
+        "evidence",
+        "correction",
+        "nuance",
+        "implementation_concern",
+        "economic_assumption_challenge",
+        "alternate_topic",
+        "personal_perspective"
+      ]
+    },
+    "state": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "submitted",
+        "classified",
+        "ai_reviewed",
+        "needs_human_review",
+        "accepted",
+        "incorporated",
+        "rejected",
+        "archived",
+        "superseded"
+      ]
+    },
+    "title": { "type": "string", "minLength": 1 },
+    "body": { "type": "string", "minLength": 1 },
+    "submitted_by_actor_id": { "type": ["string", "null"] },
+    "submitted_at": { "type": "string", "format": "date-time" },
+    "evidence_object_ids": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "default": []
+    },
+    "attachment_targets": {
+      "type": "array",
+      "items": { "$ref": "attachment-target.schema.json" }
+    },
+    "ai_reader_note_ids": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "human_review_decision_id": { "type": ["string", "null"] },
+    "revision_event_id": { "type": ["string", "null"] }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "state": { "const": "incorporated" } }, "required": ["state"] },
+      "then": {
+        "required": ["human_review_decision_id"],
+        "properties": {
+          "human_review_decision_id": { "type": "string", "minLength": 1 }
+        }
+      }
+    }
+  ]
+}
