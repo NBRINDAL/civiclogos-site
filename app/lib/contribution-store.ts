@@ -42,6 +42,7 @@ type ContributionStoreAdapter = {
     id: string,
     input: ReviewContributionInput,
   ) => Promise<Contribution | null>;
+  refreshContributionAiIntake: (id: string) => Promise<Contribution | null>;
 };
 
 const databaseStore = createDatabaseContributionStore();
@@ -84,6 +85,7 @@ async function withContributionStore<T>(
     getContributionById: prototypeStoreModule.getContributionById,
     createContribution: prototypeStoreModule.createContribution,
     reviewContribution: prototypeStoreModule.reviewContribution,
+    refreshContributionAiIntake: prototypeStoreModule.refreshContributionAiIntake,
   };
 
   return action(prototypeStore);
@@ -114,4 +116,8 @@ export async function reviewContribution(
   input: ReviewContributionInput,
 ) {
   return withContributionStore((store) => store.reviewContribution(id, input));
+}
+
+export async function refreshContributionAiIntake(id: string) {
+  return withContributionStore((store) => store.refreshContributionAiIntake(id));
 }

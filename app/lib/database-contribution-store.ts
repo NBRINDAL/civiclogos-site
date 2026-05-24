@@ -64,6 +64,7 @@ type DatabaseContributionStore = {
     id: string,
     input: ReviewContributionInput,
   ) => Promise<Contribution | null>;
+  refreshContributionAiIntake: (id: string) => Promise<Contribution | null>;
 };
 
 let sqlClient: Sql | null = null;
@@ -398,6 +399,48 @@ export function createDatabaseContributionStore(): DatabaseContributionStore {
 
       const row = rows[0];
       return row ? rowToContribution(row) : null;
+    },
+
+    async refreshContributionAiIntake(id) {
+      await ensureContributionTable();
+      const sql = getSqlClient();
+      const rows = await sql<ContributionRow[]>`
+        select *
+        from civiclogos_contributions
+        where id = ${id}
+        limit 1
+      `;
+      const existing = rows[0] ? rowToContribution(rows[0]) : null;
+
+      if (!existing) {
+        return null;
+      }
+
+      const aiIntake = await buildContributionAiIntake({
+        roomSlug: existing.roomSlug,
+        topicId: existing.topicId,
+        topicTitle: existing.topicTitle,
+        lane: existing.lane,
+        title: existing.title,
+        body: existing.body,
+        evidenceSource: existing.evidenceSource,
+        evidenceDocument: existing.evidenceDocument,
+        author: existing.author,
+        referralSource: existing.referralSource,
+        draftSource: existing.draftSource,
+      });
+      const updatedAt = new Date().toISOString();
+      const updatedRows = await sql<ContributionRow[]>`
+        update civiclogos_contributions
+        set
+          ai_intake = ${sql.json(aiIntake)},
+          updated_at = ${updatedAt}
+        where id = ${id}
+        returning *
+      `;
+      const updated = updatedRows[0];
+
+      return updated ? rowToContribution(updated) : null;
     },
   };
 }

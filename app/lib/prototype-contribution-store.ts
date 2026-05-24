@@ -243,3 +243,33 @@ export async function reviewContribution(
     return existing;
   });
 }
+
+export async function refreshContributionAiIntake(id: string) {
+  return enqueueWrite(async () => {
+    const document = await readStoreDocument();
+    const existing = document.contributions.find((item) => item.id === id);
+
+    if (!existing) {
+      return null;
+    }
+
+    existing.aiIntake = await buildContributionAiIntake({
+      roomSlug: existing.roomSlug,
+      topicId: existing.topicId,
+      topicTitle: existing.topicTitle,
+      lane: existing.lane,
+      title: existing.title,
+      body: existing.body,
+      evidenceSource: existing.evidenceSource,
+      evidenceDocument: existing.evidenceDocument,
+      author: existing.author,
+      referralSource: existing.referralSource,
+      draftSource: existing.draftSource,
+    });
+    existing.updatedAt = new Date().toISOString();
+
+    await writeStoreDocument(document);
+
+    return existing;
+  });
+}

@@ -26,6 +26,7 @@ import {
 } from "@/app/lib/reasoning-types";
 import {
   createFounderMaintainerRevision,
+  retryContributionAiIntake,
   updateContributionReview,
 } from "./actions";
 import PublicRecordConfirmationPreview from "./public-record-confirmation-preview";
@@ -1029,6 +1030,26 @@ export default async function ContributionReviewPage({
                       <p>No provider output is attached to this contribution yet.</p>
                     </div>
                   )}
+
+                  {item.aiIntake?.providers.some(
+                    (provider) =>
+                      provider.state === "error" || provider.state === "unavailable",
+                  ) ? (
+                    <form action={retryContributionAiIntake} className={styles.validationGate}>
+                      <input name="id" type="hidden" value={item.id} />
+                      <input name="roomSlug" type="hidden" value={item.roomSlug} />
+                      <input name="topicId" type="hidden" value={item.topicId} />
+                      <strong>Retry assisted sorting</strong>
+                      <p>
+                        Rerun GPT/Claude intake for this exact record without
+                        creating a duplicate contribution. Human review still
+                        decides placement and card impact.
+                      </p>
+                      <button className={styles.submitButton} type="submit">
+                        Retry AI sorting
+                      </button>
+                    </form>
+                  ) : null}
 
                   {isFounderMaintainerRevision ? (
                     <div className={styles.validationGate}>
