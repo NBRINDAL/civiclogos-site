@@ -102,7 +102,7 @@
   display: grid;
   grid-template-columns: minmax(0, 1.6fr) minmax(320px, 0.95fr);
   gap: 28px;
-  align-items: stretch;
+  align-items: start;
 }
 
 .heroAside {
@@ -127,6 +127,9 @@
 }
 
 .heroCopy {
+  position: sticky;
+  top: 24px;
+  align-self: start;
   padding: 56px;
   border: 1px solid var(--border);
   border-radius: 32px;
@@ -832,6 +835,10 @@
 
   .contactActions {
     justify-content: flex-start;
+  }
+
+  .heroCopy {
+    position: static;
   }
 
   .campaignActions {

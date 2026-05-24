@@ -22,15 +22,15 @@ const suggestedPrompts = [
 const routingOutcomes = [
   {
     title: "Existing room",
-    body: "If a room already fits, the question opens that room with the intake context attached.",
+    body: "Opens the room with intake context attached.",
   },
   {
     title: "Draft topic",
-    body: "If the room fits but no live card absorbs the pressure cleanly, the intake creates a durable draft topic inside that room.",
+    body: "Creates a durable draft topic inside the closest room.",
   },
   {
     title: "Room candidate",
-    body: "If no current room fits, the question is held as a candidate that can accumulate related prompts before any room expansion.",
+    body: "Holds the question until related prompts justify expansion.",
   },
 ] as const;
 
@@ -107,11 +107,9 @@ export default function HomeIntake() {
           Start with a real question and let the room map decide where it belongs.
         </h2>
         <p>
-          Civic Logos will try to place the idea inside the closest current room.
-          If a room fits but the current live cards do not hold it cleanly yet,
-          it will open a draft topic inside that room. If no current room fits,
-          it will open a room candidate instead of pretending the fit is cleaner
-          than it is.
+          Civic Logos tries to place the idea inside the closest current room.
+          If no live card holds it cleanly yet, the intake creates a draft topic
+          or room candidate instead of pretending the fit is cleaner than it is.
         </p>
       </div>
 
@@ -160,8 +158,8 @@ export default function HomeIntake() {
             {isPending ? "Routing…" : "Open reasoning path"}
           </button>
           <p className={styles.help}>
-            This is the first public intake layer. It routes into rooms and topic
-            directions instead of dropping ideas into a blank feed.
+            This first intake layer routes questions into rooms and topic
+            directions instead of dropping them into a blank feed.
           </p>
         </div>
 

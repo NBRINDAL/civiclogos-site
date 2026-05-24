@@ -1,7 +1,7 @@
 .panel {
   display: grid;
-  gap: 20px;
-  padding: 28px;
+  gap: 16px;
+  padding: 24px;
   border: 1px solid rgba(18, 33, 39, 0.12);
   border-radius: 32px;
   background:
@@ -12,7 +12,7 @@
 
 .header {
   display: grid;
-  gap: 10px;
+  gap: 8px;
 }
 
 .eyebrow {
@@ -35,7 +35,7 @@
 
 .header h2 {
   font-family: var(--font-serif), serif;
-  font-size: clamp(1.75rem, 3vw, 2.4rem);
+  font-size: clamp(1.65rem, 2.7vw, 2rem);
   font-weight: 600;
   letter-spacing: -0.03em;
   line-height: 1.04;
@@ -60,9 +60,14 @@
   color: var(--muted);
 }
 
+.header p,
+.help {
+  font-size: 0.95rem;
+}
+
 .form {
   display: grid;
-  gap: 18px;
+  gap: 14px;
 }
 
 .field {
@@ -76,11 +81,11 @@
 }
 
 .field textarea {
-  min-height: 170px;
+  min-height: 140px;
   resize: vertical;
-  padding: 18px;
+  padding: 16px;
   border: 1px solid rgba(18, 33, 39, 0.14);
-  border-radius: 24px;
+  border-radius: 22px;
   background: rgba(255, 251, 245, 0.92);
   color: var(--foreground);
   font: inherit;
@@ -93,34 +98,49 @@
 
 .suggestedRow {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   gap: 10px;
+  margin-bottom: -4px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  scrollbar-width: none;
+}
+
+.suggestedRow::-webkit-scrollbar {
+  display: none;
 }
 
 .suggestedPrompt {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  min-height: 42px;
+  flex: 0 0 auto;
+  justify-content: flex-start;
+  max-width: 100%;
+  min-height: 44px;
   padding: 10px 14px;
   border: 1px solid rgba(91, 110, 69, 0.16);
   border-radius: 999px;
   background: rgba(255, 251, 245, 0.78);
   color: var(--foreground);
   font-size: 0.92rem;
+  overflow: hidden;
   text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .routingOutcomes {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 12px;
+  grid-template-columns: 1fr;
+  gap: 10px;
 }
 
 .routingOutcome {
   display: grid;
-  gap: 8px;
-  padding: 14px;
+  grid-template-columns: minmax(96px, 0.34fr) 1fr;
+  gap: 12px;
+  align-items: start;
+  padding: 12px 14px;
   border: 1px solid rgba(18, 33, 39, 0.1);
   border-radius: 20px;
   background: rgba(255, 251, 245, 0.72);
@@ -134,10 +154,11 @@
 .routingOutcome p,
 .routingNote {
   font-size: 0.9rem;
+  line-height: 1.55;
 }
 
 .routingNote {
-  padding: 14px 16px;
+  padding: 12px 14px;
   border: 1px solid rgba(var(--brand-blue-rgb), 0.14);
   border-radius: 18px;
   background: rgba(244, 250, 255, 0.58);
@@ -145,7 +166,7 @@
 
 .footer {
   display: grid;
-  gap: 12px;
+  gap: 8px;
 }
 
 .submitButton {
@@ -204,7 +225,8 @@
     border-radius: 24px;
   }
 
-  .routingOutcomes {
+  .routingOutcome {
     grid-template-columns: 1fr;
+    gap: 6px;
   }
 }
