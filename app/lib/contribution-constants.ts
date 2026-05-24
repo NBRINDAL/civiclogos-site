@@ -1,1 +1,1 @@
-export const topicCardVisibleContributionLimit = 12;
+export const topicCardVisibleContributionLimit = 50;

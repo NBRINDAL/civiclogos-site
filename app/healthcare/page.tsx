@@ -14,11 +14,7 @@ import {
   getContributionStoreMetadata,
   listPublicContributions,
 } from "../lib/contribution-store";
-import { isActualCardChange } from "../lib/contribution-impact";
-import {
-  isFounderSubmittedContribution,
-  isOutsidePublicContribution,
-} from "../lib/contribution-origin";
+import { getContributionCountSummary } from "../lib/contribution-counts";
 import {
   getHomeIntakeCookieName,
   parseHomeIntakeCookie,
@@ -134,21 +130,7 @@ export default async function HealthcareIssueRoomPage({
       limit: topicCardVisibleContributionLimit,
     }),
   ]);
-  const pendingReviewCount = pressureTestContributions.filter(
-    (item) => item.status === "pending" || item.status === "needs review",
-  ).length;
-  const changedCardCount = pressureTestContributions.filter(
-    (item) => isActualCardChange(item),
-  ).length;
-  const publicSubmissionCount = pressureTestContributions.filter(
-    isOutsidePublicContribution,
-  ).length;
-  const founderSubmittedCount = pressureTestContributions.filter(
-    isFounderSubmittedContribution,
-  ).length;
-  const prototypeExampleCount = pressureTestContributions.filter(
-    (item) => item.isSeedExample,
-  ).length;
+  const pressureTestCounts = getContributionCountSummary(pressureTestContributions);
 
   return (
     <div className={styles.page}>
@@ -262,31 +244,31 @@ export default async function HealthcareIssueRoomPage({
             <dl className={styles.pressureRecordGrid}>
               <div>
                 <dt>Visible records</dt>
-                <dd>{pressureTestContributions.length}</dd>
+                <dd>{pressureTestCounts.visibleRecords}</dd>
               </div>
               <div>
                 <dt>Pending review</dt>
-                <dd>{pendingReviewCount}</dd>
+                <dd>{pressureTestCounts.pendingReview}</dd>
               </div>
               <div>
                 <dt>Changed card</dt>
-                <dd>{changedCardCount}</dd>
+                <dd>{pressureTestCounts.changedCard}</dd>
               </div>
               <div>
                 <dt>Outside submissions</dt>
-                <dd>{publicSubmissionCount}</dd>
+                <dd>{pressureTestCounts.publicSubmissions}</dd>
               </div>
               <div>
                 <dt>Founder-submitted</dt>
-                <dd>{founderSubmittedCount}</dd>
+                <dd>{pressureTestCounts.founderSubmitted}</dd>
               </div>
             </dl>
 
             <p className={styles.pressureRecordNote}>
               Current record mode: <strong>{contributionMetadata.mode}</strong>.
-              Prototype examples visible: <strong>{prototypeExampleCount}</strong>.
-              Founder-submitted records: <strong>{founderSubmittedCount}</strong>.
-              Outside public submissions: <strong>{publicSubmissionCount}</strong>.
+              Prototype examples visible: <strong>{pressureTestCounts.prototypeExamples}</strong>.
+              Founder-submitted records: <strong>{pressureTestCounts.founderSubmitted}</strong>.
+              Outside public submissions: <strong>{pressureTestCounts.publicSubmissions}</strong>.
             </p>
           </div>
 

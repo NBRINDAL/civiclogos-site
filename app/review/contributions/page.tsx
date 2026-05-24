@@ -6,6 +6,7 @@ import {
   type IssueRoomSlug,
 } from "@/app/lib/civic-logos";
 import { getContributionStoreMetadata, listAllContributions } from "@/app/lib/contribution-store";
+import { getContributionCountSummary } from "@/app/lib/contribution-counts";
 import {
   getActualCardChangeLabel,
   getPotentialCardImpactLabel,
@@ -14,8 +15,6 @@ import {
 import {
   getContributionOrigin,
   getContributionOriginLabel,
-  isFounderMaintainerContribution,
-  isFounderSubmittedContribution,
   isOutsidePublicContribution,
 } from "@/app/lib/contribution-origin";
 import {
@@ -29,6 +28,12 @@ import {
   createFounderMaintainerRevision,
   updateContributionReview,
 } from "./actions";
+import PublicRecordConfirmationPreview from "./public-record-confirmation-preview";
+import {
+  getCurrentVisibleSynthesis,
+  getNextPublicRecordVersionLabel,
+  publicRecordConfirmationPhrase,
+} from "@/app/lib/public-record-revisions";
 import styles from "./page.module.css";
 
 export const dynamic = "force-dynamic";
@@ -290,6 +295,11 @@ export default async function ContributionReviewPage({
     }),
     getContributionStoreMetadata(),
   ]);
+  const topicTotalContributions = await listAllContributions({
+    roomSlug: scopedRoomSlug,
+    topicId: scopedTopicId,
+    limit: 50,
+  });
   const sortedContributions = [...contributions].sort((left, right) => {
     const statusDelta =
       (reviewStatusPriority[left.status] ?? 99) -
@@ -308,23 +318,8 @@ export default async function ContributionReviewPage({
   const publicSpotlightItems = (
     publicReviewQueue.length ? publicReviewQueue : publicSubmissions
   ).slice(0, 3);
-  const summary = {
-    pending: sortedContributions.filter((item) => item.status === "pending").length,
-    needsReview: sortedContributions.filter((item) => item.status === "needs review").length,
-    accepted: sortedContributions.filter((item) => item.status === "accepted").length,
-    incorporated: sortedContributions.filter((item) => item.status === "incorporated").length,
-    rejected: sortedContributions.filter((item) => item.status === "rejected").length,
-    reviewable: sortedContributions.filter(isReviewableContribution).length,
-    publicSubmissions: publicSubmissions.length,
-    founderMaintainer: sortedContributions.filter(isFounderMaintainerContribution).length,
-    founderSubmitted: sortedContributions.filter(isFounderSubmittedContribution).length,
-    prototypeExamples: sortedContributions.filter((item) => item.isSeedExample).length,
-    aiOrigin: sortedContributions.filter((item) => item.draftSource).length,
-    documentBacked: sortedContributions.filter((item) => item.evidenceDocument).length,
-    changedCard: sortedContributions.filter(
-      (item) => isActualCardChange(item),
-    ).length,
-  };
+  const topicSummary = getContributionCountSummary(topicTotalContributions);
+  const filterSummary = getContributionCountSummary(sortedContributions);
   const scopeLabel =
     scopedRoomSlug && scopedTopicId
       ? `${scopedRoomSlug} / ${scopedTopicId}`
@@ -366,42 +361,42 @@ export default async function ContributionReviewPage({
           <div className={styles.provenanceGrid}>
             <article className={styles.provenanceCard}>
               <span>Outside public submissions</span>
-              <strong>{summary.publicSubmissions}</strong>
+              <strong>{topicSummary.publicSubmissions}</strong>
               <p>Non-prototype, non-AI-origin records from outside contributors.</p>
             </article>
             <article className={styles.provenanceCard}>
               <span>Founder-submitted</span>
-              <strong>{summary.founderSubmitted}</strong>
+              <strong>{topicSummary.founderSubmitted}</strong>
               <p>Non-prototype founder records used for evidence and review work without implying outside traction.</p>
             </article>
             <article className={styles.provenanceCard}>
               <span>Founder-maintainer</span>
-              <strong>{summary.founderMaintainer}</strong>
+              <strong>{topicSummary.founderMaintainer}</strong>
               <p>Maintainer-authored revision proposals that still require AI-assisted sorting and human incorporation.</p>
             </article>
             <article className={styles.provenanceCard}>
               <span>Needs human review</span>
-              <strong>{summary.reviewable}</strong>
+              <strong>{topicSummary.pendingReview}</strong>
               <p>Pending or needs-review records awaiting maintainer judgment.</p>
             </article>
             <article className={styles.provenanceCard}>
               <span>Prototype examples</span>
-              <strong>{summary.prototypeExamples}</strong>
+              <strong>{topicSummary.prototypeExamples}</strong>
               <p>Seed records used to show the product loop without faking usage.</p>
             </article>
             <article className={styles.provenanceCard}>
               <span>AI-origin records</span>
-              <strong>{summary.aiOrigin}</strong>
+              <strong>{topicSummary.aiOrigin}</strong>
               <p>Contributions promoted from assisted reader turns, not final judgments.</p>
             </article>
             <article className={styles.provenanceCard}>
               <span>Document-backed</span>
-              <strong>{summary.documentBacked}</strong>
+              <strong>{topicSummary.documentBacked}</strong>
               <p>Records with evidence-attachment artifacts or extraction state.</p>
             </article>
             <article className={styles.provenanceCard}>
               <span>Changed card</span>
-              <strong>{summary.changedCard}</strong>
+              <strong>{topicSummary.changedCard}</strong>
               <p>Records marked by human review as changing the live synthesis.</p>
             </article>
           </div>
@@ -762,26 +757,65 @@ export default async function ContributionReviewPage({
             </Link>
           </form>
 
-          <div className={styles.summaryRow}>
-            <div className={styles.summaryCard}>
-              <span>Pending</span>
-              <strong>{summary.pending}</strong>
+          <div className={styles.countGroups}>
+            <div className={styles.countGroup}>
+              <span className={styles.eyebrow}>Topic totals</span>
+              <p className={styles.prefillNote}>
+                Full scoped topic counts before lane or status filters are
+                applied.
+              </p>
+              <div className={styles.summaryRow}>
+                <div className={styles.summaryCard}>
+                  <span>Visible records</span>
+                  <strong>{topicSummary.visibleRecords}</strong>
+                </div>
+                <div className={styles.summaryCard}>
+                  <span>Pending</span>
+                  <strong>{topicSummary.pending}</strong>
+                </div>
+                <div className={styles.summaryCard}>
+                  <span>Needs review</span>
+                  <strong>{topicSummary.needsReview}</strong>
+                </div>
+                <div className={styles.summaryCard}>
+                  <span>Incorporated</span>
+                  <strong>{topicSummary.incorporated}</strong>
+                </div>
+                <div className={styles.summaryCard}>
+                  <span>Changed card</span>
+                  <strong>{topicSummary.changedCard}</strong>
+                </div>
+              </div>
             </div>
-            <div className={styles.summaryCard}>
-              <span>Needs review</span>
-              <strong>{summary.needsReview}</strong>
-            </div>
-            <div className={styles.summaryCard}>
-              <span>Accepted</span>
-              <strong>{summary.accepted}</strong>
-            </div>
-            <div className={styles.summaryCard}>
-              <span>Incorporated</span>
-              <strong>{summary.incorporated}</strong>
-            </div>
-            <div className={styles.summaryCard}>
-              <span>Rejected</span>
-              <strong>{summary.rejected}</strong>
+
+            <div className={styles.countGroup}>
+              <span className={styles.eyebrow}>Current lane/filter totals</span>
+              <p className={styles.prefillNote}>
+                Counts for the queue currently shown below after status and lane
+                filters.
+              </p>
+              <div className={styles.summaryRow}>
+                <div className={styles.summaryCard}>
+                  <span>Visible records</span>
+                  <strong>{filterSummary.visibleRecords}</strong>
+                </div>
+                <div className={styles.summaryCard}>
+                  <span>Pending</span>
+                  <strong>{filterSummary.pending}</strong>
+                </div>
+                <div className={styles.summaryCard}>
+                  <span>Needs review</span>
+                  <strong>{filterSummary.needsReview}</strong>
+                </div>
+                <div className={styles.summaryCard}>
+                  <span>Incorporated</span>
+                  <strong>{filterSummary.incorporated}</strong>
+                </div>
+                <div className={styles.summaryCard}>
+                  <span>Changed card</span>
+                  <strong>{filterSummary.changedCard}</strong>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -809,6 +843,28 @@ export default async function ContributionReviewPage({
               const isFounderMaintainerRevision = origin === "founder-maintainer";
               const maintainerRevisionGateOpen =
                 !isFounderMaintainerRevision || completedAiValidationProviders.length > 0;
+              const itemTopicCard = getRoomTopicCard(item.roomSlug, item.topicId);
+              const itemTopicContributions =
+                scopedRoomSlug === item.roomSlug && scopedTopicId === item.topicId
+                  ? topicTotalContributions
+                  : sortedContributions.filter(
+                      (candidate) =>
+                        candidate.roomSlug === item.roomSlug &&
+                        candidate.topicId === item.topicId,
+                    );
+              const oldVisibleSynthesis = itemTopicCard
+                ? getCurrentVisibleSynthesis({
+                    baseSynthesis: itemTopicCard.thesis,
+                    contributions: itemTopicContributions,
+                    excludeRecordId: item.id,
+                  })
+                : "No topic synthesis found for this record.";
+              const nextVersionLabel = itemTopicCard
+                ? getNextPublicRecordVersionLabel({
+                    card: itemTopicCard,
+                    contributions: itemTopicContributions,
+                  })
+                : "Next version";
               const provenanceBadges = [
                 getContributionOriginLabel(origin),
                 item.evidenceDocument ? "Document-backed" : null,
@@ -1023,6 +1079,13 @@ export default async function ContributionReviewPage({
                       {item.review.synthesisUpdate ? (
                         <p>Visible synthesis update: {item.review.synthesisUpdate}</p>
                       ) : null}
+                      {item.review.publicRecordSnapshot ? (
+                        <p>
+                          Immutable snapshot:{" "}
+                          {item.review.publicRecordSnapshot.versionLabel} linked to{" "}
+                          {item.review.publicRecordSnapshot.linkedRecordId}.
+                        </p>
+                      ) : null}
                       {item.review.reviewerNote ? <p>{item.review.reviewerNote}</p> : null}
                     </div>
                   ) : null}
@@ -1146,6 +1209,16 @@ export default async function ContributionReviewPage({
                       reader critique is attached and the proposal still improves
                       the public record.
                     </p>
+                  ) : null}
+
+                  {isFounderMaintainerRevision ? (
+                    <PublicRecordConfirmationPreview
+                      aiGateOpen={maintainerRevisionGateOpen}
+                      confirmationPhrase={publicRecordConfirmationPhrase}
+                      nextVersionLabel={nextVersionLabel}
+                      oldVisibleSynthesis={oldVisibleSynthesis}
+                      originLabel={getContributionOriginLabel(origin)}
+                    />
                   ) : null}
 
                   <label className={styles.field}>

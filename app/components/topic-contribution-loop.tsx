@@ -3288,6 +3288,26 @@ export default function TopicContributionLoop({
                         </div>
                       ) : null}
 
+                      {item.review.publicRecordSnapshot ? (
+                        <div className={styles.reviewCopy}>
+                          <span className={styles.sectionLabel}>
+                            Immutable public-record snapshot
+                          </span>
+                          <p>
+                            {item.review.publicRecordSnapshot.versionLabel} ·{" "}
+                            {item.review.publicRecordSnapshot.timestamp} · origin:{" "}
+                            {item.review.publicRecordSnapshot.origin}
+                          </p>
+                          <p>
+                            Previous synthesis:{" "}
+                            {item.review.publicRecordSnapshot.previousSynthesis}
+                          </p>
+                          <p>
+                            New synthesis: {item.review.publicRecordSnapshot.newSynthesis}
+                          </p>
+                        </div>
+                      ) : null}
+
                       {item.review.reviewerNote ? (
                         <div className={styles.reviewCopy}>
                           <span className={styles.sectionLabel}>Human reviewer note</span>

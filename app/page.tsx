@@ -7,11 +7,7 @@ import {
   getContributionStoreMetadata,
   listPublicContributions,
 } from "./lib/contribution-store";
-import { isActualCardChange } from "./lib/contribution-impact";
-import {
-  isFounderSubmittedContribution,
-  isOutsidePublicContribution,
-} from "./lib/contribution-origin";
+import { getContributionCountSummary } from "./lib/contribution-counts";
 import styles from "./page.module.css";
 
 const distinctions = [
@@ -554,18 +550,7 @@ export default async function Home({
           .filter((item): item is string => Boolean(item))
           .join("\n")
       : undefined;
-  const campaignRecordStats = {
-    visibleRecords: campaignContributions.length,
-    pendingReview: campaignContributions.filter(
-      (item) => item.status === "pending" || item.status === "needs review",
-    ).length,
-    changedCard: campaignContributions.filter(
-      (item) => isActualCardChange(item),
-    ).length,
-    publicSubmissions: campaignContributions.filter(isOutsidePublicContribution).length,
-    founderSubmitted: campaignContributions.filter(isFounderSubmittedContribution).length,
-    prototypeExamples: campaignContributions.filter((item) => item.isSeedExample).length,
-  };
+  const campaignRecordStats = getContributionCountSummary(campaignContributions);
 
   return (
     <div className={styles.page}>

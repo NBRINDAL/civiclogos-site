@@ -3,11 +3,7 @@ import Link from "next/link";
 import { SiteBrand } from "../components/site-brand";
 import { topicCardVisibleContributionLimit } from "../lib/contribution-constants";
 import { getContributionStoreMetadata, listPublicContributions } from "../lib/contribution-store";
-import { isActualCardChange } from "../lib/contribution-impact";
-import {
-  isFounderSubmittedContribution,
-  isOutsidePublicContribution,
-} from "../lib/contribution-origin";
+import { getContributionCountSummary } from "../lib/contribution-counts";
 import { normalizeContributionReferralSource } from "../lib/contribution-types";
 import styles from "./page.module.css";
 
@@ -100,37 +96,31 @@ export default async function ChallengePage({
     }),
   ]);
 
-  const prototypeRecords = contributions.filter((item) => item.isSeedExample);
-  const pendingReviewItems = contributions.filter(
-    (item) => item.status === "pending" || item.status === "needs review",
-  );
-  const changedCardRecords = contributions.filter(isActualCardChange);
-  const outsidePublicSubmissions = contributions.filter(isOutsidePublicContribution);
-  const founderSubmittedRecords = contributions.filter(isFounderSubmittedContribution);
+  const contributionCounts = getContributionCountSummary(contributions);
   const proofStats = [
     {
       label: "Prototype records",
-      value: String(Math.min(prototypeRecords.length, 5)),
+      value: String(contributionCounts.prototypeExamples),
       note: "Seeded examples show how the ledger behaves without pretending they are public usage.",
     },
     {
       label: "Pending review items",
-      value: String(Math.min(pendingReviewItems.length, 2)),
+      value: String(contributionCounts.pendingReview),
       note: "Open review pressure shows where human judgment still has work to do.",
     },
     {
       label: "Changed-card records",
-      value: String(Math.min(changedCardRecords.length, 2)),
+      value: String(contributionCounts.changedCard),
       note: "These are records whose human review says they changed the public card.",
     },
     {
       label: "Outside submissions so far",
-      value: String(outsidePublicSubmissions.length),
+      value: String(contributionCounts.publicSubmissions),
       note: "The mission is to turn the first real outside contribution into visible public record pressure.",
     },
     {
       label: "Founder-submitted test record",
-      value: String(founderSubmittedRecords.length),
+      value: String(contributionCounts.founderSubmitted),
       note: "Non-prototype records from Civic Logos stay labeled separately and do not count as outside public uptake.",
     },
     {

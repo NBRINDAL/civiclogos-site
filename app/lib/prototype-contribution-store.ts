@@ -231,6 +231,7 @@ export async function reviewContribution(
       reviewerNote: input.reviewerNote,
       revisionSummary: input.revisionSummary,
       synthesisUpdate: input.synthesisUpdate,
+      publicRecordSnapshot: input.publicRecordSnapshot,
       reviewedAt: new Date().toISOString(),
     };
 

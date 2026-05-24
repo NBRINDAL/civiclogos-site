@@ -101,7 +101,27 @@ export type ContributionReview = {
   reviewerNote?: string;
   revisionSummary?: string;
   synthesisUpdate?: string;
+  publicRecordSnapshot?: PublicRecordSnapshot;
   reviewedAt?: string;
+};
+
+export type PublicRecordSnapshot = {
+  previousSynthesis: string;
+  newSynthesis: string;
+  timestamp: string;
+  origin: string;
+  creatorLabel: string;
+  status: ReviewStatus;
+  actualCardChange: boolean;
+  attachmentTargets: string[];
+  reviewerNote?: string;
+  decisionReason?: string;
+  publicRecordNote?: string;
+  revisionSummary?: string;
+  aiReaderStatus: string;
+  versionLabel: string;
+  linkedRecordId: string;
+  affectedVisibleLayers: string[];
 };
 
 export type Contribution = TopicCardReference & {
@@ -143,6 +163,7 @@ export type ReviewContributionInput = {
   reviewerNote?: string;
   revisionSummary?: string;
   synthesisUpdate?: string;
+  publicRecordSnapshot?: PublicRecordSnapshot;
 };
 
 export type PublicContribution = Omit<Contribution, "author" | "referralSource"> & {

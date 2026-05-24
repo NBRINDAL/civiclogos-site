@@ -1942,7 +1942,8 @@ export default async function TopicCardPage({
       .filter(
         (item) =>
           getContributionOrigin(item) === "founder-maintainer" &&
-          item.review?.synthesisUpdate,
+          (item.review?.publicRecordSnapshot?.newSynthesis ||
+            item.review?.synthesisUpdate),
       )
       .sort(
         (left, right) =>
@@ -1950,7 +1951,9 @@ export default async function TopicCardPage({
           new Date(left.review?.reviewedAt ?? left.updatedAt).getTime(),
       )[0] ?? null;
   const visibleSynthesis =
-    appliedSynthesisRevision?.review?.synthesisUpdate ?? card.thesis;
+    appliedSynthesisRevision?.review?.publicRecordSnapshot?.newSynthesis ??
+    appliedSynthesisRevision?.review?.synthesisUpdate ??
+    card.thesis;
   const originCounts = (
     [
       "human-submitted",
@@ -5249,6 +5252,15 @@ export default async function TopicCardPage({
                       <p>
                         <strong>Visible synthesis update:</strong>{" "}
                         {item.review.synthesisUpdate}
+                      </p>
+                    ) : null}
+                    {item.review?.publicRecordSnapshot ? (
+                      <p>
+                        <strong>Immutable snapshot:</strong>{" "}
+                        {item.review.publicRecordSnapshot.versionLabel} recorded{" "}
+                        {item.review.publicRecordSnapshot.timestamp}; origin{" "}
+                        {item.review.publicRecordSnapshot.origin}; linked record{" "}
+                        {item.review.publicRecordSnapshot.linkedRecordId}.
                       </p>
                     ) : null}
                     <ContributionRecordContext contribution={item} recordView="changed-card" />
