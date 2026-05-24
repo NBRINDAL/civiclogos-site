@@ -40,8 +40,11 @@ export function isFounderSubmittedContribution(contribution: ContributionOriginI
 
   const authorName = contribution.author.name?.toLowerCase() ?? "";
   const authorExpertise = contribution.author.expertise?.toLowerCase() ?? "";
+  const normalizedAuthorName = authorName.replace(/\s+/g, " ").trim();
 
   return (
+    normalizedAuthorName === "nick rindal" ||
+    normalizedAuthorName === "nick b. rindal" ||
     authorName.includes("civic logos founder") ||
     authorExpertise.includes("founder-submitted")
   );

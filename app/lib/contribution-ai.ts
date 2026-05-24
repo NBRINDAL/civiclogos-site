@@ -148,6 +148,22 @@ function extractOpenAIText(response: OpenAIResponse) {
   return parts.join("");
 }
 
+function parseModelJsonText(text: string): IntakeSchemaResult {
+  const trimmed = text.trim();
+  const withoutFence = trimmed
+    .replace(/^```(?:json)?\s*/i, "")
+    .replace(/\s*```$/i, "")
+    .trim();
+  const jsonStart = withoutFence.indexOf("{");
+  const jsonEnd = withoutFence.lastIndexOf("}");
+  const candidate =
+    jsonStart >= 0 && jsonEnd > jsonStart
+      ? withoutFence.slice(jsonStart, jsonEnd + 1)
+      : withoutFence;
+
+  return JSON.parse(candidate) as IntakeSchemaResult;
+}
+
 async function classifyWithOpenAI(
   input: CreateContributionInput,
 ): Promise<ProviderContributionAiIntake> {
@@ -160,6 +176,25 @@ async function classifyWithOpenAI(
   const model = config.model;
 
   try {
+    const buildFallbackRequest = () =>
+      ({
+        model,
+        store: false,
+        max_output_tokens: 450,
+        instructions: `${getContributionIntakeInstructions(input)} Return only JSON that matches this schema: ${JSON.stringify(intakeSchema)}`,
+        input: [
+          {
+            role: "user",
+            content: [
+              {
+                type: "input_text",
+                text: buildIntakePrompt(input),
+              },
+            ],
+          },
+        ],
+      }) as const;
+
     const response = await fetch("https://api.openai.com/v1/responses", {
       method: "POST",
       headers: {
@@ -197,11 +232,43 @@ async function classifyWithOpenAI(
     if (!response.ok) {
       const errorText = await response.text();
       console.error("OpenAI contribution intake failed", errorText);
+      const fallbackResponse = await fetch("https://api.openai.com/v1/responses", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${apiKey}`,
+        },
+        body: JSON.stringify(buildFallbackRequest()),
+      });
+
+      if (!fallbackResponse.ok) {
+        const fallbackErrorText = await fallbackResponse.text();
+        console.error("OpenAI contribution intake fallback failed", fallbackErrorText);
+        return {
+          provider: "openai",
+          state: "error",
+          model,
+          errorMessage: "OpenAI intake request failed.",
+        };
+      }
+
+      const fallbackPayload = (await fallbackResponse.json()) as OpenAIResponse;
+      const fallbackOutputText = extractOpenAIText(fallbackPayload);
+
+      if (!fallbackOutputText) {
+        return {
+          provider: "openai",
+          state: "error",
+          model,
+          errorMessage: "OpenAI intake returned no structured output.",
+        };
+      }
+
       return {
         provider: "openai",
-        state: "error",
+        state: "completed",
         model,
-        errorMessage: "OpenAI intake request failed.",
+        ...parseIntakeResult(parseModelJsonText(fallbackOutputText)),
       };
     }
 
@@ -221,7 +288,7 @@ async function classifyWithOpenAI(
       provider: "openai",
       state: "completed",
       model,
-      ...parseIntakeResult(JSON.parse(outputText) as IntakeSchemaResult),
+      ...parseIntakeResult(parseModelJsonText(outputText)),
     };
   } catch (error) {
     console.error("OpenAI contribution intake error", error);
@@ -309,7 +376,7 @@ async function classifyWithAnthropic(
       provider: "anthropic",
       state: "completed",
       model,
-      ...parseIntakeResult(JSON.parse(outputText) as IntakeSchemaResult),
+      ...parseIntakeResult(parseModelJsonText(outputText)),
     };
   } catch (error) {
     console.error("Anthropic contribution intake error", error);
