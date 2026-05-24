@@ -15,6 +15,7 @@ import {
   refreshContributionAiIntake,
   reviewContribution,
   updateContributionEvidenceDocument,
+  updateContributionEvidenceExcerpt as persistContributionEvidenceExcerpt,
 } from "@/app/lib/contribution-store";
 import { refreshEvidenceDocumentExtraction } from "@/app/lib/evidence-document-store";
 import { getContributionOrigin } from "@/app/lib/contribution-origin";
@@ -278,6 +279,28 @@ export async function reprocessContributionEvidenceDocument(formData: FormData) 
     await refreshContributionAiIntake(id);
   }
 
+  revalidatePath("/review/contributions");
+
+  if (isRoomSlug(roomSlugRaw) && topicId) {
+    revalidatePath(getRoomHref(roomSlugRaw));
+    revalidatePath(getRoomTopicHref(roomSlugRaw, topicId));
+  }
+}
+
+export async function updateContributionEvidenceExcerpt(formData: FormData) {
+  const id = String(formData.get("id") ?? "").trim();
+  const roomSlugRaw = String(formData.get("roomSlug") ?? "").trim();
+  const topicId = String(formData.get("topicId") ?? "").trim();
+  const evidenceExcerpt = String(formData.get("evidenceExcerpt") ?? "")
+    .trim()
+    .slice(0, 8000);
+
+  if (!id) {
+    return;
+  }
+
+  await persistContributionEvidenceExcerpt(id, evidenceExcerpt);
+  await refreshContributionAiIntake(id);
   revalidatePath("/review/contributions");
 
   if (isRoomSlug(roomSlugRaw) && topicId) {

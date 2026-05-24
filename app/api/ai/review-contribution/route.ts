@@ -9,7 +9,11 @@ import {
   getContributionById,
   updateContributionEvidenceDocument,
 } from "@/app/lib/contribution-store";
-import { refreshEvidenceDocumentExtraction } from "@/app/lib/evidence-document-store";
+import {
+  getEvidenceDocument,
+  refreshEvidenceDocumentExtraction,
+} from "@/app/lib/evidence-document-store";
+import { extractEvidenceText } from "@/app/lib/evidence-extraction";
 import {
   getAnthropicProviderConfig,
   getOpenAIProviderConfig,
@@ -80,9 +84,16 @@ function extractOpenAIText(response: OpenAIResponse) {
 function buildReviewContext({
   contribution,
   topicThesis,
+  readableEvidenceText,
 }: {
   contribution: NonNullable<Awaited<ReturnType<typeof getContributionById>>>;
   topicThesis: string;
+  readableEvidenceText?: {
+    text: string;
+    pageCount?: number;
+    wordCount?: number;
+    source: string;
+  } | null;
 }) {
   return JSON.stringify(
     {
@@ -100,6 +111,8 @@ function buildReviewContext({
         status: contribution.status,
         origin: getContributionOrigin(contribution),
         evidenceSource: contribution.evidenceSource ?? null,
+        accessibleEvidenceExcerpt: contribution.evidenceExcerpt ?? null,
+        readableEvidenceTextForAi: readableEvidenceText ?? null,
         evidenceDocument: contribution.evidenceDocument
           ? {
               fileName: contribution.evidenceDocument.fileName,
@@ -144,13 +157,56 @@ async function refreshReadableEvidenceIfNeeded(
   return updatedContribution ?? { ...contribution, evidenceDocument: refreshedDocument };
 }
 
+async function loadReadableEvidenceTextForAi(
+  contribution: NonNullable<Awaited<ReturnType<typeof getContributionById>>>,
+) {
+  if (contribution.evidenceExcerpt) {
+    return {
+      text: contribution.evidenceExcerpt,
+      wordCount: contribution.evidenceExcerpt.split(/\s+/).filter(Boolean).length,
+      source: "maintainer-provided accessible evidence excerpt",
+    };
+  }
+
+  const evidenceDocument = contribution.evidenceDocument;
+
+  if (!evidenceDocument) {
+    return null;
+  }
+
+  const storedDocument = await getEvidenceDocument(evidenceDocument.id);
+
+  if (!storedDocument) {
+    return null;
+  }
+
+  try {
+    const extracted = await extractEvidenceText(
+      storedDocument.document.fileName,
+      storedDocument.document.mimeType,
+      storedDocument.bytes,
+    );
+
+    return extracted
+      ? {
+          ...extracted,
+          source: "on-demand hosted evidence extraction",
+        }
+      : null;
+  } catch (error) {
+    console.error("Reviewer AI could not load evidence text on demand", error);
+    return null;
+  }
+}
+
 function getReviewInstructions() {
   return [
     "You are a Civic Logos reviewer assistant.",
     "You do not decide truth, legitimacy, or the final review outcome.",
     "Help a human reviewer interrogate one contribution against the current topic card.",
     "Separate notation, definitions, assumptions, evidence, predictions, and synthesis pressure.",
-    "If the uploaded document text is unavailable, say that clearly and reason only from the visible contribution metadata.",
+    "If readableEvidenceTextForAi is present in the context, treat it as the uploaded document text even if a stored extraction status is stale or says error.",
+    "If no readable document text is available, say that clearly and reason only from the visible contribution metadata.",
     "Do not recommend changing the visible synthesis unless you can name the exact claim that would change and what remains unresolved.",
     "Give concrete review guidance: likely attachment target, what to check next, and a cautious public note if useful.",
   ].join(" ");
@@ -386,10 +442,12 @@ export async function POST(request: NextRequest) {
   }
 
   contribution = await refreshReadableEvidenceIfNeeded(contribution);
+  const readableEvidenceText = await loadReadableEvidenceTextForAi(contribution);
 
   const context = buildReviewContext({
     contribution,
     topicThesis: topic.thesis,
+    readableEvidenceText,
   });
   const providerCalls =
     provider === "openai"

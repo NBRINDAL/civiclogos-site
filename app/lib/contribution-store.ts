@@ -48,6 +48,10 @@ type ContributionStoreAdapter = {
     id: string,
     evidenceDocument: EvidenceDocument,
   ) => Promise<Contribution | null>;
+  updateContributionEvidenceExcerpt: (
+    id: string,
+    evidenceExcerpt: string,
+  ) => Promise<Contribution | null>;
 };
 
 const databaseStore = createDatabaseContributionStore();
@@ -93,6 +97,8 @@ async function withContributionStore<T>(
     refreshContributionAiIntake: prototypeStoreModule.refreshContributionAiIntake,
     updateContributionEvidenceDocument:
       prototypeStoreModule.updateContributionEvidenceDocument,
+    updateContributionEvidenceExcerpt:
+      prototypeStoreModule.updateContributionEvidenceExcerpt,
   };
 
   return action(prototypeStore);
@@ -135,5 +141,14 @@ export async function updateContributionEvidenceDocument(
 ) {
   return withContributionStore((store) =>
     store.updateContributionEvidenceDocument(id, evidenceDocument),
+  );
+}
+
+export async function updateContributionEvidenceExcerpt(
+  id: string,
+  evidenceExcerpt: string,
+) {
+  return withContributionStore((store) =>
+    store.updateContributionEvidenceExcerpt(id, evidenceExcerpt),
   );
 }

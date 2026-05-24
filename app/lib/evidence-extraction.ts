@@ -19,6 +19,13 @@ function buildExcerpt(value: string) {
   return normalized.length > 680 ? `${normalized.slice(0, 677).trimEnd()}...` : normalized;
 }
 
+function buildAiReviewExcerpt(value: string) {
+  const normalized = normalizeWhitespace(value);
+  return normalized.length > 12000
+    ? `${normalized.slice(0, 11997).trimEnd()}...`
+    : normalized;
+}
+
 function countWords(value: string) {
   const normalized = normalizeWhitespace(value);
   return normalized ? normalized.split(" ").length : 0;
@@ -133,6 +140,34 @@ async function extractPdfText(bytes: Buffer | Uint8Array | ArrayBuffer | string)
   }
 
   throw new Error(`PDF extraction failed in all parsers: ${errors.join(" | ")}`);
+}
+
+export async function extractEvidenceText(
+  fileName: string,
+  mimeType: string,
+  bytes: Buffer | Uint8Array | ArrayBuffer | string,
+) {
+  if (isPdf(fileName, mimeType)) {
+    const parsed = await extractPdfText(bytes);
+    const text = buildAiReviewExcerpt(parsed.text);
+
+    return {
+      text,
+      pageCount: parsed.pageCount,
+      wordCount: countWords(parsed.text),
+    };
+  }
+
+  if (isTextLike(fileName, mimeType)) {
+    const text = normalizeDocumentBytes(bytes).toString("utf8");
+
+    return {
+      text: buildAiReviewExcerpt(text),
+      wordCount: countWords(text),
+    };
+  }
+
+  return null;
 }
 
 export async function extractEvidenceDocument(

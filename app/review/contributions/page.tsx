@@ -28,6 +28,7 @@ import {
   createFounderMaintainerRevision,
   reprocessContributionEvidenceDocument,
   retryContributionAiIntake,
+  updateContributionEvidenceExcerpt,
   updateContributionReview,
 } from "./actions";
 import PublicRecordConfirmationPreview from "./public-record-confirmation-preview";
@@ -985,6 +986,16 @@ export default async function ContributionReviewPage({
                         {Math.max(item.evidenceDocument.sizeBytes / 1024, 1).toFixed(1)} KB
                       </p>
                       <p>
+                        <a
+                          className={styles.evidenceLink}
+                          href={item.evidenceDocument.downloadHref}
+                          rel="noreferrer"
+                          target="_blank"
+                        >
+                          Open hosted paper
+                        </a>
+                      </p>
+                      <p>
                         Extraction status: {item.evidenceDocument.extraction.status}
                         {item.evidenceDocument.extraction.pageCount
                           ? ` · ${item.evidenceDocument.extraction.pageCount} pages`
@@ -1013,6 +1024,37 @@ export default async function ContributionReviewPage({
                         </form>
                       ) : null}
                     </>
+                  ) : null}
+                  {item.evidenceExcerpt ? (
+                    <div className={styles.accessibleEvidence}>
+                      <strong>Accessible document text for review</strong>
+                      <p>{item.evidenceExcerpt}</p>
+                    </div>
+                  ) : null}
+                  {item.evidenceDocument ? (
+                    <form
+                      action={updateContributionEvidenceExcerpt}
+                      className={styles.accessibleEvidenceForm}
+                    >
+                      <input name="id" type="hidden" value={item.id} />
+                      <input name="roomSlug" type="hidden" value={item.roomSlug} />
+                      <input name="topicId" type="hidden" value={item.topicId} />
+                      <label className={styles.field}>
+                        <span>Accessible paper text for AI review</span>
+                        <textarea
+                          defaultValue={item.evidenceExcerpt ?? ""}
+                          name="evidenceExcerpt"
+                          placeholder="Paste the abstract, core equations, or a text extract from the uploaded paper. This reruns AI sorting, but does not change review state or synthesis."
+                        />
+                      </label>
+                      <button className={styles.submitButton} type="submit">
+                        Save accessible text and rerun AI sorting
+                      </button>
+                      <p className={styles.prefillNote}>
+                        Use this when PDF extraction fails. It makes the paper readable
+                        to reviewer AIs without publishing a card change.
+                      </p>
+                    </form>
                   ) : null}
                 </div>
 

@@ -296,3 +296,23 @@ export async function updateContributionEvidenceDocument(
     return existing;
   });
 }
+
+export async function updateContributionEvidenceExcerpt(
+  id: string,
+  evidenceExcerpt: string,
+) {
+  return enqueueWrite(async () => {
+    const document = await readStoreDocument();
+    const existing = document.contributions.find((item) => item.id === id);
+
+    if (!existing) {
+      return null;
+    }
+
+    existing.evidenceExcerpt = evidenceExcerpt || undefined;
+    existing.updatedAt = new Date().toISOString();
+    await writeStoreDocument(document);
+
+    return existing;
+  });
+}
