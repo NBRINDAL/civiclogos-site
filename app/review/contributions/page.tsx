@@ -1052,6 +1052,15 @@ export default async function ContributionReviewPage({
                   {item.review ? (
                     <div className={styles.reviewSummary}>
                       <strong>Current review record</strong>
+                      {item.review.reviewerLabel ? (
+                        <p>Reviewer: {item.review.reviewerLabel}</p>
+                      ) : null}
+                      {item.review.reviewerDisclosureNote ? (
+                        <p>Reviewer disclosure: {item.review.reviewerDisclosureNote}</p>
+                      ) : null}
+                      {item.review.reviewerConflictNote ? (
+                        <p>Reviewer conflict note: {item.review.reviewerConflictNote}</p>
+                      ) : null}
                       {item.review.assignedToKind || item.review.assignedToLabel ? (
                         <p>
                           Assigned to:{" "}
@@ -1131,6 +1140,35 @@ export default async function ContributionReviewPage({
                   <input name="roomSlug" type="hidden" value={item.roomSlug} />
                   <input name="topicId" type="hidden" value={item.topicId} />
                   <h3>Review decision</h3>
+
+                  <div className={styles.reviewFields}>
+                    <label className={styles.field}>
+                      <span>Reviewer label</span>
+                      <input
+                        defaultValue={item.review?.reviewerLabel ?? "Civic Logos maintainer review"}
+                        name="reviewerLabel"
+                        placeholder="Public reviewer label"
+                      />
+                    </label>
+
+                    <label className={styles.field}>
+                      <span>Reviewer disclosure</span>
+                      <input
+                        defaultValue={item.review?.reviewerDisclosureNote ?? ""}
+                        name="reviewerDisclosureNote"
+                        placeholder="Maintainer review for the Civic Logos prototype; external reviewer governance is not yet formalized."
+                      />
+                    </label>
+
+                    <label className={styles.field}>
+                      <span>Conflict note</span>
+                      <input
+                        defaultValue={item.review?.reviewerConflictNote ?? ""}
+                        name="reviewerConflictNote"
+                        placeholder="No additional conflict disclosed in this review record."
+                      />
+                    </label>
+                  </div>
 
                   <div className={styles.reviewFields}>
                     <label className={styles.field}>

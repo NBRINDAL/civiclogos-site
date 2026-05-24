@@ -3325,6 +3325,23 @@ export default function TopicContributionLoop({
                         </div>
                       ) : null}
 
+                      {item.review.reviewerLabel ||
+                      item.review.reviewerDisclosureNote ||
+                      item.review.reviewerConflictNote ? (
+                        <div className={styles.reviewCopy}>
+                          <span className={styles.sectionLabel}>Reviewer disclosure</span>
+                          {item.review.reviewerLabel ? (
+                            <p>{item.review.reviewerLabel}</p>
+                          ) : null}
+                          {item.review.reviewerDisclosureNote ? (
+                            <p>{item.review.reviewerDisclosureNote}</p>
+                          ) : null}
+                          {item.review.reviewerConflictNote ? (
+                            <p>{item.review.reviewerConflictNote}</p>
+                          ) : null}
+                        </div>
+                      ) : null}
+
                       {item.review.decisionReason ? (
                         <div className={styles.reviewCopy}>
                           <span className={styles.sectionLabel}>Decision rationale</span>

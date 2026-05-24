@@ -40,6 +40,13 @@ export async function updateContributionReview(formData: FormData) {
   const roomSlugRaw = String(formData.get("roomSlug") ?? "").trim();
   const topicId = String(formData.get("topicId") ?? "").trim();
   const status = normalizeReviewStatus(String(formData.get("status") ?? ""));
+  const reviewerLabel = String(formData.get("reviewerLabel") ?? "").trim();
+  const reviewerDisclosureNote = String(
+    formData.get("reviewerDisclosureNote") ?? "",
+  ).trim();
+  const reviewerConflictNote = String(
+    formData.get("reviewerConflictNote") ?? "",
+  ).trim();
   const assignedToKind = normalizeReviewTargetKind(
     String(formData.get("assignedToKind") ?? ""),
   );
@@ -64,6 +71,12 @@ export async function updateContributionReview(formData: FormData) {
       : changedSynthesisRaw === "no"
         ? false
         : null;
+  const resolvedReviewerLabel = reviewerLabel || "Civic Logos maintainer review";
+  const resolvedReviewerDisclosureNote =
+    reviewerDisclosureNote ||
+    "Maintainer review for the current Civic Logos prototype; external reviewer governance is not yet formalized.";
+  const resolvedReviewerConflictNote =
+    reviewerConflictNote || "No additional conflict disclosed in this review record.";
 
   const existingContribution = await getContributionById(id);
   const existingPublicContribution = existingContribution
@@ -164,6 +177,9 @@ export async function updateContributionReview(formData: FormData) {
           contribution: existingPublicContribution,
           input: {
             status: guardedStatus,
+            reviewerLabel: resolvedReviewerLabel,
+            reviewerDisclosureNote: resolvedReviewerDisclosureNote,
+            reviewerConflictNote: resolvedReviewerConflictNote,
             assignedToKind: assignedToKind ?? undefined,
             assignedToLabel: assignedToLabel || undefined,
             changedSynthesis: guardedChangedSynthesis,
@@ -188,6 +204,9 @@ export async function updateContributionReview(formData: FormData) {
 
   const reviewedContribution = await reviewContribution(id, {
     status: guardedStatus,
+    reviewerLabel: resolvedReviewerLabel,
+    reviewerDisclosureNote: resolvedReviewerDisclosureNote,
+    reviewerConflictNote: resolvedReviewerConflictNote,
     assignedToKind: assignedToKind ?? undefined,
     assignedToLabel: assignedToLabel || undefined,
     changedSynthesis: guardedChangedSynthesis,

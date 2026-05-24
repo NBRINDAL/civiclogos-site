@@ -69,7 +69,15 @@ Public contribution records may expose:
 
 Public contribution records must not expose private email addresses or private follow-up metadata. If a contribution is founder-maintainer, founder-submitted, AI-origin, or prototype data, that origin must remain visible and must not count as outside public uptake.
 
-## 6. Fixture Test
+## 6. Reviewer Disclosure Tests
+
+Every `HumanReviewDecision` must expose who reviewed the record at a public-label level and must include:
+
+- why that reviewer or maintainer handled the record
+- any relevant conflict, tie, or limitation
+- `none disclosed` or an equivalent explicit statement when no conflict is known
+
+## 7. Fixture Test
 
 The canonical healthcare fixture must satisfy the north-star invariant:
 

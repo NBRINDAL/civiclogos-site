@@ -268,6 +268,8 @@ function evaluateConformanceCase(testCase) {
       return !(input.public_record_fields ?? []).some((field) => field.includes("email"));
     case "origin-label-preserved":
       return !(input.origin === "founder_maintainer" && input.counts_as_outside_public_submission === true);
+    case "reviewer-disclosure-required":
+      return Boolean(input.reviewer_label && input.reviewer_disclosure_note && input.reviewer_conflict_note);
     default:
       throw new Error(`No evaluator registered for conformance case ${testCase.id}`);
   }

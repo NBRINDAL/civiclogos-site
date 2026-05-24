@@ -156,6 +156,8 @@ Minimum fields:
 
 - `review_decision_id`
 - `reviewer_label` or `reviewer_id`
+- `reviewer_disclosure_note`
+- `reviewer_conflict_note`
 - `decision_status`
 - `accepted_lane`
 - `accepted_attachment_targets`

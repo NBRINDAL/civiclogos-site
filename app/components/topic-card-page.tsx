@@ -5265,6 +5265,20 @@ export default async function TopicCardPage({
                         {item.review.publicRecordSnapshot.linkedRecordId}.
                       </p>
                     ) : null}
+                    {item.review?.reviewerLabel ||
+                    item.review?.reviewerDisclosureNote ||
+                    item.review?.reviewerConflictNote ? (
+                      <p>
+                        <strong>Reviewer disclosure:</strong>{" "}
+                        {[
+                          item.review.reviewerLabel,
+                          item.review.reviewerDisclosureNote,
+                          item.review.reviewerConflictNote,
+                        ]
+                          .filter(Boolean)
+                          .join(" · ")}
+                      </p>
+                    ) : null}
                     <ContributionRecordContext contribution={item} recordView="changed-card" />
                     <ContributionAiOriginContext
                       contribution={item}

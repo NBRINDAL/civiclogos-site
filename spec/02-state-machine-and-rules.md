@@ -85,6 +85,8 @@ Required fields:
 Required fields:
 
 - `reviewer_id` or `reviewer_label`
+- `reviewer_disclosure_note`
+- `reviewer_conflict_note`
 - `decision_status`
 - `accepted_lane`
 - `accepted_attachment_targets`

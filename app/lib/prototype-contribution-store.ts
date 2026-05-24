@@ -223,6 +223,9 @@ export async function reviewContribution(
     existing.status = input.status;
     existing.updatedAt = new Date().toISOString();
     existing.review = {
+      reviewerLabel: input.reviewerLabel,
+      reviewerDisclosureNote: input.reviewerDisclosureNote,
+      reviewerConflictNote: input.reviewerConflictNote,
       assignedToKind: input.assignedToKind,
       assignedToLabel: input.assignedToLabel,
       changedSynthesis: input.changedSynthesis ?? null,

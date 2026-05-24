@@ -371,6 +371,9 @@ export function createDatabaseContributionStore(): DatabaseContributionStore {
       const sql = getSqlClient();
       const reviewedAt = new Date().toISOString();
       const nextReview: Contribution["review"] = {
+        reviewerLabel: input.reviewerLabel,
+        reviewerDisclosureNote: input.reviewerDisclosureNote,
+        reviewerConflictNote: input.reviewerConflictNote,
         assignedToKind: input.assignedToKind,
         assignedToLabel: input.assignedToLabel,
         changedSynthesis: input.changedSynthesis ?? null,

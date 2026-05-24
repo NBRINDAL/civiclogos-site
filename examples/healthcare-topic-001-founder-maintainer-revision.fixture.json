@@ -240,6 +240,8 @@
     "review_decision_id": "review:healthcare-topic-001:founder-narrowing",
     "reviewer_id": "actor:human-reviewer-prototype",
     "reviewer_label": "Prototype human reviewer",
+    "reviewer_disclosure_note": "Internal prototype reviewer used to demonstrate the review path before external reviewer governance is formalized.",
+    "reviewer_conflict_note": "Reviewer is part of the Civic Logos prototype fixture and has project-level alignment; this is not an independent external review.",
     "decision_status": "incorporated",
     "accepted_lane": "correction",
     "accepted_attachment_targets": [

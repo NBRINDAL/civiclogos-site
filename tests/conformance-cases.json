@@ -104,6 +104,18 @@
       },
       "expected_valid": false,
       "required_error": "founder_maintainer records cannot count as outside public uptake."
+    },
+    {
+      "id": "reviewer-disclosure-required",
+      "category": "reviewer_disclosure",
+      "description": "Human review decisions must include reviewer disclosure and conflict notes.",
+      "input": {
+        "reviewer_label": "Civic Logos maintainer review",
+        "reviewer_disclosure_note": "",
+        "reviewer_conflict_note": ""
+      },
+      "expected_valid": false,
+      "required_error": "reviewer disclosure and conflict notes must be explicit."
     }
   ]
 }

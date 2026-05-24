@@ -93,6 +93,9 @@ export type ContributionAiIntake = {
 };
 
 export type ContributionReview = {
+  reviewerLabel?: string;
+  reviewerDisclosureNote?: string;
+  reviewerConflictNote?: string;
   assignedToKind?: ReviewTargetKind;
   assignedToLabel?: string;
   changedSynthesis?: boolean | null;
@@ -111,6 +114,9 @@ export type PublicRecordSnapshot = {
   timestamp: string;
   origin: string;
   creatorLabel: string;
+  reviewerLabel?: string;
+  reviewerDisclosureNote?: string;
+  reviewerConflictNote?: string;
   status: ReviewStatus;
   actualCardChange: boolean;
   attachmentTargets: string[];
@@ -155,6 +161,9 @@ export type CreateContributionInput = TopicCardReference & {
 
 export type ReviewContributionInput = {
   status: ReviewStatus;
+  reviewerLabel?: string;
+  reviewerDisclosureNote?: string;
+  reviewerConflictNote?: string;
   assignedToKind?: ReviewTargetKind;
   assignedToLabel?: string;
   changedSynthesis?: boolean | null;

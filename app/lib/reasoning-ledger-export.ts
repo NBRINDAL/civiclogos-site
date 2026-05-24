@@ -315,7 +315,13 @@ function reviewDecisionForContribution(
   return {
     review_decision_id: `review:${contribution.id}`,
     reviewer_id: null,
-    reviewer_label: "Civic Logos maintainer review",
+    reviewer_label: review.reviewerLabel ?? "Civic Logos maintainer review",
+    reviewer_disclosure_note:
+      review.reviewerDisclosureNote ??
+      "Reviewer disclosure was not recorded in the legacy review object.",
+    reviewer_conflict_note:
+      review.reviewerConflictNote ??
+      "No reviewer conflict note was recorded in the legacy review object.",
     decision_status: mapStatus(contribution.status, contribution),
     accepted_lane: mapLane(contribution.lane),
     accepted_attachment_targets: [
