@@ -30,6 +30,7 @@ import {
   updateContributionReview,
 } from "./actions";
 import PublicRecordConfirmationPreview from "./public-record-confirmation-preview";
+import ReviewAiConsult from "./review-ai-consult";
 import {
   getCurrentVisibleSynthesis,
   getNextPublicRecordVersionLabel,
@@ -1155,6 +1156,11 @@ export default async function ContributionReviewPage({
                     </div>
                   ) : null}
                 </div>
+
+                <ReviewAiConsult
+                  contributionId={item.id}
+                  contributionTitle={item.title}
+                />
 
                 <form action={updateContributionReview} className={styles.reviewForm}>
                   <input name="id" type="hidden" value={item.id} />

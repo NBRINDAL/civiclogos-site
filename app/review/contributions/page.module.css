@@ -532,6 +532,56 @@
   background: rgba(91, 110, 69, 0.08);
 }
 
+.reviewerAiPanel {
+  display: grid;
+  gap: 16px;
+  padding: 24px;
+  border: 1px solid rgba(42, 65, 102, 0.18);
+  border-radius: 24px;
+  background:
+    linear-gradient(135deg, rgba(42, 65, 102, 0.08), rgba(255, 251, 245, 0.94)),
+    rgba(255, 251, 245, 0.9);
+}
+
+.reviewerAiPanel h3 {
+  margin-top: 8px;
+  color: var(--foreground);
+  font-family: var(--font-serif), serif;
+  font-size: clamp(1.5rem, 2.2vw, 2rem);
+  font-weight: 600;
+  letter-spacing: -0.03em;
+}
+
+.reviewerAiPanel p {
+  color: var(--muted);
+  line-height: 1.7;
+}
+
+.reviewerPromptList,
+.reviewAiActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.reviewAiActions .submitButton {
+  min-width: 120px;
+}
+
+.reviewerAiAnswers {
+  display: grid;
+  gap: 12px;
+}
+
+.reviewerAiIssueList,
+.errorText {
+  padding: 14px 16px;
+  border: 1px solid rgba(181, 94, 51, 0.18);
+  border-radius: 18px;
+  background: rgba(181, 94, 51, 0.08);
+  color: var(--accent-dark);
+}
+
 .publicRecordPreview {
   display: grid;
   gap: 16px;
