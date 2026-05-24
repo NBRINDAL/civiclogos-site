@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://civiclogos.com/schema/actor-record.schema.json",
+  "title": "ActorRecord",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "actor_id",
+    "actor_type",
+    "public_label",
+    "disclosure_note",
+    "conflict_disclosures",
+    "created_at"
+  ],
+  "properties": {
+    "actor_id": { "type": "string", "minLength": 1 },
+    "actor_type": {
+      "type": "string",
+      "enum": [
+        "system",
+        "reviewer",
+        "contributor",
+        "outside_public_contributor",
+        "founder",
+        "founder_maintainer",
+        "maintainer",
+        "ai_assisted_source",
+        "prototype_fixture",
+        "institutional_funder"
+      ]
+    },
+    "public_label": { "type": "string", "minLength": 1 },
+    "disclosure_note": { "type": "string", "minLength": 1 },
+    "conflict_disclosures": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "created_at": { "type": "string", "format": "date-time" }
+  }
+}

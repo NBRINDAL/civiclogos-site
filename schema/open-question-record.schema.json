@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://civiclogos.com/schema/open-question-record.schema.json",
+  "title": "OpenQuestionRecord",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "open_question_id",
+    "topic_id",
+    "question",
+    "why_unresolved",
+    "created_at",
+    "status"
+  ],
+  "properties": {
+    "open_question_id": { "type": "string", "minLength": 1 },
+    "topic_id": { "type": "string", "minLength": 1 },
+    "question": { "type": "string", "minLength": 1 },
+    "why_unresolved": { "type": "string", "minLength": 1 },
+    "created_at": { "type": "string", "format": "date-time" },
+    "status": { "type": "string", "minLength": 1 }
+  }
+}

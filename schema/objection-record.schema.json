@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://civiclogos.com/schema/objection-record.schema.json",
+  "title": "ObjectionRecord",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "objection_id",
+    "topic_id",
+    "claim_id",
+    "contribution_id",
+    "objection_text",
+    "status",
+    "created_at"
+  ],
+  "properties": {
+    "objection_id": { "type": "string", "minLength": 1 },
+    "topic_id": { "type": "string", "minLength": 1 },
+    "claim_id": { "type": "string", "minLength": 1 },
+    "contribution_id": { "type": ["string", "null"] },
+    "objection_text": { "type": "string", "minLength": 1 },
+    "status": { "type": "string", "minLength": 1 },
+    "created_at": { "type": "string", "format": "date-time" }
+  }
+}

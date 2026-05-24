@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://civiclogos.com/schema/assumption-record.schema.json",
+  "title": "AssumptionRecord",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "assumption_id",
+    "topic_id",
+    "assumption_text",
+    "status",
+    "created_at"
+  ],
+  "properties": {
+    "assumption_id": { "type": "string", "minLength": 1 },
+    "topic_id": { "type": "string", "minLength": 1 },
+    "assumption_text": { "type": "string", "minLength": 1 },
+    "status": { "type": "string", "minLength": 1 },
+    "created_at": { "type": "string", "format": "date-time" }
+  }
+}

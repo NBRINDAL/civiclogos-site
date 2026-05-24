@@ -5,9 +5,17 @@ import { fileURLToPath } from "node:url";
 const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 
 const schemaFiles = [
+  "actor-record.schema.json",
+  "audit-event.schema.json",
+  "room-record.schema.json",
+  "topic-record.schema.json",
   "attachment-target.schema.json",
   "synthesis-snapshot.schema.json",
   "claim-record.schema.json",
+  "objection-record.schema.json",
+  "assumption-record.schema.json",
+  "open-question-record.schema.json",
+  "metric-score.schema.json",
   "evidence-object.schema.json",
   "ai-reader-note.schema.json",
   "human-review-decision.schema.json",
@@ -285,10 +293,22 @@ async function main() {
   const cases = await readJson("tests/conformance-cases.json");
 
   const schemaChecks = [
+    ["RoomRecord", fixture.room_record, schemas["room-record.schema.json"]],
+    ["TopicRecord", fixture.topic_record, schemas["topic-record.schema.json"]],
     ["ClaimRecord", fixture.claim_record, schemas["claim-record.schema.json"]],
     ["ContributionRecord", fixture.contribution_record, schemas["contribution-record.schema.json"]],
     ["HumanReviewDecision", fixture.human_review_decision, schemas["human-review-decision.schema.json"]],
     ["RevisionEvent", fixture.revision_event, schemas["revision-event.schema.json"]],
+    ...fixture.actors.map((item, index) => [
+      `ActorRecord[${index}]`,
+      item,
+      schemas["actor-record.schema.json"],
+    ]),
+    ...fixture.audit_events.map((item, index) => [
+      `AuditEvent[${index}]`,
+      item,
+      schemas["audit-event.schema.json"],
+    ]),
     ...fixture.synthesis_snapshots.map((item, index) => [
       `SynthesisSnapshot[${index}]`,
       item,
