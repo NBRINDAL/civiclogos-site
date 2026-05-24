@@ -77,6 +77,10 @@ const directLinks = [
     label: "Healthcare ledger",
     href: "/healthcare/topic-001?view=ledger#contribution-record",
   },
+  {
+    label: "Healthcare protocol JSON",
+    href: "/api/ledger/healthcare/topic-001",
+  },
   { label: "Demo", href: "/demo" },
   { label: "Challenge", href: "/challenge" },
   { label: "Institutions", href: "/institutions" },

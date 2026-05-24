@@ -11,6 +11,9 @@ Start here:
 - `/examples/healthcare-topic-001-founder-maintainer-revision.fixture.json` models one complete public-record change.
 - `/tests/conformance-v0.1.md` describes conformance tests.
 - `/tests/conformance-cases.json` provides machine-readable test cases.
+- `/api/ledger/healthcare/topic-001` exports the current healthcare topic ledger in the protocol shape.
+
+Run `npm run protocol:check` to validate the canonical fixture against the v0.1 schemas and cross-record conformance rules.
 
 Current status: protocol v0.1 is being formalized. Civic Logos is the live prototype; a standalone reference implementation is next.
 
