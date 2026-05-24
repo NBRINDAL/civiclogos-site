@@ -81,9 +81,10 @@ export default function PressPage() {
           <div className={styles.navLinks}>
             <Link href="/">Home</Link>
             <Link href="/challenge">Challenge</Link>
+            <Link href="/ledger">Ledger</Link>
             <Link href="/healthcare/topic-001">Healthcare card</Link>
             <Link href="/healthcare/topic-001?view=ledger#contribution-record">
-              Ledger
+              Healthcare ledger
             </Link>
             <Link href="/institutions">Institutions</Link>
           </div>

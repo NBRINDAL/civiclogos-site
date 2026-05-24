@@ -2617,6 +2617,7 @@ export default async function TopicCardPage({
               <Link href={roomHref}>{roomLabel}</Link>
               <Link href="/challenge">Challenge</Link>
               <Link href="/press">Press</Link>
+              <Link href="/ledger">Ledger</Link>
               <Link href="/institutions">Institutions</Link>
               <a href="#reader-view">Reader view</a>
               <Link href={ledgerViewHref}>Ledger view</Link>
@@ -3103,6 +3104,7 @@ export default async function TopicCardPage({
             <Link href={roomHref}>{roomLabel}</Link>
             <Link href="/challenge">Challenge</Link>
             <Link href="/press">Press</Link>
+            <Link href="/ledger">Ledger</Link>
             <Link href="/institutions">Institutions</Link>
             <a href="#room-context">Room context</a>
             <a href="#debate">Debate lanes</a>

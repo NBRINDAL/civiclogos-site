@@ -146,6 +146,7 @@ export default async function ChallengePage({
             <Link href="/">Home</Link>
             <Link href="/press">Press</Link>
             <Link href="/demo">Demo</Link>
+            <Link href="/ledger">Ledger</Link>
             <Link href="/institutions">Institutions</Link>
           </div>
         </nav>

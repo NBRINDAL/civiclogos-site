@@ -564,6 +564,7 @@ export default async function Home({
             <Link href="/demo">Demo</Link>
             <Link href="/challenge">Challenge</Link>
             <Link href="/press">Press</Link>
+            <Link href="/ledger">Ledger</Link>
             <Link href="/institutions">Institutions</Link>
             <Link href="/healthcare">Healthcare</Link>
             <Link href="/rooms">Rooms</Link>

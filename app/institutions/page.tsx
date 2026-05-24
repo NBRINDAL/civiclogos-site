@@ -249,6 +249,7 @@ export default async function InstitutionsPage({
             <Link href="/">Home</Link>
             <Link href="/demo">Demo</Link>
             <Link href="/press">Press</Link>
+            <Link href="/ledger">Ledger</Link>
             <a href="#offers">Offers</a>
             <a href="#model">Public Review Stake</a>
             <a href="#example">Healthcare example</a>

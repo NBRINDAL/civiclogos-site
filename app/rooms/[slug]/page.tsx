@@ -199,6 +199,7 @@ export default async function IssueRoomPage({
             <Link href="/">Home</Link>
             <Link href="/rooms">All rooms</Link>
             <Link href="/press">Press</Link>
+            <Link href="/ledger">Ledger</Link>
             <Link href="/institutions">Institutions</Link>
             <a href="#working-materials">Working materials</a>
           </nav>

@@ -241,6 +241,7 @@ export default async function DemoPage() {
             <Link href="/">Home</Link>
             <Link href="/healthcare">Healthcare room</Link>
             <Link href="/press">Press</Link>
+            <Link href="/ledger">Ledger</Link>
             <Link href="/institutions">Institutions</Link>
           </nav>
         </div>
