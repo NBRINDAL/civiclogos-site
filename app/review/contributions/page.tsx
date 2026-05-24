@@ -800,6 +800,15 @@ export default async function ContributionReviewPage({
                 Boolean(item.aiIntake?.suggestedAssignmentKind) ||
                 Boolean(item.aiIntake?.suggestedAssignmentLabel);
               const origin = getContributionOrigin(item);
+              const completedAiValidationProviders =
+                item.aiIntake?.providers.filter((provider) => provider.state === "completed") ??
+                [];
+              const completedAiValidationLabel = completedAiValidationProviders
+                .map((provider) => (provider.provider === "openai" ? "OpenAI" : "Claude"))
+                .join(" and ");
+              const isFounderMaintainerRevision = origin === "founder-maintainer";
+              const maintainerRevisionGateOpen =
+                !isFounderMaintainerRevision || completedAiValidationProviders.length > 0;
               const provenanceBadges = [
                 getContributionOriginLabel(origin),
                 item.evidenceDocument ? "Document-backed" : null,
@@ -887,7 +896,7 @@ export default async function ContributionReviewPage({
                       learning only, not contribution ranking or scoring.
                     </p>
                   ) : null}
-                  {origin === "founder-maintainer" ? (
+                  {isFounderMaintainerRevision ? (
                     <p>
                       This is a founder-maintainer revision, not an outside public
                       submission. It can only move the visible synthesis after
@@ -964,6 +973,25 @@ export default async function ContributionReviewPage({
                       <p>No provider output is attached to this contribution yet.</p>
                     </div>
                   )}
+
+                  {isFounderMaintainerRevision ? (
+                    <div className={styles.validationGate}>
+                      <strong>Maintainer synthesis gate</strong>
+                      {maintainerRevisionGateOpen ? (
+                        <p>
+                          AI validation is attached from {completedAiValidationLabel}.
+                          Human review may incorporate a synthesis update if the
+                          proposal is still plausibly stronger after scrutiny.
+                        </p>
+                      ) : (
+                        <p>
+                          Incorporation is blocked until at least one AI reader
+                          completes the validation read. The proposal can stay
+                          visible in review, but it cannot move the card yet.
+                        </p>
+                      )}
+                    </div>
+                  ) : null}
 
                   {item.review ? (
                     <div className={styles.reviewSummary}>
@@ -1108,6 +1136,15 @@ export default async function ContributionReviewPage({
                             suggestedChangedSynthesis ? "likely" : "unlikely"
                           }, but that is not an actual card change.`
                         : ""}
+                    </p>
+                  ) : null}
+
+                  {isFounderMaintainerRevision ? (
+                    <p className={styles.prefillNote}>
+                      Founder-maintainer synthesis updates are gated. Choose
+                      incorporated and actual card change yes only after the AI
+                      reader critique is attached and the proposal still improves
+                      the public record.
                     </p>
                   ) : null}
 

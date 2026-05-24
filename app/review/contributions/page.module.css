@@ -497,7 +497,8 @@
 
 .providerCard,
 .reviewSummary,
-.suggestionSummary {
+.suggestionSummary,
+.validationGate {
   padding: 18px;
   border: 1px solid rgba(18, 33, 39, 0.1);
   border-radius: 20px;
@@ -506,9 +507,15 @@
 
 .providerCard strong,
 .reviewSummary strong,
-.suggestionSummary strong {
+.suggestionSummary strong,
+.validationGate strong {
   display: block;
   margin-bottom: 8px;
+}
+
+.validationGate {
+  border-color: rgba(91, 110, 69, 0.22);
+  background: rgba(91, 110, 69, 0.08);
 }
 
 .reviewForm {
