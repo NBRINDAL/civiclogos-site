@@ -5,6 +5,7 @@ import {
   getRoomHref,
   getRoomTopicCard,
   getRoomTopicHref,
+  issueRooms,
   type IssueRoomSlug,
 } from "@/app/lib/civic-logos";
 import {
@@ -32,7 +33,7 @@ import {
 } from "@/app/lib/reasoning-types";
 
 function isRoomSlug(value: string): value is IssueRoomSlug {
-  return value === "healthcare" || value === "governance" || value === "housing" || value === "ai-labor" || value === "institutional-trust";
+  return value in issueRooms;
 }
 
 export async function updateContributionReview(formData: FormData) {

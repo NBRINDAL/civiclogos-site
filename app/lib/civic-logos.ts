@@ -1288,12 +1288,212 @@ export const institutionalTrustIssueRoom = {
   ],
 } satisfies IssueRoomData;
 
+export const physicsFoundationsIssueRoom = {
+  title: "Physics Foundations",
+  question:
+    "How should standard quantum theory, general relativity, and Planck-unit definitions be mapped before evaluating proposed reformulations?",
+  deeperQuestion:
+    "What has standard physics established, where do its domains remain incomplete, and what would a proposed reformulation need to show before it should move the synthesis?",
+  draftNote:
+    "This room was promoted from public intake artifact b1b83fa2-1687-4999-a24c-1751ad141b12. It starts as a neutral baseline for standard physics foundations; alternate frameworks must enter later through contribution records, AI-assisted review, and human incorporation.",
+  whyItMatters:
+    "Foundational physics is easy to misread in public because definitions, measurements, theoretical extrapolations, and speculative reformulations often blur together. A neutral room can hold the established map first, then let proposed changes pressure it visibly.",
+  currentSynthesis:
+    "Quantum theory and general relativity remain highly successful inside their tested domains, while their conceptual and mathematical relationship remains unresolved. Planck units provide a useful dimensional framework built from constants such as c, hbar, and G, but they should not be treated as evidence for any specific unification claim without further argument, definitions, and empirical constraints.",
+  narrative: [
+    "This room begins by separating standard definitions from open theoretical disputes. Quantum mechanics, quantum field theory, general relativity, and Planck units should be mapped before any alternative framework is allowed to move the public synthesis.",
+    "The purpose is not to police curiosity. It is to make sure foundational claims do not jump from notation or dimensional reformulation to authority without passing through claims, objections, evidence, assumptions, and review.",
+  ],
+  workingConclusions: [
+    "Quantum theory and quantum field theory are empirically powerful across microscopic, atomic, particle, and condensed-matter domains.",
+    "General relativity is empirically powerful across gravitational, astronomical, cosmological, and precision timing domains.",
+    "Planck units are dimensional definitions and scale markers, not direct proof that spacetime has a particular microstructure.",
+    "The relationship between quantum theory and general relativity remains unresolved in regimes such as singularities, black holes, early-universe physics, and quantum gravity.",
+  ],
+  whatCouldMoveTheRoom: [
+    "A precise contribution that shows a standard definition is misstated or being used beyond its domain.",
+    "A document-backed argument clarifying whether a proposed reformulation changes notation, assumptions, predictions, or empirical commitments.",
+    "A strong objection showing that the current synthesis overstates either standard confidence or speculative uncertainty.",
+  ],
+  startHere: [
+    {
+      title: "Separate definitions from claims",
+      body: "Planck units, constants, equations, and coordinate choices should be treated as definitions or formal objects before they are treated as evidence for a physical conclusion.",
+    },
+    {
+      title: "Map tested domains",
+      body: "A useful room should keep empirical success visible: quantum theory and general relativity are not equally tested in every regime, but both are deeply tested where they are known to apply.",
+    },
+    {
+      title: "Keep alternatives reviewable",
+      body: "A proposed reformulation should identify what it changes, what it preserves, what it predicts, and what would count against it.",
+    },
+  ] satisfies StartHereItem[],
+  majorFrames: [
+    {
+      title: "Established Domains Frame",
+      body: "Start from where quantum theory, quantum field theory, and general relativity have already survived experimental pressure.",
+    },
+    {
+      title: "Foundational Tension Frame",
+      body: "Focus on the unresolved relationship between quantum theory and dynamical spacetime without treating that gap as proof of any one solution.",
+    },
+    {
+      title: "Definition Discipline Frame",
+      body: "Ask whether constants, unit conversions, and dimensional forms are being used as definitions, interpretations, or empirical claims.",
+    },
+    {
+      title: "Alternative Framework Frame",
+      body: "Let proposed reformulations enter as claims that can be attached, objected to, sourced, and revised rather than as immediate synthesis replacements.",
+    },
+  ] satisfies FrameSummary[],
+  initialScorecard: [
+    { metric: "Public Reasoning Value", rating: "High" },
+    { metric: "Evidence Burden", rating: "Extreme" },
+    { metric: "Definition Precision Burden", rating: "Extreme" },
+    { metric: "Speculation Risk", rating: "High" },
+    { metric: "Review Burden", rating: "High" },
+    { metric: "Economic Delta Potential", rating: "Indirect" },
+  ] satisfies ScorecardMetric[],
+  roomPurpose:
+    "The purpose of this room is to create a neutral public record for standard physics foundations before evaluating reformulations. It should distinguish definitions, evidence, objections, assumptions, unresolved tensions, and revision history so strong alternate claims can be reviewed without being smuggled into the synthesis.",
+  roomComponents: [
+    "Current neutral synthesis",
+    "Standard definitions",
+    "Empirical domains",
+    "Known incompatibilities",
+    "Alternative-framework claims",
+    "Evidence and source attachments",
+    "Open questions",
+    "Revision trace",
+  ],
+  topProposals: [
+    {
+      title: "Standard Physics Foundations Baseline",
+      summary:
+        "A neutral topic card for mapping quantum theory, general relativity, Planck units, tested domains, unresolved tensions, and the review path for proposed reformulations.",
+      label: "Topic in focus",
+      metric: "Promoted from reviewed intake artifact",
+      href: "/rooms/physics-foundations/topic-001",
+    },
+  ] satisfies ProposalSummary[],
+  novelProposals: [
+    {
+      title: "Alternative Framework Review Path",
+      summary:
+        "A contribution path for proposed reformulations that requires clear claims, assumptions, objections, evidence, and human review before synthesis movement.",
+      label: "Room mechanism",
+      metric: "Guardrail before synthesis pressure",
+    },
+  ] satisfies ProposalSummary[],
+  economicDeltaLeaders: [
+    {
+      title: "Science Communication Clarity",
+      summary:
+        "The value is indirect: fewer category mistakes between definitions, empirical results, and speculative claims when foundational physics is discussed publicly.",
+      label: "Indirect value",
+      metric: "High clarity value, no direct economic claim",
+    },
+  ] satisfies ProposalSummary[],
+  mostDebated: [
+    {
+      title: "Planck-Scale Interpretation",
+      summary:
+        "Planck units are standard dimensional scales, but their physical interpretation remains contested when claims move from units to microstructure.",
+      label: "Most debated",
+      metric: "Definition versus inference",
+    },
+  ] satisfies ProposalSummary[],
+  stakeholders: [
+    "Physicists and physics students",
+    "Science communicators",
+    "Researchers proposing alternate frameworks",
+    "Educators",
+    "Technically curious public readers",
+    "AI-assisted reviewers",
+    "Maintainers of the public reasoning record",
+  ],
+  perspectives: [
+    {
+      title: "Mainstream physics perspective",
+      thesis:
+        "Quantum theory and general relativity should be treated as deeply successful within their domains even while their unification remains unresolved.",
+      relation: "Keeps empirical success visible before alternatives are assessed.",
+    },
+    {
+      title: "Foundational reform perspective",
+      thesis:
+        "The unresolved relationship between quantum theory and general relativity may require changes to assumptions about space, time, measurement, or gravity.",
+      relation: "Creates room for reformulation claims without letting them bypass review.",
+    },
+    {
+      title: "Definition-focused perspective",
+      thesis:
+        "Unit conversions and rewritten constants can clarify structure, but they do not automatically establish new physical claims.",
+      relation: "Protects the synthesis from notation-as-proof errors.",
+    },
+  ] satisfies PerspectiveSummary[],
+  evidenceLibrary: [
+    {
+      title: "Quantum theory and quantum field theory empirical record",
+      status: "Strong evidence",
+      note: "Supports the baseline that standard quantum frameworks are highly confirmed in tested domains.",
+    },
+    {
+      title: "General relativity empirical record",
+      status: "Strong evidence",
+      note: "Includes gravitational lensing, time dilation, orbital dynamics, gravitational waves, black holes, and cosmological applications.",
+    },
+    {
+      title: "Planck-unit definitions",
+      status: "Established definition",
+      note: "Useful as dimensional combinations of c, hbar, G, and related constants; interpretation still requires argument.",
+    },
+    {
+      title: "Direct Planck-scale empirical access",
+      status: "Missing evidence",
+      note: "Current experiments do not directly probe Planck-scale distances or energies.",
+    },
+  ] satisfies EvidenceSummary[],
+  objectionLibrary: [
+    "The room may overstate mainstream closure if it treats unresolved quantum-gravity problems as mere details.",
+    "The room may overstate alternative promise if it treats dimensional reformulation as physical explanation.",
+    "Planck-unit language can mislead readers if it implies a confirmed minimum length or spacetime pixelation.",
+    "A public reasoning card may struggle to preserve technical precision without becoming inaccessible.",
+  ],
+  openQuestions: [
+    "Which statements are definitions, which are empirical claims, and which are interpretations?",
+    "Where exactly do quantum theory and general relativity fail to merge cleanly?",
+    "What evidence would distinguish a reformulation from a notational change?",
+    "How should the room handle alternate frameworks that are mathematically suggestive but not empirically discriminated?",
+  ],
+  claimMap: [
+    {
+      claim: "Quantum theory is highly confirmed in its tested domains.",
+      status: "Established baseline claim",
+    },
+    {
+      claim: "General relativity is highly confirmed in its tested domains.",
+      status: "Established baseline claim",
+    },
+    {
+      claim: "Planck units are dimensional definitions rather than direct proof of a particular physical microstructure.",
+      status: "Definition guardrail",
+    },
+    {
+      claim: "Quantum theory and general relativity are not yet unified in a complete experimentally confirmed framework.",
+      status: "Active open problem",
+    },
+  ] satisfies ClaimAtom[],
+} satisfies IssueRoomData;
+
 export const issueRooms = {
   healthcare: healthcareIssueRoom,
   governance: governanceIssueRoom,
   housing: housingIssueRoom,
   "ai-labor": aiLaborIssueRoom,
   "institutional-trust": institutionalTrustIssueRoom,
+  "physics-foundations": physicsFoundationsIssueRoom,
 } satisfies Record<string, IssueRoomData>;
 
 export type IssueRoomSlug = keyof typeof issueRooms;
@@ -1386,6 +1586,16 @@ export const roomDirectory: readonly RoomDirectoryItem[] = [
     stage: "Seeded draft",
     href: "/rooms/institutional-trust",
   },
+  {
+    slug: "physics-foundations",
+    title: physicsFoundationsIssueRoom.title,
+    domain: "Science foundations and public reasoning",
+    summary:
+      "A neutral room for mapping standard quantum theory, general relativity, Planck units, and reviewed reformulation claims.",
+    complexity: "Extreme",
+    stage: "Promoted from intake",
+    href: "/rooms/physics-foundations",
+  },
 ] as const;
 
 const roomDirectoryBySlug = Object.fromEntries(
@@ -1398,6 +1608,7 @@ const relatedRoomSlugs = {
   housing: ["governance", "institutional-trust", "healthcare"],
   "ai-labor": ["institutional-trust", "governance", "healthcare"],
   "institutional-trust": ["governance", "ai-labor", "healthcare"],
+  "physics-foundations": ["ai-labor", "institutional-trust", "governance"],
 } satisfies Record<IssueRoomSlug, readonly IssueRoomSlug[]>;
 
 export function getRoomDirectoryItem(roomSlug: IssueRoomSlug): RoomDirectoryItem {
@@ -3742,6 +3953,204 @@ export const institutionalTrustTopic003: TopicCardData = {
   ],
 };
 
+export const physicsFoundationsTopic001: TopicCardData = {
+  id: "topic-001",
+  title: "Standard Physics Foundations Baseline",
+  subtitle:
+    "A neutral physics topic card for quantum theory, general relativity, Planck units, and reviewed reformulation pressure",
+  draftNote:
+    "This topic card was promoted from public intake artifact b1b83fa2-1687-4999-a24c-1751ad141b12. It is a neutral baseline, not an endorsement of any alternate framework.",
+  thesis:
+    "Standard physics foundations should first separate established definitions, empirically tested domains, unresolved incompatibilities, and open questions before evaluating proposed reformulations.",
+  currentRead:
+    "This card is strongest as a neutral baseline. Quantum theory and general relativity remain highly successful inside their tested domains, while their conceptual and mathematical relationship remains unresolved. Planck units are useful dimensional scales built from constants such as c, hbar, and G, but they should not be treated as evidence for a specific unification claim without additional argument and empirical pressure.",
+  problemStatement:
+    "Public discussion of foundational physics often blurs definitions, confirmed empirical results, theoretical extrapolations, and speculative reformulations. That makes it hard to tell whether a proposal changes notation, assumptions, physical interpretation, or testable predictions.",
+  proposedSolution:
+    "Create a neutral baseline card that maps standard quantum theory, general relativity, Planck units, tested domains, unresolved tensions, and review requirements for alternative frameworks. Contributions can then attach as evidence, objections, assumption challenges, open questions, or synthesis pressure.",
+  mechanism: [
+    "Treat Planck units, constants, and equations as definitions or formal objects before treating them as physical conclusions.",
+    "Keep empirical domains visible for quantum theory, quantum field theory, and general relativity.",
+    "Name unresolved tensions such as quantum gravity, singularities, black hole information, measurement foundations, and background dependence without assigning them to one solution.",
+    "Require proposed reformulations to state what they change, what they preserve, what evidence supports them, and what would count against them.",
+  ],
+  benefits: [
+    "Readers can distinguish established theory from interpretation and speculation.",
+    "Founder-submitted or outside alternate frameworks have a fair place to enter without being smuggled into the synthesis.",
+    "AI-assisted readers can classify whether a contribution is evidence, an objection, a definition challenge, or synthesis pressure.",
+    "Human review can move the public record only after the contribution is visible and contestable.",
+  ],
+  risks: [
+    "The topic may become too technical for general readers if definitions are not explained carefully.",
+    "The card could overprotect the standard view if alternate frameworks are dismissed before their claims are made precise.",
+    "The card could overcredit speculation if mathematical or dimensional elegance is mistaken for evidence.",
+    "AI readers may summarize physics claims too confidently unless limitations and source needs remain visible.",
+  ],
+  assumptions: [
+    "A neutral baseline improves review quality before alternate theories are introduced.",
+    "The strongest reformulation claims can be broken into inspectable contribution records.",
+    "Technical definitions can be made public enough for review without flattening important distinctions.",
+    "Synthesis movement should require more than rewritten constants or notation alone.",
+  ],
+  stakeholders: [
+    "Physicists",
+    "Students and educators",
+    "Science communicators",
+    "Researchers proposing reformulations",
+    "Technically curious public readers",
+    "Maintainers and reviewers",
+  ],
+  evidence: [
+    {
+      title: "Quantum theory and quantum field theory empirical record",
+      status: "Strong evidence",
+      note: "Establishes that standard quantum frameworks are highly successful in tested microscopic and high-energy domains.",
+    },
+    {
+      title: "General relativity empirical record",
+      status: "Strong evidence",
+      note: "Includes gravitational lensing, time dilation, orbital dynamics, gravitational waves, black hole observations, and cosmological applications.",
+    },
+    {
+      title: "Planck-unit definitions",
+      status: "Established definition",
+      note: "Planck units are dimensional combinations of constants; their physical interpretation requires separate argument.",
+    },
+    {
+      title: "Direct Planck-scale measurement",
+      status: "Missing evidence",
+      note: "Current experiments do not directly test Planck-length or Planck-energy regimes.",
+    },
+  ] satisfies EvidenceSummary[],
+  economicDelta: {
+    summary:
+      "Estimated Economic Delta: Indirect. The public value is clarity: fewer category mistakes between definitions, empirical success, unresolved theory, and speculative reformulation. No direct economic claim is made.",
+    metrics: [
+      "Public clarity value: high if the room prevents definition-to-conclusion leaps",
+      "Evidence burden: extreme for any synthesis-changing reformulation",
+      "Implementation cost: low for record keeping, high for expert review quality",
+      "Economic-delta confidence: low because value is indirect and educational",
+    ],
+  },
+  strongestSupport:
+    "A neutral baseline lets Civic Logos handle a high-complexity technical topic without pretending that either mainstream confidence or alternate-theory pressure can bypass public review.",
+  strongestObjection:
+    "The card may still be too coarse for real physics review. If expert precision is missing, the ledger could create the appearance of structured reasoning while misunderstanding the claims it is trying to evaluate.",
+  anticipatedObjection:
+    "Alternative-framework advocates may argue that the baseline is too conservative because it treats standard definitions as the starting point.",
+  whatWouldStrengthen: [
+    "Document-backed sources for the standard definitions of Planck length, Planck time, Planck mass, and Planck energy.",
+    "A clearer list of empirical domains where quantum theory and general relativity are separately well tested.",
+    "A reviewer checklist for deciding whether a reformulation changes notation, assumptions, predictions, or empirical commitments.",
+  ],
+  openQuestions: [
+    "Which definitions are established conventions rather than contested claims?",
+    "Where are quantum theory and general relativity empirically strongest?",
+    "Where do their domains fail to merge cleanly?",
+    "What would an alternative framework need to predict, explain, or measure before it should pressure the synthesis?",
+  ],
+  maturity: "Neutral seed topic",
+  scorecard: [
+    {
+      label: "Definition clarity",
+      value: 74,
+      basis: "Initial founder-maintainer estimate pending source-backed definition records.",
+    },
+    {
+      label: "Evidence quality",
+      value: 68,
+      basis: "Standard empirical domains are strong, but specific source attachments are not yet added.",
+    },
+    {
+      label: "Review readiness",
+      value: 66,
+      basis: "The room has a clear contribution path, but expert review standards still need pressure-testing.",
+    },
+    {
+      label: "Speculation guardrail",
+      value: 80,
+      basis: "The baseline clearly separates definitions, open questions, and synthesis-changing claims.",
+    },
+    {
+      label: "Public value",
+      value: 72,
+      basis: "Useful if readers can follow the distinction between standard theory, uncertainty, and reformulation.",
+    },
+  ],
+  aiPanels: [
+    {
+      role: "Structurer",
+      confidence: "Moderate",
+      summary:
+        "The card separates definitions, empirical domains, unresolved tensions, and reformulation claims, which is the right initial structure for a public reasoning ledger.",
+      provenance: {
+        sourceLabel: "Public intake artifact",
+        model: "OpenAI / Claude issue-development reads",
+        generatedAt: "May 24, 2026",
+        promptCategory: "Room candidate development",
+        note: "AI development was advisory; founder-maintainer promotion created the live neutral shell.",
+      },
+    },
+    {
+      role: "Critic",
+      confidence: "Moderate",
+      summary:
+        "The card should not let rewritten constants, dimensional elegance, or persuasive framing count as evidence unless the contribution identifies changed assumptions or predictions.",
+    },
+    {
+      role: "Institutionalist",
+      confidence: "Low",
+      summary:
+        "For a technical science topic, the reviewer-selection problem matters. The room should eventually disclose reviewer expertise, limitations, and conflicts.",
+    },
+  ],
+  debatePrompts: [
+    {
+      title: "Support",
+      description: "Add the strongest reason this neutral baseline correctly distinguishes standard physics from speculative reformulation.",
+    },
+    {
+      title: "Objection",
+      description: "Surface the strongest reason the current baseline overstates, understates, or misframes standard physics.",
+    },
+    {
+      title: "Evidence",
+      description: "Attach a concrete source for a definition, empirical domain, or unresolved physics problem.",
+    },
+    {
+      title: "Correction",
+      description: "Correct a factual, mathematical, definitional, or domain-scope error in the card.",
+    },
+    {
+      title: "Nuance",
+      description: "Add a distinction between definition, interpretation, model, prediction, and evidence.",
+    },
+    {
+      title: "Implementation concern",
+      description: "Identify what review standards are needed before alternate frameworks can move the synthesis.",
+    },
+    {
+      title: "Assumption challenge",
+      description: "Challenge an assumption about Planck units, empirical domains, or what counts as synthesis pressure.",
+    },
+    {
+      title: "Alternate framework",
+      description: "Submit a proposed reformulation as a reviewable contribution with claims, assumptions, and evidence needs clearly separated.",
+    },
+    {
+      title: "Reader perspective",
+      description: "Explain what a technically curious reader needs clarified before the card becomes understandable.",
+    },
+  ] satisfies DebatePrompt[],
+  revisionHistory: [
+    {
+      version: "v0.1",
+      date: "May 2026",
+      note: "Live neutral topic shell created from reviewed public intake artifact b1b83fa2-1687-4999-a24c-1751ad141b12.",
+    },
+  ],
+};
+
 export const roomTopicCards = {
   healthcare: [topic001, topic002, topic003],
   governance: [governanceTopic001, governanceTopic002],
@@ -3752,6 +4161,7 @@ export const roomTopicCards = {
     institutionalTrustTopic002,
     institutionalTrustTopic003,
   ],
+  "physics-foundations": [physicsFoundationsTopic001],
 } satisfies Record<IssueRoomSlug, readonly TopicCardData[]>;
 
 export function getRoomTopicCards(roomSlug: IssueRoomSlug): readonly TopicCardData[] {
@@ -3788,6 +4198,8 @@ export function getRoomTopicBrandSubtitle(roomSlug: IssueRoomSlug): string {
       return "AI topic card";
     case "institutional-trust":
       return "Institutional trust topic card";
+    case "physics-foundations":
+      return "Physics foundations topic card";
   }
 }
 
@@ -3803,5 +4215,7 @@ export function getRoomTopicLabel(roomSlug: IssueRoomSlug): string {
       return "AI room";
     case "institutional-trust":
       return "Trust room";
+    case "physics-foundations":
+      return "Physics room";
   }
 }

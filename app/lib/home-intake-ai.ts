@@ -244,6 +244,28 @@ const roomKeywordMap: Record<IssueRoomSlug, readonly string[]> = {
     "power-network",
     "network",
   ],
+  "physics-foundations": [
+    "physics",
+    "quantum",
+    "mechanics",
+    "relativity",
+    "general",
+    "planck",
+    "hbar",
+    "gravity",
+    "spacetime",
+    "cosmology",
+    "particle",
+    "particles",
+    "field",
+    "fields",
+    "qft",
+    "standard",
+    "standardmodel",
+    "constants",
+    "unification",
+    "foundations",
+  ],
 };
 
 const highSalienceKeywords = new Set([
@@ -469,6 +491,31 @@ function buildPhysicsFoundationsRouting(
 
   if (!hasEnoughPhysicsSignal) {
     return null;
+  }
+
+  if ("physics-foundations" in issueRooms) {
+    return {
+      routeKind: "existing-room",
+      roomSlug: "physics-foundations",
+      roomTitle: "Physics Foundations",
+      topicId: "topic-001",
+      topicTitle: "Standard Physics Foundations Baseline",
+      routeConfidence: "high",
+      fitSummary:
+        "This prompt belongs in the live Physics Foundations room, where standard quantum theory, general relativity, Planck units, and proposed reformulations can be reviewed without forcing the issue into Healthcare or AI.",
+      suggestedCentralQuestion:
+        "How should standard quantum theory, general relativity, and Planck-unit definitions be mapped before evaluating proposed reformulations?",
+      suggestedTopicTitle: "Standard Physics Foundations Baseline",
+      suggestedTopicSummary:
+        "A neutral live topic for separating established definitions, empirical domains, unresolved incompatibilities, and reviewable reformulation claims.",
+      suggestedFirstQuestions: [
+        "Which definition, claim, objection, or open question does this prompt pressure?",
+        "Does the prompt change notation, assumptions, predictions, or empirical commitments?",
+        "What evidence or source attachment would make the contribution reviewable?",
+      ],
+      whyNotExistingRooms:
+        "The live Physics Foundations room is now a cleaner fit than Healthcare, Governance, Housing, AI, or Institutional Trust.",
+    };
   }
 
   return {
