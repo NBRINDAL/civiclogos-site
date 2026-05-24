@@ -12,6 +12,7 @@ import {
 } from "./database-contribution-store";
 import {
   createContribution as createPrototypeContribution,
+  getContributionById as getPrototypeContributionById,
   getContributionStoreMetadata as getPrototypeContributionStoreMetadata,
   listAllContributions as listAllPrototypeContributions,
   listPublicContributions as listPublicPrototypeContributions,
@@ -49,6 +50,7 @@ async function withContributionStore<T>(
       listAllContributions: (
         filters?: ListContributionFilters,
       ) => Promise<Contribution[]>;
+      getContributionById: (id: string) => Promise<Contribution | null>;
       createContribution: (
         input: CreateContributionInput,
       ) => Promise<PublicContribution>;
@@ -82,6 +84,7 @@ async function withContributionStore<T>(
           },
     listPublicContributions: listPublicPrototypeContributions,
     listAllContributions: listAllPrototypeContributions,
+    getContributionById: getPrototypeContributionById,
     createContribution: createPrototypeContribution,
     reviewContribution: reviewPrototypeContribution,
   };
@@ -99,6 +102,10 @@ export async function listPublicContributions(filters: ListContributionFilters =
 
 export async function listAllContributions(filters: ListContributionFilters = {}) {
   return withContributionStore((store) => store.listAllContributions(filters));
+}
+
+export async function getContributionById(id: string) {
+  return withContributionStore((store) => store.getContributionById(id));
 }
 
 export async function createContribution(input: CreateContributionInput) {

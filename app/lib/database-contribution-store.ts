@@ -56,6 +56,7 @@ type DatabaseContributionStore = {
   listAllContributions: (
     filters?: ListContributionFilters,
   ) => Promise<Contribution[]>;
+  getContributionById: (id: string) => Promise<Contribution | null>;
   createContribution: (
     input: CreateContributionInput,
   ) => Promise<PublicContribution>;
@@ -279,6 +280,20 @@ export function createDatabaseContributionStore(): DatabaseContributionStore {
     async listAllContributions(filters = {}) {
       const rows = await listRows(filters);
       return rows.map(rowToContribution);
+    },
+
+    async getContributionById(id) {
+      await ensureContributionTable();
+      const sql = getSqlClient();
+      const rows = await sql<ContributionRow[]>`
+        select *
+        from civiclogos_contributions
+        where id = ${id}
+        limit 1
+      `;
+
+      const row = rows[0];
+      return row ? rowToContribution(row) : null;
     },
 
     async createContribution(input) {

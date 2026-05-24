@@ -9,7 +9,7 @@ import {
 } from "@/app/lib/civic-logos";
 import {
   createContribution,
-  listAllContributions,
+  getContributionById,
   reviewContribution,
 } from "@/app/lib/contribution-store";
 import { getContributionOrigin } from "@/app/lib/contribution-origin";
@@ -54,16 +54,7 @@ export async function updateContributionReview(formData: FormData) {
         ? false
         : null;
 
-  const existingContribution =
-    isRoomSlug(roomSlugRaw) && topicId
-      ? (
-          await listAllContributions({
-            roomSlug: roomSlugRaw,
-            topicId,
-            limit: 50,
-          })
-        ).find((item) => item.id === id)
-      : null;
+  const existingContribution = await getContributionById(id);
   const isMaintainerRevision =
     existingContribution && getContributionOrigin(existingContribution) === "founder-maintainer";
   const hasCompletedAiValidation =

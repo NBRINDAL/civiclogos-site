@@ -171,6 +171,11 @@ export async function listAllContributions(filters: ListContributionFilters = {}
   });
 }
 
+export async function getContributionById(id: string) {
+  const document = await readStoreDocument();
+  return document.contributions.find((item) => item.id === id) ?? null;
+}
+
 export async function createContribution(input: CreateContributionInput) {
   return enqueueWrite(async () => {
     const document = await readStoreDocument();
