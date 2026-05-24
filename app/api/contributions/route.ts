@@ -25,6 +25,7 @@ type ContributionPayload = {
   body?: unknown;
   evidenceLabel?: unknown;
   evidenceUrl?: unknown;
+  evidenceExcerpt?: unknown;
   name?: unknown;
   email?: unknown;
   expertise?: unknown;
@@ -166,6 +167,7 @@ export async function POST(request: NextRequest) {
         body: formData.get("body"),
         evidenceLabel: formData.get("evidenceLabel"),
         evidenceUrl: formData.get("evidenceUrl"),
+        evidenceExcerpt: formData.get("evidenceExcerpt"),
         name: formData.get("name"),
         email: formData.get("email"),
         expertise: formData.get("expertise"),
@@ -187,6 +189,7 @@ export async function POST(request: NextRequest) {
   const body = asTrimmedString(payload.body);
   const evidenceLabel = asTrimmedString(payload.evidenceLabel);
   const evidenceUrl = asTrimmedString(payload.evidenceUrl);
+  const evidenceExcerpt = asTrimmedString(payload.evidenceExcerpt);
   const name = asTrimmedString(payload.name);
   const email = asTrimmedString(payload.email);
   const expertise = asTrimmedString(payload.expertise);
@@ -218,7 +221,12 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  if (title.length > 180 || body.length > 5000 || evidenceLabel.length > 180) {
+  if (
+    title.length > 180 ||
+    body.length > 5000 ||
+    evidenceLabel.length > 180 ||
+    evidenceExcerpt.length > 8000
+  ) {
     return NextResponse.json(
       { error: "One or more fields are too long." },
       { status: 400 },
@@ -285,6 +293,7 @@ export async function POST(request: NextRequest) {
             url: evidenceUrl,
           }
         : null,
+      evidenceExcerpt: evidenceExcerpt || undefined,
       evidenceDocument,
       author: {
         name: name || undefined,

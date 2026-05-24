@@ -19,6 +19,7 @@ type DatabaseEvidenceDocumentStore = {
     input: CreateEvidenceDocumentInput,
   ) => Promise<EvidenceDocument>;
   getEvidenceDocument: (id: string) => Promise<StoredEvidenceDocument | null>;
+  refreshEvidenceDocumentExtraction: (id: string) => Promise<EvidenceDocument | null>;
 };
 
 let sqlClient: Sql | null = null;
@@ -171,6 +172,37 @@ export function createDatabaseEvidenceDocumentStore(): DatabaseEvidenceDocumentS
         document: rowToDocument(row),
         bytes: row.content,
       };
+    },
+
+    async refreshEvidenceDocumentExtraction(id) {
+      await ensureEvidenceDocumentTable();
+      const sql = getSqlClient();
+      const rows = await sql<EvidenceDocumentRow[]>`
+        select id, file_name, mime_type, size_bytes, uploaded_at, extraction, content
+        from civiclogos_evidence_documents
+        where id = ${id}
+        limit 1
+      `;
+      const row = rows[0];
+
+      if (!row) {
+        return null;
+      }
+
+      const extraction = await extractEvidenceDocument(
+        row.file_name,
+        row.mime_type,
+        row.content,
+      );
+      const updatedRows = await sql<EvidenceDocumentRow[]>`
+        update civiclogos_evidence_documents
+        set extraction = ${sql.json(extraction)}
+        where id = ${id}
+        returning id, file_name, mime_type, size_bytes, uploaded_at, extraction, content
+      `;
+      const updated = updatedRows[0];
+
+      return updated ? rowToDocument(updated) : null;
     },
   };
 }

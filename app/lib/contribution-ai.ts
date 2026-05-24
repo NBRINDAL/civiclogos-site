@@ -80,6 +80,9 @@ function buildIntakePrompt(input: CreateContributionInput) {
       title: input.title,
       body: input.body,
       evidenceSource: input.evidenceSource ?? null,
+      evidenceExcerpt: input.evidenceExcerpt
+        ? input.evidenceExcerpt.slice(0, 4000)
+        : null,
       evidenceDocument: input.evidenceDocument
         ? {
             fileName: input.evidenceDocument.fileName,

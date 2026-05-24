@@ -5,6 +5,7 @@ import type {
   Contribution,
   ContributionStoreDocument,
   CreateContributionInput,
+  EvidenceDocument,
   PublicContribution,
   ReviewContributionInput,
 } from "./contribution-types";
@@ -30,6 +31,7 @@ type ContributionRow = {
   title: string;
   body: string;
   evidence_source: Contribution["evidenceSource"] | null;
+  evidence_excerpt: string | null;
   evidence_document: Contribution["evidenceDocument"] | null;
   author: Contribution["author"];
   referral_source: Contribution["referralSource"] | null;
@@ -65,6 +67,14 @@ type DatabaseContributionStore = {
     input: ReviewContributionInput,
   ) => Promise<Contribution | null>;
   refreshContributionAiIntake: (id: string) => Promise<Contribution | null>;
+  updateContributionEvidenceDocument: (
+    id: string,
+    evidenceDocument: EvidenceDocument,
+  ) => Promise<Contribution | null>;
+  updateContributionEvidenceExcerpt: (
+    id: string,
+    evidenceExcerpt: string,
+  ) => Promise<Contribution | null>;
 };
 
 let sqlClient: Sql | null = null;
@@ -117,6 +127,7 @@ async function ensureContributionTable() {
           title text not null,
           body text not null,
           evidence_source jsonb,
+          evidence_excerpt text,
           evidence_document jsonb,
           author jsonb not null,
           referral_source text,
@@ -133,6 +144,11 @@ async function ensureContributionTable() {
       await sql`
         alter table civiclogos_contributions
         add column if not exists evidence_document jsonb
+      `;
+
+      await sql`
+        alter table civiclogos_contributions
+        add column if not exists evidence_excerpt text
       `;
 
       await sql`
@@ -161,6 +177,7 @@ async function ensureContributionTable() {
             title,
             body,
             evidence_source,
+            evidence_excerpt,
             evidence_document,
             author,
             referral_source,
@@ -180,6 +197,7 @@ async function ensureContributionTable() {
             ${contribution.title},
             ${contribution.body},
             ${sql.json(contribution.evidenceSource ?? null)},
+            ${contribution.evidenceExcerpt ?? null},
             ${sql.json(contribution.evidenceDocument ?? null)},
             ${sql.json(contribution.author)},
             ${contribution.referralSource ?? null},
@@ -199,6 +217,7 @@ async function ensureContributionTable() {
             title = excluded.title,
             body = excluded.body,
             evidence_source = excluded.evidence_source,
+            evidence_excerpt = excluded.evidence_excerpt,
             evidence_document = excluded.evidence_document,
             author = excluded.author,
             referral_source = excluded.referral_source,
@@ -231,6 +250,7 @@ function rowToContribution(row: ContributionRow): Contribution {
     title: row.title,
     body: row.body,
     evidenceSource: row.evidence_source ?? undefined,
+    evidenceExcerpt: row.evidence_excerpt ?? undefined,
     evidenceDocument: row.evidence_document ?? undefined,
     author: row.author,
     referralSource: row.referral_source ?? undefined,
@@ -312,6 +332,7 @@ export function createDatabaseContributionStore(): DatabaseContributionStore {
         title: input.title,
         body: input.body,
         evidenceSource: input.evidenceSource ?? undefined,
+        evidenceExcerpt: input.evidenceExcerpt,
         evidenceDocument: input.evidenceDocument ?? undefined,
         author: input.author,
         referralSource: input.referralSource,
@@ -332,6 +353,7 @@ export function createDatabaseContributionStore(): DatabaseContributionStore {
           title,
           body,
           evidence_source,
+          evidence_excerpt,
           evidence_document,
           author,
           referral_source,
@@ -351,6 +373,7 @@ export function createDatabaseContributionStore(): DatabaseContributionStore {
           ${contribution.title},
           ${contribution.body},
           ${sql.json(contribution.evidenceSource ?? null)},
+          ${contribution.evidenceExcerpt ?? null},
           ${sql.json(contribution.evidenceDocument ?? null)},
           ${sql.json(contribution.author)},
           ${contribution.referralSource ?? null},
@@ -424,6 +447,7 @@ export function createDatabaseContributionStore(): DatabaseContributionStore {
         title: existing.title,
         body: existing.body,
         evidenceSource: existing.evidenceSource,
+        evidenceExcerpt: existing.evidenceExcerpt,
         evidenceDocument: existing.evidenceDocument,
         author: existing.author,
         referralSource: existing.referralSource,
@@ -441,6 +465,40 @@ export function createDatabaseContributionStore(): DatabaseContributionStore {
       const updated = updatedRows[0];
 
       return updated ? rowToContribution(updated) : null;
+    },
+
+    async updateContributionEvidenceDocument(id, evidenceDocument) {
+      await ensureContributionTable();
+      const sql = getSqlClient();
+      const updatedAt = new Date().toISOString();
+      const rows = await sql<ContributionRow[]>`
+        update civiclogos_contributions
+        set
+          evidence_document = ${sql.json(evidenceDocument)},
+          updated_at = ${updatedAt}
+        where id = ${id}
+        returning *
+      `;
+      const row = rows[0];
+
+      return row ? rowToContribution(row) : null;
+    },
+
+    async updateContributionEvidenceExcerpt(id, evidenceExcerpt) {
+      await ensureContributionTable();
+      const sql = getSqlClient();
+      const updatedAt = new Date().toISOString();
+      const rows = await sql<ContributionRow[]>`
+        update civiclogos_contributions
+        set
+          evidence_excerpt = ${evidenceExcerpt || null},
+          updated_at = ${updatedAt}
+        where id = ${id}
+        returning *
+      `;
+      const row = rows[0];
+
+      return row ? rowToContribution(row) : null;
     },
   };
 }

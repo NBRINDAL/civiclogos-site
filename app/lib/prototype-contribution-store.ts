@@ -7,6 +7,7 @@ import type {
   Contribution,
   ContributionStoreDocument,
   CreateContributionInput,
+  EvidenceDocument,
   ReviewContributionInput,
 } from "./contribution-types";
 import { toPublicContributionRecord } from "./contribution-types";
@@ -191,6 +192,7 @@ export async function createContribution(input: CreateContributionInput) {
       title: input.title,
       body: input.body,
       evidenceSource: input.evidenceSource ?? undefined,
+      evidenceExcerpt: input.evidenceExcerpt,
       evidenceDocument: input.evidenceDocument ?? undefined,
       author: input.author,
       referralSource: input.referralSource,
@@ -261,6 +263,7 @@ export async function refreshContributionAiIntake(id: string) {
       title: existing.title,
       body: existing.body,
       evidenceSource: existing.evidenceSource,
+      evidenceExcerpt: existing.evidenceExcerpt,
       evidenceDocument: existing.evidenceDocument,
       author: existing.author,
       referralSource: existing.referralSource,
@@ -268,6 +271,26 @@ export async function refreshContributionAiIntake(id: string) {
     });
     existing.updatedAt = new Date().toISOString();
 
+    await writeStoreDocument(document);
+
+    return existing;
+  });
+}
+
+export async function updateContributionEvidenceDocument(
+  id: string,
+  evidenceDocument: EvidenceDocument,
+) {
+  return enqueueWrite(async () => {
+    const document = await readStoreDocument();
+    const existing = document.contributions.find((item) => item.id === id);
+
+    if (!existing) {
+      return null;
+    }
+
+    existing.evidenceDocument = evidenceDocument;
+    existing.updatedAt = new Date().toISOString();
     await writeStoreDocument(document);
 
     return existing;

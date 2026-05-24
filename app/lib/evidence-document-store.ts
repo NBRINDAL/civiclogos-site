@@ -24,6 +24,7 @@ type EvidenceDocumentStoreAdapter = {
     input: CreateEvidenceDocumentInput,
   ) => Promise<EvidenceDocument>;
   getEvidenceDocument: (id: string) => Promise<StoredEvidenceDocument | null>;
+  refreshEvidenceDocumentExtraction: (id: string) => Promise<EvidenceDocument | null>;
 };
 
 const databaseStore = createDatabaseEvidenceDocumentStore();
@@ -53,4 +54,10 @@ export async function createEvidenceDocument(input: CreateEvidenceDocumentInput)
 
 export async function getEvidenceDocument(id: string) {
   return withEvidenceDocumentStore((store) => store.getEvidenceDocument(id));
+}
+
+export async function refreshEvidenceDocumentExtraction(id: string) {
+  return withEvidenceDocumentStore((store) =>
+    store.refreshEvidenceDocumentExtraction(id),
+  );
 }

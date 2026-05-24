@@ -1,6 +1,7 @@
 import type {
   Contribution,
   CreateContributionInput,
+  EvidenceDocument,
   PublicContribution,
   ReviewContributionInput,
 } from "./contribution-types";
@@ -43,6 +44,10 @@ type ContributionStoreAdapter = {
     input: ReviewContributionInput,
   ) => Promise<Contribution | null>;
   refreshContributionAiIntake: (id: string) => Promise<Contribution | null>;
+  updateContributionEvidenceDocument: (
+    id: string,
+    evidenceDocument: EvidenceDocument,
+  ) => Promise<Contribution | null>;
 };
 
 const databaseStore = createDatabaseContributionStore();
@@ -86,6 +91,8 @@ async function withContributionStore<T>(
     createContribution: prototypeStoreModule.createContribution,
     reviewContribution: prototypeStoreModule.reviewContribution,
     refreshContributionAiIntake: prototypeStoreModule.refreshContributionAiIntake,
+    updateContributionEvidenceDocument:
+      prototypeStoreModule.updateContributionEvidenceDocument,
   };
 
   return action(prototypeStore);
@@ -120,4 +127,13 @@ export async function reviewContribution(
 
 export async function refreshContributionAiIntake(id: string) {
   return withContributionStore((store) => store.refreshContributionAiIntake(id));
+}
+
+export async function updateContributionEvidenceDocument(
+  id: string,
+  evidenceDocument: EvidenceDocument,
+) {
+  return withContributionStore((store) =>
+    store.updateContributionEvidenceDocument(id, evidenceDocument),
+  );
 }

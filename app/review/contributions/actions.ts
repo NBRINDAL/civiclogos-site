@@ -14,7 +14,9 @@ import {
   listPublicContributions,
   refreshContributionAiIntake,
   reviewContribution,
+  updateContributionEvidenceDocument,
 } from "@/app/lib/contribution-store";
+import { refreshEvidenceDocumentExtraction } from "@/app/lib/evidence-document-store";
 import { getContributionOrigin } from "@/app/lib/contribution-origin";
 import { toPublicContributionRecord } from "@/app/lib/contribution-types";
 import {
@@ -245,6 +247,37 @@ export async function retryContributionAiIntake(formData: FormData) {
   }
 
   await refreshContributionAiIntake(id);
+  revalidatePath("/review/contributions");
+
+  if (isRoomSlug(roomSlugRaw) && topicId) {
+    revalidatePath(getRoomHref(roomSlugRaw));
+    revalidatePath(getRoomTopicHref(roomSlugRaw, topicId));
+  }
+}
+
+export async function reprocessContributionEvidenceDocument(formData: FormData) {
+  const id = String(formData.get("id") ?? "").trim();
+  const roomSlugRaw = String(formData.get("roomSlug") ?? "").trim();
+  const topicId = String(formData.get("topicId") ?? "").trim();
+
+  if (!id) {
+    return;
+  }
+
+  const contribution = await getContributionById(id);
+  const evidenceDocumentId = contribution?.evidenceDocument?.id;
+
+  if (!contribution || !evidenceDocumentId) {
+    return;
+  }
+
+  const refreshedDocument = await refreshEvidenceDocumentExtraction(evidenceDocumentId);
+
+  if (refreshedDocument) {
+    await updateContributionEvidenceDocument(id, refreshedDocument);
+    await refreshContributionAiIntake(id);
+  }
+
   revalidatePath("/review/contributions");
 
   if (isRoomSlug(roomSlugRaw) && topicId) {

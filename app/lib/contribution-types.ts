@@ -136,6 +136,7 @@ export type Contribution = TopicCardReference & {
   title: string;
   body: string;
   evidenceSource?: EvidenceSource | null;
+  evidenceExcerpt?: string;
   evidenceDocument?: EvidenceDocument | null;
   author: ContributionAuthor;
   referralSource?: ContributionReferralSource;
@@ -153,6 +154,7 @@ export type CreateContributionInput = TopicCardReference & {
   title: string;
   body: string;
   evidenceSource?: EvidenceSource | null;
+  evidenceExcerpt?: string;
   evidenceDocument?: EvidenceDocument | null;
   author: ContributionAuthor;
   referralSource?: ContributionReferralSource;
@@ -189,6 +191,7 @@ export function toPublicContributionRecord(item: Contribution): PublicContributi
     title: item.title,
     body: item.body,
     evidenceSource: item.evidenceSource,
+    evidenceExcerpt: item.evidenceExcerpt,
     evidenceDocument: item.evidenceDocument,
     author: {
       name: item.author.name,

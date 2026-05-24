@@ -37,6 +37,37 @@ function isPdf(fileName: string, mimeType: string) {
   return mimeType === "application/pdf" || fileName.toLowerCase().endsWith(".pdf");
 }
 
+async function extractPdfText(bytes: Buffer) {
+  const pdfjs = await import("pdfjs-dist/legacy/build/pdf.mjs");
+  const document = await pdfjs.getDocument({
+    data: new Uint8Array(bytes),
+    disableFontFace: true,
+    isEvalSupported: false,
+    useWorkerFetch: false,
+  }).promise;
+  const pageTexts: string[] = [];
+
+  try {
+    for (let pageNumber = 1; pageNumber <= document.numPages; pageNumber += 1) {
+      const page = await document.getPage(pageNumber);
+      const textContent = await page.getTextContent();
+      const pageText = textContent.items
+        .map((item) => ("str" in item ? item.str : ""))
+        .join(" ");
+
+      pageTexts.push(pageText);
+      page.cleanup();
+    }
+
+    return {
+      text: pageTexts.join("\n"),
+      pageCount: document.numPages,
+    };
+  } finally {
+    await document.destroy();
+  }
+}
+
 export async function extractEvidenceDocument(
   fileName: string,
   mimeType: string,
@@ -44,17 +75,14 @@ export async function extractEvidenceDocument(
 ): Promise<EvidenceExtraction> {
   if (isPdf(fileName, mimeType)) {
     try {
-      const { PDFParse } = await import("pdf-parse");
-      const parser = new PDFParse({ data: bytes });
-      const parsed = await parser.getText();
-      await parser.destroy();
-      const excerpt = buildExcerpt(parsed.text ?? "");
+      const parsed = await extractPdfText(bytes);
+      const excerpt = buildExcerpt(parsed.text);
 
       return {
         status: excerpt ? "completed" : "unavailable",
         excerpt: excerpt || undefined,
-        wordCount: countWords(parsed.text ?? ""),
-        pageCount: parsed.total ?? undefined,
+        wordCount: countWords(parsed.text),
+        pageCount: parsed.pageCount,
         note: excerpt
           ? "Text was extracted from the uploaded PDF for review and AI-assisted sorting."
           : "The PDF uploaded successfully, but no readable text could be extracted from it.",

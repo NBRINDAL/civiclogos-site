@@ -184,3 +184,34 @@ export async function getEvidenceDocument(id: string): Promise<StoredEvidenceDoc
     bytes,
   };
 }
+
+export async function refreshEvidenceDocumentExtraction(
+  id: string,
+): Promise<EvidenceDocument | null> {
+  return enqueueWrite(async () => {
+    const index = await readIndex();
+    const record = index.documents.find((item) => item.id === id);
+
+    if (!record) {
+      return null;
+    }
+
+    const bytes = await readFile(record.storagePath);
+    record.extraction = await extractEvidenceDocument(
+      record.fileName,
+      record.mimeType,
+      bytes,
+    );
+    await writeIndex(index);
+
+    return {
+      id: record.id,
+      fileName: record.fileName,
+      mimeType: record.mimeType,
+      sizeBytes: record.sizeBytes,
+      uploadedAt: record.uploadedAt,
+      downloadHref: record.downloadHref,
+      extraction: record.extraction,
+    };
+  });
+}

@@ -26,6 +26,7 @@ import {
 } from "@/app/lib/reasoning-types";
 import {
   createFounderMaintainerRevision,
+  reprocessContributionEvidenceDocument,
   retryContributionAiIntake,
   updateContributionReview,
 } from "./actions";
@@ -997,6 +998,19 @@ export default async function ContributionReviewPage({
                       ) : null}
                       {item.evidenceDocument.extraction.excerpt ? (
                         <p>{item.evidenceDocument.extraction.excerpt}</p>
+                      ) : null}
+                      {item.evidenceDocument.extraction.status !== "completed" ? (
+                        <form
+                          action={reprocessContributionEvidenceDocument}
+                          className={styles.inlineActionForm}
+                        >
+                          <input name="id" type="hidden" value={item.id} />
+                          <input name="roomSlug" type="hidden" value={item.roomSlug} />
+                          <input name="topicId" type="hidden" value={item.topicId} />
+                          <button className={styles.submitButton} type="submit">
+                            Reprocess PDF text
+                          </button>
+                        </form>
                       ) : null}
                     </>
                   ) : null}
