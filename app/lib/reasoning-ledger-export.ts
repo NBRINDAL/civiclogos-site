@@ -53,6 +53,8 @@ const healthcareRoomSlug = "healthcare" satisfies IssueRoomSlug;
 const healthcareTopicId = "topic-001";
 const exportGeneratedBy = "civic-logos-reasoning-ledger-exporter-v0.1";
 const baseCreatedAt = "2026-05-01T00:00:00.000Z";
+const systemActorId = "actor:civic-logos-system";
+const founderMaintainerActorId = "actor:civic-logos-founder-maintainer";
 
 function protocolId(value: string) {
   return value
@@ -99,6 +101,30 @@ function mapOrigin(contribution: PublicContribution) {
     case "ai-origin":
       return "ai_origin";
     case "seed-example":
+    default:
+      return "prototype_fixture";
+  }
+}
+
+function contributionActorId(contribution: PublicContribution) {
+  return `actor:${mapOrigin(contribution)}:${contribution.id}`;
+}
+
+function reviewActorId(contribution: PublicContribution) {
+  return `actor:reviewer:${contribution.id}`;
+}
+
+function actorTypeForContribution(contribution: PublicContribution) {
+  switch (mapOrigin(contribution)) {
+    case "outside_public_submission":
+      return "outside_public_contributor";
+    case "founder_maintainer":
+      return "founder_maintainer";
+    case "founder_submitted":
+      return "founder";
+    case "ai_origin":
+      return "ai_assisted_source";
+    case "prototype_fixture":
     default:
       return "prototype_fixture";
   }
@@ -192,7 +218,7 @@ function buildUrlEvidence(contribution: PublicContribution, source: EvidenceSour
     document_id: null,
     citation: source.label ?? null,
     summary: `Source link attached to contribution "${contribution.title}".`,
-    submitted_by_actor_id: `actor:${mapOrigin(contribution)}:${contribution.id}`,
+    submitted_by_actor_id: contributionActorId(contribution),
     public_access: "public",
     submitted_at: contribution.createdAt,
   };
@@ -213,7 +239,7 @@ function buildDocumentEvidence(
       document.extraction.excerpt ||
       document.extraction.note ||
       `Uploaded document attached to contribution "${contribution.title}".`,
-    submitted_by_actor_id: `actor:${mapOrigin(contribution)}:${contribution.id}`,
+    submitted_by_actor_id: contributionActorId(contribution),
     public_access: "public",
     submitted_at: document.uploadedAt,
   };
@@ -314,7 +340,7 @@ function reviewDecisionForContribution(
 
   return {
     review_decision_id: `review:${contribution.id}`,
-    reviewer_id: null,
+    reviewer_id: reviewActorId(contribution),
     reviewer_label: review.reviewerLabel ?? "Civic Logos maintainer review",
     reviewer_disclosure_note:
       review.reviewerDisclosureNote ??
@@ -406,7 +432,7 @@ function buildRevisionArtifacts(
       synthesisText: card.thesis,
       versionLabel: "v0.1-base",
       createdAt: baseCreatedAt,
-      createdByActorId: "actor:civic-logos-founder-maintainer",
+      createdByActorId: founderMaintainerActorId,
       sourceRevisionEventId: null,
     }),
   ];
@@ -459,7 +485,7 @@ function buildRevisionArtifacts(
       synthesisText: newSynthesis,
       versionLabel,
       createdAt,
-      createdByActorId: `actor:${mapOrigin(contribution)}:${contribution.id}`,
+      createdByActorId: contributionActorId(contribution),
       sourceRevisionEventId: revisionId,
     });
 
@@ -503,6 +529,68 @@ function buildRevisionArtifacts(
   };
 }
 
+function buildActorRecords(contributions: readonly PublicContribution[]) {
+  const contributionActors = contributions.map((contribution) => ({
+    actor_id: contributionActorId(contribution),
+    actor_type: actorTypeForContribution(contribution),
+    public_label:
+      contribution.author.name ||
+      contribution.author.expertise ||
+      mapOrigin(contribution).replaceAll("_", " "),
+    disclosure_note:
+      contribution.author.expertise ||
+      "Public contributor label exported without private contact metadata.",
+    conflict_disclosures: contribution.isSeedExample
+      ? ["Prototype fixture; not outside public uptake."]
+      : contribution.draftSource
+        ? ["AI-assisted source record; not a final AI judgment."]
+        : [],
+    created_at: contribution.createdAt,
+  }));
+  const reviewerActors = contributions
+    .filter((contribution) => contribution.review)
+    .map((contribution) => ({
+      actor_id: reviewActorId(contribution),
+      actor_type: "reviewer",
+      public_label:
+        contribution.review?.reviewerLabel ?? "Civic Logos maintainer review",
+      disclosure_note:
+        contribution.review?.reviewerDisclosureNote ??
+        "Reviewer disclosure was not recorded in the legacy review object.",
+      conflict_disclosures: [
+        contribution.review?.reviewerConflictNote ??
+          "No reviewer conflict note was recorded in the legacy review object.",
+      ],
+      created_at:
+        contribution.review?.reviewedAt ?? contribution.updatedAt ?? contribution.createdAt,
+    }));
+
+  return [
+    {
+      actor_id: systemActorId,
+      actor_type: "system",
+      public_label: "Civic Logos protocol exporter",
+      disclosure_note:
+        "System actor that generated the public protocol-shaped ledger export.",
+      conflict_disclosures: [],
+      created_at: baseCreatedAt,
+    },
+    {
+      actor_id: founderMaintainerActorId,
+      actor_type: "founder_maintainer",
+      public_label: "Civic Logos founder-maintainer",
+      disclosure_note:
+        "Maintainer-origin actor for seed topic creation and protocol stewardship.",
+      conflict_disclosures: [
+        "Civic Logos maintainer has project-level authorship interest.",
+      ],
+      created_at: baseCreatedAt,
+    },
+    ...contributionActors,
+    ...reviewerActors,
+  ];
+}
+
 export async function buildHealthcareTopic001ProtocolExport() {
   const room = issueRooms[healthcareRoomSlug];
   const card = getRoomTopicCard(healthcareRoomSlug, healthcareTopicId);
@@ -544,6 +632,7 @@ export async function buildHealthcareTopic001ProtocolExport() {
       ),
     )
     .filter(Boolean);
+  const actorRecords = buildActorRecords(contributions);
 
   return {
     schema_version: "civic-logos-reasoning-ledger-v0.1",
@@ -561,6 +650,7 @@ export async function buildHealthcareTopic001ProtocolExport() {
     },
     export_warnings: exportWarnings,
     counts: countSummary,
+    actor_records: actorRecords,
     room_record: {
       room_id: healthcareRoomSlug,
       title: room.title,
@@ -611,7 +701,7 @@ export async function buildHealthcareTopic001ProtocolExport() {
       state: mapStatus(contribution.status, contribution),
       title: contribution.title,
       body: contribution.body,
-      submitted_by_actor_id: `actor:${mapOrigin(contribution)}:${contribution.id}`,
+      submitted_by_actor_id: contributionActorId(contribution),
       submitted_at: contribution.createdAt,
       evidence_object_ids: evidenceObjects
         .filter((evidence) => evidence.evidence_id.startsWith(`evidence:${contribution.id}:`))
@@ -631,7 +721,7 @@ export async function buildHealthcareTopic001ProtocolExport() {
       {
         audit_event_id: `audit:${healthcareRoomSlug}:${healthcareTopicId}:export-generated`,
         event_type: "protocol_export_generated",
-        actor_id: "actor:civic-logos-system",
+        actor_id: systemActorId,
         object_type: "TopicRecord",
         object_id: card.id,
         created_at: new Date().toISOString(),
