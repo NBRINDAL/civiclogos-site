@@ -22,6 +22,16 @@
         "Reviewer is internal to the prototype fixture."
       ],
       "created_at": "2026-05-24T00:00:00.000Z"
+    },
+    {
+      "actor_id": "actor:protocol-fixture-system",
+      "actor_type": "prototype_fixture",
+      "public_label": "Protocol fixture system",
+      "disclosure_note": "Synthetic fixture actor used to demonstrate contestability mechanics; not public usage.",
+      "conflict_disclosures": [
+        "This actor exists only inside the protocol fixture."
+      ],
+      "created_at": "2026-05-24T00:00:00.000Z"
     }
   ],
   "room_record": {
@@ -298,6 +308,34 @@
       "Provider-time impacts remain unresolved."
     ]
   },
+  "appeal_records": [
+    {
+      "appeal_id": "appeal:healthcare-topic-001:transition-cost-pressure",
+      "topic_id": "topic-001",
+      "appealed_object_type": "RevisionEvent",
+      "appealed_object_id": "revision:healthcare-topic-001:founder-narrowing-v0-2",
+      "submitted_by_actor_id": "actor:protocol-fixture-system",
+      "origin": "prototype_fixture",
+      "state": "needs_human_review",
+      "appeal_reason": "The revision correctly keeps transition costs unresolved, but a later reviewer may decide whether transition-cost burden should be promoted into a more prominent open question before any stronger savings claim appears.",
+      "requested_action": "add_unresolved_question",
+      "attachment_targets": [
+        {
+          "target_id": "target:open-question:healthcare-topic-001:net-savings",
+          "target_type": "open_question",
+          "target_label": "What evidence would establish net savings after transition costs?",
+          "referenced_object_id": null,
+          "created_at": "2026-05-24T00:12:00.000Z"
+        }
+      ],
+      "ai_reader_note_ids": [],
+      "human_review_decision_id": null,
+      "revision_event_id": null,
+      "public_record_note": "Prototype appeal record showing that a revision can be contested without changing synthesis or pretending outside public activity occurred.",
+      "created_at": "2026-05-24T00:12:00.000Z",
+      "updated_at": "2026-05-24T00:12:00.000Z"
+    }
+  ],
   "audit_events": [
     {
       "audit_event_id": "audit:healthcare-topic-001:founder-narrowing-submitted",
@@ -325,6 +363,15 @@
       "object_id": "revision:healthcare-topic-001:founder-narrowing-v0-2",
       "created_at": "2026-05-24T00:10:00.000Z",
       "summary": "Before/after synthesis snapshots were linked through a revision event."
+    },
+    {
+      "audit_event_id": "audit:healthcare-topic-001:prototype-appeal-opened",
+      "event_type": "appeal_opened",
+      "actor_id": "actor:protocol-fixture-system",
+      "object_type": "AppealRecord",
+      "object_id": "appeal:healthcare-topic-001:transition-cost-pressure",
+      "created_at": "2026-05-24T00:12:00.000Z",
+      "summary": "Prototype appeal record opened to demonstrate contestability without mutating the synthesis."
     }
   ]
 }

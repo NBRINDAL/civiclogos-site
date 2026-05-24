@@ -89,3 +89,12 @@ The canonical healthcare fixture must satisfy the north-star invariant:
 - new synthesis is reconstructable from `snapshot:healthcare-topic-001:v0.2`
 - reason for change is reconstructable from the `RevisionEvent`
 - unresolved remainder is reconstructable from `unresolved_after_revision`
+
+## 8. Appeal and Unresolved-State Tests
+
+- An `AppealRecord` must resolve its `appealed_object_id` to an existing public ledger object.
+- An appeal may challenge a review decision, revision, synthesis snapshot, claim, evidence object, contribution, or metric, but it cannot silently overwrite the challenged object.
+- If an appeal changes synthesis, it must link to a new `HumanReviewDecision` and `RevisionEvent`.
+- AI-reader notes attached to appeals remain advisory and cannot resolve the appeal by themselves.
+- Rejected or unresolved appeals should remain inspectable when they are part of the public record.
+- A completed review cycle may leave a claim unresolved; unresolved pressure must remain visible through `unresolved_after_revision` or `OpenQuestionRecord` attachments.

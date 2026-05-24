@@ -120,3 +120,20 @@ The event must also preserve what remains unresolved after revision, either dire
 ## Additive Correction Rule
 
 Rollback and correction are additive. A later correction creates a new contribution, review decision, synthesis snapshot, and revision event. It must not silently overwrite or delete the original public-record event.
+
+## Appeal and Contestability Rules
+
+- `AppealRecord` objects challenge an existing public ledger object; they do not overwrite that object.
+- An appeal may target a `ContributionRecord`, `HumanReviewDecision`, `RevisionEvent`, `SynthesisSnapshot`, `ClaimRecord`, `EvidenceObject`, or `MetricScore`.
+- Appeals must preserve origin labels. Prototype, founder-maintainer, AI-origin, and institutional-pilot appeals must not count as outside public submissions.
+- AI readers may attach advisory notes to an appeal, but an `AIReaderNote` cannot resolve the appeal or mutate synthesis.
+- If an appeal changes a public object, the change must move through a new `HumanReviewDecision` and, when synthesis changes, a new `RevisionEvent`.
+- Rejected appeals remain visible with a public reason when they are part of the public record.
+- An appeal that identifies a still-unresolved issue may attach to an `OpenQuestionRecord` without claiming that the underlying claim has been settled.
+
+## Unresolved-State Rules
+
+- A claim may remain unresolved without being treated as failed or decided.
+- `RevisionEvent.unresolved_after_revision` must remain visible after any synthesis change.
+- Implementations should attach unresolved pressure to `OpenQuestionRecord` objects when the pressure is durable enough to guide future review.
+- "Unresolved" is a valid civic state; the ledger should not force closure merely because a review cycle has completed.

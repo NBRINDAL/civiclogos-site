@@ -1,0 +1,102 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://civiclogos.com/schema/appeal-record.schema.json",
+  "title": "AppealRecord",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "appeal_id",
+    "topic_id",
+    "appealed_object_type",
+    "appealed_object_id",
+    "origin",
+    "state",
+    "appeal_reason",
+    "requested_action",
+    "attachment_targets",
+    "ai_reader_note_ids",
+    "public_record_note",
+    "created_at",
+    "updated_at"
+  ],
+  "properties": {
+    "appeal_id": { "type": "string", "minLength": 1 },
+    "topic_id": { "type": "string", "minLength": 1 },
+    "appealed_object_type": {
+      "type": "string",
+      "enum": [
+        "ContributionRecord",
+        "HumanReviewDecision",
+        "RevisionEvent",
+        "SynthesisSnapshot",
+        "ClaimRecord",
+        "EvidenceObject",
+        "MetricScore"
+      ]
+    },
+    "appealed_object_id": { "type": "string", "minLength": 1 },
+    "submitted_by_actor_id": { "type": ["string", "null"] },
+    "origin": {
+      "type": "string",
+      "enum": [
+        "outside_public_submission",
+        "founder_submitted",
+        "founder_maintainer",
+        "ai_origin",
+        "prototype_fixture",
+        "institutional_pilot"
+      ]
+    },
+    "state": {
+      "type": "string",
+      "enum": [
+        "submitted",
+        "classified",
+        "ai_reviewed",
+        "needs_human_review",
+        "accepted",
+        "incorporated",
+        "rejected",
+        "archived",
+        "superseded"
+      ]
+    },
+    "appeal_reason": { "type": "string", "minLength": 1 },
+    "requested_action": {
+      "type": "string",
+      "enum": [
+        "reconsider_review_decision",
+        "correct_revision",
+        "add_unresolved_question",
+        "attach_evidence",
+        "reclassify_attachment",
+        "disclose_conflict",
+        "other"
+      ]
+    },
+    "attachment_targets": {
+      "type": "array",
+      "items": { "$ref": "attachment-target.schema.json" }
+    },
+    "ai_reader_note_ids": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "human_review_decision_id": { "type": ["string", "null"] },
+    "revision_event_id": { "type": ["string", "null"] },
+    "public_record_note": { "type": "string", "minLength": 1 },
+    "created_at": { "type": "string", "format": "date-time" },
+    "updated_at": { "type": "string", "format": "date-time" }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "state": { "const": "incorporated" } }, "required": ["state"] },
+      "then": {
+        "required": ["human_review_decision_id"],
+        "properties": {
+          "human_review_decision_id": { "type": "string", "minLength": 1 }
+        }
+      }
+    }
+  ]
+}

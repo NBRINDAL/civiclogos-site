@@ -10,6 +10,7 @@ const schemaFiles = [
   "room-record.schema.json",
   "topic-record.schema.json",
   "attachment-target.schema.json",
+  "appeal-record.schema.json",
   "synthesis-snapshot.schema.json",
   "claim-record.schema.json",
   "objection-record.schema.json",
@@ -250,6 +251,9 @@ function validateFixtureGraph(fixture) {
   for (const aiNote of fixture.ai_reader_notes ?? []) {
     registerObject(publicObjects, errors, "AIReaderNote", aiNote.ai_reader_note_id, aiNote);
   }
+  for (const appeal of fixture.appeal_records ?? []) {
+    registerObject(publicObjects, errors, "AppealRecord", appeal.appeal_id, appeal);
+  }
   registerObject(
     publicObjects,
     errors,
@@ -447,6 +451,42 @@ function validateFixtureGraph(fixture) {
     );
   }
 
+  for (const appeal of fixture.appeal_records ?? []) {
+    if (appeal.topic_id !== topic.topic_id) {
+      errors.push(`AppealRecord ${appeal.appeal_id} topic_id does not resolve.`);
+    }
+
+    requireRegisteredObject(
+      publicObjects,
+      appeal.appealed_object_id,
+      `AppealRecord ${appeal.appeal_id} appealed_object_id`,
+      errors,
+      appeal.appealed_object_type,
+    );
+
+    requireMapEntry(
+      actors,
+      appeal.submitted_by_actor_id,
+      `AppealRecord ${appeal.appeal_id} submitted_by_actor_id`,
+      errors,
+    );
+
+    for (const noteId of appeal.ai_reader_note_ids ?? []) {
+      requireMapEntry(
+        aiNotes,
+        noteId,
+        `AppealRecord ${appeal.appeal_id} ai_reader_note_id`,
+        errors,
+      );
+    }
+
+    validateAttachmentTargetList(appeal.attachment_targets, `AppealRecord ${appeal.appeal_id} attachment_targets`);
+
+    if (appeal.state !== "incorporated" && appeal.revision_event_id) {
+      errors.push(`AppealRecord ${appeal.appeal_id} cannot link a RevisionEvent before incorporation.`);
+    }
+  }
+
   for (const auditEvent of fixture.audit_events ?? []) {
     requireMapEntry(actors, auditEvent.actor_id, `AuditEvent ${auditEvent.audit_event_id} actor_id`, errors);
     requireRegisteredObject(
@@ -513,6 +553,16 @@ function evaluateConformanceCase(testCase) {
       return !(input.origin === "founder_maintainer" && input.counts_as_outside_public_submission === true);
     case "reviewer-disclosure-required":
       return Boolean(input.reviewer_label && input.reviewer_disclosure_note && input.reviewer_conflict_note);
+    case "appeal-cannot-mutate-without-review":
+      return !(
+        input.object_type === "AppealRecord" &&
+        input.revision_event_id &&
+        !input.human_review_decision_id
+      );
+    case "appeal-target-resolves-public-object":
+      return Boolean(input.appeal_id && input.appealed_object_id && input.appealed_object_type);
+    case "unresolved-state-preserved-after-revision":
+      return Boolean(input.revision_id && input.unresolved_after_revision?.length);
     default:
       throw new Error(`No evaluator registered for conformance case ${testCase.id}`);
   }
@@ -558,6 +608,11 @@ async function main() {
       `AIReaderNote[${index}]`,
       item,
       schemas["ai-reader-note.schema.json"],
+    ]),
+    ...(fixture.appeal_records ?? []).map((item, index) => [
+      `AppealRecord[${index}]`,
+      item,
+      schemas["appeal-record.schema.json"],
     ]),
   ];
 

@@ -21,6 +21,7 @@ const coreObjects = [
   "OpenQuestionRecord",
   "AIReaderNote",
   "HumanReviewDecision",
+  "AppealRecord",
   "AttachmentTarget",
   "RevisionEvent",
   "MetricScore",

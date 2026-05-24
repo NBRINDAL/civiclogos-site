@@ -166,6 +166,27 @@ Minimum fields:
 - `decision_reason`
 - `created_at`
 
+## AppealRecord
+
+A public challenge to a contribution, review decision, revision event, synthesis snapshot, claim, evidence object, or score. Appeals make the record contestable without letting challengers or AI readers mutate the public synthesis directly.
+
+Minimum fields:
+
+- `appeal_id`
+- `topic_id`
+- `appealed_object_type`
+- `appealed_object_id`
+- `submitted_by_actor_id`
+- `origin`
+- `state`
+- `appeal_reason`
+- `requested_action`
+- `attachment_targets`
+- `ai_reader_note_ids`
+- `public_record_note`
+- `created_at`
+- `updated_at`
+
 ## AttachmentTarget
 
 The public object or layer a contribution attaches to.

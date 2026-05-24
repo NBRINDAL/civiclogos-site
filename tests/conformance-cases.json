@@ -116,6 +116,43 @@
       },
       "expected_valid": false,
       "required_error": "reviewer disclosure and conflict notes must be explicit."
+    },
+    {
+      "id": "appeal-cannot-mutate-without-review",
+      "category": "appeal_and_contestability",
+      "description": "Appeals cannot create revision events unless a human review decision moves the record.",
+      "input": {
+        "object_type": "AppealRecord",
+        "appeal_id": "appeal:invalid-direct-revision",
+        "revision_event_id": "revision:invalid-direct-revision",
+        "human_review_decision_id": null
+      },
+      "expected_valid": false,
+      "required_error": "AppealRecord cannot mutate synthesis without a HumanReviewDecision."
+    },
+    {
+      "id": "appeal-target-resolves-public-object",
+      "category": "appeal_and_contestability",
+      "description": "Appeals must identify the public ledger object being challenged.",
+      "input": {
+        "appeal_id": "appeal:healthcare-topic-001:transition-cost-pressure",
+        "appealed_object_type": "RevisionEvent",
+        "appealed_object_id": "revision:healthcare-topic-001:founder-narrowing-v0-2"
+      },
+      "expected_valid": true
+    },
+    {
+      "id": "unresolved-state-preserved-after-revision",
+      "category": "unresolved_state",
+      "description": "Completed revisions must preserve a visible unresolved remainder instead of implying forced closure.",
+      "input": {
+        "revision_id": "revision:healthcare-topic-001:founder-narrowing-v0-2",
+        "unresolved_after_revision": [
+          "Transition costs remain unresolved.",
+          "Savings-capture rules remain unresolved."
+        ]
+      },
+      "expected_valid": true
     }
   ]
 }
