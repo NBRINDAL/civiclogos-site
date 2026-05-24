@@ -1,4 +1,3 @@
-import { PDFParse } from "pdf-parse";
 import type { EvidenceExtraction } from "./contribution-types";
 
 const textLikeMimePrefixes = ["text/"];
@@ -45,6 +44,7 @@ export async function extractEvidenceDocument(
 ): Promise<EvidenceExtraction> {
   if (isPdf(fileName, mimeType)) {
     try {
+      const { PDFParse } = await import("pdf-parse");
       const parser = new PDFParse({ data: bytes });
       const parsed = await parser.getText();
       await parser.destroy();

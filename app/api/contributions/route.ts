@@ -259,57 +259,67 @@ export async function POST(request: NextRequest) {
     }
   }
 
-  const evidenceDocument =
-    uploadedEvidenceFile && uploadedEvidenceFile.size
-      ? await createEvidenceDocument({
-          roomSlug,
-          topicId,
-          topicTitle: topic.title,
-          fileName: uploadedEvidenceFile.name || "uploaded-evidence",
-          mimeType:
-            uploadedEvidenceFile.type || "application/octet-stream",
-          bytes: Buffer.from(await uploadedEvidenceFile.arrayBuffer()),
-        })
-      : null;
+  try {
+    const evidenceDocument =
+      uploadedEvidenceFile && uploadedEvidenceFile.size
+        ? await createEvidenceDocument({
+            roomSlug,
+            topicId,
+            topicTitle: topic.title,
+            fileName: uploadedEvidenceFile.name || "uploaded-evidence",
+            mimeType: uploadedEvidenceFile.type || "application/octet-stream",
+            bytes: Buffer.from(await uploadedEvidenceFile.arrayBuffer()),
+          })
+        : null;
 
-  const contribution = await createContribution({
-    roomSlug,
-    topicId,
-    topicTitle: topic.title,
-    lane,
-    title,
-    body,
-    evidenceSource: evidenceUrl
-      ? {
-          label: evidenceLabel || undefined,
-          url: evidenceUrl,
-        }
-      : null,
-    evidenceDocument,
-    author: {
-      name: name || undefined,
-      email: email || undefined,
-      expertise: expertise || undefined,
-    },
-    referralSource,
-    draftSource,
-  });
+    const contribution = await createContribution({
+      roomSlug,
+      topicId,
+      topicTitle: topic.title,
+      lane,
+      title,
+      body,
+      evidenceSource: evidenceUrl
+        ? {
+            label: evidenceLabel || undefined,
+            url: evidenceUrl,
+          }
+        : null,
+      evidenceDocument,
+      author: {
+        name: name || undefined,
+        email: email || undefined,
+        expertise: expertise || undefined,
+      },
+      referralSource,
+      draftSource,
+    });
 
-  void sendContributionSubmittedNotification({
-    ...contribution,
-    referralSource,
-    author: {
-      name: name || undefined,
-      email: email || undefined,
-      expertise: expertise || undefined,
-    },
-  });
+    void sendContributionSubmittedNotification({
+      ...contribution,
+      referralSource,
+      author: {
+        name: name || undefined,
+        email: email || undefined,
+        expertise: expertise || undefined,
+      },
+    });
 
-  revalidateTopicSurfaces(roomSlug, topicId);
+    revalidateTopicSurfaces(roomSlug, topicId);
 
-  return NextResponse.json({
-    message:
-      "Your contribution has been submitted for review. Civic Logos preserves strong objections, evidence, corrections, and nuance as part of the living public record.",
-    contribution,
-  });
+    return NextResponse.json({
+      message:
+        "Your contribution has been submitted for review. Civic Logos preserves strong objections, evidence, corrections, and nuance as part of the living public record.",
+      contribution,
+    });
+  } catch (error) {
+    console.error("Contribution submission failed", error);
+    return NextResponse.json(
+      {
+        error:
+          "Contribution submission failed before it could enter the public record. Please try again, or submit without the document upload while Civic Logos checks the evidence attachment path.",
+      },
+      { status: 500 },
+    );
+  }
 }

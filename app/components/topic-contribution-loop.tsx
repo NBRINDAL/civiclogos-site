@@ -2021,11 +2021,22 @@ export default function TopicContributionLoop({
           })(),
         });
 
-        const payload = (await response.json()) as {
+        const contentType = response.headers.get("content-type") ?? "";
+        const payload = contentType.includes("application/json")
+          ? ((await response.json()) as {
           error?: string;
           message?: string;
           contribution?: PublicContribution;
-        };
+            })
+          : ({
+              error: response.ok
+                ? "Civic Logos returned an unexpected response."
+                : "Civic Logos returned a server error before the contribution could be recorded. Please try again, or submit without the document upload while the evidence path is checked.",
+            } satisfies {
+              error?: string;
+              message?: string;
+              contribution?: PublicContribution;
+            });
 
         if (!response.ok || !payload.contribution || !payload.message) {
           throw new Error(payload.error ?? "Contribution could not be submitted.");
