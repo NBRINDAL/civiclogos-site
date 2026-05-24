@@ -55,6 +55,7 @@ const hooks = [
 const directLinks = [
   { label: "Homepage", href: "/" },
   { label: "Public challenge", href: "/challenge" },
+  { label: "Reasoning Ledger", href: "/ledger" },
   { label: "Healthcare Reader View", href: "/healthcare/topic-001" },
   {
     label: "Healthcare Ledger View",
