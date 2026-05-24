@@ -4,10 +4,6 @@ import {
   createDatabaseEvidenceDocumentStore,
   isDatabaseEvidenceDocumentStoreConfigured,
 } from "./database-evidence-document-store";
-import {
-  createEvidenceDocument as createPrototypeEvidenceDocument,
-  getEvidenceDocument as getPrototypeEvidenceDocument,
-} from "./prototype-evidence-document-store";
 
 export type CreateEvidenceDocumentInput = {
   roomSlug: IssueRoomSlug;
@@ -23,17 +19,21 @@ export type StoredEvidenceDocument = {
   bytes: Buffer;
 };
 
+type EvidenceDocumentStoreAdapter = {
+  createEvidenceDocument: (
+    input: CreateEvidenceDocumentInput,
+  ) => Promise<EvidenceDocument>;
+  getEvidenceDocument: (id: string) => Promise<StoredEvidenceDocument | null>;
+};
+
 const databaseStore = createDatabaseEvidenceDocumentStore();
 
+async function loadPrototypeEvidenceDocumentStore() {
+  return import("./prototype-evidence-document-store");
+}
+
 async function withEvidenceDocumentStore<T>(
-  action: (
-    store: {
-      createEvidenceDocument: (
-        input: CreateEvidenceDocumentInput,
-      ) => Promise<EvidenceDocument>;
-      getEvidenceDocument: (id: string) => Promise<StoredEvidenceDocument | null>;
-    },
-  ) => Promise<T>,
+  action: (store: EvidenceDocumentStoreAdapter) => Promise<T>,
 ) {
   if (isDatabaseEvidenceDocumentStoreConfigured()) {
     try {
@@ -43,10 +43,8 @@ async function withEvidenceDocumentStore<T>(
     }
   }
 
-  return action({
-    createEvidenceDocument: createPrototypeEvidenceDocument,
-    getEvidenceDocument: getPrototypeEvidenceDocument,
-  });
+  const prototypeStoreModule = await loadPrototypeEvidenceDocumentStore();
+  return action(prototypeStoreModule);
 }
 
 export async function createEvidenceDocument(input: CreateEvidenceDocumentInput) {

@@ -45,7 +45,7 @@ async function resolveUploadDir() {
   if (!uploadDirPromise) {
     uploadDirPromise = (async () => {
       const preferredDir = path.join(
-        /* turbopackIgnore: true */ process.cwd(),
+        /*turbopackIgnore: true*/ process.cwd(),
         "data",
         "prototype-evidence-uploads",
       );
@@ -54,7 +54,10 @@ async function resolveUploadDir() {
         await ensureDirectory(preferredDir);
         return preferredDir;
       } catch {
-        const fallbackDir = path.join(tmpdir(), "civiclogos-prototype-evidence-uploads");
+        const fallbackDir = path.join(
+          /*turbopackIgnore: true*/ tmpdir(),
+          "civiclogos-prototype-evidence-uploads",
+        );
         await ensureDirectory(fallbackDir);
         return fallbackDir;
       }
@@ -68,7 +71,7 @@ async function resolveIndexPath() {
   if (!indexPathPromise) {
     indexPathPromise = (async () => {
       const preferredPath = path.join(
-        /* turbopackIgnore: true */ process.cwd(),
+        /*turbopackIgnore: true*/ process.cwd(),
         "data",
         "prototype-evidence-index.runtime.json",
       );
@@ -78,7 +81,7 @@ async function resolveIndexPath() {
         return preferredPath;
       } catch {
         const fallbackPath = path.join(
-          tmpdir(),
+          /*turbopackIgnore: true*/ tmpdir(),
           "civiclogos-prototype-evidence-index.runtime.json",
         );
         await ensureIndexFile(fallbackPath);

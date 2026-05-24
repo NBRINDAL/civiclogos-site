@@ -2,12 +2,6 @@ import {
   createDatabaseHomeIntakeStore,
   isDatabaseHomeIntakeStoreConfigured,
 } from "./database-home-intake-store";
-import {
-  createHomeIntakeEntry as createPrototypeHomeIntakeEntry,
-  getHomeIntakeEntry as getPrototypeHomeIntakeEntry,
-  getHomeIntakeStoreMetadata as getPrototypeHomeIntakeStoreMetadata,
-  listHomeIntakeEntries as listPrototypeHomeIntakeEntries,
-} from "./prototype-home-intake-store";
 import type {
   HomeIntakeRecord,
   HomeIntakeRouteKind,
@@ -23,21 +17,25 @@ type ListHomeIntakeFilters = {
   limit?: number;
 };
 
+type HomeIntakeStoreAdapter = {
+  getHomeIntakeStoreMetadata: () => Promise<HomeIntakeStoreMetadata>;
+  createHomeIntakeEntry: (prompt: string) => Promise<HomeIntakeRecord>;
+  getHomeIntakeEntry: (id: string) => Promise<HomeIntakeRecord | null>;
+  listHomeIntakeEntries: (
+    filters?: ListHomeIntakeFilters,
+  ) => Promise<HomeIntakeRecord[]>;
+};
+
 function withFallbackNote(note: string) {
   return `${note} Database connection was unavailable, so Civic Logos fell back to the local prototype intake store for this request.`;
 }
 
+async function loadPrototypeHomeIntakeStore() {
+  return import("./prototype-home-intake-store");
+}
+
 async function withHomeIntakeStore<T>(
-  action: (
-    store: {
-      getHomeIntakeStoreMetadata: () => Promise<HomeIntakeStoreMetadata>;
-      createHomeIntakeEntry: (prompt: string) => Promise<HomeIntakeRecord>;
-      getHomeIntakeEntry: (id: string) => Promise<HomeIntakeRecord | null>;
-      listHomeIntakeEntries: (
-        filters?: ListHomeIntakeFilters,
-      ) => Promise<HomeIntakeRecord[]>;
-    },
-  ) => Promise<T>,
+  action: (store: HomeIntakeStoreAdapter) => Promise<T>,
 ) {
   if (isDatabaseHomeIntakeStoreConfigured()) {
     try {
@@ -50,7 +48,8 @@ async function withHomeIntakeStore<T>(
     }
   }
 
-  const metadata = await getPrototypeHomeIntakeStoreMetadata();
+  const prototypeStoreModule = await loadPrototypeHomeIntakeStore();
+  const metadata = await prototypeStoreModule.getHomeIntakeStoreMetadata();
   const prototypeStore = {
     getHomeIntakeStoreMetadata: async () =>
       isDatabaseHomeIntakeStoreConfigured()
@@ -60,9 +59,9 @@ async function withHomeIntakeStore<T>(
             note: withFallbackNote(metadata.note),
           }
         : metadata,
-    createHomeIntakeEntry: createPrototypeHomeIntakeEntry,
-    getHomeIntakeEntry: getPrototypeHomeIntakeEntry,
-    listHomeIntakeEntries: listPrototypeHomeIntakeEntries,
+    createHomeIntakeEntry: prototypeStoreModule.createHomeIntakeEntry,
+    getHomeIntakeEntry: prototypeStoreModule.getHomeIntakeEntry,
+    listHomeIntakeEntries: prototypeStoreModule.listHomeIntakeEntries,
   };
 
   return action(prototypeStore);

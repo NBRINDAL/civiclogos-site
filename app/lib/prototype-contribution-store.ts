@@ -44,7 +44,7 @@ async function resolveStorePath() {
   if (!storePathPromise) {
     storePathPromise = (async () => {
       const preferredPath = path.join(
-        /* turbopackIgnore: true */ process.cwd(),
+        /*turbopackIgnore: true*/ process.cwd(),
         "data",
         "prototype-contributions.runtime.json",
       );
@@ -54,7 +54,7 @@ async function resolveStorePath() {
         return preferredPath;
       } catch {
         const fallbackPath = path.join(
-          tmpdir(),
+          /*turbopackIgnore: true*/ tmpdir(),
           "civiclogos-prototype-contributions.runtime.json",
         );
         await ensureStoreFile(fallbackPath);

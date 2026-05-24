@@ -10,14 +10,6 @@ import {
   createDatabaseContributionStore,
   isDatabaseContributionStoreConfigured,
 } from "./database-contribution-store";
-import {
-  createContribution as createPrototypeContribution,
-  getContributionById as getPrototypeContributionById,
-  getContributionStoreMetadata as getPrototypeContributionStoreMetadata,
-  listAllContributions as listAllPrototypeContributions,
-  listPublicContributions as listPublicPrototypeContributions,
-  reviewContribution as reviewPrototypeContribution,
-} from "./prototype-contribution-store";
 
 type ListContributionFilters = {
   roomSlug?: IssueRoomSlug;
@@ -34,32 +26,36 @@ export type ContributionStoreMetadata = {
   storePath?: string;
 };
 
+type ContributionStoreAdapter = {
+  getContributionStoreMetadata: () => Promise<ContributionStoreMetadata>;
+  listPublicContributions: (
+    filters?: ListContributionFilters,
+  ) => Promise<PublicContribution[]>;
+  listAllContributions: (
+    filters?: ListContributionFilters,
+  ) => Promise<Contribution[]>;
+  getContributionById: (id: string) => Promise<Contribution | null>;
+  createContribution: (
+    input: CreateContributionInput,
+  ) => Promise<PublicContribution>;
+  reviewContribution: (
+    id: string,
+    input: ReviewContributionInput,
+  ) => Promise<Contribution | null>;
+};
+
 const databaseStore = createDatabaseContributionStore();
 
 function withFallbackNote(note: string) {
   return `${note} Database connection was unavailable, so Civic Logos fell back to the local prototype store for this request.`;
 }
 
+async function loadPrototypeContributionStore() {
+  return import("./prototype-contribution-store");
+}
+
 async function withContributionStore<T>(
-  action: (
-    store: {
-      getContributionStoreMetadata: () => Promise<ContributionStoreMetadata>;
-      listPublicContributions: (
-        filters?: ListContributionFilters,
-      ) => Promise<PublicContribution[]>;
-      listAllContributions: (
-        filters?: ListContributionFilters,
-      ) => Promise<Contribution[]>;
-      getContributionById: (id: string) => Promise<Contribution | null>;
-      createContribution: (
-        input: CreateContributionInput,
-      ) => Promise<PublicContribution>;
-      reviewContribution: (
-        id: string,
-        input: ReviewContributionInput,
-      ) => Promise<Contribution | null>;
-    },
-  ) => Promise<T>,
+  action: (store: ContributionStoreAdapter) => Promise<T>,
 ) {
   if (isDatabaseContributionStoreConfigured()) {
     try {
@@ -69,7 +65,8 @@ async function withContributionStore<T>(
     }
   }
 
-  const metadata = await getPrototypeContributionStoreMetadata();
+  const prototypeStoreModule = await loadPrototypeContributionStore();
+  const metadata = await prototypeStoreModule.getContributionStoreMetadata();
   const prototypeStore = {
     getContributionStoreMetadata: async () =>
       isDatabaseContributionStoreConfigured()
@@ -82,11 +79,11 @@ async function withContributionStore<T>(
             ...metadata,
             mode: "prototype" as const,
           },
-    listPublicContributions: listPublicPrototypeContributions,
-    listAllContributions: listAllPrototypeContributions,
-    getContributionById: getPrototypeContributionById,
-    createContribution: createPrototypeContribution,
-    reviewContribution: reviewPrototypeContribution,
+    listPublicContributions: prototypeStoreModule.listPublicContributions,
+    listAllContributions: prototypeStoreModule.listAllContributions,
+    getContributionById: prototypeStoreModule.getContributionById,
+    createContribution: prototypeStoreModule.createContribution,
+    reviewContribution: prototypeStoreModule.reviewContribution,
   };
 
   return action(prototypeStore);

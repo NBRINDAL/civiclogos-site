@@ -8,11 +8,6 @@ import {
   createDatabaseTopicChatStore,
   isDatabaseTopicChatStoreConfigured,
 } from "./database-topic-chat-store";
-import {
-  createTopicChatMessage as createPrototypeTopicChatMessage,
-  getTopicChatStoreMetadata as getPrototypeTopicChatStoreMetadata,
-  listTopicChatMessages as listPrototypeTopicChatMessages,
-} from "./prototype-topic-chat-store";
 
 type ListTopicChatFilters = {
   sessionId: string;
@@ -21,24 +16,28 @@ type ListTopicChatFilters = {
   limit?: number;
 };
 
+type TopicChatStoreAdapter = {
+  getTopicChatStoreMetadata: () => Promise<TopicChatStoreMetadata>;
+  listTopicChatMessages: (
+    filters: ListTopicChatFilters,
+  ) => Promise<TopicChatMessage[]>;
+  createTopicChatMessage: (
+    input: CreateTopicChatMessageInput,
+  ) => Promise<TopicChatMessage>;
+};
+
 const databaseStore = createDatabaseTopicChatStore();
 
 function withFallbackNote(note: string) {
   return `${note} Database connection was unavailable, so Civic Logos fell back to the local prototype chat store for this request.`;
 }
 
+async function loadPrototypeTopicChatStore() {
+  return import("./prototype-topic-chat-store");
+}
+
 async function withTopicChatStore<T>(
-  action: (
-    store: {
-      getTopicChatStoreMetadata: () => Promise<TopicChatStoreMetadata>;
-      listTopicChatMessages: (
-        filters: ListTopicChatFilters,
-      ) => Promise<TopicChatMessage[]>;
-      createTopicChatMessage: (
-        input: CreateTopicChatMessageInput,
-      ) => Promise<TopicChatMessage>;
-    },
-  ) => Promise<T>,
+  action: (store: TopicChatStoreAdapter) => Promise<T>,
 ) {
   if (isDatabaseTopicChatStoreConfigured()) {
     try {
@@ -48,7 +47,8 @@ async function withTopicChatStore<T>(
     }
   }
 
-  const metadata = await getPrototypeTopicChatStoreMetadata();
+  const prototypeStoreModule = await loadPrototypeTopicChatStore();
+  const metadata = await prototypeStoreModule.getTopicChatStoreMetadata();
   const prototypeStore = {
     getTopicChatStoreMetadata: async () =>
       isDatabaseTopicChatStoreConfigured()
@@ -61,8 +61,8 @@ async function withTopicChatStore<T>(
             ...metadata,
             mode: "prototype" as const,
           },
-    listTopicChatMessages: listPrototypeTopicChatMessages,
-    createTopicChatMessage: createPrototypeTopicChatMessage,
+    listTopicChatMessages: prototypeStoreModule.listTopicChatMessages,
+    createTopicChatMessage: prototypeStoreModule.createTopicChatMessage,
   };
 
   return action(prototypeStore);
