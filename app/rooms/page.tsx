@@ -22,7 +22,10 @@ import { getHomeIntakeHeldQuestions } from "../lib/home-intake-held-questions";
 import { getHomeIntakeClosestMapPath } from "../lib/home-intake-map-path";
 import { summarizeHomeIntakeRoutingConsensus } from "../lib/home-intake-routing-consensus";
 import { getHomeIntakeEntry, listHomeIntakeEntries } from "../lib/home-intake-store";
-import type { HomeIntakeRecord } from "../lib/home-intake-types";
+import type {
+  HomeIntakePromotionStatus,
+  HomeIntakeRecord,
+} from "../lib/home-intake-types";
 import {
   getInspectableTopics,
   getLiveCardIndex,
@@ -59,6 +62,25 @@ function mergeVisibleRoomCandidate(
   return [candidate, ...roomCandidates].slice(0, 6);
 }
 
+function getPromotionStatusLabel(status?: HomeIntakePromotionStatus) {
+  switch (status) {
+    case "ready_for_live_room":
+      return "Ready for live room shell";
+    case "ready_for_live_topic":
+      return "Ready for live topic shell";
+    case "merged_into_existing_room":
+      return "Merged into existing room";
+    case "rejected":
+      return "Rejected as live candidate";
+    case "promoted":
+      return "Promoted to live map";
+    case "held":
+      return "Held for more prompt pressure";
+    default:
+      return "Awaiting promotion review";
+  }
+}
+
 export default async function RoomsPage({
   searchParams,
 }: {
@@ -86,7 +108,7 @@ export default async function RoomsPage({
       routeKind: "new-room-draft",
       limit: 6,
     }),
-    intakeId && latestCookieIntake?.id !== intakeId
+    intakeId
       ? getHomeIntakeEntry(intakeId)
       : Promise.resolve(null),
   ]);
@@ -110,11 +132,10 @@ export default async function RoomsPage({
       ? storedIntakeEntry
       : null;
   const focusedRoomCandidate =
-    intakeId && cookieCandidate?.id === intakeId
-      ? cookieCandidate
-      : routeEntryCandidate;
+    routeEntryCandidate ??
+    (intakeId && cookieCandidate?.id === intakeId ? cookieCandidate : null);
   const visibleRoomCandidates = mergeVisibleRoomCandidate(
-    mergeVisibleRoomCandidate(roomCandidates, cookieCandidate),
+    roomCandidates,
     focusedRoomCandidate,
   );
   const totalInspectableCards = roomDirectory.reduce((total, room) => {
@@ -338,6 +359,21 @@ export default async function RoomsPage({
                           : "Still outside the active room map"}
                       </strong>
                     </div>
+
+                    <div className={styles.liveCardNote}>
+                      <span>Promotion review</span>
+                      <strong>{getPromotionStatusLabel(entry.promotionReview?.status)}</strong>
+                    </div>
+
+                    {entry.promotionReview?.guardrailNote ? (
+                      <div className={styles.promptPressureNote}>
+                        <div className={styles.promptPressureMeta}>
+                          <span>Promotion guardrail</span>
+                          <strong>{entry.promotionReview.reviewerLabel}</strong>
+                        </div>
+                        <p>{entry.promotionReview.guardrailNote}</p>
+                      </div>
+                    ) : null}
 
                     {closestMapPath ? (
                       <div className={styles.promptPressureNote}>

@@ -8,6 +8,7 @@ import {
   findMatchingRoomCandidate,
 } from "./home-intake-candidates";
 import type {
+  HomeIntakePromotionReview,
   HomeIntakeRecord,
   HomeIntakeRouteKind,
   HomeIntakeRouting,
@@ -31,6 +32,7 @@ type HomeIntakeRow = {
   prompt_count: number | null;
   related_prompts: HomeIntakePromptTrace[] | null;
   routing: HomeIntakeRouting;
+  promotion_review: HomeIntakePromotionReview | null;
 };
 
 type DatabaseHomeIntakeStore = {
@@ -40,6 +42,10 @@ type DatabaseHomeIntakeStore = {
   listHomeIntakeEntries: (
     filters?: ListHomeIntakeFilters,
   ) => Promise<HomeIntakeRecord[]>;
+  reviewHomeIntakeEntry: (
+    id: string,
+    promotionReview: HomeIntakePromotionReview,
+  ) => Promise<HomeIntakeRecord | null>;
 };
 
 let sqlClient: Sql | null = null;
@@ -105,6 +111,11 @@ async function ensureHomeIntakeTable() {
       `;
 
       await sql`
+        alter table civiclogos_home_intakes
+        add column if not exists promotion_review jsonb
+      `;
+
+      await sql`
         create index if not exists civiclogos_home_intakes_created_idx
         on civiclogos_home_intakes (created_at desc)
       `;
@@ -125,7 +136,8 @@ async function ensureHomeIntakeTable() {
               updated_at,
               prompt_count,
               related_prompts,
-              routing
+              routing,
+              promotion_review
             ) values (
               ${entry.id},
               ${entry.prompt},
@@ -133,7 +145,8 @@ async function ensureHomeIntakeTable() {
               ${entry.updatedAt},
               ${entry.promptCount ?? 1},
               ${sql.json(entry.relatedPrompts ?? [])},
-              ${sql.json(entry.routing)}
+              ${sql.json(entry.routing)},
+              ${sql.json(entry.promotionReview ?? null)}
             )
             on conflict (id) do nothing
           `;
@@ -158,6 +171,7 @@ function rowToEntry(row: HomeIntakeRow): HomeIntakeRecord {
       promptCount: row.prompt_count ?? 1,
       relatedPrompts: row.related_prompts ?? [],
       routing: row.routing,
+      promotionReview: row.promotion_review ?? undefined,
     };
 }
 
@@ -214,7 +228,8 @@ export function createDatabaseHomeIntakeStore(): DatabaseHomeIntakeStore {
               updated_at = ${updatedEntry.updatedAt},
               prompt_count = ${updatedEntry.promptCount ?? 1},
               related_prompts = ${sql.json(updatedEntry.relatedPrompts ?? [])},
-              routing = ${sql.json(updatedEntry.routing)}
+              routing = ${sql.json(updatedEntry.routing)},
+              promotion_review = ${sql.json(updatedEntry.promotionReview ?? null)}
             where id = ${updatedEntry.id}
           `;
 
@@ -235,7 +250,8 @@ export function createDatabaseHomeIntakeStore(): DatabaseHomeIntakeStore {
           updated_at,
           prompt_count,
           related_prompts,
-          routing
+          routing,
+          promotion_review
         ) values (
           ${storedEntry.id},
           ${storedEntry.prompt},
@@ -243,7 +259,8 @@ export function createDatabaseHomeIntakeStore(): DatabaseHomeIntakeStore {
           ${storedEntry.updatedAt},
           ${storedEntry.promptCount ?? 1},
           ${sql.json(storedEntry.relatedPrompts ?? [])},
-          ${sql.json(storedEntry.routing)}
+          ${sql.json(storedEntry.routing)},
+          ${sql.json(storedEntry.promotionReview ?? null)}
         )
       `;
 
@@ -278,6 +295,23 @@ export function createDatabaseHomeIntakeStore(): DatabaseHomeIntakeStore {
       `;
 
       return rows.map(rowToEntry);
+    },
+
+    async reviewHomeIntakeEntry(id, promotionReview) {
+      await ensureHomeIntakeTable();
+      const sql = getSqlClient();
+      const timestamp = new Date().toISOString();
+      const rows = await sql<HomeIntakeRow[]>`
+        update civiclogos_home_intakes
+        set
+          updated_at = ${timestamp},
+          promotion_review = ${sql.json(promotionReview)}
+        where id = ${id}
+        returning *
+      `;
+
+      const row = rows[0];
+      return row ? rowToEntry(row) : null;
     },
   };
 }

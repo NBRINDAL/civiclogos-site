@@ -32,7 +32,10 @@ import { getHomeIntakeHeldQuestions } from "../../lib/home-intake-held-questions
 import { getHomeIntakeClosestMapPath } from "../../lib/home-intake-map-path";
 import { summarizeHomeIntakeRoutingConsensus } from "../../lib/home-intake-routing-consensus";
 import { getHomeIntakeEntry, listHomeIntakeEntries } from "../../lib/home-intake-store";
-import type { HomeIntakeRecord } from "../../lib/home-intake-types";
+import type {
+  HomeIntakePromotionStatus,
+  HomeIntakeRecord,
+} from "../../lib/home-intake-types";
 import styles from "../../healthcare/page.module.css";
 
 function ProposalTrack({
@@ -116,6 +119,25 @@ function mergeCookieDraftTopic(
   return [draftTopic, ...drafts].slice(0, 6);
 }
 
+function getPromotionStatusLabel(status?: HomeIntakePromotionStatus) {
+  switch (status) {
+    case "ready_for_live_room":
+      return "Ready for live room shell";
+    case "ready_for_live_topic":
+      return "Ready for live topic shell";
+    case "merged_into_existing_room":
+      return "Merged into existing room";
+    case "rejected":
+      return "Rejected as live candidate";
+    case "promoted":
+      return "Promoted to live map";
+    case "held":
+      return "Held for more prompt pressure";
+    default:
+      return "Awaiting promotion review";
+  }
+}
+
 export default async function IssueRoomPage({
   params,
   searchParams,
@@ -140,19 +162,7 @@ export default async function IssueRoomPage({
     cookieStore.get(getHomeIntakeCookieName())?.value,
   );
   const [routeEntry, draftTopics] = await Promise.all([
-    intakeId && cookieEntry?.id === intakeId
-      ? {
-          id: cookieEntry.id,
-          prompt: cookieEntry.prompt,
-          createdAt: "",
-          updatedAt: "",
-          promptCount: cookieEntry.promptCount,
-          relatedPrompts: cookieEntry.relatedPrompts,
-          routing: cookieEntry.routing,
-        }
-      : intakeId
-        ? await getHomeIntakeEntry(intakeId)
-        : null,
+    intakeId ? await getHomeIntakeEntry(intakeId) : null,
     listHomeIntakeEntries({
       routeKind: "room-topic-draft",
       roomSlug,
@@ -179,11 +189,10 @@ export default async function IssueRoomPage({
       ? routeEntry
       : null;
   const focusedDraftTopic =
-    intakeId && cookieDraftTopic?.id === intakeId
-      ? cookieDraftTopic
-      : routeDraftTopic;
+    routeDraftTopic ??
+    (intakeId && cookieDraftTopic?.id === intakeId ? cookieDraftTopic : null);
   const visibleDraftTopics = mergeCookieDraftTopic(
-    mergeCookieDraftTopic(draftTopics, cookieDraftTopic),
+    draftTopics,
     focusedDraftTopic,
   );
 
@@ -516,6 +525,21 @@ export default async function IssueRoomPage({
                           : `Pressure inside ${room.title}, still waiting for a cleaner live-card home`}
                       </strong>
                     </div>
+
+                    <div className={styles.liveCardNote}>
+                      <span>Promotion review</span>
+                      <strong>{getPromotionStatusLabel(entry.promotionReview?.status)}</strong>
+                    </div>
+
+                    {entry.promotionReview?.guardrailNote ? (
+                      <div className={styles.draftPromptNote}>
+                        <div className={styles.draftPromptMeta}>
+                          <span>Promotion guardrail</span>
+                          <strong>{entry.promotionReview.reviewerLabel}</strong>
+                        </div>
+                        <p>{entry.promotionReview.guardrailNote}</p>
+                      </div>
+                    ) : null}
 
                     {closestMapPath ? (
                       <div className={styles.draftPromptNote}>

@@ -85,6 +85,7 @@
 .heroPanel,
 .panel,
 .receiptPanel,
+.promotionPanel,
 .providerCard {
   padding: 32px;
   border: 1px solid rgba(18, 33, 39, 0.12);
@@ -174,6 +175,7 @@
 
 .panel,
 .receiptPanel,
+.promotionPanel,
 .section {
   scroll-margin-top: 24px;
 }
@@ -183,6 +185,14 @@
   gap: 18px;
   background:
     linear-gradient(180deg, rgba(var(--brand-blue-rgb), 0.08), rgba(255, 251, 245, 0.84)),
+    rgba(255, 251, 245, 0.78);
+}
+
+.promotionPanel {
+  display: grid;
+  gap: 18px;
+  background:
+    linear-gradient(180deg, rgba(var(--brand-green-rgb), 0.09), rgba(255, 251, 245, 0.84)),
     rgba(255, 251, 245, 0.78);
 }
 
@@ -238,6 +248,46 @@
   border: 1px solid rgba(var(--brand-blue-rgb), 0.14);
   border-radius: 20px;
   background: rgba(244, 250, 255, 0.56);
+}
+
+.promotionPackage {
+  display: grid;
+  gap: 14px;
+  padding: 18px;
+  border: 1px solid rgba(18, 33, 39, 0.1);
+  border-radius: 22px;
+  background: rgba(255, 251, 245, 0.88);
+}
+
+.promotionPackageHeader,
+.promotionPackageItem {
+  display: grid;
+  gap: 8px;
+}
+
+.promotionPackageHeader span,
+.promotionPackageItem span {
+  color: var(--signal);
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.promotionPackageHeader strong {
+  color: var(--accent-dark);
+  font-size: 1.16rem;
+  line-height: 1.4;
+}
+
+.promotionPackageItem {
+  padding-top: 14px;
+  border-top: 1px solid rgba(18, 33, 39, 0.1);
+}
+
+.promotionPackageItem p {
+  color: var(--muted);
+  line-height: 1.72;
 }
 
 .questionCard {
@@ -480,6 +530,7 @@
   .heroPanel,
   .panel,
   .receiptPanel,
+  .promotionPanel,
   .providerCard {
     padding: 22px;
     border-radius: 24px;

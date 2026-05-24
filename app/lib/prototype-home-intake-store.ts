@@ -10,6 +10,7 @@ import {
   findMatchingRoomCandidate,
 } from "./home-intake-candidates";
 import type {
+  HomeIntakePromotionReview,
   HomeIntakeRecord,
   HomeIntakeRouteKind,
   HomeIntakeStoreDocument,
@@ -169,4 +170,36 @@ export async function listHomeIntakeEntries(filters: ListHomeIntakeFilters = {})
         new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime(),
     )
     .slice(0, filters.limit ?? 12);
+}
+
+export async function reviewHomeIntakeEntry(
+  id: string,
+  promotionReview: HomeIntakePromotionReview,
+) {
+  return enqueueWrite(async () => {
+    const document = await readStoreDocument();
+    const timestamp = new Date().toISOString();
+    let updatedEntry: HomeIntakeRecord | null = null;
+
+    document.entries = document.entries.map((entry) => {
+      if (entry.id !== id) {
+        return entry;
+      }
+
+      updatedEntry = {
+        ...entry,
+        updatedAt: timestamp,
+        promotionReview,
+      };
+
+      return updatedEntry;
+    });
+
+    if (!updatedEntry) {
+      return null;
+    }
+
+    await writeStoreDocument(document);
+    return updatedEntry;
+  });
 }

@@ -50,6 +50,25 @@ export type HomeIntakePromptTrace = {
   createdAt: string;
 };
 
+export type HomeIntakePromotionStatus =
+  | "held"
+  | "ready_for_live_room"
+  | "ready_for_live_topic"
+  | "merged_into_existing_room"
+  | "rejected"
+  | "promoted";
+
+export type HomeIntakePromotionReview = {
+  status: HomeIntakePromotionStatus;
+  reviewerLabel: string;
+  reviewerNote: string;
+  neutralBaselineTitle?: string;
+  neutralBaselineQuestion?: string;
+  neutralBaselineSynthesis?: string;
+  guardrailNote?: string;
+  decidedAt: string;
+};
+
 export type HomeIntakeRecord = {
   id: string;
   prompt: string;
@@ -58,6 +77,7 @@ export type HomeIntakeRecord = {
   promptCount?: number;
   relatedPrompts?: HomeIntakePromptTrace[];
   routing: HomeIntakeRouting;
+  promotionReview?: HomeIntakePromotionReview;
 };
 
 export type HomeIntakeStoreDocument = {

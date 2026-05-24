@@ -3,6 +3,7 @@ import {
   isDatabaseHomeIntakeStoreConfigured,
 } from "./database-home-intake-store";
 import type {
+  HomeIntakePromotionReview,
   HomeIntakeRecord,
   HomeIntakeRouteKind,
   HomeIntakeStoreMetadata,
@@ -24,6 +25,10 @@ type HomeIntakeStoreAdapter = {
   listHomeIntakeEntries: (
     filters?: ListHomeIntakeFilters,
   ) => Promise<HomeIntakeRecord[]>;
+  reviewHomeIntakeEntry: (
+    id: string,
+    promotionReview: HomeIntakePromotionReview,
+  ) => Promise<HomeIntakeRecord | null>;
 };
 
 function withFallbackNote(note: string) {
@@ -62,6 +67,7 @@ async function withHomeIntakeStore<T>(
     createHomeIntakeEntry: prototypeStoreModule.createHomeIntakeEntry,
     getHomeIntakeEntry: prototypeStoreModule.getHomeIntakeEntry,
     listHomeIntakeEntries: prototypeStoreModule.listHomeIntakeEntries,
+    reviewHomeIntakeEntry: prototypeStoreModule.reviewHomeIntakeEntry,
   };
 
   return action(prototypeStore);
@@ -81,4 +87,13 @@ export async function getHomeIntakeEntry(id: string) {
 
 export async function listHomeIntakeEntries(filters: ListHomeIntakeFilters = {}) {
   return withHomeIntakeStore((store) => store.listHomeIntakeEntries(filters));
+}
+
+export async function reviewHomeIntakeEntry(
+  id: string,
+  promotionReview: HomeIntakePromotionReview,
+) {
+  return withHomeIntakeStore((store) =>
+    store.reviewHomeIntakeEntry(id, promotionReview),
+  );
 }

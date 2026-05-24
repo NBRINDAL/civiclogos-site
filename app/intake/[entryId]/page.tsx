@@ -6,6 +6,7 @@ import {
   getRoomTopicHref,
 } from "@/app/lib/civic-logos";
 import { buildHomeIntakeBrief } from "@/app/lib/home-intake-brief";
+import IntakePromotionReviewForm from "@/app/components/intake-promotion-review-form";
 import { SiteBrand } from "@/app/components/site-brand";
 import {
   getHomeIntakeCookieName,
@@ -33,7 +34,11 @@ import {
 } from "@/app/lib/home-intake-map-path";
 import { summarizeHomeIntakeRoutingConsensus } from "@/app/lib/home-intake-routing-consensus";
 import { getHomeIntakeEntry, getHomeIntakeStoreMetadata } from "@/app/lib/home-intake-store";
-import type { HomeIntakeRouteKind } from "@/app/lib/home-intake-types";
+import type {
+  HomeIntakePromotionStatus,
+  HomeIntakeRecord,
+  HomeIntakeRouteKind,
+} from "@/app/lib/home-intake-types";
 import styles from "./page.module.css";
 
 export const dynamic = "force-dynamic";
@@ -95,6 +100,36 @@ function getIntakeNextDecision(routeKind?: HomeIntakeRouteKind) {
   }
 }
 
+function getPromotionStatusLabel(status?: HomeIntakePromotionStatus) {
+  switch (status) {
+    case "ready_for_live_room":
+      return "Ready for live room shell";
+    case "ready_for_live_topic":
+      return "Ready for live topic shell";
+    case "merged_into_existing_room":
+      return "Merged into existing room";
+    case "rejected":
+      return "Rejected as live candidate";
+    case "promoted":
+      return "Promoted to live map";
+    case "held":
+      return "Held for more prompt pressure";
+    default:
+      return "Awaiting promotion review";
+  }
+}
+
+function formatDecisionDate(value?: string) {
+  if (!value) {
+    return "Not decided yet";
+  }
+
+  return new Intl.DateTimeFormat("en-US", {
+    dateStyle: "medium",
+    timeStyle: "short",
+  }).format(new Date(value));
+}
+
 export default async function IntakeEntryPage({
   params,
 }: {
@@ -109,7 +144,7 @@ export default async function IntakeEntryPage({
     getHomeIntakeEntry(entryId),
     getHomeIntakeStoreMetadata(),
   ]);
-  const entry =
+  const cookieFallbackEntry: HomeIntakeRecord | null =
     cookieEntry?.id === entryId
       ? {
           id: cookieEntry.id,
@@ -123,7 +158,8 @@ export default async function IntakeEntryPage({
           relatedPrompts: cookieEntry.relatedPrompts,
           routing: cookieEntry.routing,
         }
-      : storedEntry;
+      : null;
+  const entry = storedEntry ?? cookieFallbackEntry;
 
   if (!entry) {
     notFound();
@@ -282,6 +318,106 @@ export default async function IntakeEntryPage({
             <p>{getIntakeNextDecision(entry.routing.routeKind)}</p>
           </div>
         </section>
+
+        {entry.routing.routeKind !== "existing-room" ? (
+          <section
+            className={styles.promotionPanel}
+            id="promotion-review"
+            aria-labelledby="promotion-review-heading"
+          >
+            <div className={styles.receiptHeader}>
+              <div>
+                <span className={styles.eyebrow}>Map promotion review</span>
+                <h2 id="promotion-review-heading">
+                  Human review decides whether this intake can become a live neutral object.
+                </h2>
+              </div>
+              <p>
+                This is the gate between an outside prompt and a future room or
+                topic shell. It records a neutral baseline package, not an
+                endorsement of later claims.
+              </p>
+            </div>
+
+            <div className={styles.receiptGrid}>
+              <article className={styles.receiptCard}>
+                <span>Promotion status</span>
+                <strong>{getPromotionStatusLabel(entry.promotionReview?.status)}</strong>
+              </article>
+              <article className={styles.receiptCard}>
+                <span>Decision source</span>
+                <strong>
+                  {entry.promotionReview?.reviewerLabel ?? "No maintainer decision yet"}
+                </strong>
+              </article>
+              <article className={styles.receiptCard}>
+                <span>Decision time</span>
+                <strong>{formatDecisionDate(entry.promotionReview?.decidedAt)}</strong>
+              </article>
+              <article className={styles.receiptCard}>
+                <span>Guardrail</span>
+                <strong>AI routing is advisory; live-map promotion is human-reviewed.</strong>
+              </article>
+            </div>
+
+            {entry.promotionReview ? (
+              <div className={styles.promotionPackage}>
+                <div className={styles.promotionPackageHeader}>
+                  <span>Reviewed promotion package</span>
+                  <strong>
+                    {entry.promotionReview.neutralBaselineTitle ??
+                      entry.routing.suggestedTopicTitle ??
+                      "Neutral baseline not set"}
+                  </strong>
+                </div>
+
+                {entry.promotionReview.neutralBaselineQuestion ? (
+                  <div className={styles.promotionPackageItem}>
+                    <span>Neutral question</span>
+                    <p>{entry.promotionReview.neutralBaselineQuestion}</p>
+                  </div>
+                ) : null}
+
+                {entry.promotionReview.neutralBaselineSynthesis ? (
+                  <div className={styles.promotionPackageItem}>
+                    <span>Neutral baseline synthesis</span>
+                    <p>{entry.promotionReview.neutralBaselineSynthesis}</p>
+                  </div>
+                ) : null}
+
+                {entry.promotionReview.guardrailNote ? (
+                  <div className={styles.promotionPackageItem}>
+                    <span>Guardrail note</span>
+                    <p>{entry.promotionReview.guardrailNote}</p>
+                  </div>
+                ) : null}
+
+                <div className={styles.promotionPackageItem}>
+                  <span>Reviewer note</span>
+                  <p>{entry.promotionReview.reviewerNote}</p>
+                </div>
+              </div>
+            ) : (
+              <div className={styles.nextDecision}>
+                <span>No promotion decision yet</span>
+                <p>
+                  This artifact can keep collecting prompt pressure until a
+                  maintainer records whether it should stay held, merge into the
+                  current map, or become a reviewed neutral live-room/topic shell.
+                </p>
+              </div>
+            )}
+
+            <IntakePromotionReviewForm
+              entryId={entry.id}
+              existingReview={entry.promotionReview}
+              routeKind={entry.routing.routeKind}
+              suggestedQuestion={entry.routing.suggestedCentralQuestion}
+              suggestedSynthesis={entry.routing.suggestedTopicSummary}
+              suggestedTitle={entry.routing.suggestedTopicTitle}
+            />
+          </section>
+        ) : null}
 
         <section className={styles.panel}>
           <span className={styles.eyebrow}>What the intake engine saw</span>
