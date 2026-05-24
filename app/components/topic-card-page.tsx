@@ -3654,7 +3654,7 @@ export default async function TopicCardPage({
                         {getPublicContributionOutcomeNote(
                           item.review?.decisionReason,
                           item.review?.publicRecordNote,
-                          "A reviewed outside contribution was attached to this assumption layer.",
+                          "A reviewed contribution record was attached to this assumption layer.",
                         )}
                       </p>
                       <ContributionRecordContext contribution={item} recordView="changed-card" />
@@ -3667,7 +3667,7 @@ export default async function TopicCardPage({
                 </div>
               ) : (
                 <p>
-                  No reviewed outside contribution has yet been attached to the
+                  No reviewed contribution record has yet been attached to the
                   card&apos;s assumption layer.
                 </p>
               )}
@@ -3770,7 +3770,7 @@ export default async function TopicCardPage({
               ) : (
                 <p>
                   No contributor objection has changed this card yet. That field
-                  should only fill when a reviewed outside objection materially
+                  should only fill when a reviewed contribution record materially
                   alters the public record.
                 </p>
               )}
@@ -3831,7 +3831,7 @@ export default async function TopicCardPage({
                         {getPublicContributionOutcomeNote(
                           item.review?.decisionReason,
                           item.review?.publicRecordNote,
-                          "A reviewed outside contribution was attached to the evidence layer.",
+                          "A reviewed contribution record was attached to the evidence layer.",
                         )}
                       </p>
                       <ContributionRecordContext contribution={item} recordView="changed-card" />
@@ -3844,7 +3844,7 @@ export default async function TopicCardPage({
                 </div>
               ) : (
                 <p>
-                  No reviewed outside contribution has yet been attached to the
+                  No reviewed contribution record has yet been attached to the
                   card&apos;s evidence layer.
                 </p>
               )}
@@ -4140,7 +4140,7 @@ export default async function TopicCardPage({
                         {getPublicContributionOutcomeNote(
                           item.review?.decisionReason,
                           item.review?.publicRecordNote,
-                          "A reviewed outside contribution was attached to the open-question layer.",
+                          "A reviewed contribution record was attached to the open-question layer.",
                         )}
                       </p>
                       <ContributionRecordContext contribution={item} recordView="changed-card" />
@@ -4153,7 +4153,7 @@ export default async function TopicCardPage({
                 </div>
               ) : (
                 <p>
-                  No reviewed outside contribution has yet been attached to the
+                  No reviewed contribution record has yet been attached to the
                   card&apos;s open-question layer.
                 </p>
               )}
@@ -4767,7 +4767,7 @@ export default async function TopicCardPage({
               <div className={styles.copyBlock}>
                 <h3>No contributor-driven card change yet</h3>
                 <p>
-                  The card is still waiting for a reviewed outside contribution to
+                  The card is still waiting for a reviewed contribution record to
                   visibly move its synthesis. That is the threshold this manual
                   cycle is meant to prove.
                 </p>
