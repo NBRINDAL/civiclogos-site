@@ -115,6 +115,16 @@ export default function LedgerPage() {
       </header>
 
       <main className={styles.main}>
+        <section className={styles.grantNote}>
+          <span className={styles.eyebrow}>Grant-facing scope</span>
+          <p>
+            This page is the public anchor for NLnet-facing review of the
+            proposed open-source layer. It describes the reusable ledger scope,
+            planned deliverables, and current prototype evidence without treating
+            the specification, license, or reference implementation as finished.
+          </p>
+        </section>
+
         <section className={styles.twoColumn}>
           <article className={styles.panel}>
             <span className={styles.eyebrow}>What it is</span>
