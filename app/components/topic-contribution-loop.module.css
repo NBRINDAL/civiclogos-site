@@ -298,6 +298,42 @@
   color: var(--foreground);
 }
 
+.exampleMoves {
+  display: grid;
+  gap: 10px;
+  padding: 14px 16px;
+  border: 1px solid rgba(var(--brand-blue-rgb), 0.14);
+  border-radius: 20px;
+  background: rgba(244, 250, 255, 0.56);
+}
+
+.exampleMovesGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.exampleMove {
+  display: grid;
+  gap: 6px;
+  padding: 12px;
+  border: 1px solid rgba(18, 33, 39, 0.1);
+  border-radius: 16px;
+  background: rgba(255, 251, 245, 0.86);
+}
+
+.exampleMove strong {
+  color: var(--foreground);
+  font-size: 0.9rem;
+}
+
+.exampleMove p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.86rem;
+  line-height: 1.5;
+}
+
 .starterKit {
   display: grid;
   gap: 14px;
@@ -1038,6 +1074,7 @@
   .recordPreviewGrid,
   .reviewStepGrid,
   .impactBoundaryGrid,
+  .exampleMovesGrid,
   .starterGrid,
   .successReceipt,
   .sectionHeader,

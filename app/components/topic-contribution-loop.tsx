@@ -483,6 +483,48 @@ function getContributionCue(lane: DebateLane | "") {
   }
 }
 
+function getContributionExampleMoves({
+  roomSlug,
+  topicId,
+  topicTitle,
+}: {
+  roomSlug: IssueRoomSlug;
+  topicId: string;
+  topicTitle: string;
+}) {
+  if (roomSlug === "healthcare" && topicId === "topic-001") {
+    return [
+      {
+        label: "Strong objection",
+        body: "Net savings may be captured by payers, vendors, or hospitals unless the card names savings-capture rules.",
+      },
+      {
+        label: "Evidence source",
+        body: "A prior-authorization, billing-overhead, or clinician-documentation study with one sentence on what it changes.",
+      },
+      {
+        label: "Precise correction",
+        body: "AI-assisted triage should distinguish routing support from clinical judgment, denial decisions, or diagnosis.",
+      },
+    ];
+  }
+
+  return [
+    {
+      label: "Strong objection",
+      body: `Name one claim in ${topicTitle} that overreaches and explain the failure mode.`,
+    },
+    {
+      label: "Evidence source",
+      body: "Add one source and one sentence explaining whether it supports, narrows, or challenges the card.",
+    },
+    {
+      label: "Precise correction",
+      body: "Point to one factual, numeric, definitional, or citation issue and suggest the smallest fix.",
+    },
+  ];
+}
+
 function getContributionStarterKits({
   roomSlug,
   topicId,
@@ -1438,6 +1480,10 @@ export default function TopicContributionLoop({
     () => getContributionCue(selectedContributionLane),
     [selectedContributionLane],
   );
+  const contributionExampleMoves = useMemo(
+    () => getContributionExampleMoves({ roomSlug, topicId, topicTitle }),
+    [roomSlug, topicId, topicTitle],
+  );
   const recordPreviewLabels = useMemo(() => {
     const labels = ["Public submission"];
 
@@ -2105,6 +2151,18 @@ export default function TopicContributionLoop({
                 <p>
                   <strong>Avoid:</strong> {contributionCue.avoid}
                 </p>
+              </div>
+            </div>
+
+            <div className={styles.exampleMoves}>
+              <span className={styles.sectionLabel}>Best first contribution</span>
+              <div className={styles.exampleMovesGrid}>
+                {contributionExampleMoves.map((item) => (
+                  <article className={styles.exampleMove} key={item.label}>
+                    <strong>{item.label}</strong>
+                    <p>{item.body}</p>
+                  </article>
+                ))}
               </div>
             </div>
 
