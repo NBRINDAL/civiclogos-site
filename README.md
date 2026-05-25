@@ -96,12 +96,14 @@ Supported Postgres environment variable names:
 - `POSTGRES_PRISMA_URL`
 - `POSTGRES_URL_NON_POOLING`
 
-To verify what the deployed site is actually using, open:
+After unlocking the maintainer review console, maintainers can verify what the
+deployed site is actually using with:
 
 - `GET /api/storage/status`
 
 It returns whether the intake and contribution layers are running in
-`database`, `fallback`, or `prototype` mode.
+`database`, `fallback`, or `prototype` mode. The endpoint is intentionally
+maintainer-gated because it exposes operational storage metadata.
 
 If you want AI-assisted intake on submitted contributions, add one or both of:
 
