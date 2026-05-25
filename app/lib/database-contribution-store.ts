@@ -36,6 +36,7 @@ type ContributionRow = {
   author: Contribution["author"];
   referral_source: Contribution["referralSource"] | null;
   draft_source: Contribution["draftSource"] | null;
+  review_challenge_source: Contribution["reviewChallengeSource"] | null;
   status: Contribution["status"];
   created_at: string | Date;
   updated_at: string | Date;
@@ -132,6 +133,7 @@ async function ensureContributionTable() {
           author jsonb not null,
           referral_source text,
           draft_source jsonb,
+          review_challenge_source jsonb,
           status text not null,
           created_at timestamptz not null,
           updated_at timestamptz not null,
@@ -154,6 +156,11 @@ async function ensureContributionTable() {
       await sql`
         alter table civiclogos_contributions
         add column if not exists referral_source text
+      `;
+
+      await sql`
+        alter table civiclogos_contributions
+        add column if not exists review_challenge_source jsonb
       `;
 
       await sql`
@@ -182,6 +189,7 @@ async function ensureContributionTable() {
             author,
             referral_source,
             draft_source,
+            review_challenge_source,
             status,
             created_at,
             updated_at,
@@ -202,6 +210,7 @@ async function ensureContributionTable() {
             ${sql.json(contribution.author)},
             ${contribution.referralSource ?? null},
             ${sql.json(contribution.draftSource ?? null)},
+            ${sql.json(contribution.reviewChallengeSource ?? null)},
             ${contribution.status},
             ${contribution.createdAt},
             ${contribution.updatedAt},
@@ -222,6 +231,7 @@ async function ensureContributionTable() {
             author = excluded.author,
             referral_source = excluded.referral_source,
             draft_source = excluded.draft_source,
+            review_challenge_source = excluded.review_challenge_source,
             status = excluded.status,
             created_at = excluded.created_at,
             updated_at = excluded.updated_at,
@@ -255,6 +265,7 @@ function rowToContribution(row: ContributionRow): Contribution {
     author: row.author,
     referralSource: row.referral_source ?? undefined,
     draftSource: row.draft_source ?? undefined,
+    reviewChallengeSource: row.review_challenge_source ?? undefined,
     status: row.status,
     createdAt: normalizeDate(row.created_at),
     updatedAt: normalizeDate(row.updated_at),
@@ -337,6 +348,7 @@ export function createDatabaseContributionStore(): DatabaseContributionStore {
         author: input.author,
         referralSource: input.referralSource,
         draftSource: input.draftSource,
+        reviewChallengeSource: input.reviewChallengeSource,
         status: "pending",
         createdAt: timestamp,
         updatedAt: timestamp,
@@ -358,6 +370,7 @@ export function createDatabaseContributionStore(): DatabaseContributionStore {
           author,
           referral_source,
           draft_source,
+          review_challenge_source,
           status,
           created_at,
           updated_at,
@@ -378,6 +391,7 @@ export function createDatabaseContributionStore(): DatabaseContributionStore {
           ${sql.json(contribution.author)},
           ${contribution.referralSource ?? null},
           ${sql.json(contribution.draftSource ?? null)},
+          ${sql.json(contribution.reviewChallengeSource ?? null)},
           ${contribution.status},
           ${contribution.createdAt},
           ${contribution.updatedAt},
@@ -452,6 +466,7 @@ export function createDatabaseContributionStore(): DatabaseContributionStore {
         author: existing.author,
         referralSource: existing.referralSource,
         draftSource: existing.draftSource,
+        reviewChallengeSource: existing.reviewChallengeSource,
       });
       const updatedAt = new Date().toISOString();
       const updatedRows = await sql<ContributionRow[]>`

@@ -976,6 +976,24 @@ export default async function ContributionReviewPage({
                       ) : null}
                     </p>
                   ) : null}
+                  {item.reviewChallengeSource ? (
+                    <p>
+                      Review challenge source:{" "}
+                      <Link
+                        className={styles.topicLink}
+                        href={`${getRoomTopicHref(item.roomSlug, item.topicId)}?summaryRecord=${encodeURIComponent(
+                          item.reviewChallengeSource.contributionId,
+                        )}&summaryLabel=${encodeURIComponent(
+                          "Recent human review decisions",
+                        )}#contribution-record`}
+                      >
+                        {item.reviewChallengeSource.sourceTitle ??
+                          item.reviewChallengeSource.contributionId}
+                      </Link>
+                      . This submission contests or extends a prior human review
+                      decision; it does not overwrite that decision.
+                    </p>
+                  ) : null}
                   {visibleContributorParts.length || hasPrivateFollowUpEmail ? (
                     <p>
                       Contributor:{" "}

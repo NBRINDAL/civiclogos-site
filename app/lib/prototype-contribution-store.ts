@@ -197,6 +197,7 @@ export async function createContribution(input: CreateContributionInput) {
       author: input.author,
       referralSource: input.referralSource,
       draftSource: input.draftSource,
+      reviewChallengeSource: input.reviewChallengeSource,
       status: "pending",
       createdAt: timestamp,
       updatedAt: timestamp,
@@ -268,6 +269,7 @@ export async function refreshContributionAiIntake(id: string) {
       author: existing.author,
       referralSource: existing.referralSource,
       draftSource: existing.draftSource,
+      reviewChallengeSource: existing.reviewChallengeSource,
     });
     existing.updatedAt = new Date().toISOString();
 

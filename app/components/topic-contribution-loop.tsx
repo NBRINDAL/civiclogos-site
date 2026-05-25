@@ -724,6 +724,10 @@ function getSubmissionRecordType(contribution: PublicContribution) {
 function getAdminReviewNote(contribution: PublicContribution) {
   const origin = getContributionOrigin(contribution);
 
+  if (contribution.reviewChallengeSource) {
+    return "Review-challenge record. It is linked to a prior human review decision and should be reviewed as a contestation or extension, not as an overwrite of the original decision.";
+  }
+
   if (origin === "seed-example") {
     return "Prototype example used to show the review mechanics; it is not presented as public usage.";
   }
@@ -2093,6 +2097,17 @@ export default function TopicContributionLoop({
                   model: draftState.model,
                   question: draftState.question,
                   generatedAt: draftState.generatedAt,
+                }),
+              );
+            }
+
+            if (quickStartSource === "review-decision" && reviewedRecordForChallenge) {
+              formData.set(
+                "reviewChallengeSource",
+                JSON.stringify({
+                  contributionId: reviewedRecordForChallenge.id,
+                  source: "review-decision",
+                  sourceTitle: reviewedRecordForChallenge.title,
                 }),
               );
             }

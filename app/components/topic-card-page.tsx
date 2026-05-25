@@ -1297,6 +1297,20 @@ function ContributionRecordContext({
       >
         {getContributionOriginLabel(getContributionOrigin(contribution))}
       </Link>
+      {contribution.reviewChallengeSource ? (
+        <>
+          . Challenges review:{" "}
+          <Link
+            className={styles.sourceLink}
+            href={getContributionLedgerHref({
+              contributionId: contribution.reviewChallengeSource.contributionId,
+            })}
+          >
+            {contribution.reviewChallengeSource.sourceTitle ??
+              contribution.reviewChallengeSource.contributionId}
+          </Link>
+        </>
+      ) : null}
       . {targetLabel}:{" "}
       <Link
         className={styles.sourceLink}

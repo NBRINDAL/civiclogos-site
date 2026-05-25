@@ -7,10 +7,18 @@ import {
   issueRooms,
   type IssueRoomSlug,
 } from "@/app/lib/civic-logos";
-import type { AssistedDraftSource } from "@/app/lib/contribution-types";
+import type {
+  AssistedDraftSource,
+  ReviewChallengeSource,
+} from "@/app/lib/contribution-types";
 import { normalizeContributionReferralSource } from "@/app/lib/contribution-types";
 import { topicCardVisibleContributionLimit } from "@/app/lib/contribution-constants";
-import { createContribution, getContributionStoreMetadata, listPublicContributions } from "@/app/lib/contribution-store";
+import {
+  createContribution,
+  getContributionById,
+  getContributionStoreMetadata,
+  listPublicContributions,
+} from "@/app/lib/contribution-store";
 import { createEvidenceDocument } from "@/app/lib/evidence-document-store";
 import { sendContributionSubmittedNotification } from "@/app/lib/maintainer-notifications";
 import { normalizeDebateLane } from "@/app/lib/reasoning-types";
@@ -31,6 +39,7 @@ type ContributionPayload = {
   expertise?: unknown;
   referralSource?: unknown;
   draftSource?: unknown;
+  reviewChallengeSource?: unknown;
   website?: unknown;
 };
 
@@ -106,6 +115,35 @@ function parseDraftSource(value: unknown): AssistedDraftSource | undefined {
   };
 }
 
+function parseReviewChallengeSource(value: unknown): Omit<ReviewChallengeSource, "createdAt"> | undefined {
+  if (typeof value === "string") {
+    try {
+      return parseReviewChallengeSource(JSON.parse(value));
+    } catch {
+      return undefined;
+    }
+  }
+
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    return undefined;
+  }
+
+  const source = value as Record<string, unknown>;
+  const contributionId =
+    typeof source.contributionId === "string" ? source.contributionId.trim() : "";
+
+  if (!contributionId || source.source !== "review-decision") {
+    return undefined;
+  }
+
+  return {
+    contributionId,
+    source: "review-decision",
+    sourceTitle:
+      typeof source.sourceTitle === "string" ? source.sourceTitle.trim() : undefined,
+  };
+}
+
 function revalidateTopicSurfaces(roomSlug: IssueRoomSlug, topicId: string) {
   revalidatePath(getRoomHref(roomSlug));
   revalidatePath(getRoomTopicHref(roomSlug, topicId));
@@ -173,6 +211,7 @@ export async function POST(request: NextRequest) {
         expertise: formData.get("expertise"),
         referralSource: formData.get("referralSource"),
         draftSource: formData.get("draftSource"),
+        reviewChallengeSource: formData.get("reviewChallengeSource"),
         website: formData.get("website"),
       };
     } else {
@@ -195,6 +234,9 @@ export async function POST(request: NextRequest) {
   const expertise = asTrimmedString(payload.expertise);
   const referralSource = normalizeContributionReferralSource(payload.referralSource);
   const draftSource = parseDraftSource(payload.draftSource);
+  const reviewChallengeSourceInput = parseReviewChallengeSource(
+    payload.reviewChallengeSource,
+  );
   const website = asTrimmedString(payload.website);
 
   if (website) {
@@ -267,6 +309,33 @@ export async function POST(request: NextRequest) {
     }
   }
 
+  let reviewChallengeSource: ReviewChallengeSource | undefined;
+
+  if (reviewChallengeSourceInput) {
+    const challengedContribution = await getContributionById(
+      reviewChallengeSourceInput.contributionId,
+    );
+
+    if (
+      !challengedContribution ||
+      challengedContribution.roomSlug !== roomSlug ||
+      challengedContribution.topicId !== topicId ||
+      !challengedContribution.review?.reviewedAt
+    ) {
+      return NextResponse.json(
+        { error: "Review challenges must point to a reviewed record on this topic card." },
+        { status: 400 },
+      );
+    }
+
+    reviewChallengeSource = {
+      contributionId: challengedContribution.id,
+      source: "review-decision",
+      sourceTitle: challengedContribution.title,
+      createdAt: new Date().toISOString(),
+    };
+  }
+
   try {
     const evidenceDocument =
       uploadedEvidenceFile && uploadedEvidenceFile.size
@@ -302,6 +371,7 @@ export async function POST(request: NextRequest) {
       },
       referralSource,
       draftSource,
+      reviewChallengeSource,
     });
 
     void sendContributionSubmittedNotification({

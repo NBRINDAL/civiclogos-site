@@ -50,6 +50,13 @@ export type AssistedDraftSource = {
   generatedAt: string;
 };
 
+export type ReviewChallengeSource = {
+  contributionId: string;
+  source: "review-decision";
+  sourceTitle?: string;
+  createdAt: string;
+};
+
 export type EvidenceExtraction = {
   status: "completed" | "unavailable" | "error";
   excerpt?: string;
@@ -141,6 +148,7 @@ export type Contribution = TopicCardReference & {
   author: ContributionAuthor;
   referralSource?: ContributionReferralSource;
   draftSource?: AssistedDraftSource;
+  reviewChallengeSource?: ReviewChallengeSource;
   status: ReviewStatus;
   createdAt: string;
   updatedAt: string;
@@ -159,6 +167,7 @@ export type CreateContributionInput = TopicCardReference & {
   author: ContributionAuthor;
   referralSource?: ContributionReferralSource;
   draftSource?: AssistedDraftSource;
+  reviewChallengeSource?: ReviewChallengeSource;
 };
 
 export type ReviewContributionInput = {
@@ -198,6 +207,7 @@ export function toPublicContributionRecord(item: Contribution): PublicContributi
       expertise: item.author.expertise,
     },
     draftSource: item.draftSource,
+    reviewChallengeSource: item.reviewChallengeSource,
     status: item.status,
     createdAt: item.createdAt,
     updatedAt: item.updatedAt,

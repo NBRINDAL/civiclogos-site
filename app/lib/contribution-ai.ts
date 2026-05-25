@@ -119,6 +119,7 @@ function buildIntakePrompt(
             sizeBytes: evidenceFile.sizeBytes,
           }
         : null,
+      reviewChallengeSource: input.reviewChallengeSource ?? null,
       contributorContext: input.author.expertise ?? null,
       maintainerRevisionMode:
         input.author.name?.toLowerCase().includes("founder-maintainer") ||
