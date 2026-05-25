@@ -24,6 +24,7 @@ export function SiteBrand({
       <span className={styles.mark} aria-hidden="true">
         <span className={styles.square} />
         <span className={styles.circle} />
+        <span className={styles.halo} />
         <span className={styles.dot} />
       </span>
       <span className={styles.text}>

@@ -1,21 +1,24 @@
 .signature {
   display: inline-flex;
   align-items: center;
-  gap: 14px;
+  gap: 16px;
   min-width: 0;
 }
 
 .mark {
   position: relative;
-  flex: 0 0 var(--brand-mark-size, 52px);
-  width: var(--brand-mark-size, 52px);
+  flex: 0 0 var(--brand-mark-size, 62px);
+  width: var(--brand-mark-size, 62px);
   aspect-ratio: 1;
   --brand-square-size: 72%;
   --brand-circle-size: 81.24%;
+  --brand-halo-size: 40.62%;
+  --brand-dot-size: 10.16%;
 }
 
 .square,
 .circle,
+.halo,
 .dot {
   position: absolute;
 }
@@ -43,12 +46,21 @@
 .dot {
   top: 50%;
   left: 50%;
-  width: 18%;
+  width: var(--brand-dot-size);
   aspect-ratio: 1;
   border-radius: 999px;
   background: rgba(var(--brand-green-rgb), 0.98);
   transform: translate(-50%, -50%);
-  box-shadow: 0 0 0 4px rgba(var(--brand-green-rgb), 0.14);
+}
+
+.halo {
+  top: 50%;
+  left: 50%;
+  width: var(--brand-halo-size);
+  aspect-ratio: 1;
+  border-radius: 999px;
+  background: rgba(var(--brand-green-rgb), 0.14);
+  transform: translate(-50%, -50%);
 }
 
 .text {
