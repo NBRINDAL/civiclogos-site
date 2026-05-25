@@ -682,6 +682,7 @@ function getReviewDecisionChallengeStarter({
     title: `Challenge or extend review: ${titleSuffix}`,
     body: [
       `Reviewed record on ${topicTitle}:`,
+      `- Record ID: ${contribution.id}`,
       `- ${contribution.title}`,
       "",
       "Review decision being challenged or extended:",
