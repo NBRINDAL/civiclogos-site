@@ -26,6 +26,8 @@ type ReviewAiPayload = {
   contributionId?: unknown;
   provider?: unknown;
   question?: unknown;
+  mode?: unknown;
+  history?: unknown;
 };
 
 type ReviewAiAnswer = {
@@ -47,6 +49,12 @@ type ReviewEvidenceFile = {
   sizeBytes: number;
   base64: string;
   fileUrl?: string;
+};
+
+type ReviewHistoryMessage = {
+  role: "user" | "assistant";
+  provider?: "openai" | "anthropic";
+  body: string;
 };
 
 type OpenAIResponse = {
@@ -73,6 +81,34 @@ function asTrimmedString(value: unknown) {
 
 function isProvider(value: string): value is "openai" | "anthropic" | "all" {
   return value === "openai" || value === "anthropic" || value === "all";
+}
+
+function isMode(value: string): value is "chat" | "synthesis" {
+  return value === "chat" || value === "synthesis";
+}
+
+function normalizeHistory(value: unknown): ReviewHistoryMessage[] {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value
+    .flatMap((item): ReviewHistoryMessage[] => {
+      if (!item || typeof item !== "object") {
+        return [];
+      }
+
+      const record = item as Record<string, unknown>;
+      const role = record.role === "user" || record.role === "assistant" ? record.role : null;
+      const body = asTrimmedString(record.body).slice(0, 5000);
+      const provider =
+        record.provider === "openai" || record.provider === "anthropic"
+          ? record.provider
+          : undefined;
+
+      return role && body ? [{ role, provider, body }] : [];
+    })
+    .slice(-16);
 }
 
 function collectTextValues(value: unknown): string[] {
@@ -282,10 +318,69 @@ function getReviewInstructions() {
   ].join(" ");
 }
 
-function buildReviewerTextPrompt(context: string, question: string) {
+function buildHistoryBlock(history: ReviewHistoryMessage[]) {
+  if (!history.length) {
+    return "No prior reviewer chat turns in this session.";
+  }
+
+  return history
+    .map((item) => {
+      const label =
+        item.role === "user"
+          ? "Reviewer"
+          : item.provider === "openai"
+            ? "GPT reviewer assistant"
+            : item.provider === "anthropic"
+              ? "Claude reviewer assistant"
+              : "Reviewer assistant";
+
+      return `${label}: ${item.body}`;
+    })
+    .join("\n\n");
+}
+
+function getReviewerQuestion(mode: "chat" | "synthesis", question: string) {
+  if (mode === "chat") {
+    return question;
+  }
+
   return [
-    "Reviewer question:",
-    question,
+    "Synthesize the reviewer chat so far into draft human-review material.",
+    "Do not change review state and do not decide truth.",
+    "Return concise sections:",
+    "- Recommended review status",
+    "- Recommended attachment layer",
+    "- Actual card change recommendation",
+    "- Public record note draft",
+    "- Decision reason draft",
+    "- Reviewer note / unresolved checks",
+    "- Whether any visible synthesis update is warranted now",
+    "",
+    question ? `Additional reviewer instruction: ${question}` : "",
+  ]
+    .filter(Boolean)
+    .join("\n");
+}
+
+function buildReviewerTextPrompt({
+  context,
+  question,
+  history,
+  mode,
+}: {
+  context: string;
+  question: string;
+  history: ReviewHistoryMessage[];
+  mode: "chat" | "synthesis";
+}) {
+  return [
+    mode === "synthesis"
+      ? "Reviewer task: synthesize the discussion for human review."
+      : "Reviewer question:",
+    getReviewerQuestion(mode, question),
+    "",
+    "Prior reviewer conversation:",
+    buildHistoryBlock(history),
     "",
     "Contribution review context:",
     context,
@@ -296,11 +391,15 @@ function buildOpenAIReviewContent({
   context,
   question,
   evidenceFile,
+  history,
+  mode,
   fileMode = "url",
 }: {
   context: string;
   question: string;
   evidenceFile?: ReviewEvidenceFile | null;
+  history: ReviewHistoryMessage[];
+  mode: "chat" | "synthesis";
   fileMode?: "url" | "base64" | "none";
 }) {
   const content: Array<Record<string, string>> = [];
@@ -321,7 +420,7 @@ function buildOpenAIReviewContent({
 
   content.push({
     type: "input_text",
-    text: buildReviewerTextPrompt(context, question),
+    text: buildReviewerTextPrompt({ context, question, history, mode }),
   });
 
   return content;
@@ -331,10 +430,14 @@ function buildAnthropicReviewContent({
   context,
   question,
   evidenceFile,
+  history,
+  mode,
 }: {
   context: string;
   question: string;
   evidenceFile?: ReviewEvidenceFile | null;
+  history: ReviewHistoryMessage[];
+  mode: "chat" | "synthesis";
 }) {
   const content: Array<Record<string, unknown>> = [];
 
@@ -351,7 +454,7 @@ function buildAnthropicReviewContent({
 
   content.push({
     type: "text",
-    text: buildReviewerTextPrompt(context, question),
+    text: buildReviewerTextPrompt({ context, question, history, mode }),
   });
 
   return content;
@@ -361,10 +464,14 @@ async function askOpenAIReview({
   context,
   question,
   evidenceFile,
+  history,
+  mode,
 }: {
   context: string;
   question: string;
   evidenceFile?: ReviewEvidenceFile | null;
+  history: ReviewHistoryMessage[];
+  mode: "chat" | "synthesis";
 }): Promise<ReviewAiAnswer | ReviewAiIssue> {
   const config = getOpenAIProviderConfig();
   const apiKey = process.env.OPENAI_API_KEY;
@@ -398,6 +505,8 @@ async function askOpenAIReview({
                 context,
                 question,
                 evidenceFile,
+                history,
+                mode,
                 fileMode,
               }),
             },
@@ -498,10 +607,14 @@ async function askAnthropicReview({
   context,
   question,
   evidenceFile,
+  history,
+  mode,
 }: {
   context: string;
   question: string;
   evidenceFile?: ReviewEvidenceFile | null;
+  history: ReviewHistoryMessage[];
+  mode: "chat" | "synthesis";
 }): Promise<ReviewAiAnswer | ReviewAiIssue> {
   const config = getAnthropicProviderConfig();
   const apiKey = process.env.ANTHROPIC_API_KEY;
@@ -530,7 +643,13 @@ async function askAnthropicReview({
         messages: [
           {
             role: "user",
-            content: buildAnthropicReviewContent({ context, question, evidenceFile }),
+            content: buildAnthropicReviewContent({
+              context,
+              question,
+              evidenceFile,
+              history,
+              mode,
+            }),
           },
         ],
       }),
@@ -592,12 +711,18 @@ export async function POST(request: NextRequest) {
   const contributionId = asTrimmedString(payload.contributionId);
   const provider = asTrimmedString(payload.provider) || "all";
   const question = asTrimmedString(payload.question);
+  const mode = asTrimmedString(payload.mode) || "chat";
+  const history = normalizeHistory(payload.history);
 
   if (!contributionId) {
     return NextResponse.json({ error: "Pick a contribution to review." }, { status: 400 });
   }
 
-  if (!question || question.length < 8) {
+  if (!isMode(mode)) {
+    return NextResponse.json({ error: "Choose a valid reviewer mode." }, { status: 400 });
+  }
+
+  if (mode === "chat" && (!question || question.length < 8)) {
     return NextResponse.json(
       { error: "Ask a fuller reviewer question." },
       { status: 400 },
@@ -642,12 +767,12 @@ export async function POST(request: NextRequest) {
   });
   const providerCalls =
     provider === "openai"
-      ? [askOpenAIReview({ context, question, evidenceFile })]
+      ? [askOpenAIReview({ context, question, evidenceFile, history, mode })]
       : provider === "anthropic"
-        ? [askAnthropicReview({ context, question, evidenceFile })]
+        ? [askAnthropicReview({ context, question, evidenceFile, history, mode })]
         : [
-            askOpenAIReview({ context, question, evidenceFile }),
-            askAnthropicReview({ context, question, evidenceFile }),
+            askOpenAIReview({ context, question, evidenceFile, history, mode }),
+            askAnthropicReview({ context, question, evidenceFile, history, mode }),
           ];
   const results = await Promise.all(providerCalls);
   const answers = results.filter(isAnswer);

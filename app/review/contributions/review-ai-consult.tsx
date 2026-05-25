@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useMemo, useState, useTransition } from "react";
 import styles from "./page.module.css";
 
 type ReviewAiConsultProps = {
@@ -30,16 +30,27 @@ type ReviewAiResponse = {
 };
 
 type ProviderRequest = "openai" | "anthropic" | "all";
+type ReviewMode = "chat" | "synthesis";
+
+type ReviewChatMessage = {
+  id: string;
+  role: "user" | "assistant";
+  body: string;
+  provider?: "openai" | "anthropic";
+  model?: string;
+  createdAt: string;
+  mode?: ReviewMode;
+};
 
 const quickReviewerPrompts = [
-  "Does this contribution belong on the assumption layer, evidence layer, objection layer, or synthesis layer?",
-  "What would need to be checked before this record could change the visible synthesis?",
-  "Based only on the visible record, is the hbar/G reformulation more likely notation, assumption change, prediction change, or unclear?",
+  "What is the cleanest review framing for this record now that the paper is readable?",
+  "Separate what is notation from what is a physical assumption or prediction.",
+  "What would need outside physics review before this could change the visible synthesis?",
   "Draft a cautious public review note that preserves the contribution without endorsing it.",
 ] as const;
 
 function getProviderLabel(provider: ReviewAiAnswer["provider"] | ReviewAiIssue["provider"]) {
-  return provider === "openai" ? "GPT reviewer consult" : "Claude reviewer consult";
+  return provider === "openai" ? "GPT reviewer" : "Claude reviewer";
 }
 
 function formatTimestamp(value: string) {
@@ -49,30 +60,74 @@ function formatTimestamp(value: string) {
   }).format(new Date(value));
 }
 
+function makeId(prefix: string) {
+  return `${prefix}-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+}
+
 export default function ReviewAiConsult({
   contributionId,
   contributionTitle,
 }: ReviewAiConsultProps) {
   const [question, setQuestion] = useState("");
-  const [answers, setAnswers] = useState<ReviewAiAnswer[]>([]);
+  const [messages, setMessages] = useState<ReviewChatMessage[]>([]);
   const [issues, setIssues] = useState<ReviewAiIssue[]>([]);
   const [disclaimer, setDisclaimer] = useState(
-    "Reviewer AI consult is advisory only. It does not publish a record, change review state, or move the visible synthesis.",
+    "Reviewer AI chat is advisory only. It does not publish a record, change review state, or move the visible synthesis.",
   );
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [activeProvider, setActiveProvider] = useState<ProviderRequest | null>(null);
+  const [activeMode, setActiveMode] = useState<ReviewMode | null>(null);
   const [isPending, startTransition] = useTransition();
 
-  function askReviewerAi(provider: ProviderRequest, nextQuestion = question) {
+  const apiHistory = useMemo(
+    () =>
+      messages.map((message) => ({
+        role: message.role,
+        provider: message.provider,
+        body: message.body,
+      })),
+    [messages],
+  );
+  const synthesisMessages = messages.filter((message) => message.mode === "synthesis");
+
+  function askReviewerAi(
+    provider: ProviderRequest,
+    mode: ReviewMode = "chat",
+    nextQuestion = question,
+  ) {
     const trimmedQuestion = nextQuestion.trim();
 
-    if (!trimmedQuestion) {
+    if (mode === "chat" && !trimmedQuestion) {
       setErrorMessage("Ask a reviewer question first.");
       return;
     }
 
+    const userMessage: ReviewChatMessage | null =
+      mode === "chat"
+        ? {
+            id: makeId("reviewer"),
+            role: "user",
+            body: trimmedQuestion,
+            createdAt: new Date().toISOString(),
+            mode,
+          }
+        : null;
+    const requestHistory = userMessage
+      ? [
+          ...apiHistory,
+          { role: userMessage.role, body: userMessage.body },
+        ]
+      : apiHistory;
+
     setActiveProvider(provider);
+    setActiveMode(mode);
     setErrorMessage(null);
+    setIssues([]);
+
+    if (userMessage) {
+      setMessages((current) => [...current, userMessage]);
+      setQuestion("");
+    }
 
     startTransition(async () => {
       try {
@@ -85,6 +140,8 @@ export default function ReviewAiConsult({
             contributionId,
             provider,
             question: trimmedQuestion,
+            history: requestHistory,
+            mode,
           }),
         });
         const contentType = response.headers.get("content-type") ?? "";
@@ -99,49 +156,94 @@ export default function ReviewAiConsult({
             } satisfies ReviewAiResponse);
 
         if (!response.ok || payload.error) {
-          throw new Error(payload.error ?? "Reviewer AI consult failed.");
+          throw new Error(payload.error ?? "Reviewer AI chat failed.");
         }
 
-        setAnswers(payload.answers ?? []);
+        const answerMessages = (payload.answers ?? []).map((answer) => ({
+          id: makeId(answer.provider),
+          role: "assistant" as const,
+          body: answer.response,
+          provider: answer.provider,
+          model: answer.model,
+          createdAt: answer.generatedAt,
+          mode,
+        }));
+
+        setMessages((current) => [...current, ...answerMessages]);
         setIssues(payload.issues ?? []);
         setDisclaimer(payload.disclaimer);
       } catch (error) {
-        setAnswers([]);
-        setIssues([]);
         setErrorMessage(
           error instanceof Error
             ? error.message
-            : "Reviewer AI consult could not run right now.",
+            : "Reviewer AI chat could not run right now.",
         );
       } finally {
         setActiveProvider(null);
+        setActiveMode(null);
       }
     });
   }
 
   function runQuickPrompt(prompt: string) {
     setQuestion(prompt);
-    askReviewerAi("all", prompt);
+    askReviewerAi("all", "chat", prompt);
   }
 
   return (
     <section className={styles.reviewerAiPanel}>
       <div>
-        <span className={styles.eyebrow}>Reviewer AI consult</span>
-        <h3>Ask about this record before deciding.</h3>
+        <span className={styles.eyebrow}>Reviewer AI chat</span>
+        <h3>Discuss this record before deciding.</h3>
         <p>
-          Use this as a scratchpad for the human review decision on{" "}
-          <strong>{contributionTitle}</strong>. The answer is not saved as a
-          contribution and cannot change the public record by itself.
+          Use this as a contribution-scoped review conversation for{" "}
+          <strong>{contributionTitle}</strong>. The discussion can later be
+          synthesized into draft review language, but it still cannot publish a
+          record or change the card by itself.
         </p>
       </div>
 
+      {messages.length ? (
+        <div className={styles.reviewChatTranscript}>
+          {messages.map((message) => (
+            <article
+              className={`${styles.reviewChatMessage} ${
+                message.role === "user" ? styles.reviewChatUser : styles.reviewChatAssistant
+              }`}
+              key={message.id}
+            >
+              <strong>
+                {message.role === "user"
+                  ? "Reviewer"
+                  : message.provider
+                    ? getProviderLabel(message.provider)
+                    : "Reviewer AI"}
+              </strong>
+              <span>
+                {message.model ? `${message.model} · ` : ""}
+                {formatTimestamp(message.createdAt)}
+                {message.mode === "synthesis" ? " · synthesis draft" : ""}
+              </span>
+              <p>{message.body}</p>
+            </article>
+          ))}
+        </div>
+      ) : (
+        <div className={styles.reviewChatEmpty}>
+          <strong>No reviewer chat yet.</strong>
+          <p>
+            Start with a focused question. The AIs will receive the prior turns on
+            each follow-up, so the review can build instead of resetting.
+          </p>
+        </div>
+      )}
+
       <label className={styles.field}>
-        <span>Reviewer question</span>
+        <span>Reviewer message</span>
         <textarea
           maxLength={2200}
           onChange={(event) => setQuestion(event.target.value)}
-          placeholder="Ask what layer this belongs on, what evidence is missing, or what would have to be true before the synthesis could move."
+          placeholder="Ask a follow-up, challenge the model read, request a narrower public note, or ask what would need to be checked next."
           rows={4}
           value={question}
         />
@@ -168,7 +270,9 @@ export default function ReviewAiConsult({
           onClick={() => askReviewerAi("openai")}
           type="button"
         >
-          {isPending && activeProvider === "openai" ? "Asking GPT..." : "Ask GPT"}
+          {isPending && activeProvider === "openai" && activeMode === "chat"
+            ? "Asking GPT..."
+            : "Ask GPT"}
         </button>
         <button
           className={styles.submitButton}
@@ -176,7 +280,9 @@ export default function ReviewAiConsult({
           onClick={() => askReviewerAi("anthropic")}
           type="button"
         >
-          {isPending && activeProvider === "anthropic" ? "Asking Claude..." : "Ask Claude"}
+          {isPending && activeProvider === "anthropic" && activeMode === "chat"
+            ? "Asking Claude..."
+            : "Ask Claude"}
         </button>
         <button
           className={styles.submitButton}
@@ -184,7 +290,19 @@ export default function ReviewAiConsult({
           onClick={() => askReviewerAi("all")}
           type="button"
         >
-          {isPending && activeProvider === "all" ? "Asking both..." : "Ask both"}
+          {isPending && activeProvider === "all" && activeMode === "chat"
+            ? "Asking both..."
+            : "Ask both"}
+        </button>
+        <button
+          className={styles.secondaryButton}
+          disabled={isPending || !messages.length}
+          onClick={() => askReviewerAi("all", "synthesis")}
+          type="button"
+        >
+          {isPending && activeMode === "synthesis"
+            ? "Synthesizing..."
+            : "Synthesize discussion for review"}
         </button>
       </div>
 
@@ -195,22 +313,26 @@ export default function ReviewAiConsult({
       {issues.length ? (
         <div className={styles.reviewerAiIssueList}>
           {issues.map((issue) => (
-            <p key={`${issue.provider}-${issue.model ?? "issue"}`}>
+            <p key={`${issue.provider}-${issue.model ?? "issue"}-${issue.message}`}>
               <strong>{getProviderLabel(issue.provider)}:</strong> {issue.message}
             </p>
           ))}
         </div>
       ) : null}
 
-      {answers.length ? (
-        <div className={styles.reviewerAiAnswers}>
-          {answers.map((answer) => (
-            <article className={styles.providerCard} key={`${answer.provider}-${answer.generatedAt}`}>
-              <strong>{getProviderLabel(answer.provider)}</strong>
-              <p>
-                {answer.model} · {formatTimestamp(answer.generatedAt)}
-              </p>
-              <p>{answer.response}</p>
+      {synthesisMessages.length ? (
+        <div className={styles.reviewSynthesisPanel}>
+          <strong>Latest review synthesis draft</strong>
+          <p>
+            Use this as drafting material for the human review fields below. It is
+            not a saved review decision.
+          </p>
+          {synthesisMessages.slice(-2).map((message) => (
+            <article className={styles.providerCard} key={`synthesis-${message.id}`}>
+              <strong>
+                {message.provider ? getProviderLabel(message.provider) : "Reviewer AI"}
+              </strong>
+              <p>{message.body}</p>
             </article>
           ))}
         </div>

@@ -630,6 +630,63 @@
   gap: 12px;
 }
 
+.reviewChatTranscript {
+  display: grid;
+  gap: 12px;
+  max-height: 620px;
+  overflow: auto;
+  padding: 14px;
+  border: 1px solid rgba(18, 33, 39, 0.1);
+  border-radius: 22px;
+  background: rgba(255, 251, 245, 0.62);
+}
+
+.reviewChatMessage,
+.reviewChatEmpty,
+.reviewSynthesisPanel {
+  display: grid;
+  gap: 8px;
+  padding: 16px;
+  border: 1px solid rgba(18, 33, 39, 0.1);
+  border-radius: 20px;
+  background: rgba(255, 251, 245, 0.92);
+}
+
+.reviewChatUser {
+  border-color: rgba(42, 65, 102, 0.18);
+  background: rgba(42, 65, 102, 0.08);
+}
+
+.reviewChatAssistant {
+  border-color: rgba(91, 110, 69, 0.18);
+  background: rgba(91, 110, 69, 0.08);
+}
+
+.reviewChatMessage strong,
+.reviewChatEmpty strong,
+.reviewSynthesisPanel strong {
+  color: var(--foreground);
+}
+
+.reviewChatMessage span {
+  color: var(--signal);
+  font-size: 0.76rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.reviewChatMessage p,
+.reviewChatEmpty p,
+.reviewSynthesisPanel p {
+  white-space: pre-wrap;
+}
+
+.reviewSynthesisPanel {
+  border-color: rgba(181, 94, 51, 0.2);
+  background: rgba(181, 94, 51, 0.08);
+}
+
 .reviewerAiIssueList,
 .errorText {
   padding: 14px 16px;
@@ -755,6 +812,19 @@
   background: var(--foreground);
   color: #fff7ee;
   font-weight: 700;
+}
+
+.secondaryButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  padding: 0 18px;
+  border: 1px solid rgba(18, 33, 39, 0.14);
+  border-radius: 999px;
+  background: rgba(255, 251, 245, 0.92);
+  color: var(--foreground);
+  font-weight: 800;
 }
 
 @media (max-width: 960px) {
