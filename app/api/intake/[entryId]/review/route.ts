@@ -5,6 +5,7 @@ import type {
   HomeIntakePromotionReview,
   HomeIntakePromotionStatus,
 } from "@/app/lib/home-intake-types";
+import { throttleRequest } from "@/app/lib/request-throttle";
 
 export const runtime = "nodejs";
 
@@ -58,6 +59,16 @@ export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ entryId: string }> },
 ) {
+  const throttled = throttleRequest(request, {
+    bucket: "intake-promotion-review",
+    limit: 10,
+    windowMs: 10 * 60 * 1000,
+  });
+
+  if (throttled) {
+    return throttled;
+  }
+
   const { entryId } = await params;
   let payload: PromotionReviewPayload;
   const configuredMaintainerKey = getConfiguredMaintainerKey();

@@ -1,5 +1,6 @@
 import nodemailer from "nodemailer";
 import { NextRequest, NextResponse } from "next/server";
+import { throttleRequest } from "@/app/lib/request-throttle";
 
 export const runtime = "nodejs";
 
@@ -50,6 +51,16 @@ const institutionalBudgetOptions = new Set([
 ]);
 
 export async function POST(request: NextRequest) {
+  const throttled = throttleRequest(request, {
+    bucket: "contact",
+    limit: 6,
+    windowMs: 60 * 60 * 1000,
+  });
+
+  if (throttled) {
+    return throttled;
+  }
+
   let payload: ContactPayload;
 
   try {

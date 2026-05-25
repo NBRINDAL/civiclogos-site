@@ -31,6 +31,7 @@ import {
   isValidMaintainerSessionValue,
   maintainerSessionCookieName,
 } from "@/app/lib/maintainer-auth";
+import { throttleRequest } from "@/app/lib/request-throttle";
 
 export const runtime = "nodejs";
 
@@ -786,6 +787,16 @@ export async function POST(request: NextRequest) {
       { error: "Maintainer access is required for reviewer AI consults." },
       { status: 401 },
     );
+  }
+
+  const throttled = throttleRequest(request, {
+    bucket: "reviewer-ai",
+    limit: 60,
+    windowMs: 60 * 60 * 1000,
+  });
+
+  if (throttled) {
+    return throttled;
   }
 
   let payload: ReviewAiPayload;

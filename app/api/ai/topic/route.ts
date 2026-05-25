@@ -27,6 +27,7 @@ import {
   listTopicChatMessages,
 } from "@/app/lib/topic-chat-store";
 import type { TopicChatPromotion } from "@/app/lib/topic-chat-types";
+import { throttleRequest } from "@/app/lib/request-throttle";
 
 export const runtime = "nodejs";
 
@@ -200,6 +201,16 @@ async function promoteAnswerToRecord(args: {
 }
 
 export async function POST(request: NextRequest) {
+  const throttled = throttleRequest(request, {
+    bucket: "topic-ai",
+    limit: 24,
+    windowMs: 60 * 60 * 1000,
+  });
+
+  if (throttled) {
+    return throttled;
+  }
+
   let payload: TopicAiPayload;
 
   try {

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getRoomHref } from "@/app/lib/civic-logos";
+import { throttleRequest } from "@/app/lib/request-throttle";
 import {
   getHomeIntakeCookieName,
   serializeHomeIntakeCookie,
@@ -18,6 +19,16 @@ function asTrimmedString(value: unknown) {
 }
 
 export async function POST(request: NextRequest) {
+  const throttled = throttleRequest(request, {
+    bucket: "home-intake-ai",
+    limit: 20,
+    windowMs: 60 * 60 * 1000,
+  });
+
+  if (throttled) {
+    return throttled;
+  }
+
   let payload: IntakePayload;
 
   try {

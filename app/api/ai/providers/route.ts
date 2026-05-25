@@ -11,6 +11,7 @@ import {
   isValidMaintainerSessionValue,
   maintainerSessionCookieName,
 } from "@/app/lib/maintainer-auth";
+import { throttleRequest } from "@/app/lib/request-throttle";
 
 export const runtime = "nodejs";
 
@@ -60,6 +61,16 @@ export async function POST(request: NextRequest) {
       { error: "Maintainer access is required to test provider connectivity." },
       { status: 401 },
     );
+  }
+
+  const throttled = throttleRequest(request, {
+    bucket: "provider-test",
+    limit: 20,
+    windowMs: 60 * 60 * 1000,
+  });
+
+  if (throttled) {
+    return throttled;
   }
 
   let payload: ProviderTestPayload = {};

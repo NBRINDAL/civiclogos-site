@@ -22,6 +22,7 @@ import {
 import { createEvidenceDocument } from "@/app/lib/evidence-document-store";
 import { isAllowedEvidenceUpload } from "@/app/lib/evidence-upload-safety";
 import { sendContributionSubmittedNotification } from "@/app/lib/maintainer-notifications";
+import { throttleRequest } from "@/app/lib/request-throttle";
 import { normalizeDebateLane } from "@/app/lib/reasoning-types";
 
 export const runtime = "nodejs";
@@ -189,6 +190,16 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
+  const throttled = throttleRequest(request, {
+    bucket: "contribution-submit",
+    limit: 12,
+    windowMs: 60 * 60 * 1000,
+  });
+
+  if (throttled) {
+    return throttled;
+  }
+
   let payload: ContributionPayload;
   let uploadedEvidenceFile: File | null = null;
 
