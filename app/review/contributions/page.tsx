@@ -6,6 +6,10 @@ import {
   type IssueRoomSlug,
 } from "@/app/lib/civic-logos";
 import { getContributionStoreMetadata, listAllContributions } from "@/app/lib/contribution-store";
+import {
+  getReviewChatStoreMetadata,
+  listReviewChatMessages,
+} from "@/app/lib/review-chat-store";
 import { getContributionCountSummary } from "@/app/lib/contribution-counts";
 import {
   getActualCardChangeLabel,
@@ -289,7 +293,7 @@ export default async function ContributionReviewPage({
     scopedRoomSlug && scopedTopicId
       ? `assignment-targets-${scopedRoomSlug}-${scopedTopicId}`
       : "assignment-targets-generic";
-  const [contributions, metadata] = await Promise.all([
+  const [contributions, metadata, reviewChatStore] = await Promise.all([
     listAllContributions({
       roomSlug: scopedRoomSlug,
       topicId: scopedTopicId,
@@ -298,7 +302,18 @@ export default async function ContributionReviewPage({
       lane: scopedLane,
     }),
     getContributionStoreMetadata(),
+    getReviewChatStoreMetadata(),
   ]);
+  const reviewChatEntries = await Promise.all(
+    contributions.map(async (item) => [
+      item.id,
+      await listReviewChatMessages({
+        contributionId: item.id,
+        limit: 40,
+      }),
+    ] as const),
+  );
+  const reviewChatByContributionId = new Map(reviewChatEntries);
   const topicTotalContributions = await listAllContributions({
     roomSlug: scopedRoomSlug,
     topicId: scopedTopicId,
@@ -1236,6 +1251,8 @@ export default async function ContributionReviewPage({
                 <ReviewAiConsult
                   contributionId={item.id}
                   contributionTitle={item.title}
+                  initialMessages={reviewChatByContributionId.get(item.id) ?? []}
+                  storeMetadata={reviewChatStore}
                 />
 
                 <form action={updateContributionReview} className={styles.reviewForm}>

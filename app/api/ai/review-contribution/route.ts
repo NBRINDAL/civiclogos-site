@@ -19,6 +19,12 @@ import {
   getOpenAIProviderConfig,
 } from "@/app/lib/ai-provider-config";
 import { getContributionOrigin } from "@/app/lib/contribution-origin";
+import {
+  createReviewChatMessage,
+  getReviewChatStoreMetadata,
+  listReviewChatMessages,
+} from "@/app/lib/review-chat-store";
+import type { ReviewChatMessage } from "@/app/lib/review-chat-types";
 
 export const runtime = "nodejs";
 
@@ -27,7 +33,6 @@ type ReviewAiPayload = {
   provider?: unknown;
   question?: unknown;
   mode?: unknown;
-  history?: unknown;
 };
 
 type ReviewAiAnswer = {
@@ -87,28 +92,12 @@ function isMode(value: string): value is "chat" | "synthesis" {
   return value === "chat" || value === "synthesis";
 }
 
-function normalizeHistory(value: unknown): ReviewHistoryMessage[] {
-  if (!Array.isArray(value)) {
-    return [];
-  }
-
-  return value
-    .flatMap((item): ReviewHistoryMessage[] => {
-      if (!item || typeof item !== "object") {
-        return [];
-      }
-
-      const record = item as Record<string, unknown>;
-      const role = record.role === "user" || record.role === "assistant" ? record.role : null;
-      const body = asTrimmedString(record.body).slice(0, 5000);
-      const provider =
-        record.provider === "openai" || record.provider === "anthropic"
-          ? record.provider
-          : undefined;
-
-      return role && body ? [{ role, provider, body }] : [];
-    })
-    .slice(-16);
+function toHistory(messages: ReviewChatMessage[]): ReviewHistoryMessage[] {
+  return messages.slice(-16).map((item) => ({
+    role: item.role,
+    provider: item.provider,
+    body: item.body.slice(0, 5000),
+  }));
 }
 
 function collectTextValues(value: unknown): string[] {
@@ -712,7 +701,6 @@ export async function POST(request: NextRequest) {
   const provider = asTrimmedString(payload.provider) || "all";
   const question = asTrimmedString(payload.question);
   const mode = asTrimmedString(payload.mode) || "chat";
-  const history = normalizeHistory(payload.history);
 
   if (!contributionId) {
     return NextResponse.json({ error: "Pick a contribution to review." }, { status: 400 });
@@ -752,6 +740,22 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Topic card not found." }, { status: 404 });
   }
 
+  if (mode === "chat") {
+    await createReviewChatMessage({
+      contributionId,
+      role: "user",
+      body: question,
+      createdAt: new Date().toISOString(),
+      mode,
+    });
+  }
+
+  const storedHistory = await listReviewChatMessages({
+    contributionId,
+    limit: 40,
+  });
+  const history = toHistory(storedHistory);
+
   contribution = await refreshReadableEvidenceIfNeeded(contribution);
   const readableEvidenceText = await loadReadableEvidenceTextForAi(contribution);
   const evidenceFile = await loadEvidenceFileForAi(
@@ -777,6 +781,26 @@ export async function POST(request: NextRequest) {
   const results = await Promise.all(providerCalls);
   const answers = results.filter(isAnswer);
   const issues = results.filter((result) => !isAnswer(result)) as ReviewAiIssue[];
+  const savedAnswers = await Promise.all(
+    answers.map((answer) =>
+      createReviewChatMessage({
+        contributionId,
+        role: "assistant",
+        provider: answer.provider,
+        model: answer.model ?? "reviewer-ai",
+        body: answer.response,
+        createdAt: answer.generatedAt,
+        mode,
+      }),
+    ),
+  );
+  const [messages, storeMetadata] = await Promise.all([
+    listReviewChatMessages({
+      contributionId,
+      limit: 40,
+    }),
+    getReviewChatStoreMetadata(),
+  ]);
 
   return NextResponse.json({
     state: answers.length
@@ -786,7 +810,14 @@ export async function POST(request: NextRequest) {
       : "error",
     disclaimer:
       "Reviewer AI consult is advisory only. It does not publish a record, change review state, or move the visible synthesis.",
-    answers,
+    answers: savedAnswers.map((message) => ({
+      provider: message.provider ?? "openai",
+      model: message.model ?? "reviewer-ai",
+      response: message.body,
+      generatedAt: message.createdAt,
+    })),
     issues,
+    messages,
+    store: storeMetadata,
   });
 }

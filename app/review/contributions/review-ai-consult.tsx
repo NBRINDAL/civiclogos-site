@@ -1,11 +1,17 @@
 "use client";
 
-import { useMemo, useState, useTransition } from "react";
+import { useState, useTransition } from "react";
+import type {
+  ReviewChatMessage,
+  ReviewChatStoreMetadata,
+} from "@/app/lib/review-chat-types";
 import styles from "./page.module.css";
 
 type ReviewAiConsultProps = {
   contributionId: string;
   contributionTitle: string;
+  initialMessages: ReviewChatMessage[];
+  storeMetadata: ReviewChatStoreMetadata;
 };
 
 type ReviewAiAnswer = {
@@ -26,21 +32,13 @@ type ReviewAiResponse = {
   disclaimer: string;
   answers: ReviewAiAnswer[];
   issues: ReviewAiIssue[];
+  messages?: ReviewChatMessage[];
+  store?: ReviewChatStoreMetadata;
   error?: string;
 };
 
 type ProviderRequest = "openai" | "anthropic" | "all";
 type ReviewMode = "chat" | "synthesis";
-
-type ReviewChatMessage = {
-  id: string;
-  role: "user" | "assistant";
-  body: string;
-  provider?: "openai" | "anthropic";
-  model?: string;
-  createdAt: string;
-  mode?: ReviewMode;
-};
 
 const quickReviewerPrompts = [
   "What is the cleanest review framing for this record now that the paper is readable?",
@@ -49,8 +47,16 @@ const quickReviewerPrompts = [
   "Draft a cautious public review note that preserves the contribution without endorsing it.",
 ] as const;
 
-function getProviderLabel(provider: ReviewAiAnswer["provider"] | ReviewAiIssue["provider"]) {
-  return provider === "openai" ? "GPT reviewer" : "Claude reviewer";
+function getProviderLabel(provider?: ReviewAiAnswer["provider"] | ReviewAiIssue["provider"]) {
+  if (provider === "openai") {
+    return "GPT reviewer";
+  }
+
+  if (provider === "anthropic") {
+    return "Claude reviewer";
+  }
+
+  return "Reviewer AI";
 }
 
 function formatTimestamp(value: string) {
@@ -64,12 +70,27 @@ function makeId(prefix: string) {
   return `${prefix}-${Date.now()}-${Math.random().toString(16).slice(2)}`;
 }
 
+function getStoreStatus(metadata: ReviewChatStoreMetadata) {
+  if (metadata.mode === "database") {
+    return `${metadata.note} You can leave and return to this review.`;
+  }
+
+  if (metadata.mode === "fallback") {
+    return `${metadata.note} This review chat is still attached to the contribution, but the database should be checked if fallback mode persists.`;
+  }
+
+  return `${metadata.note} This review chat is attached to the contribution in the current prototype environment.`;
+}
+
 export default function ReviewAiConsult({
   contributionId,
   contributionTitle,
+  initialMessages,
+  storeMetadata: initialStoreMetadata,
 }: ReviewAiConsultProps) {
   const [question, setQuestion] = useState("");
-  const [messages, setMessages] = useState<ReviewChatMessage[]>([]);
+  const [messages, setMessages] = useState<ReviewChatMessage[]>(initialMessages);
+  const [storeMetadata, setStoreMetadata] = useState(initialStoreMetadata);
   const [issues, setIssues] = useState<ReviewAiIssue[]>([]);
   const [disclaimer, setDisclaimer] = useState(
     "Reviewer AI chat is advisory only. It does not publish a record, change review state, or move the visible synthesis.",
@@ -79,16 +100,9 @@ export default function ReviewAiConsult({
   const [activeMode, setActiveMode] = useState<ReviewMode | null>(null);
   const [isPending, startTransition] = useTransition();
 
-  const apiHistory = useMemo(
-    () =>
-      messages.map((message) => ({
-        role: message.role,
-        provider: message.provider,
-        body: message.body,
-      })),
-    [messages],
+  const synthesisMessages = messages.filter(
+    (message) => message.role === "assistant" && message.mode === "synthesis",
   );
-  const synthesisMessages = messages.filter((message) => message.mode === "synthesis");
 
   function askReviewerAi(
     provider: ProviderRequest,
@@ -106,19 +120,13 @@ export default function ReviewAiConsult({
       mode === "chat"
         ? {
             id: makeId("reviewer"),
+            contributionId,
             role: "user",
             body: trimmedQuestion,
             createdAt: new Date().toISOString(),
             mode,
           }
         : null;
-    const requestHistory = userMessage
-      ? [
-          ...apiHistory,
-          { role: userMessage.role, body: userMessage.body },
-        ]
-      : apiHistory;
-
     setActiveProvider(provider);
     setActiveMode(mode);
     setErrorMessage(null);
@@ -140,7 +148,6 @@ export default function ReviewAiConsult({
             contributionId,
             provider,
             question: trimmedQuestion,
-            history: requestHistory,
             mode,
           }),
         });
@@ -159,19 +166,27 @@ export default function ReviewAiConsult({
           throw new Error(payload.error ?? "Reviewer AI chat failed.");
         }
 
-        const answerMessages = (payload.answers ?? []).map((answer) => ({
-          id: makeId(answer.provider),
-          role: "assistant" as const,
-          body: answer.response,
-          provider: answer.provider,
-          model: answer.model,
-          createdAt: answer.generatedAt,
-          mode,
-        }));
+        if (payload.messages?.length) {
+          setMessages(payload.messages);
+        } else {
+          const answerMessages = (payload.answers ?? []).map((answer) => ({
+            id: makeId(answer.provider),
+            contributionId,
+            role: "assistant" as const,
+            body: answer.response,
+            provider: answer.provider,
+            model: answer.model,
+            createdAt: answer.generatedAt,
+            mode,
+          }));
 
-        setMessages((current) => [...current, ...answerMessages]);
+          setMessages((current) => [...current, ...answerMessages]);
+        }
         setIssues(payload.issues ?? []);
         setDisclaimer(payload.disclaimer);
+        if (payload.store) {
+          setStoreMetadata(payload.store);
+        }
       } catch (error) {
         setErrorMessage(
           error instanceof Error
@@ -200,6 +215,9 @@ export default function ReviewAiConsult({
           <strong>{contributionTitle}</strong>. The discussion can later be
           synthesized into draft review language, but it still cannot publish a
           record or change the card by itself.
+        </p>
+        <p className={styles.prefillNote}>
+          {getStoreStatus(storeMetadata)}
         </p>
       </div>
 
