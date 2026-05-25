@@ -22,7 +22,11 @@ import {
   refreshEvidenceDocumentExtraction,
 } from "@/app/lib/evidence-document-store";
 import { getContributionOrigin } from "@/app/lib/contribution-origin";
-import { toPublicContributionRecord } from "@/app/lib/contribution-types";
+import {
+  toPublicContributionRecord,
+  type ContributionReview,
+  type ReviewContributionInput,
+} from "@/app/lib/contribution-types";
 import {
   createReviewEvidenceRecord,
   getReviewEvidenceRecord,
@@ -55,6 +59,25 @@ function asUploadFile(value: FormDataEntryValue | null) {
   }
 
   return value;
+}
+
+function normalizeReviewForComparison(
+  review: ContributionReview | ReviewContributionInput | undefined,
+) {
+  return {
+    reviewerLabel: review?.reviewerLabel || undefined,
+    reviewerDisclosureNote: review?.reviewerDisclosureNote || undefined,
+    reviewerConflictNote: review?.reviewerConflictNote || undefined,
+    assignedToKind: review?.assignedToKind || undefined,
+    assignedToLabel: review?.assignedToLabel || undefined,
+    changedSynthesis: review?.changedSynthesis ?? null,
+    publicRecordNote: review?.publicRecordNote || undefined,
+    decisionReason: review?.decisionReason || undefined,
+    reviewerNote: review?.reviewerNote || undefined,
+    revisionSummary: review?.revisionSummary || undefined,
+    synthesisUpdate: review?.synthesisUpdate || undefined,
+    publicRecordSnapshot: review?.publicRecordSnapshot,
+  };
 }
 
 export async function updateContributionReview(formData: FormData) {
@@ -224,7 +247,7 @@ export async function updateContributionReview(formData: FormData) {
         })
       : undefined);
 
-  const reviewedContribution = await reviewContribution(id, {
+  const nextReviewInput: ReviewContributionInput = {
     status: guardedStatus,
     reviewerLabel: resolvedReviewerLabel,
     reviewerDisclosureNote: resolvedReviewerDisclosureNote,
@@ -241,7 +264,25 @@ export async function updateContributionReview(formData: FormData) {
         ? synthesisUpdate || undefined
         : undefined,
     publicRecordSnapshot,
-  });
+  };
+
+  const isDuplicateReviewSave =
+    existingContribution?.status === nextReviewInput.status &&
+    JSON.stringify(normalizeReviewForComparison(existingContribution.review)) ===
+      JSON.stringify(normalizeReviewForComparison(nextReviewInput));
+
+  if (isDuplicateReviewSave) {
+    revalidatePath("/review/contributions");
+
+    if (isRoomSlug(roomSlugRaw) && topicId) {
+      revalidatePath(getRoomHref(roomSlugRaw));
+      revalidatePath(getRoomTopicHref(roomSlugRaw, topicId));
+    }
+
+    return;
+  }
+
+  const reviewedContribution = await reviewContribution(id, nextReviewInput);
 
   if (reviewedContribution) {
     void sendContributionReviewedNotification(reviewedContribution);

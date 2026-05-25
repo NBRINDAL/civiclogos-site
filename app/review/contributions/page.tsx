@@ -43,6 +43,7 @@ import {
 } from "./actions";
 import PublicRecordConfirmationPreview from "./public-record-confirmation-preview";
 import ReviewAiConsult from "./review-ai-consult";
+import { ReviewSubmitButton } from "./review-submit-button";
 import {
   getCurrentVisibleSynthesis,
   getNextPublicRecordVersionLabel,
@@ -1590,9 +1591,7 @@ export default async function ContributionReviewPage({
                     />
                   </label>
 
-                  <button className={styles.submitButton} type="submit">
-                    Save review state
-                  </button>
+                  <ReviewSubmitButton />
                 </form>
               </article>
             )}) : (
