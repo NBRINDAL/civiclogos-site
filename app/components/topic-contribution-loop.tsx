@@ -652,6 +652,54 @@ function getContributionStarterKits({
   ];
 }
 
+function getReviewDecisionOutcomeNote(contribution: PublicContribution) {
+  return (
+    contribution.review?.publicRecordNote ??
+    contribution.review?.decisionReason ??
+    contribution.review?.revisionSummary ??
+    "No public review note was recorded for this decision yet."
+  );
+}
+
+function getReviewDecisionChallengeStarter({
+  contribution,
+  lane,
+  topicTitle,
+}: {
+  contribution: PublicContribution;
+  lane: DebateLane;
+  topicTitle: string;
+}): ContributionStarterKit {
+  const outcomeNote = getReviewDecisionOutcomeNote(contribution);
+  const titleSuffix =
+    contribution.title.length > 88
+      ? `${contribution.title.slice(0, 85).trimEnd()}...`
+      : contribution.title;
+
+  return {
+    lane,
+    label: `Challenge review ${contribution.id}`,
+    title: `Challenge or extend review: ${titleSuffix}`,
+    body: [
+      `Reviewed record on ${topicTitle}:`,
+      `- ${contribution.title}`,
+      "",
+      "Review decision being challenged or extended:",
+      `- ${outcomeNote}`,
+      "",
+      "What the reviewer may have missed, overstated, understated, or left unresolved:",
+      "- ",
+      "",
+      "Smallest proposed correction, extension, or follow-up question:",
+      "- ",
+      "",
+      "Evidence, source, or reasoning that would make this challenge reviewable:",
+      "- ",
+    ].join("\n"),
+    note: "This creates a new contribution record about the prior review decision; it does not overwrite the original review.",
+  };
+}
+
 function getSubmissionRecordType(contribution: PublicContribution) {
   const origin = getContributionOrigin(contribution);
   const type =
@@ -1472,12 +1520,40 @@ export default function TopicContributionLoop({
     () => getContributionStarterKits({ roomSlug, topicId, topicTitle }),
     [roomSlug, topicId, topicTitle],
   );
-  const quickStartStarter = useMemo(
+  const reviewedRecordId = useMemo(
+    () => searchParams.get("reviewedRecord")?.trim() || undefined,
+    [searchParams],
+  );
+  const reviewedRecordForChallenge = useMemo(
     () =>
-      quickStartLane
-        ? contributionStarterKits.find((starter) => starter.lane === quickStartLane) ?? null
+      reviewedRecordId
+        ? contributions.find((contribution) => contribution.id === reviewedRecordId) ?? null
         : null,
-    [contributionStarterKits, quickStartLane],
+    [contributions, reviewedRecordId],
+  );
+  const quickStartStarter = useMemo(
+    () => {
+      if (!quickStartLane) {
+        return null;
+      }
+
+      if (quickStartSource === "review-decision" && reviewedRecordForChallenge) {
+        return getReviewDecisionChallengeStarter({
+          contribution: reviewedRecordForChallenge,
+          lane: quickStartLane,
+          topicTitle,
+        });
+      }
+
+      return contributionStarterKits.find((starter) => starter.lane === quickStartLane) ?? null;
+    },
+    [
+      contributionStarterKits,
+      quickStartLane,
+      quickStartSource,
+      reviewedRecordForChallenge,
+      topicTitle,
+    ],
   );
   const contributionBodyPlaceholder = useMemo(
     () => getContributionBodyPlaceholder(selectedContributionLane),
@@ -1823,7 +1899,7 @@ export default function TopicContributionLoop({
       return;
     }
 
-    const prefillKey = `${quickStartSource}:${quickStartStarter.lane}`;
+    const prefillKey = `${quickStartSource}:${quickStartStarter.lane}:${quickStartStarter.label}`;
     const hasManualContent =
       formState.title.trim() ||
       formState.body.trim() ||
