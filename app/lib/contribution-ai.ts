@@ -7,7 +7,15 @@ import {
   getAnthropicProviderConfig,
   getOpenAIProviderConfig,
 } from "./ai-provider-config";
+import { getEvidenceDocument } from "./evidence-document-store";
 import { debateLaneOptions } from "./reasoning-types";
+
+type ContributionEvidenceFile = {
+  fileName: string;
+  mimeType: string;
+  sizeBytes: number;
+  base64: string;
+};
 
 type IntakeSchemaResult = {
   summary: string;
@@ -71,7 +79,10 @@ const intakeSchema = {
   },
 } as const;
 
-function buildIntakePrompt(input: CreateContributionInput) {
+function buildIntakePrompt(
+  input: CreateContributionInput,
+  evidenceFile?: ContributionEvidenceFile | null,
+) {
   return JSON.stringify(
     {
       room: input.roomSlug,
@@ -91,6 +102,13 @@ function buildIntakePrompt(input: CreateContributionInput) {
             extraction: input.evidenceDocument.extraction,
           }
         : null,
+      attachedEvidenceFileForAi: evidenceFile
+        ? {
+            fileName: evidenceFile.fileName,
+            mimeType: evidenceFile.mimeType,
+            sizeBytes: evidenceFile.sizeBytes,
+          }
+        : null,
       contributorContext: input.author.expertise ?? null,
       maintainerRevisionMode:
         input.author.name?.toLowerCase().includes("founder-maintainer") ||
@@ -102,19 +120,95 @@ function buildIntakePrompt(input: CreateContributionInput) {
   );
 }
 
+async function loadContributionEvidenceFile(
+  input: CreateContributionInput,
+): Promise<ContributionEvidenceFile | null> {
+  const evidenceDocument = input.evidenceDocument;
+
+  if (!evidenceDocument || evidenceDocument.mimeType !== "application/pdf") {
+    return null;
+  }
+
+  const storedDocument = await getEvidenceDocument(evidenceDocument.id);
+
+  if (!storedDocument || storedDocument.document.sizeBytes > 10 * 1024 * 1024) {
+    return null;
+  }
+
+  return {
+    fileName: storedDocument.document.fileName,
+    mimeType: storedDocument.document.mimeType,
+    sizeBytes: storedDocument.document.sizeBytes,
+    base64: Buffer.from(storedDocument.bytes).toString("base64"),
+  };
+}
+
 function getContributionIntakeInstructions(input: CreateContributionInput) {
   const isMaintainerRevision =
     input.author.name?.toLowerCase().includes("founder-maintainer") ||
     input.author.expertise?.toLowerCase().includes("founder-maintainer") ||
     false;
   const base =
-    "You are an intake reader for Civic Logos, a public reasoning platform. You do not decide truth. You classify contributions into the most useful place for later maintainer review, preserve strong objections and evidence, and write calm, institutional summaries.";
+    "You are an intake reader for Civic Logos, a public reasoning platform. You do not decide truth. You classify contributions into the most useful place for later maintainer review, preserve strong objections and evidence, and write calm, institutional summaries. If attachedEvidenceFileForAi is present, the uploaded evidence PDF is attached to this same model request as a file input; inspect it before saying the document is unavailable.";
 
   if (!isMaintainerRevision) {
     return base;
   }
 
   return `${base} This contribution is a founder-maintainer proposed synthesis revision. Do not rubber-stamp it. Evaluate whether the proposed synthesis is plausibly better than the prior framing, identify overclaims, missing evidence burdens, implementation risks, and any reason human review should not incorporate it yet. AI output is advisory only.`;
+}
+
+function buildOpenAIIntakeContent(
+  input: CreateContributionInput,
+  evidenceFile?: ContributionEvidenceFile | null,
+) {
+  const content: Array<Record<string, string>> = [];
+
+  if (evidenceFile) {
+    content.push({
+      type: "input_file",
+      filename: evidenceFile.fileName,
+      file_data: `data:${evidenceFile.mimeType};base64,${evidenceFile.base64}`,
+    });
+  }
+
+  content.push({
+    type: "input_text",
+    text: buildIntakePrompt(input, evidenceFile),
+  });
+
+  return content;
+}
+
+function buildAnthropicIntakeContent(
+  input: CreateContributionInput,
+  evidenceFile?: ContributionEvidenceFile | null,
+) {
+  const content: Array<Record<string, unknown>> = [];
+
+  if (evidenceFile) {
+    content.push({
+      type: "document",
+      source: {
+        type: "base64",
+        media_type: evidenceFile.mimeType,
+        data: evidenceFile.base64,
+      },
+    });
+  }
+
+  content.push({
+    type: "text",
+    text: [
+      "Return only JSON with these keys:",
+      JSON.stringify(intakeSchema, null, 2),
+      "",
+      "Contribution payload:",
+      buildIntakePrompt(input, evidenceFile),
+    ].join("\n"),
+  });
+
+  return content;
 }
 
 function parseIntakeResult(result: IntakeSchemaResult) {
@@ -169,6 +263,7 @@ function parseModelJsonText(text: string): IntakeSchemaResult {
 
 async function classifyWithOpenAI(
   input: CreateContributionInput,
+  evidenceFile?: ContributionEvidenceFile | null,
 ): Promise<ProviderContributionAiIntake> {
   const config = getOpenAIProviderConfig();
   const apiKey = process.env.OPENAI_API_KEY;
@@ -188,12 +283,7 @@ async function classifyWithOpenAI(
         input: [
           {
             role: "user",
-            content: [
-              {
-                type: "input_text",
-                text: buildIntakePrompt(input),
-              },
-            ],
+            content: buildOpenAIIntakeContent(input, evidenceFile),
           },
         ],
       }) as const;
@@ -213,12 +303,7 @@ async function classifyWithOpenAI(
         input: [
           {
             role: "user",
-            content: [
-              {
-                type: "input_text",
-                text: buildIntakePrompt(input),
-              },
-            ],
+            content: buildOpenAIIntakeContent(input, evidenceFile),
           },
         ],
         text: {
@@ -306,6 +391,7 @@ async function classifyWithOpenAI(
 
 async function classifyWithAnthropic(
   input: CreateContributionInput,
+  evidenceFile?: ContributionEvidenceFile | null,
 ): Promise<ProviderContributionAiIntake> {
   const config = getAnthropicProviderConfig();
   const apiKey = process.env.ANTHROPIC_API_KEY;
@@ -330,18 +416,7 @@ async function classifyWithAnthropic(
         messages: [
           {
             role: "user",
-            content: [
-              {
-                type: "text",
-                text: [
-                  "Return only JSON with these keys:",
-                  JSON.stringify(intakeSchema, null, 2),
-                  "",
-                  "Contribution payload:",
-                  buildIntakePrompt(input),
-                ].join("\n"),
-              },
-            ],
+            content: buildAnthropicIntakeContent(input, evidenceFile),
           },
         ],
       }),
@@ -395,9 +470,10 @@ async function classifyWithAnthropic(
 export async function buildContributionAiIntake(
   input: CreateContributionInput,
 ): Promise<ContributionAiIntake> {
+  const evidenceFile = await loadContributionEvidenceFile(input);
   const providers = await Promise.all([
-    classifyWithOpenAI(input),
-    classifyWithAnthropic(input),
+    classifyWithOpenAI(input, evidenceFile),
+    classifyWithAnthropic(input, evidenceFile),
   ]);
   const completedProviders = providers.filter((item) => item.state === "completed");
   const primaryProvider = completedProviders[0];

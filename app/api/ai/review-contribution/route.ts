@@ -41,6 +41,13 @@ type ReviewAiIssue = {
   message: string;
 };
 
+type ReviewEvidenceFile = {
+  fileName: string;
+  mimeType: string;
+  sizeBytes: number;
+  base64: string;
+};
+
 type OpenAIResponse = {
   output?: Array<{
     type?: string;
@@ -85,6 +92,7 @@ function buildReviewContext({
   contribution,
   topicThesis,
   readableEvidenceText,
+  evidenceFile,
 }: {
   contribution: NonNullable<Awaited<ReturnType<typeof getContributionById>>>;
   topicThesis: string;
@@ -94,6 +102,7 @@ function buildReviewContext({
     wordCount?: number;
     source: string;
   } | null;
+  evidenceFile?: ReviewEvidenceFile | null;
 }) {
   return JSON.stringify(
     {
@@ -113,6 +122,13 @@ function buildReviewContext({
         evidenceSource: contribution.evidenceSource ?? null,
         accessibleEvidenceExcerpt: contribution.evidenceExcerpt ?? null,
         readableEvidenceTextForAi: readableEvidenceText ?? null,
+        attachedEvidenceFileForAi: evidenceFile
+          ? {
+              fileName: evidenceFile.fileName,
+              mimeType: evidenceFile.mimeType,
+              sizeBytes: evidenceFile.sizeBytes,
+            }
+          : null,
         evidenceDocument: contribution.evidenceDocument
           ? {
               fileName: contribution.evidenceDocument.fileName,
@@ -199,25 +215,119 @@ async function loadReadableEvidenceTextForAi(
   }
 }
 
+async function loadEvidenceFileForAi(
+  contribution: NonNullable<Awaited<ReturnType<typeof getContributionById>>>,
+): Promise<ReviewEvidenceFile | null> {
+  const evidenceDocument = contribution.evidenceDocument;
+
+  if (!evidenceDocument || evidenceDocument.mimeType !== "application/pdf") {
+    return null;
+  }
+
+  const storedDocument = await getEvidenceDocument(evidenceDocument.id);
+
+  if (!storedDocument || storedDocument.document.sizeBytes > 10 * 1024 * 1024) {
+    return null;
+  }
+
+  return {
+    fileName: storedDocument.document.fileName,
+    mimeType: storedDocument.document.mimeType,
+    sizeBytes: storedDocument.document.sizeBytes,
+    base64: Buffer.from(storedDocument.bytes).toString("base64"),
+  };
+}
+
 function getReviewInstructions() {
   return [
     "You are a Civic Logos reviewer assistant.",
     "You do not decide truth, legitimacy, or the final review outcome.",
     "Help a human reviewer interrogate one contribution against the current topic card.",
     "Separate notation, definitions, assumptions, evidence, predictions, and synthesis pressure.",
+    "If attachedEvidenceFileForAi is present, the uploaded evidence PDF is attached to this same model request as a file input.",
     "If readableEvidenceTextForAi is present in the context, treat it as the uploaded document text even if a stored extraction status is stale or says error.",
-    "If no readable document text is available, say that clearly and reason only from the visible contribution metadata.",
+    "If an evidence PDF is attached, inspect it directly before saying the paper is unavailable.",
+    "If no attached PDF and no readable document text are available, say that clearly and reason only from the visible contribution metadata.",
     "Do not recommend changing the visible synthesis unless you can name the exact claim that would change and what remains unresolved.",
     "Give concrete review guidance: likely attachment target, what to check next, and a cautious public note if useful.",
   ].join(" ");
 }
 
-async function askOpenAIReview({
+function buildReviewerTextPrompt(context: string, question: string) {
+  return [
+    "Reviewer question:",
+    question,
+    "",
+    "Contribution review context:",
+    context,
+  ].join("\n");
+}
+
+function buildOpenAIReviewContent({
   context,
   question,
+  evidenceFile,
 }: {
   context: string;
   question: string;
+  evidenceFile?: ReviewEvidenceFile | null;
+}) {
+  const content: Array<Record<string, string>> = [];
+
+  if (evidenceFile) {
+    content.push({
+      type: "input_file",
+      filename: evidenceFile.fileName,
+      file_data: `data:${evidenceFile.mimeType};base64,${evidenceFile.base64}`,
+    });
+  }
+
+  content.push({
+    type: "input_text",
+    text: buildReviewerTextPrompt(context, question),
+  });
+
+  return content;
+}
+
+function buildAnthropicReviewContent({
+  context,
+  question,
+  evidenceFile,
+}: {
+  context: string;
+  question: string;
+  evidenceFile?: ReviewEvidenceFile | null;
+}) {
+  const content: Array<Record<string, unknown>> = [];
+
+  if (evidenceFile) {
+    content.push({
+      type: "document",
+      source: {
+        type: "base64",
+        media_type: evidenceFile.mimeType,
+        data: evidenceFile.base64,
+      },
+    });
+  }
+
+  content.push({
+    type: "text",
+    text: buildReviewerTextPrompt(context, question),
+  });
+
+  return content;
+}
+
+async function askOpenAIReview({
+  context,
+  question,
+  evidenceFile,
+}: {
+  context: string;
+  question: string;
+  evidenceFile?: ReviewEvidenceFile | null;
 }): Promise<ReviewAiAnswer | ReviewAiIssue> {
   const config = getOpenAIProviderConfig();
   const apiKey = process.env.OPENAI_API_KEY;
@@ -246,18 +356,7 @@ async function askOpenAIReview({
         input: [
           {
             role: "user",
-            content: [
-              {
-                type: "input_text",
-                text: [
-                  "Reviewer question:",
-                  question,
-                  "",
-                  "Contribution review context:",
-                  context,
-                ].join("\n"),
-              },
-            ],
+            content: buildOpenAIReviewContent({ context, question, evidenceFile }),
           },
         ],
       }),
@@ -302,9 +401,11 @@ async function askOpenAIReview({
 async function askAnthropicReview({
   context,
   question,
+  evidenceFile,
 }: {
   context: string;
   question: string;
+  evidenceFile?: ReviewEvidenceFile | null;
 }): Promise<ReviewAiAnswer | ReviewAiIssue> {
   const config = getAnthropicProviderConfig();
   const apiKey = process.env.ANTHROPIC_API_KEY;
@@ -333,18 +434,7 @@ async function askAnthropicReview({
         messages: [
           {
             role: "user",
-            content: [
-              {
-                type: "text",
-                text: [
-                  "Reviewer question:",
-                  question,
-                  "",
-                  "Contribution review context:",
-                  context,
-                ].join("\n"),
-              },
-            ],
+            content: buildAnthropicReviewContent({ context, question, evidenceFile }),
           },
         ],
       }),
@@ -443,20 +533,22 @@ export async function POST(request: NextRequest) {
 
   contribution = await refreshReadableEvidenceIfNeeded(contribution);
   const readableEvidenceText = await loadReadableEvidenceTextForAi(contribution);
+  const evidenceFile = await loadEvidenceFileForAi(contribution);
 
   const context = buildReviewContext({
     contribution,
     topicThesis: topic.thesis,
     readableEvidenceText,
+    evidenceFile,
   });
   const providerCalls =
     provider === "openai"
-      ? [askOpenAIReview({ context, question })]
+      ? [askOpenAIReview({ context, question, evidenceFile })]
       : provider === "anthropic"
-        ? [askAnthropicReview({ context, question })]
+        ? [askAnthropicReview({ context, question, evidenceFile })]
         : [
-            askOpenAIReview({ context, question }),
-            askAnthropicReview({ context, question }),
+            askOpenAIReview({ context, question, evidenceFile }),
+            askAnthropicReview({ context, question, evidenceFile }),
           ];
   const results = await Promise.all(providerCalls);
   const answers = results.filter(isAnswer);
