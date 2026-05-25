@@ -20,6 +20,7 @@ import {
   listPublicContributions,
 } from "@/app/lib/contribution-store";
 import { createEvidenceDocument } from "@/app/lib/evidence-document-store";
+import { isAllowedEvidenceUpload } from "@/app/lib/evidence-upload-safety";
 import { sendContributionSubmittedNotification } from "@/app/lib/maintainer-notifications";
 import { normalizeDebateLane } from "@/app/lib/reasoning-types";
 
@@ -304,6 +305,18 @@ export async function POST(request: NextRequest) {
     if (uploadedEvidenceFile.size > 8 * 1024 * 1024) {
       return NextResponse.json(
         { error: "Keep uploaded evidence documents under 8 MB for this MVP." },
+        { status: 400 },
+      );
+    }
+
+    if (
+      !isAllowedEvidenceUpload({
+        fileName: uploadedEvidenceFile.name,
+        mimeType: uploadedEvidenceFile.type,
+      })
+    ) {
+      return NextResponse.json(
+        { error: "Upload evidence as a PDF, plain text, or Markdown file." },
         { status: 400 },
       );
     }

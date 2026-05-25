@@ -37,6 +37,7 @@ import {
   reprocessContributionEvidenceDocument,
   reprocessReviewerEvidenceDocument,
   retryContributionAiIntake,
+  unlockReviewConsole,
   updateContributionEvidenceExcerpt,
   updateContributionReview,
   uploadReviewerEvidence,
@@ -49,6 +50,10 @@ import {
   getNextPublicRecordVersionLabel,
   publicRecordConfirmationPhrase,
 } from "@/app/lib/public-record-revisions";
+import {
+  hasMaintainerSession,
+  isMaintainerReviewConfigured,
+} from "@/app/lib/maintainer-auth";
 import styles from "./page.module.css";
 
 export const dynamic = "force-dynamic";
@@ -274,6 +279,8 @@ export default async function ContributionReviewPage({
     lane?: string;
   }>;
 }) {
+  const hasAccess = await hasMaintainerSession();
+  const maintainerReviewConfigured = isMaintainerReviewConfigured();
   const params = await searchParams;
   const roomSlug = params.roomSlug?.trim() ?? "";
   const topicId = params.topicId?.trim() ?? "";
@@ -300,6 +307,57 @@ export default async function ContributionReviewPage({
     scopedRoomSlug && scopedTopicId
       ? `assignment-targets-${scopedRoomSlug}-${scopedTopicId}`
       : "assignment-targets-generic";
+
+  if (!hasAccess) {
+    return (
+      <div className={styles.page}>
+        <div className={styles.shell}>
+          <section className={styles.hero}>
+            <span className={styles.eyebrow}>Maintainer review</span>
+            <h1>Review console locked.</h1>
+            <p>
+              Public visitors can submit contributions from topic cards, but human
+              review decisions, reviewer evidence, AI reviewer chat, and
+              maintainer revisions require the maintainer key.
+            </p>
+          </section>
+
+          <section className={styles.panel}>
+            {maintainerReviewConfigured ? (
+              <form action={unlockReviewConsole} className={styles.reviewForm}>
+                <label className={styles.field}>
+                  <span>Maintainer key</span>
+                  <input
+                    autoComplete="current-password"
+                    name="maintainerKey"
+                    placeholder="Enter maintainer key"
+                    type="password"
+                  />
+                </label>
+                <button className={styles.submitButton} type="submit">
+                  Unlock review console
+                </button>
+                <p className={styles.prefillNote}>
+                  The key creates an HTTP-only maintainer session for this browser.
+                </p>
+              </form>
+            ) : (
+              <div className={styles.emptyState}>
+                <span className={styles.eyebrow}>Not configured</span>
+                <h2>Maintainer review is not configured on this deployment.</h2>
+                <p>
+                  Set <code>CIVIC_LOGOS_MAINTAINER_KEY</code> or{" "}
+                  <code>MAINTAINER_REVIEW_KEY</code> before using the review
+                  console.
+                </p>
+              </div>
+            )}
+          </section>
+        </div>
+      </div>
+    );
+  }
+
   const [contributions, metadata, reviewChatStore, reviewEvidenceStore] = await Promise.all([
     listAllContributions({
       roomSlug: scopedRoomSlug,

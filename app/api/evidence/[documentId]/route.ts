@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getEvidenceDocument } from "@/app/lib/evidence-document-store";
+import { getSafeEvidenceDownloadHeaders } from "@/app/lib/evidence-upload-safety";
 
 export const runtime = "nodejs";
 
@@ -22,13 +23,10 @@ export async function GET(
 
   return new NextResponse(new Uint8Array(storedDocument.bytes), {
     status: 200,
-    headers: {
-      "Content-Type": storedDocument.document.mimeType || "application/octet-stream",
-      "Content-Length": String(storedDocument.document.sizeBytes),
-      "Content-Disposition": `inline; filename="${encodeURIComponent(
-        storedDocument.document.fileName,
-      )}"`,
-      "Cache-Control": "private, max-age=300",
-    },
+    headers: getSafeEvidenceDownloadHeaders({
+      fileName: storedDocument.document.fileName,
+      mimeType: storedDocument.document.mimeType,
+      sizeBytes: storedDocument.document.sizeBytes,
+    }),
   });
 }

@@ -7,6 +7,10 @@ import {
   testAllProviderConnectivity,
   testProviderConnectivity,
 } from "@/app/lib/ai-provider-test";
+import {
+  isValidMaintainerSessionValue,
+  maintainerSessionCookieName,
+} from "@/app/lib/maintainer-auth";
 
 export const runtime = "nodejs";
 
@@ -47,6 +51,17 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
+  if (
+    !isValidMaintainerSessionValue(
+      request.cookies.get(maintainerSessionCookieName)?.value,
+    )
+  ) {
+    return NextResponse.json(
+      { error: "Maintainer access is required to test provider connectivity." },
+      { status: 401 },
+    );
+  }
+
   let payload: ProviderTestPayload = {};
 
   try {

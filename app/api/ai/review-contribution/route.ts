@@ -27,6 +27,10 @@ import {
 import type { ReviewChatMessage } from "@/app/lib/review-chat-types";
 import { listReviewEvidenceRecords } from "@/app/lib/review-evidence-store";
 import type { ReviewEvidenceRecord } from "@/app/lib/review-evidence-types";
+import {
+  isValidMaintainerSessionValue,
+  maintainerSessionCookieName,
+} from "@/app/lib/maintainer-auth";
 
 export const runtime = "nodejs";
 
@@ -773,6 +777,17 @@ function isAnswer(result: ReviewAiAnswer | ReviewAiIssue): result is ReviewAiAns
 }
 
 export async function POST(request: NextRequest) {
+  if (
+    !isValidMaintainerSessionValue(
+      request.cookies.get(maintainerSessionCookieName)?.value,
+    )
+  ) {
+    return NextResponse.json(
+      { error: "Maintainer access is required for reviewer AI consults." },
+      { status: 401 },
+    );
+  }
+
   let payload: ReviewAiPayload;
 
   try {

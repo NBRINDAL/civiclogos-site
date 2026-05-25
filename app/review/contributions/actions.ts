@@ -21,6 +21,7 @@ import {
   createEvidenceDocument,
   refreshEvidenceDocumentExtraction,
 } from "@/app/lib/evidence-document-store";
+import { isAllowedEvidenceUpload } from "@/app/lib/evidence-upload-safety";
 import { getContributionOrigin } from "@/app/lib/contribution-origin";
 import {
   toPublicContributionRecord,
@@ -43,6 +44,10 @@ import {
   getNextPublicRecordVersionLabel,
   publicRecordConfirmationPhrase,
 } from "@/app/lib/public-record-revisions";
+import {
+  hasMaintainerSession,
+  setMaintainerSession,
+} from "@/app/lib/maintainer-auth";
 import {
   normalizeDebateLane,
   normalizeReviewStatus,
@@ -80,7 +85,18 @@ function normalizeReviewForComparison(
   };
 }
 
+export async function unlockReviewConsole(formData: FormData) {
+  const maintainerKey = String(formData.get("maintainerKey") ?? "").trim();
+
+  await setMaintainerSession(maintainerKey);
+  revalidatePath("/review/contributions");
+}
+
 export async function updateContributionReview(formData: FormData) {
+  if (!(await hasMaintainerSession())) {
+    return;
+  }
+
   const id = String(formData.get("id") ?? "").trim();
   const roomSlugRaw = String(formData.get("roomSlug") ?? "").trim();
   const topicId = String(formData.get("topicId") ?? "").trim();
@@ -297,6 +313,10 @@ export async function updateContributionReview(formData: FormData) {
 }
 
 export async function uploadReviewerEvidence(formData: FormData) {
+  if (!(await hasMaintainerSession())) {
+    return;
+  }
+
   const id = String(formData.get("id") ?? "").trim();
   const roomSlugRaw = String(formData.get("roomSlug") ?? "").trim();
   const topicId = String(formData.get("topicId") ?? "").trim();
@@ -319,6 +339,15 @@ export async function uploadReviewerEvidence(formData: FormData) {
   }
 
   if (upload.size > 8 * 1024 * 1024) {
+    return;
+  }
+
+  if (
+    !isAllowedEvidenceUpload({
+      fileName: upload.name,
+      mimeType: upload.type,
+    })
+  ) {
     return;
   }
 
@@ -359,6 +388,10 @@ export async function uploadReviewerEvidence(formData: FormData) {
 }
 
 export async function reprocessReviewerEvidenceDocument(formData: FormData) {
+  if (!(await hasMaintainerSession())) {
+    return;
+  }
+
   const id = String(formData.get("id") ?? "").trim();
   const recordId = String(formData.get("reviewEvidenceRecordId") ?? "").trim();
   const roomSlugRaw = String(formData.get("roomSlug") ?? "").trim();
@@ -389,6 +422,10 @@ export async function reprocessReviewerEvidenceDocument(formData: FormData) {
 }
 
 export async function retryContributionAiIntake(formData: FormData) {
+  if (!(await hasMaintainerSession())) {
+    return;
+  }
+
   const id = String(formData.get("id") ?? "").trim();
   const roomSlugRaw = String(formData.get("roomSlug") ?? "").trim();
   const topicId = String(formData.get("topicId") ?? "").trim();
@@ -407,6 +444,10 @@ export async function retryContributionAiIntake(formData: FormData) {
 }
 
 export async function reprocessContributionEvidenceDocument(formData: FormData) {
+  if (!(await hasMaintainerSession())) {
+    return;
+  }
+
   const id = String(formData.get("id") ?? "").trim();
   const roomSlugRaw = String(formData.get("roomSlug") ?? "").trim();
   const topicId = String(formData.get("topicId") ?? "").trim();
@@ -438,6 +479,10 @@ export async function reprocessContributionEvidenceDocument(formData: FormData) 
 }
 
 export async function updateContributionEvidenceExcerpt(formData: FormData) {
+  if (!(await hasMaintainerSession())) {
+    return;
+  }
+
   const id = String(formData.get("id") ?? "").trim();
   const roomSlugRaw = String(formData.get("roomSlug") ?? "").trim();
   const topicId = String(formData.get("topicId") ?? "").trim();
@@ -460,6 +505,10 @@ export async function updateContributionEvidenceExcerpt(formData: FormData) {
 }
 
 export async function createFounderMaintainerRevision(formData: FormData) {
+  if (!(await hasMaintainerSession())) {
+    return;
+  }
+
   const roomSlugRaw = String(formData.get("roomSlug") ?? "").trim();
   const topicId = String(formData.get("topicId") ?? "").trim();
   const title = String(formData.get("title") ?? "").trim();

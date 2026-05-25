@@ -340,6 +340,50 @@ function aiReaderNotesForContribution(contribution: PublicContribution) {
   });
 }
 
+function appealRecordId(contribution: PublicContribution) {
+  return `appeal:${contribution.id}:review-challenge`;
+}
+
+function appealRecordsForContributions(
+  contributions: readonly PublicContribution[],
+  card: TopicCardData,
+  aiReaderNotes: ReturnType<typeof aiReaderNotesForContribution>,
+  revisionIdByContributionId: Map<string, string>,
+) {
+  return contributions
+    .filter((contribution) => contribution.reviewChallengeSource)
+    .map((contribution) => {
+      const source = contribution.reviewChallengeSource!;
+      const state = mapStatus(contribution.status, contribution);
+      const attachmentTargets = contributionTargets(contribution, card);
+      const linkedAiReaderNoteIds = aiReaderNotes
+        .filter((note) => note.ai_reader_note_id.startsWith(`ai-note:${contribution.id}:`))
+        .map((note) => note.ai_reader_note_id);
+
+      return {
+        appeal_id: appealRecordId(contribution),
+        topic_id: contribution.topicId,
+        appealed_object_type: "HumanReviewDecision",
+        appealed_object_id: `review:${source.contributionId}`,
+        submitted_by_actor_id: contributionActorId(contribution),
+        origin: mapOrigin(contribution),
+        state,
+        appeal_reason: contribution.body,
+        requested_action: "reconsider_review_decision",
+        attachment_targets: attachmentTargets,
+        ai_reader_note_ids: linkedAiReaderNoteIds,
+        human_review_decision_id: contribution.review ? `review:${contribution.id}` : null,
+        revision_event_id: revisionIdByContributionId.get(contribution.id) ?? null,
+        public_record_note:
+          contribution.review?.publicRecordNote ??
+          contribution.review?.decisionReason ??
+          `Review challenge submitted against ${source.sourceTitle ?? source.contributionId}.`,
+        created_at: source.createdAt || contribution.createdAt,
+        updated_at: contribution.review?.reviewedAt ?? contribution.updatedAt,
+      };
+    });
+}
+
 function reviewDecisionForContribution(
   contribution: PublicContribution,
   revisionId: string | null,
@@ -744,6 +788,12 @@ export async function buildHealthcareTopic001ProtocolExport() {
   ];
   const evidenceObjects = contributions.flatMap(evidenceObjectsForContribution);
   const aiReaderNotes = contributions.flatMap(aiReaderNotesForContribution);
+  const appealRecords = appealRecordsForContributions(
+    contributions,
+    card,
+    aiReaderNotes,
+    revisionIdByContributionId,
+  );
   const humanReviewDecisions = contributions
     .map((contribution) =>
       reviewDecisionForContribution(
@@ -861,8 +911,21 @@ export async function buildHealthcareTopic001ProtocolExport() {
     evidence_objects: evidenceObjects,
     ai_reader_notes: aiReaderNotes,
     human_review_decisions: humanReviewDecisions,
+    appeal_records: appealRecords,
     revision_events: revisionEvents,
     audit_events: [
+      ...appealRecords.map((appeal) => ({
+        audit_event_id: `audit:${healthcareRoomSlug}:${healthcareTopicId}:${protocolId(
+          appeal.appeal_id,
+        )}:opened`,
+        event_type: "appeal_opened",
+        actor_id: appeal.submitted_by_actor_id,
+        object_type: "AppealRecord",
+        object_id: appeal.appeal_id,
+        created_at: appeal.created_at,
+        summary:
+          "Review challenge opened against a prior human review decision without mutating that decision.",
+      })),
       {
         audit_event_id: `audit:${healthcareRoomSlug}:${healthcareTopicId}:export-generated`,
         event_type: "protocol_export_generated",
