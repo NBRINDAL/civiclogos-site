@@ -57,6 +57,29 @@
   font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
 }
 
+.wordmarkTitle {
+  display: block;
+  width: var(--brand-wordmark-width, 118px);
+  line-height: 0;
+}
+
+.wordmarkTitle img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.screenReaderOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
 .text strong {
   color: var(--foreground);
   font-size: 1rem;

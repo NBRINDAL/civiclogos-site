@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import styles from "./site-brand.module.css";
 
 type SiteBrandProps = {
@@ -26,7 +27,17 @@ export function SiteBrand({
         <span className={styles.dot} />
       </span>
       <span className={styles.text}>
-        <strong>{title}</strong>
+        <strong className={styles.wordmarkTitle}>
+          <span className={styles.screenReaderOnly}>{title}</span>
+          <Image
+            alt=""
+            aria-hidden="true"
+            height={94}
+            src="/brand/civic-logos-wordmark.svg"
+            unoptimized
+            width={535}
+          />
+        </strong>
         <span>{subtitle}</span>
       </span>
     </Link>
