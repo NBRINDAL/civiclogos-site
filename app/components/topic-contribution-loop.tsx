@@ -2873,7 +2873,7 @@ export default function TopicContributionLoop({
               <div>
                 <span className={styles.sectionLabel}>Returned from scorecard</span>
                 <p>
-                  This ledger view was opened from the healthcare score{" "}
+                  This ledger view was opened from the topic score{" "}
                   <strong>{activeScoreLabel}</strong>
                   {activeScoreSliceLabel ? (
                     <>
