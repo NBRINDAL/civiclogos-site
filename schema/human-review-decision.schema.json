@@ -6,6 +6,7 @@
   "additionalProperties": false,
   "required": [
     "review_decision_id",
+    "triggering_record_id",
     "reviewer_disclosure_note",
     "reviewer_conflict_note",
     "decision_status",
@@ -18,6 +19,7 @@
   ],
   "properties": {
     "review_decision_id": { "type": "string", "minLength": 1 },
+    "triggering_record_id": { "type": "string", "minLength": 1 },
     "reviewer_id": { "type": ["string", "null"] },
     "reviewer_label": { "type": ["string", "null"] },
     "reviewer_disclosure_note": { "type": "string", "minLength": 1 },

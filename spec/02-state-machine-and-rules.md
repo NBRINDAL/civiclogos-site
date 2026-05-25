@@ -85,6 +85,7 @@ Required fields:
 Required fields:
 
 - `reviewer_id` or `reviewer_label`
+- `triggering_record_id`
 - `reviewer_disclosure_note`
 - `reviewer_conflict_note`
 - `decision_status`

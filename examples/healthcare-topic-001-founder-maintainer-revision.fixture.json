@@ -248,6 +248,7 @@
   ],
   "human_review_decision": {
     "review_decision_id": "review:healthcare-topic-001:founder-narrowing",
+    "triggering_record_id": "contribution:healthcare-topic-001:founder-synthesis-narrowing",
     "reviewer_id": "actor:human-reviewer-prototype",
     "reviewer_label": "Prototype human reviewer",
     "reviewer_disclosure_note": "Internal prototype reviewer used to demonstrate the review path before external reviewer governance is formalized.",

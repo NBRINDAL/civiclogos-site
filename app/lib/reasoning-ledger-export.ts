@@ -399,6 +399,7 @@ function reviewDecisionForContribution(
   return {
     review_decision_id:
       review.publicRecordSnapshot?.humanReviewDecisionId ?? `review:${contribution.id}`,
+    triggering_record_id: contribution.id,
     reviewer_id: reviewActorId(contribution),
     reviewer_label: review.reviewerLabel ?? "Civic Logos maintainer review",
     reviewer_disclosure_note:

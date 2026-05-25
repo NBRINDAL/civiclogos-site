@@ -153,6 +153,15 @@ export default function LedgerPage() {
           </p>
         </section>
 
+        <section className={styles.grantNote}>
+          <span className={styles.eyebrow}>Public-record milestone</span>
+          <p>
+            Civic Logos has completed its first founder-maintainer public-record
+            revision. The next milestone is the first outside public
+            contribution.
+          </p>
+        </section>
+
         <section className={styles.twoColumn}>
           <article className={styles.panel}>
             <span className={styles.eyebrow}>What it is</span>

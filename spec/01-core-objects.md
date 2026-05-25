@@ -155,6 +155,7 @@ A human decision about status, placement, attachment, and whether the public rec
 Minimum fields:
 
 - `review_decision_id`
+- `triggering_record_id`
 - `reviewer_label` or `reviewer_id`
 - `reviewer_disclosure_note`
 - `reviewer_conflict_note`
