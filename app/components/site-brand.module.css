@@ -7,8 +7,8 @@
 
 .mark {
   position: relative;
-  flex: 0 0 var(--brand-mark-size, 62px);
-  width: var(--brand-mark-size, 62px);
+  flex: 0 0 var(--brand-mark-size, 69px);
+  width: var(--brand-mark-size, 69px);
   aspect-ratio: 1;
   --brand-square-size: 72%;
   --brand-circle-size: 81.24%;
