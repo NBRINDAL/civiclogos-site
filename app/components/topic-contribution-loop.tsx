@@ -390,6 +390,13 @@ function getQuickStartNotice(source: string | undefined, lane: DebateLane | null
     };
   }
 
+  if (source === "review-decision") {
+    return {
+      title: "Challenge a review decision",
+      body: `You are responding to a human review decision. Use this ${laneLabel.toLowerCase()} record to identify one thing the reviewer missed, overstated, understated, or should reopen. The prior review remains visible while this challenge enters its own review path.`,
+    };
+  }
+
   if (lane) {
     return {
       title: `${laneLabel} lane selected`,

@@ -612,6 +612,25 @@ function getContributionLedgerHref({
   return `${query ? `?${query}` : ""}#${hash}`;
 }
 
+function getReviewDecisionChallengeHref(contribution: PublicContribution) {
+  const params = new URLSearchParams();
+  const recordView = getContributionRecordView(contribution);
+
+  params.set("contributeLane", "correction");
+  params.set("contributeFrom", "review-decision");
+  params.set("reviewStatus", getContributionStatusFilter(contribution.status));
+  params.set("attachment", getContributionAttachmentFilter(contribution));
+  params.set("origin", getContributionOrigin(contribution));
+  params.set("sourceSummary", "Recent human review decisions");
+  params.set("reviewedRecord", contribution.id);
+
+  if (recordView) {
+    params.set("recordView", recordView);
+  }
+
+  return `?${params.toString()}#contribution-record`;
+}
+
 function getContributionAttachmentFilter(
   contribution: PublicContribution,
 ): ContributionAttachmentFilter {
@@ -5060,6 +5079,13 @@ export default async function TopicCardPage({
                           })}
                         >
                           Open public record entry
+                        </Link>
+                        {" · "}
+                        <Link
+                          className={styles.sourceLink}
+                          href={getReviewDecisionChallengeHref(item)}
+                        >
+                          Challenge or extend this review
                         </Link>
                       </p>
                       <ContributionAiOriginContext
