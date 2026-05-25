@@ -31,6 +31,7 @@ import {
   isValidMaintainerSessionValue,
   maintainerSessionCookieName,
 } from "@/app/lib/maintainer-auth";
+import { enforceWriteRequestSafety } from "@/app/lib/request-security";
 import { throttleRequest } from "@/app/lib/request-throttle";
 
 export const runtime = "nodejs";
@@ -778,6 +779,12 @@ function isAnswer(result: ReviewAiAnswer | ReviewAiIssue): result is ReviewAiAns
 }
 
 export async function POST(request: NextRequest) {
+  const unsafeRequest = enforceWriteRequestSafety(request, 16 * 1024);
+
+  if (unsafeRequest) {
+    return unsafeRequest;
+  }
+
   if (
     !isValidMaintainerSessionValue(
       request.cookies.get(maintainerSessionCookieName)?.value,

@@ -27,6 +27,7 @@ import {
   listTopicChatMessages,
 } from "@/app/lib/topic-chat-store";
 import type { TopicChatPromotion } from "@/app/lib/topic-chat-types";
+import { enforceWriteRequestSafety } from "@/app/lib/request-security";
 import { throttleRequest } from "@/app/lib/request-throttle";
 
 export const runtime = "nodejs";
@@ -201,6 +202,12 @@ async function promoteAnswerToRecord(args: {
 }
 
 export async function POST(request: NextRequest) {
+  const unsafeRequest = enforceWriteRequestSafety(request, 16 * 1024);
+
+  if (unsafeRequest) {
+    return unsafeRequest;
+  }
+
   const throttled = throttleRequest(request, {
     bucket: "topic-ai",
     limit: 24,

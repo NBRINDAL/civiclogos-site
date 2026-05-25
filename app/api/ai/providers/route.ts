@@ -11,6 +11,7 @@ import {
   isValidMaintainerSessionValue,
   maintainerSessionCookieName,
 } from "@/app/lib/maintainer-auth";
+import { enforceWriteRequestSafety } from "@/app/lib/request-security";
 import { throttleRequest } from "@/app/lib/request-throttle";
 
 export const runtime = "nodejs";
@@ -52,6 +53,12 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
+  const unsafeRequest = enforceWriteRequestSafety(request, 2 * 1024);
+
+  if (unsafeRequest) {
+    return unsafeRequest;
+  }
+
   if (
     !isValidMaintainerSessionValue(
       request.cookies.get(maintainerSessionCookieName)?.value,

@@ -22,6 +22,7 @@ import {
 import { createEvidenceDocument } from "@/app/lib/evidence-document-store";
 import { isAllowedEvidenceUpload } from "@/app/lib/evidence-upload-safety";
 import { sendContributionSubmittedNotification } from "@/app/lib/maintainer-notifications";
+import { enforceWriteRequestSafety } from "@/app/lib/request-security";
 import { throttleRequest } from "@/app/lib/request-throttle";
 import { normalizeDebateLane } from "@/app/lib/reasoning-types";
 
@@ -190,6 +191,12 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
+  const unsafeRequest = enforceWriteRequestSafety(request, 9 * 1024 * 1024);
+
+  if (unsafeRequest) {
+    return unsafeRequest;
+  }
+
   const throttled = throttleRequest(request, {
     bucket: "contribution-submit",
     limit: 12,

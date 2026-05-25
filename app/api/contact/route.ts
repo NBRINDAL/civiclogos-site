@@ -1,6 +1,7 @@
 import nodemailer from "nodemailer";
 import { NextRequest, NextResponse } from "next/server";
 import { throttleRequest } from "@/app/lib/request-throttle";
+import { enforceWriteRequestSafety } from "@/app/lib/request-security";
 
 export const runtime = "nodejs";
 
@@ -51,6 +52,12 @@ const institutionalBudgetOptions = new Set([
 ]);
 
 export async function POST(request: NextRequest) {
+  const unsafeRequest = enforceWriteRequestSafety(request, 32 * 1024);
+
+  if (unsafeRequest) {
+    return unsafeRequest;
+  }
+
   const throttled = throttleRequest(request, {
     bucket: "contact",
     limit: 6,
