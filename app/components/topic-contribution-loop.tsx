@@ -428,14 +428,30 @@ function getContributionBodyPlaceholder(lane: DebateLane | "") {
   }
 }
 
-function getContributionCue(lane: DebateLane | "") {
+function getContributionCue({
+  lane,
+  roomSlug,
+  topicId,
+}: {
+  lane: DebateLane | "";
+  roomSlug: IssueRoomSlug;
+  topicId: string;
+}) {
+  const isHealthcareTopic = roomSlug === "healthcare" && topicId === "topic-001";
+  const isPhysicsFoundationsTopic =
+    roomSlug === "physics-foundations" && topicId === "topic-001";
+
   switch (lane) {
     case "objection":
       return {
         title: "A useful objection pressures one claim.",
         useful:
           "Name the claim that overreaches, then explain the failure mode clearly enough that a reviewer can attach it to the card.",
-        target: "Best target: savings claims, AI-triage safety, provider burden, or price-power assumptions.",
+        target: isHealthcareTopic
+          ? "Best target: savings claims, AI-triage safety, provider burden, or price-power assumptions."
+          : isPhysicsFoundationsTopic
+            ? "Best target: overinterpreting Planck units, conflating notation with physics, empirical reach, or reformulation review standards."
+            : "Best target: one claim, assumption, definition, evidence gap, or review standard that the card currently depends on.",
         avoid:
           "Avoid broad ideological rejection unless it identifies a specific card claim that should change.",
       };
@@ -444,7 +460,11 @@ function getContributionCue(lane: DebateLane | "") {
         title: "A useful evidence source changes confidence.",
         useful:
           "Summarize what the source shows, whether it supports or challenges the card, and where it should attach.",
-        target: "Best target: administrative overhead, transition cost, patient routing, or clinical escalation evidence.",
+        target: isHealthcareTopic
+          ? "Best target: administrative overhead, transition cost, patient routing, or clinical escalation evidence."
+          : isPhysicsFoundationsTopic
+            ? "Best target: standard Planck-unit definitions, empirical tests of quantum theory or general relativity, measurement limits, or quantum-gravity open problems."
+            : "Best target: a source that supports, narrows, or challenges one visible claim on the card.",
         avoid: "Avoid dumping a link without saying what the room should learn from it.",
       };
     case "correction":
@@ -452,7 +472,11 @@ function getContributionCue(lane: DebateLane | "") {
         title: "A useful correction is precise.",
         useful:
           "Point to the exact factual, numerical, definitional, or citation problem and propose a replacement.",
-        target: "Best target: overstated savings, unclear definitions, incorrect source framing, or missing caveats.",
+        target: isHealthcareTopic
+          ? "Best target: overstated savings, unclear definitions, incorrect source framing, or missing caveats."
+          : isPhysicsFoundationsTopic
+            ? "Best target: numerical Planck scales, definitions of hbar, G, and c, tested-domain claims, or speculation labels."
+            : "Best target: a factual, numeric, definitional, citation, or scope issue that can be corrected without rewriting the whole card.",
         avoid: "Avoid rewriting the whole card; isolate the smallest fix that improves accuracy.",
       };
     case "implementation-concern":
@@ -460,7 +484,11 @@ function getContributionCue(lane: DebateLane | "") {
         title: "A useful implementation concern names the blocker.",
         useful:
           "Describe the practical constraint that would stop the proposal from working in a real institution.",
-        target: "Best target: workflow adoption, liability, procurement, rural access, staffing, or interoperability.",
+        target: isHealthcareTopic
+          ? "Best target: workflow adoption, liability, procurement, rural access, staffing, or interoperability."
+          : isPhysicsFoundationsTopic
+            ? "Best target: reviewer expertise, math accessibility, evidence standards, or whether a reformulation changes notation, assumptions, predictions, or empirical commitments."
+            : "Best target: a practical review, implementation, governance, expertise, or adoption constraint.",
         avoid: "Avoid saying it is hard without naming the mechanism that makes it hard.",
       };
     case "economic-assumption-challenge":
@@ -468,7 +496,11 @@ function getContributionCue(lane: DebateLane | "") {
         title: "A useful economic challenge tests the math.",
         useful:
           "Name the cost, savings, incentive, or transition assumption that needs stronger evidence.",
-        target: "Best target: gross savings versus net savings, transition cost, redirection of savings, or payer incentives.",
+        target: isHealthcareTopic
+          ? "Best target: gross savings versus net savings, transition cost, redirection of savings, or payer incentives."
+          : isPhysicsFoundationsTopic
+            ? "Best target: review cost, expert time, educational value, public-understanding value, or the cost of evaluating technical evidence well."
+            : "Best target: a cost, incentive, resource, or public-value assumption that should be easier to test.",
         avoid: "Avoid generic cost skepticism unless it identifies the assumption that should be revised.",
       };
     case "nuance":
@@ -476,7 +508,11 @@ function getContributionCue(lane: DebateLane | "") {
         title: "A useful nuance adds a condition.",
         useful:
           "Explain when the card is right, when it fails, and what condition should be made visible.",
-        target: "Best target: edge cases, patient safety, provider capacity, trust, or governance conditions.",
+        target: isHealthcareTopic
+          ? "Best target: edge cases, patient safety, provider capacity, trust, or governance conditions."
+          : isPhysicsFoundationsTopic
+            ? "Best target: definition versus interpretation, model versus prediction, standard result versus speculative extension, or unit-basis choices."
+            : "Best target: a condition, boundary, distinction, or tradeoff that makes the current card more accurate.",
         avoid: "Avoid adding complexity that does not change how a reader should understand the card.",
       };
     default:
@@ -485,7 +521,11 @@ function getContributionCue(lane: DebateLane | "") {
         useful:
           "Choose a lane, make one clear point, and name what part of the card it should pressure or improve.",
         target: "Best target: objection, evidence, correction, implementation concern, or economic assumption.",
-        avoid: "Avoid trying to settle the whole healthcare debate in one contribution.",
+        avoid: isHealthcareTopic
+          ? "Avoid trying to settle the whole healthcare debate in one contribution."
+          : isPhysicsFoundationsTopic
+            ? "Avoid trying to settle quantum gravity, standard physics, or an alternative framework in one contribution."
+            : "Avoid trying to settle the whole topic in one contribution.",
       };
   }
 }
@@ -512,6 +552,23 @@ function getContributionExampleMoves({
       {
         label: "Precise correction",
         body: "AI-assisted triage should distinguish routing support from clinical judgment, denial decisions, or diagnosis.",
+      },
+    ];
+  }
+
+  if (roomSlug === "physics-foundations" && topicId === "topic-001") {
+    return [
+      {
+        label: "Strong objection",
+        body: "Name where the baseline overstates what Planck units imply, or where it undernames a standard unresolved issue.",
+      },
+      {
+        label: "Evidence source",
+        body: "Add one source for a Planck-unit definition, an empirical test of QM/GR, or a known quantum-gravity tension.",
+      },
+      {
+        label: "Precise correction",
+        body: "Correct one definition, scale, equation framing, or speculation label without endorsing an alternative theory.",
       },
     ];
   }
@@ -596,6 +653,69 @@ function getContributionStarterKits({
           "Suggested attachment: synthesis / assumption.",
         ].join("\n"),
         note: "Useful if the card is currently too broad about what AI should do before human escalation.",
+      },
+    ];
+  }
+
+  if (roomSlug === "physics-foundations" && topicId === "topic-001") {
+    return [
+      {
+        lane: "nuance",
+        label: "Separate notation from physics",
+        title: "Distinguish an equivalent reformulation from a new physical claim",
+        body: [
+          "Claim pressured:",
+          "- The card should distinguish algebraically equivalent notation from changed assumptions, predictions, or empirical commitments.",
+          "",
+          "Concrete example or reformulation:",
+          "- ",
+          "",
+          "What stays equivalent, if anything:",
+          "- ",
+          "",
+          "What would become a new physical claim, if anything:",
+          "- ",
+          "",
+          "Suggested attachment: nuance / assumption.",
+        ].join("\n"),
+        note: "Best when a reformulation may be useful but should not be mistaken for evidence by itself.",
+      },
+      {
+        lane: "evidence",
+        label: "Add a standard source",
+        title: "Source for standard definitions, tested domains, or open incompatibilities",
+        body: [
+          "Source claim:",
+          "- ",
+          "",
+          "What the source establishes:",
+          "- Definition / empirical test / unresolved problem.",
+          "",
+          "How it should affect the card:",
+          "- It supports the baseline / narrows the baseline / adds an unresolved question.",
+          "",
+          "Suggested attachment: evidence.",
+        ].join("\n"),
+        evidenceLabel: "Physics foundations source",
+        note: "Useful sources should say whether they establish a definition, test a domain, or name an unresolved problem.",
+      },
+      {
+        lane: "correction",
+        label: "Correct a definition",
+        title: "Correction to a Planck-unit, quantum-theory, or relativity definition",
+        body: [
+          "Exact issue:",
+          "- ",
+          "",
+          "Replacement or narrowing language:",
+          "- ",
+          "",
+          "Why this improves the public record:",
+          "- ",
+          "",
+          "Suggested attachment: definition / correction.",
+        ].join("\n"),
+        note: "Best for small math, terminology, scope, or citation fixes.",
       },
     ];
   }
@@ -1565,8 +1685,13 @@ export default function TopicContributionLoop({
     [selectedContributionLane],
   );
   const contributionCue = useMemo(
-    () => getContributionCue(selectedContributionLane),
-    [selectedContributionLane],
+    () =>
+      getContributionCue({
+        lane: selectedContributionLane,
+        roomSlug,
+        topicId,
+      }),
+    [roomSlug, selectedContributionLane, topicId],
   );
   const contributionExampleMoves = useMemo(
     () => getContributionExampleMoves({ roomSlug, topicId, topicTitle }),
