@@ -10,6 +10,10 @@ import {
   getReviewChatStoreMetadata,
   listReviewChatMessages,
 } from "@/app/lib/review-chat-store";
+import {
+  getReviewEvidenceStoreMetadata,
+  listReviewEvidenceRecords,
+} from "@/app/lib/review-evidence-store";
 import { getContributionCountSummary } from "@/app/lib/contribution-counts";
 import {
   getActualCardChangeLabel,
@@ -31,9 +35,11 @@ import {
 import {
   createFounderMaintainerRevision,
   reprocessContributionEvidenceDocument,
+  reprocessReviewerEvidenceDocument,
   retryContributionAiIntake,
   updateContributionEvidenceExcerpt,
   updateContributionReview,
+  uploadReviewerEvidence,
 } from "./actions";
 import PublicRecordConfirmationPreview from "./public-record-confirmation-preview";
 import ReviewAiConsult from "./review-ai-consult";
@@ -293,7 +299,7 @@ export default async function ContributionReviewPage({
     scopedRoomSlug && scopedTopicId
       ? `assignment-targets-${scopedRoomSlug}-${scopedTopicId}`
       : "assignment-targets-generic";
-  const [contributions, metadata, reviewChatStore] = await Promise.all([
+  const [contributions, metadata, reviewChatStore, reviewEvidenceStore] = await Promise.all([
     listAllContributions({
       roomSlug: scopedRoomSlug,
       topicId: scopedTopicId,
@@ -303,17 +309,30 @@ export default async function ContributionReviewPage({
     }),
     getContributionStoreMetadata(),
     getReviewChatStoreMetadata(),
+    getReviewEvidenceStoreMetadata(),
   ]);
-  const reviewChatEntries = await Promise.all(
-    contributions.map(async (item) => [
-      item.id,
-      await listReviewChatMessages({
-        contributionId: item.id,
-        limit: 40,
-      }),
-    ] as const),
-  );
+  const [reviewChatEntries, reviewEvidenceEntries] = await Promise.all([
+    Promise.all(
+      contributions.map(async (item) => [
+        item.id,
+        await listReviewChatMessages({
+          contributionId: item.id,
+          limit: 40,
+        }),
+      ] as const),
+    ),
+    Promise.all(
+      contributions.map(async (item) => [
+        item.id,
+        await listReviewEvidenceRecords({
+          contributionId: item.id,
+          limit: 20,
+        }),
+      ] as const),
+    ),
+  ]);
   const reviewChatByContributionId = new Map(reviewChatEntries);
+  const reviewEvidenceByContributionId = new Map(reviewEvidenceEntries);
   const topicTotalContributions = await listAllContributions({
     roomSlug: scopedRoomSlug,
     topicId: scopedTopicId,
@@ -897,6 +916,8 @@ export default async function ContributionReviewPage({
                 item.author.expertise,
               ].filter(Boolean);
               const hasPrivateFollowUpEmail = Boolean(item.author.email);
+              const reviewerEvidenceRecords =
+                reviewEvidenceByContributionId.get(item.id) ?? [];
 
               return (
                 <article
@@ -1247,6 +1268,151 @@ export default async function ContributionReviewPage({
                     </div>
                   ) : null}
                 </div>
+
+                <section className={styles.reviewerEvidencePanel}>
+                  <div>
+                    <span className={styles.eyebrow}>Reviewer evidence docket</span>
+                    <h3>Attach papers used during review.</h3>
+                    <p>
+                      These documents are reviewer-supplied context, not contributor
+                      evidence and not a card change. Reviewer AI chat receives them
+                      with this contribution so the discussion can compare sources
+                      without mixing provenance.
+                    </p>
+                    <p className={styles.prefillNote}>{reviewEvidenceStore.note}</p>
+                  </div>
+
+                  {reviewerEvidenceRecords.length ? (
+                    <div className={styles.reviewerEvidenceList}>
+                      {reviewerEvidenceRecords.map((record) => (
+                        <article className={styles.providerCard} key={record.id}>
+                          <strong>{record.label}</strong>
+                          <p>
+                            Reviewer source · {record.visibility === "publicly-cited"
+                              ? "publicly cited if used in decision"
+                              : "review-only context"}{" "}
+                            · {record.reviewerLabel} ·{" "}
+                            {new Date(record.createdAt).toLocaleString("en-US", {
+                              dateStyle: "medium",
+                              timeStyle: "short",
+                            })}
+                          </p>
+                          <p>
+                            <a
+                              className={styles.evidenceLink}
+                              href={record.document.downloadHref}
+                              rel="noreferrer"
+                              target="_blank"
+                            >
+                              Open reviewer paper
+                            </a>{" "}
+                            {record.document.fileName} · {record.document.mimeType} ·{" "}
+                            {Math.max(record.document.sizeBytes / 1024, 1).toFixed(1)} KB
+                          </p>
+                          <p>
+                            Extraction: {record.document.extraction.status}
+                            {record.document.extraction.pageCount
+                              ? ` · ${record.document.extraction.pageCount} pages`
+                              : ""}
+                            {record.document.extraction.wordCount
+                              ? ` · ${record.document.extraction.wordCount} words`
+                              : ""}
+                          </p>
+                          {record.document.extraction.note ? (
+                            <p>{record.document.extraction.note}</p>
+                          ) : null}
+                          {record.note ? <p>{record.note}</p> : null}
+                          {record.document.extraction.excerpt ? (
+                            <p>{record.document.extraction.excerpt}</p>
+                          ) : null}
+                          {record.document.extraction.status !== "completed" ? (
+                            <form
+                              action={reprocessReviewerEvidenceDocument}
+                              className={styles.inlineActionForm}
+                            >
+                              <input name="id" type="hidden" value={item.id} />
+                              <input
+                                name="reviewEvidenceRecordId"
+                                type="hidden"
+                                value={record.id}
+                              />
+                              <input name="roomSlug" type="hidden" value={item.roomSlug} />
+                              <input name="topicId" type="hidden" value={item.topicId} />
+                              <button className={styles.submitButton} type="submit">
+                                Reprocess reviewer PDF text
+                              </button>
+                            </form>
+                          ) : null}
+                        </article>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className={styles.reviewChatEmpty}>
+                      <strong>No reviewer evidence attached yet.</strong>
+                      <p>
+                        Upload a reference paper, competing source, or reviewer-check
+                        document before asking the AIs to compare evidence.
+                      </p>
+                    </div>
+                  )}
+
+                  <form
+                    action={uploadReviewerEvidence}
+                    className={styles.accessibleEvidenceForm}
+                  >
+                    <input name="id" type="hidden" value={item.id} />
+                    <input name="roomSlug" type="hidden" value={item.roomSlug} />
+                    <input name="topicId" type="hidden" value={item.topicId} />
+                    <div className={styles.reviewFields}>
+                      <label className={styles.field}>
+                        <span>Reviewer evidence label</span>
+                        <input
+                          name="reviewEvidenceLabel"
+                          placeholder="Example: Planck-unit reference or comparison paper"
+                        />
+                      </label>
+                      <label className={styles.field}>
+                        <span>Reviewer label</span>
+                        <input
+                          defaultValue="Civic Logos maintainer review"
+                          name="reviewEvidenceReviewer"
+                        />
+                      </label>
+                      <label className={styles.field}>
+                        <span>Visibility</span>
+                        <select defaultValue="review-only" name="reviewEvidenceVisibility">
+                          <option value="review-only">Review-only context</option>
+                          <option value="publicly-cited">
+                            Publicly cite if relied on
+                          </option>
+                        </select>
+                      </label>
+                    </div>
+                    <label className={styles.field}>
+                      <span>Why this paper matters to the review</span>
+                      <textarea
+                        name="reviewEvidenceNote"
+                        placeholder="Briefly say what this source should help check. Example: compare the paper's Planck-unit identities against a standard reference."
+                      />
+                    </label>
+                    <label className={styles.field}>
+                      <span>Upload reviewer paper</span>
+                      <input
+                        accept=".pdf,.txt,.md,text/plain,application/pdf"
+                        name="reviewEvidenceFile"
+                        type="file"
+                      />
+                    </label>
+                    <button className={styles.submitButton} type="submit">
+                      Attach reviewer evidence
+                    </button>
+                    <p className={styles.prefillNote}>
+                      Reviewer evidence becomes available to the reviewer AI chat,
+                      but it does not alter review state, contribution status, or the
+                      visible topic card unless the human review decision cites it.
+                    </p>
+                  </form>
+                </section>
 
                 <ReviewAiConsult
                   contributionId={item.id}

@@ -214,7 +214,8 @@ export default function ReviewAiConsult({
           Use this as a contribution-scoped review conversation for{" "}
           <strong>{contributionTitle}</strong>. The discussion can later be
           synthesized into draft review language, but it still cannot publish a
-          record or change the card by itself.
+          record or change the card by itself. Contributor evidence and any
+          reviewer evidence docket papers are passed as separate sources.
         </p>
         <p className={styles.prefillNote}>
           {getStoreStatus(storeMetadata)}

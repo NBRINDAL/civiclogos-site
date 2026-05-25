@@ -17,9 +17,18 @@ import {
   updateContributionEvidenceDocument,
   updateContributionEvidenceExcerpt as persistContributionEvidenceExcerpt,
 } from "@/app/lib/contribution-store";
-import { refreshEvidenceDocumentExtraction } from "@/app/lib/evidence-document-store";
+import {
+  createEvidenceDocument,
+  refreshEvidenceDocumentExtraction,
+} from "@/app/lib/evidence-document-store";
 import { getContributionOrigin } from "@/app/lib/contribution-origin";
 import { toPublicContributionRecord } from "@/app/lib/contribution-types";
+import {
+  createReviewEvidenceRecord,
+  getReviewEvidenceRecord,
+  updateReviewEvidenceDocument,
+} from "@/app/lib/review-evidence-store";
+import { normalizeReviewEvidenceVisibility } from "@/app/lib/review-evidence-types";
 import {
   sendContributionReviewedNotification,
   sendContributionSubmittedNotification,
@@ -38,6 +47,14 @@ import {
 
 function isRoomSlug(value: string): value is IssueRoomSlug {
   return value in issueRooms;
+}
+
+function asUploadFile(value: FormDataEntryValue | null) {
+  if (!value || typeof value === "string" || !value.size) {
+    return null;
+  }
+
+  return value;
 }
 
 export async function updateContributionReview(formData: FormData) {
@@ -228,6 +245,98 @@ export async function updateContributionReview(formData: FormData) {
 
   if (reviewedContribution) {
     void sendContributionReviewedNotification(reviewedContribution);
+  }
+
+  revalidatePath("/review/contributions");
+
+  if (isRoomSlug(roomSlugRaw) && topicId) {
+    revalidatePath(getRoomHref(roomSlugRaw));
+    revalidatePath(getRoomTopicHref(roomSlugRaw, topicId));
+  }
+}
+
+export async function uploadReviewerEvidence(formData: FormData) {
+  const id = String(formData.get("id") ?? "").trim();
+  const roomSlugRaw = String(formData.get("roomSlug") ?? "").trim();
+  const topicId = String(formData.get("topicId") ?? "").trim();
+  const label = String(formData.get("reviewEvidenceLabel") ?? "")
+    .trim()
+    .slice(0, 180);
+  const reviewerLabel = String(formData.get("reviewEvidenceReviewer") ?? "")
+    .trim()
+    .slice(0, 120);
+  const note = String(formData.get("reviewEvidenceNote") ?? "")
+    .trim()
+    .slice(0, 900);
+  const visibility = normalizeReviewEvidenceVisibility(
+    formData.get("reviewEvidenceVisibility"),
+  );
+  const upload = asUploadFile(formData.get("reviewEvidenceFile"));
+
+  if (!id || !upload || !isRoomSlug(roomSlugRaw) || !topicId) {
+    return;
+  }
+
+  if (upload.size > 8 * 1024 * 1024) {
+    return;
+  }
+
+  const contribution = await getContributionById(id);
+  const topicCard = getRoomTopicCard(roomSlugRaw, topicId);
+
+  if (
+    !contribution ||
+    !topicCard ||
+    contribution.roomSlug !== roomSlugRaw ||
+    contribution.topicId !== topicId
+  ) {
+    return;
+  }
+
+  const evidenceDocument = await createEvidenceDocument({
+    roomSlug: roomSlugRaw,
+    topicId,
+    topicTitle: topicCard.title,
+    fileName: upload.name || "reviewer-evidence",
+    mimeType: upload.type || "application/octet-stream",
+    bytes: Buffer.from(await upload.arrayBuffer()),
+  });
+
+  await createReviewEvidenceRecord({
+    contributionId: id,
+    document: evidenceDocument,
+    label: label || evidenceDocument.fileName,
+    reviewerLabel: reviewerLabel || "Civic Logos maintainer review",
+    visibility,
+    note: note || undefined,
+    createdAt: new Date().toISOString(),
+  });
+
+  revalidatePath("/review/contributions");
+  revalidatePath(getRoomHref(roomSlugRaw));
+  revalidatePath(getRoomTopicHref(roomSlugRaw, topicId));
+}
+
+export async function reprocessReviewerEvidenceDocument(formData: FormData) {
+  const id = String(formData.get("id") ?? "").trim();
+  const recordId = String(formData.get("reviewEvidenceRecordId") ?? "").trim();
+  const roomSlugRaw = String(formData.get("roomSlug") ?? "").trim();
+  const topicId = String(formData.get("topicId") ?? "").trim();
+
+  if (!id || !recordId) {
+    return;
+  }
+
+  const record = await getReviewEvidenceRecord(recordId);
+
+  if (!record || record.contributionId !== id) {
+    return;
+  }
+
+  const refreshedDocument = await refreshEvidenceDocumentExtraction(record.document.id);
+
+  if (refreshedDocument) {
+    await updateReviewEvidenceDocument(record.id, refreshedDocument);
   }
 
   revalidatePath("/review/contributions");
