@@ -995,18 +995,38 @@ export default async function ContributionReviewPage({
                           Open hosted paper
                         </a>
                       </p>
-                      <p>
-                        Extraction status: {item.evidenceDocument.extraction.status}
-                        {item.evidenceDocument.extraction.pageCount
-                          ? ` · ${item.evidenceDocument.extraction.pageCount} pages`
-                          : ""}
-                        {item.evidenceDocument.extraction.wordCount
-                          ? ` · ${item.evidenceDocument.extraction.wordCount} words`
-                          : ""}
-                      </p>
-                      {item.evidenceDocument.extraction.note ? (
-                        <p>{item.evidenceDocument.extraction.note}</p>
-                      ) : null}
+                      <div className={styles.evidenceAccessGrid}>
+                        <div>
+                          <strong>Human evidence access</strong>
+                          <p>
+                            The hosted paper is available for reviewer reading from the
+                            site.
+                          </p>
+                        </div>
+                        <div>
+                          <strong>AI evidence access</strong>
+                          <p>
+                            Reviewer AI consults attach this PDF directly to the model
+                            request. The extraction cache below is useful, but it is not
+                            the authority on whether an AI can inspect the paper.
+                          </p>
+                        </div>
+                        <div>
+                          <strong>Text extraction cache</strong>
+                          <p>
+                            {item.evidenceDocument.extraction.status}
+                            {item.evidenceDocument.extraction.pageCount
+                              ? ` · ${item.evidenceDocument.extraction.pageCount} pages`
+                              : ""}
+                            {item.evidenceDocument.extraction.wordCount
+                              ? ` · ${item.evidenceDocument.extraction.wordCount} words`
+                              : ""}
+                          </p>
+                          {item.evidenceDocument.extraction.note ? (
+                            <p>{item.evidenceDocument.extraction.note}</p>
+                          ) : null}
+                        </div>
+                      </div>
                       {item.evidenceDocument.extraction.excerpt ? (
                         <p>{item.evidenceDocument.extraction.excerpt}</p>
                       ) : null}

@@ -587,7 +587,8 @@
 }
 
 .accessibleEvidence,
-.accessibleEvidenceForm {
+.accessibleEvidenceForm,
+.evidenceAccessGrid {
   display: grid;
   gap: 12px;
   margin-top: 14px;
@@ -595,6 +596,24 @@
   border: 1px solid rgba(91, 110, 69, 0.18);
   border-radius: 20px;
   background: rgba(91, 110, 69, 0.08);
+}
+
+.evidenceAccessGrid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  background: rgba(42, 65, 102, 0.06);
+}
+
+.evidenceAccessGrid div {
+  display: grid;
+  gap: 8px;
+  padding: 14px;
+  border: 1px solid rgba(18, 33, 39, 0.08);
+  border-radius: 16px;
+  background: rgba(255, 251, 245, 0.78);
+}
+
+.evidenceAccessGrid strong {
+  color: var(--foreground);
 }
 
 .accessibleEvidence strong {
@@ -751,6 +770,10 @@
   .topicSnapshotGrid,
   .laneGuidanceGrid,
   .attachmentGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .evidenceAccessGrid {
     grid-template-columns: 1fr;
   }
 

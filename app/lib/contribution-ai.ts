@@ -15,6 +15,7 @@ type ContributionEvidenceFile = {
   mimeType: string;
   sizeBytes: number;
   base64: string;
+  fileUrl?: string;
 };
 
 type IntakeSchemaResult = {
@@ -33,6 +34,7 @@ type IntakeSchemaResult = {
 };
 
 type OpenAIResponse = {
+  output_text?: string;
   output?: Array<{
     type?: string;
     content?: Array<{
@@ -41,6 +43,14 @@ type OpenAIResponse = {
     }>;
   }>;
 };
+
+function getPublicSiteUrl() {
+  return (
+    process.env.NEXT_PUBLIC_SITE_URL?.trim() ||
+    (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "") ||
+    "https://www.civiclogos.com"
+  );
+}
 
 type AnthropicResponse = {
   content?: Array<{
@@ -140,6 +150,7 @@ async function loadContributionEvidenceFile(
     mimeType: storedDocument.document.mimeType,
     sizeBytes: storedDocument.document.sizeBytes,
     base64: Buffer.from(storedDocument.bytes).toString("base64"),
+    fileUrl: new URL(storedDocument.document.downloadHref, getPublicSiteUrl()).toString(),
   };
 }
 
@@ -161,10 +172,17 @@ function getContributionIntakeInstructions(input: CreateContributionInput) {
 function buildOpenAIIntakeContent(
   input: CreateContributionInput,
   evidenceFile?: ContributionEvidenceFile | null,
+  fileMode: "url" | "base64" | "none" = "url",
 ) {
   const content: Array<Record<string, string>> = [];
 
-  if (evidenceFile) {
+  if (evidenceFile && fileMode === "url" && evidenceFile.fileUrl) {
+    content.push({
+      type: "input_file",
+      filename: evidenceFile.fileName,
+      file_url: evidenceFile.fileUrl,
+    });
+  } else if (evidenceFile && fileMode === "base64") {
     content.push({
       type: "input_file",
       filename: evidenceFile.fileName,
@@ -230,19 +248,44 @@ function parseIntakeResult(result: IntakeSchemaResult) {
   };
 }
 
-function extractOpenAIText(response: OpenAIResponse) {
-  const parts =
-    response.output
-      ?.flatMap((item) =>
-        item.type === "message"
-          ? item.content?.flatMap((content) =>
-              content.type === "output_text" && content.text ? [content.text] : [],
-            ) ?? []
-          : [],
-      )
-      .filter(Boolean) ?? [];
+function collectTextValues(value: unknown): string[] {
+  if (!value || typeof value !== "object") {
+    return [];
+  }
 
-  return parts.join("");
+  if (Array.isArray(value)) {
+    return value.flatMap(collectTextValues);
+  }
+
+  return Object.entries(value).flatMap(([key, child]) => {
+    if ((key === "text" || key === "output_text") && typeof child === "string") {
+      return [child];
+    }
+
+    if (child && typeof child === "object") {
+      return collectTextValues(child);
+    }
+
+    return [];
+  });
+}
+
+function extractOpenAIText(response: OpenAIResponse) {
+  const directOutput = response.output_text ? [response.output_text] : [];
+  const messageOutput =
+    response.output?.flatMap((item) =>
+      item.type === "message"
+        ? item.content?.flatMap((content) =>
+            content.type === "output_text" && content.text ? [content.text] : [],
+          ) ?? []
+        : [],
+    ) ?? [];
+  const fallbackOutput = collectTextValues(response);
+
+  return [...directOutput, ...messageOutput, ...fallbackOutput]
+    .filter(Boolean)
+    .join("")
+    .trim();
 }
 
 function parseModelJsonText(text: string): IntakeSchemaResult {
@@ -274,19 +317,20 @@ async function classifyWithOpenAI(
   const model = config.model;
 
   try {
-    const buildFallbackRequest = () =>
+    const buildFallbackRequest = (fileMode: "url" | "base64" | "none") =>
       ({
         model,
         store: false,
-        max_output_tokens: 450,
+        max_output_tokens: 900,
         instructions: `${getContributionIntakeInstructions(input)} Return only JSON that matches this schema: ${JSON.stringify(intakeSchema)}`,
         input: [
           {
             role: "user",
-            content: buildOpenAIIntakeContent(input, evidenceFile),
+            content: buildOpenAIIntakeContent(input, evidenceFile, fileMode),
           },
         ],
       }) as const;
+    const initialMode = evidenceFile?.fileUrl ? "url" : evidenceFile ? "base64" : "none";
 
     const response = await fetch("https://api.openai.com/v1/responses", {
       method: "POST",
@@ -298,12 +342,12 @@ async function classifyWithOpenAI(
         model,
         store: false,
         temperature: 0.2,
-        max_output_tokens: 450,
+        max_output_tokens: 900,
         instructions: getContributionIntakeInstructions(input),
         input: [
           {
             role: "user",
-            content: buildOpenAIIntakeContent(input, evidenceFile),
+            content: buildOpenAIIntakeContent(input, evidenceFile, initialMode),
           },
         ],
         text: {
@@ -326,7 +370,9 @@ async function classifyWithOpenAI(
           "Content-Type": "application/json",
           Authorization: `Bearer ${apiKey}`,
         },
-        body: JSON.stringify(buildFallbackRequest()),
+        body: JSON.stringify(
+          buildFallbackRequest(initialMode === "url" && evidenceFile ? "base64" : "none"),
+        ),
       });
 
       if (!fallbackResponse.ok) {
@@ -363,12 +409,43 @@ async function classifyWithOpenAI(
     const payload = (await response.json()) as OpenAIResponse;
     const outputText = extractOpenAIText(payload);
 
+    if (!outputText && evidenceFile && initialMode !== "base64") {
+      const fallbackResponse = await fetch("https://api.openai.com/v1/responses", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${apiKey}`,
+        },
+        body: JSON.stringify(buildFallbackRequest("base64")),
+      });
+
+      if (fallbackResponse.ok) {
+        const fallbackPayload = (await fallbackResponse.json()) as OpenAIResponse;
+        const fallbackOutputText = extractOpenAIText(fallbackPayload);
+
+        if (fallbackOutputText) {
+          return {
+            provider: "openai",
+            state: "completed",
+            model,
+            ...parseIntakeResult(parseModelJsonText(fallbackOutputText)),
+          };
+        }
+      } else {
+        console.error(
+          "OpenAI contribution intake no-text fallback failed",
+          await fallbackResponse.text(),
+        );
+      }
+    }
+
     if (!outputText) {
       return {
         provider: "openai",
         state: "error",
         model,
-        errorMessage: "OpenAI intake returned no structured output.",
+        errorMessage:
+          "OpenAI intake returned no structured output. Claude or reviewer consult may still read the PDF.",
       };
     }
 
@@ -411,7 +488,7 @@ async function classifyWithAnthropic(
       },
       body: JSON.stringify({
         model,
-        max_tokens: 450,
+        max_tokens: 900,
         system: `${getContributionIntakeInstructions(input)} Return only JSON that matches the requested schema.`,
         messages: [
           {

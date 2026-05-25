@@ -46,9 +46,11 @@ type ReviewEvidenceFile = {
   mimeType: string;
   sizeBytes: number;
   base64: string;
+  fileUrl?: string;
 };
 
 type OpenAIResponse = {
+  output_text?: string;
   output?: Array<{
     type?: string;
     content?: Array<{
@@ -73,19 +75,44 @@ function isProvider(value: string): value is "openai" | "anthropic" | "all" {
   return value === "openai" || value === "anthropic" || value === "all";
 }
 
+function collectTextValues(value: unknown): string[] {
+  if (!value || typeof value !== "object") {
+    return [];
+  }
+
+  if (Array.isArray(value)) {
+    return value.flatMap(collectTextValues);
+  }
+
+  return Object.entries(value).flatMap(([key, child]) => {
+    if ((key === "text" || key === "output_text") && typeof child === "string") {
+      return [child];
+    }
+
+    if (child && typeof child === "object") {
+      return collectTextValues(child);
+    }
+
+    return [];
+  });
+}
+
 function extractOpenAIText(response: OpenAIResponse) {
-  return (
-    response.output
-      ?.flatMap((item) =>
-        item.type === "message"
-          ? item.content?.flatMap((content) =>
-              content.type === "output_text" && content.text ? [content.text] : [],
-            ) ?? []
-          : [],
-      )
-      .join("")
-      .trim() ?? ""
-  );
+  const directOutput = response.output_text ? [response.output_text] : [];
+  const messageOutput =
+    response.output?.flatMap((item) =>
+      item.type === "message"
+        ? item.content?.flatMap((content) =>
+            content.type === "output_text" && content.text ? [content.text] : [],
+          ) ?? []
+        : [],
+    ) ?? [];
+  const fallbackOutput = collectTextValues(response);
+
+  return [...directOutput, ...messageOutput, ...fallbackOutput]
+    .filter(Boolean)
+    .join("")
+    .trim();
 }
 
 function buildReviewContext({
@@ -217,6 +244,7 @@ async function loadReadableEvidenceTextForAi(
 
 async function loadEvidenceFileForAi(
   contribution: NonNullable<Awaited<ReturnType<typeof getContributionById>>>,
+  origin: string,
 ): Promise<ReviewEvidenceFile | null> {
   const evidenceDocument = contribution.evidenceDocument;
 
@@ -235,6 +263,7 @@ async function loadEvidenceFileForAi(
     mimeType: storedDocument.document.mimeType,
     sizeBytes: storedDocument.document.sizeBytes,
     base64: Buffer.from(storedDocument.bytes).toString("base64"),
+    fileUrl: new URL(storedDocument.document.downloadHref, origin).toString(),
   };
 }
 
@@ -267,14 +296,22 @@ function buildOpenAIReviewContent({
   context,
   question,
   evidenceFile,
+  fileMode = "url",
 }: {
   context: string;
   question: string;
   evidenceFile?: ReviewEvidenceFile | null;
+  fileMode?: "url" | "base64" | "none";
 }) {
   const content: Array<Record<string, string>> = [];
 
-  if (evidenceFile) {
+  if (evidenceFile && fileMode === "url" && evidenceFile.fileUrl) {
+    content.push({
+      type: "input_file",
+      filename: evidenceFile.fileName,
+      file_url: evidenceFile.fileUrl,
+    });
+  } else if (evidenceFile && fileMode === "base64") {
     content.push({
       type: "input_file",
       filename: evidenceFile.fileName,
@@ -342,43 +379,102 @@ async function askOpenAIReview({
   }
 
   try {
-    const response = await fetch("https://api.openai.com/v1/responses", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${apiKey}`,
-      },
-      body: JSON.stringify({
-        model,
-        store: false,
-        max_output_tokens: 850,
-        instructions: getReviewInstructions(),
-        input: [
-          {
-            role: "user",
-            content: buildOpenAIReviewContent({ context, question, evidenceFile }),
-          },
-        ],
-      }),
-    });
+    const callOpenAI = (fileMode: "url" | "base64" | "none") =>
+      fetch("https://api.openai.com/v1/responses", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${apiKey}`,
+        },
+        body: JSON.stringify({
+          model,
+          store: false,
+          max_output_tokens: 1200,
+          instructions: getReviewInstructions(),
+          input: [
+            {
+              role: "user",
+              content: buildOpenAIReviewContent({
+                context,
+                question,
+                evidenceFile,
+                fileMode,
+              }),
+            },
+          ],
+        }),
+      });
+    const initialMode = evidenceFile?.fileUrl ? "url" : evidenceFile ? "base64" : "none";
+    const response = await callOpenAI(initialMode);
 
     if (!response.ok) {
-      console.error("OpenAI reviewer consult failed", await response.text());
+      const errorText = await response.text();
+      console.error("OpenAI reviewer consult failed", errorText);
+      const retryMode = initialMode === "url" && evidenceFile ? "base64" : "none";
+      const retryResponse = await callOpenAI(retryMode);
+
+      if (!retryResponse.ok) {
+        console.error("OpenAI reviewer consult fallback failed", await retryResponse.text());
+
+        return {
+          provider: "openai",
+          model,
+          message: "OpenAI reviewer consult failed. Claude can still be used for PDF-aware review.",
+        };
+      }
+
+      const retryPayload = (await retryResponse.json()) as OpenAIResponse;
+      const retryText = extractOpenAIText(retryPayload);
+
+      if (retryText) {
+        return {
+          provider: "openai",
+          model,
+          response: retryText,
+          generatedAt: new Date().toISOString(),
+        };
+      }
+
       return {
         provider: "openai",
         model,
-        message: "OpenAI reviewer consult failed.",
+        message:
+          "OpenAI reviewer consult returned no text after retry. Claude can still be used for PDF-aware review.",
       };
     }
 
     const payload = (await response.json()) as OpenAIResponse;
     const responseText = extractOpenAIText(payload);
 
+    if (!responseText && evidenceFile && initialMode !== "base64") {
+      const retryResponse = await callOpenAI("base64");
+
+      if (retryResponse.ok) {
+        const retryPayload = (await retryResponse.json()) as OpenAIResponse;
+        const retryText = extractOpenAIText(retryPayload);
+
+        if (retryText) {
+          return {
+            provider: "openai",
+            model,
+            response: retryText,
+            generatedAt: new Date().toISOString(),
+          };
+        }
+      } else {
+        console.error(
+          "OpenAI reviewer consult no-text fallback failed",
+          await retryResponse.text(),
+        );
+      }
+    }
+
     if (!responseText) {
       return {
         provider: "openai",
         model,
-        message: "OpenAI reviewer consult returned no text.",
+        message:
+          "OpenAI reviewer consult returned no text. Claude can still be used for PDF-aware review.",
       };
     }
 
@@ -429,7 +525,7 @@ async function askAnthropicReview({
       },
       body: JSON.stringify({
         model,
-        max_tokens: 850,
+        max_tokens: 1200,
         system: getReviewInstructions(),
         messages: [
           {
@@ -533,7 +629,10 @@ export async function POST(request: NextRequest) {
 
   contribution = await refreshReadableEvidenceIfNeeded(contribution);
   const readableEvidenceText = await loadReadableEvidenceTextForAi(contribution);
-  const evidenceFile = await loadEvidenceFileForAi(contribution);
+  const evidenceFile = await loadEvidenceFileForAi(
+    contribution,
+    request.nextUrl.origin,
+  );
 
   const context = buildReviewContext({
     contribution,
