@@ -30,6 +30,8 @@ import type { ReviewEvidenceRecord } from "@/app/lib/review-evidence-types";
 
 export const runtime = "nodejs";
 
+const reviewAnswerTokenBudget = 2800;
+
 type ReviewAiPayload = {
   contributionId?: unknown;
   provider?: unknown;
@@ -372,6 +374,7 @@ function getReviewInstructions() {
     "If evidence PDFs are attached, inspect them directly before saying a paper is unavailable.",
     "If no attached PDF and no readable document text are available, say that clearly and reason only from the visible contribution metadata.",
     "Do not recommend changing the visible synthesis unless you can name the exact claim that would change and what remains unresolved.",
+    "Give complete answers. If the review is complex, prioritize the most important checks rather than ending mid-sentence.",
     "Give concrete review guidance: likely attachment target, what to check next, and a cautious public note if useful.",
   ].join(" ");
 }
@@ -561,7 +564,7 @@ async function askOpenAIReview({
         body: JSON.stringify({
           model,
           store: false,
-          max_output_tokens: 1200,
+          max_output_tokens: reviewAnswerTokenBudget,
           instructions: getReviewInstructions(),
           input: [
             {
@@ -708,7 +711,7 @@ async function askAnthropicReview({
       },
       body: JSON.stringify({
         model,
-        max_tokens: 1200,
+        max_tokens: reviewAnswerTokenBudget,
         system: getReviewInstructions(),
         messages: [
           {
