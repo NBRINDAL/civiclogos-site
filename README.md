@@ -1,10 +1,20 @@
-# Civic Logos Site
+# Civic Logos Reasoning Ledger
 
-Phase 1 landing site for Civic Logos, built with Next.js and designed to communicate the project's core thesis:
+Civic Logos is a public reasoning platform for living ideas. This repository now
+contains both the live Next.js prototype and the Civic Logos Reasoning Ledger
+protocol work:
 
-- Civic Logos is a public reasoning platform for living ideas.
-- The platform is built around ideas, not posts.
-- Phase 1 is a clear public launch page, not the full product.
+- `spec/` defines the open protocol for claims, contributions, AI-reader notes,
+  human review decisions, attachment targets, and revision events.
+- `schema/` contains JSON schemas a third party can implement or validate.
+- `examples/` includes the canonical healthcare founder-maintainer synthesis
+  narrowing fixture.
+- The live site surfaces the same ledger concepts through room/topic cards,
+  contribution review, visible revision history, and protocol-shaped exports.
+
+The core invariant is that AI assists the record, while human review moves the
+record. A public synthesis should not change without an inspectable review
+decision, before/after synthesis snapshots, and a revision event.
 
 ## Local development
 
@@ -29,23 +39,21 @@ The site is intended to deploy on Vercel and attach to:
 - `www.civiclogos.com`
 - `civiclogos.com`
 
-## Phase 1 notes
+## Current prototype notes
 
 The current site includes:
 
 - mission-led homepage copy
-- concise manifesto section
 - core distinctions for the platform
 - healthcare issue room with an initial working topic card
 - prototype contribution loop on the healthcare administrative simplification topic card
+- live founder-maintainer revision trace on the healthcare topic card
 - governance room with a first card on subsidiarity and authority allocation
 - housing room with a first card on abundance and zoning reform
 - AI and civilizational impact room with its first working topic card
 - institutional trust room with a first card on public review stakes
 - seeded room library for governance, housing, AI/labor, and institutional trust
 - early-access contact calls to action
-
-The next likely upgrade is wiring a real email signup provider such as Buttondown, Formspree, or ConvertKit.
 
 ## Contact form delivery
 

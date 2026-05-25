@@ -11,6 +11,11 @@ import {
   createDatabaseContributionStore,
   isDatabaseContributionStoreConfigured,
 } from "./database-contribution-store";
+import {
+  getCanonicalContributionById,
+  mergeCanonicalAllContributions,
+  mergeCanonicalPublicContributions,
+} from "./canonical-ledger-records";
 
 type ListContributionFilters = {
   roomSlug?: IssueRoomSlug;
@@ -109,14 +114,36 @@ export async function getContributionStoreMetadata() {
 }
 
 export async function listPublicContributions(filters: ListContributionFilters = {}) {
-  return withContributionStore((store) => store.listPublicContributions(filters));
+  const storeFilters = { ...filters };
+  delete storeFilters.limit;
+
+  return withContributionStore(async (store) =>
+    mergeCanonicalPublicContributions(
+      await store.listPublicContributions(storeFilters),
+      filters,
+    ),
+  );
 }
 
 export async function listAllContributions(filters: ListContributionFilters = {}) {
-  return withContributionStore((store) => store.listAllContributions(filters));
+  const storeFilters = { ...filters };
+  delete storeFilters.limit;
+
+  return withContributionStore(async (store) =>
+    mergeCanonicalAllContributions(
+      await store.listAllContributions(storeFilters),
+      filters,
+    ),
+  );
 }
 
 export async function getContributionById(id: string) {
+  const canonicalContribution = getCanonicalContributionById(id);
+
+  if (canonicalContribution) {
+    return canonicalContribution;
+  }
+
   return withContributionStore((store) => store.getContributionById(id));
 }
 

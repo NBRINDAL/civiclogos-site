@@ -4,6 +4,7 @@ type ContributionImpactInput = {
   };
   review?: {
     changedSynthesis?: boolean | null;
+    publicRecordSnapshot?: unknown | null;
   };
   status?: string | null;
 };
@@ -15,7 +16,8 @@ export function isFinalReviewStatus(status: string | null | undefined) {
 export function isActualCardChange(contribution: ContributionImpactInput) {
   return (
     contribution.review?.changedSynthesis === true &&
-    isFinalReviewStatus(contribution.status)
+    isFinalReviewStatus(contribution.status) &&
+    Boolean(contribution.review?.publicRecordSnapshot)
   );
 }
 
@@ -49,6 +51,13 @@ export function getActualCardChangeLabel(contribution: ContributionImpactInput) 
 
   if (isProposedCardChange(contribution)) {
     return "Proposed, awaiting accepted/incorporated review";
+  }
+
+  if (
+    contribution.review?.changedSynthesis === true &&
+    isFinalReviewStatus(contribution.status)
+  ) {
+    return "No live RevisionEvent yet";
   }
 
   if (

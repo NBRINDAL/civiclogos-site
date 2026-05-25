@@ -1,7 +1,7 @@
 {
   "schema_version": "civic-logos-reasoning-ledger-v0.1",
-  "fixture_status": "prototype_example_not_public_usage",
-  "description": "Canonical fixture for a founder-maintainer synthesis narrowing on healthcare topic-001. It models contribution -> AI-reader notes -> human review -> attachment targets -> before/after synthesis snapshots -> revision event.",
+  "fixture_status": "canonical_fixture_mirrored_by_live_public_record",
+  "description": "Canonical fixture for a founder-maintainer synthesis narrowing on healthcare topic-001. It models contribution -> AI-reader notes -> human review -> attachment targets -> before/after synthesis snapshots -> revision event, and the live healthcare ledger now mirrors this public-record change.",
   "actors": [
     {
       "actor_id": "actor:civic-logos-founder-maintainer",
@@ -91,7 +91,7 @@
       "snapshot_id": "snapshot:healthcare-topic-001:v0.2",
       "topic_id": "topic-001",
       "claim_id": "claim:healthcare-topic-001:administrative-simplification",
-      "synthesis_text": "Administrative simplification and AI-assisted triage remain plausible reform levers, but the card should not treat net savings, access gains, or clinician-time recovery as established until administrative-cost baselines, transition costs, savings-capture rules, human-escalation thresholds, and provider-time impacts are attached to evidence.",
+      "synthesis_text": "Administrative simplification and AI-assisted triage remain plausible healthcare reform levers, but the card should not treat net savings, access gains, or clinician-time recovery as established until administrative-cost baselines, transition costs, savings-capture rules, human-escalation thresholds, and provider-time impacts are attached to evidence.",
       "version_label": "v0.2",
       "created_at": "2026-05-24T00:10:00.000Z",
       "created_by_actor_id": "actor:human-reviewer-prototype",

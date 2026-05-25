@@ -397,7 +397,8 @@ function reviewDecisionForContribution(
   const actualCardChange = Boolean(revisionId);
 
   return {
-    review_decision_id: `review:${contribution.id}`,
+    review_decision_id:
+      review.publicRecordSnapshot?.humanReviewDecisionId ?? `review:${contribution.id}`,
     reviewer_id: reviewActorId(contribution),
     reviewer_label: review.reviewerLabel ?? "Civic Logos maintainer review",
     reviewer_disclosure_note:
@@ -436,6 +437,7 @@ function buildSnapshot({
   createdAt,
   createdByActorId,
   sourceRevisionEventId,
+  unresolvedItems,
 }: {
   snapshotId: string;
   card: TopicCardData;
@@ -444,6 +446,7 @@ function buildSnapshot({
   createdAt: string;
   createdByActorId: string;
   sourceRevisionEventId: string | null;
+  unresolvedItems?: string[];
 }) {
   return {
     snapshot_id: snapshotId,
@@ -460,7 +463,7 @@ function buildSnapshot({
       version_label: versionLabel,
       source_revision_event_id: sourceRevisionEventId,
     }),
-    unresolved_items: [...card.openQuestions],
+    unresolved_items: [...(unresolvedItems ?? card.openQuestions)],
   };
 }
 
@@ -483,12 +486,15 @@ function buildRevisionArtifacts(
         new Date(getReviewTimestamp(left)).getTime() -
         new Date(getReviewTimestamp(right)).getTime(),
     );
+  const firstChangedSnapshot = changedContributions[0]?.review?.publicRecordSnapshot;
   const synthesisSnapshots = [
     buildSnapshot({
-      snapshotId: `snapshot:${healthcareRoomSlug}:${card.id}:v0.1-base`,
+      snapshotId:
+        firstChangedSnapshot?.previousSynthesisSnapshotId ??
+        `snapshot:${healthcareRoomSlug}:${card.id}:v0.1-base`,
       card,
-      synthesisText: card.thesis,
-      versionLabel: "v0.1-base",
+      synthesisText: firstChangedSnapshot?.previousSynthesis ?? card.thesis,
+      versionLabel: firstChangedSnapshot?.previousSynthesisSnapshotId ? "v0.1" : "v0.1-base",
       createdAt: baseCreatedAt,
       createdByActorId: founderMaintainerActorId,
       sourceRevisionEventId: null,
@@ -518,9 +524,13 @@ function buildRevisionArtifacts(
     const snapshot = contribution.review?.publicRecordSnapshot;
     const versionLabel =
       snapshot?.versionLabel ?? `export-v0.${index + 2}`;
-    const revisionId = `revision:${contribution.id}`;
+    const revisionId = snapshot?.revisionEventId ?? `revision:${contribution.id}`;
+    const reviewDecisionId =
+      snapshot?.humanReviewDecisionId ?? `review:${contribution.id}`;
     const newSynthesis = snapshot?.newSynthesis ?? previousSnapshot.synthesis_text;
-    const newSnapshotId = `snapshot:${healthcareRoomSlug}:${card.id}:${protocolId(versionLabel)}:${protocolId(contribution.id)}`;
+    const newSnapshotId =
+      snapshot?.newSynthesisSnapshotId ??
+      `snapshot:${healthcareRoomSlug}:${card.id}:${protocolId(versionLabel)}:${protocolId(contribution.id)}`;
     const createdAt = getReviewTimestamp(contribution);
     const changedFields = snapshot?.affectedVisibleLayers?.length
       ? snapshot.affectedVisibleLayers.map((layer) =>
@@ -543,8 +553,9 @@ function buildRevisionArtifacts(
       synthesisText: newSynthesis,
       versionLabel,
       createdAt,
-      createdByActorId: contributionActorId(contribution),
+      createdByActorId: reviewActorId(contribution),
       sourceRevisionEventId: revisionId,
+      unresolvedItems: snapshot?.unresolvedAfterRevision,
     });
 
     synthesisSnapshots.push(nextSnapshot);
@@ -552,7 +563,8 @@ function buildRevisionArtifacts(
       revision_id: revisionId,
       topic_id: card.id,
       triggering_record_id: contribution.id,
-      previous_synthesis_snapshot_id: previousSnapshot.snapshot_id,
+      previous_synthesis_snapshot_id:
+        snapshot?.previousSynthesisSnapshotId ?? previousSnapshot.snapshot_id,
       new_synthesis_snapshot_id: nextSnapshot.snapshot_id,
       changed_fields: [...new Set(changedFields)],
       reason_for_change:
@@ -563,7 +575,7 @@ function buildRevisionArtifacts(
         contribution.review?.reviewerNote ??
         contribution.review?.publicRecordNote ??
         "No reviewer note was recorded.",
-      review_decision_id: `review:${contribution.id}`,
+      review_decision_id: reviewDecisionId,
       origin: mapOrigin(contribution),
       created_at: createdAt,
       content_hash: hashRecord({
@@ -572,7 +584,9 @@ function buildRevisionArtifacts(
         new_snapshot_id: nextSnapshot.snapshot_id,
         changed_fields: changedFields,
       }),
-      unresolved_after_revision: [...card.openQuestions],
+      unresolved_after_revision: [
+        ...(snapshot?.unresolvedAfterRevision ?? card.openQuestions),
+      ],
     });
     revisionIdByContributionId.set(contribution.id, revisionId);
     previousSnapshot = nextSnapshot;
@@ -782,6 +796,10 @@ export async function buildHealthcareTopic001ProtocolExport() {
     exportWarnings,
     currentSynthesisSnapshotId,
   } = buildRevisionArtifacts(card, contributions);
+  const currentSynthesisSnapshot =
+    synthesisSnapshots.find(
+      (snapshot) => snapshot.snapshot_id === currentSynthesisSnapshotId,
+    ) ?? synthesisSnapshots[0];
   const allTargets = [
     synthesisTarget(card),
     ...contributions.flatMap((contribution) => contributionTargets(contribution, card)),
@@ -870,7 +888,7 @@ export async function buildHealthcareTopic001ProtocolExport() {
       claim_id: `claim:${healthcareRoomSlug}:${card.id}:primary`,
       topic_id: card.id,
       title: card.title,
-      claim_text: card.thesis,
+      claim_text: currentSynthesisSnapshot.synthesis_text,
       status: "contested",
       current_synthesis_snapshot_id: currentSynthesisSnapshotId,
       attachment_target_ids: uniqueTargets.map((target) => target.target_id),
@@ -905,7 +923,9 @@ export async function buildHealthcareTopic001ProtocolExport() {
       ai_reader_note_ids: aiReaderNotes
         .filter((note) => note.ai_reader_note_id.startsWith(`ai-note:${contribution.id}:`))
         .map((note) => note.ai_reader_note_id),
-      human_review_decision_id: contribution.review ? `review:${contribution.id}` : null,
+      human_review_decision_id:
+        contribution.review?.publicRecordSnapshot?.humanReviewDecisionId ??
+        (contribution.review ? `review:${contribution.id}` : null),
       revision_event_id: revisionIdByContributionId.get(contribution.id) ?? null,
     })),
     evidence_objects: evidenceObjects,

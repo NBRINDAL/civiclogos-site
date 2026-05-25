@@ -135,6 +135,11 @@ export type PublicRecordSnapshot = {
   versionLabel: string;
   linkedRecordId: string;
   affectedVisibleLayers: string[];
+  revisionEventId?: string;
+  humanReviewDecisionId?: string;
+  previousSynthesisSnapshotId?: string;
+  newSynthesisSnapshotId?: string;
+  unresolvedAfterRevision?: string[];
 };
 
 export type Contribution = TopicCardReference & {
