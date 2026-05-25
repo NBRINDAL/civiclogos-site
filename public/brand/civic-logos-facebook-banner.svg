@@ -7,8 +7,8 @@
     <g transform="translate(0 0)">
       <rect x="22" y="22" width="204" height="204" fill="none" stroke="#365984" stroke-width="8" />
       <circle cx="124" cy="124" r="115.094675" fill="none" stroke="#b04a42" stroke-width="8" />
-      <circle cx="124" cy="124" r="22" fill="#567043" />
-      <circle cx="124" cy="124" r="43" fill="#567043" opacity="0.14" />
+      <circle cx="124" cy="124" r="57.547338" fill="#567043" opacity="0.14" />
+      <circle cx="124" cy="124" r="40.692113" fill="#567043" />
     </g>
     <text
       x="338"
