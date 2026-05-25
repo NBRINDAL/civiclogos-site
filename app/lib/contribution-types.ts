@@ -21,8 +21,6 @@ export type ContributionAuthor = {
 };
 
 export const contributionReferralSources = [
-  "Redacted",
-  "Tucker Carlson Network",
   "YouTube",
   "X / Twitter",
   "Substack",
