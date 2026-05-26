@@ -1,18 +1,34 @@
 import type { AiProviderName } from "./ai-provider-config";
+import type {
+  AskReadOnlyIntent,
+  AskRecordReference,
+} from "./ask-types";
+import type { CandidateReviewStatus } from "./candidate-types";
 import type { IssueRoomSlug } from "./civic-logos";
 import type { DebateLane, ReviewStatus, ReviewTargetKind } from "./reasoning-types";
 
-export type TopicChatPromotionState = "auto-recorded" | "sent-to-review" | "not-added";
+export type TopicChatPromotionState =
+  | "read-only-answer"
+  | "candidate-suggested"
+  | "auto-recorded"
+  | "sent-to-review"
+  | "not-added";
 
 export type TopicChatPromotion = {
   state: TopicChatPromotionState;
   note: string;
+  candidateId?: string;
+  candidateReviewStatus?: CandidateReviewStatus;
+  actualCardChange?: false;
+  publicSubmission?: boolean;
   contributionId?: string;
   contributionStatus?: ReviewStatus;
   lane?: DebateLane;
   assignmentKind?: ReviewTargetKind;
   assignmentLabel?: string;
   changedSynthesis?: boolean | null;
+  readOnlyIntent?: AskReadOnlyIntent;
+  recordsUsed?: AskRecordReference[];
 };
 
 export type TopicChatMessage = {

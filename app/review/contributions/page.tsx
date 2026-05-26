@@ -5,6 +5,10 @@ import {
   issueRooms,
   type IssueRoomSlug,
 } from "@/app/lib/civic-logos";
+import {
+  getCandidateStoreMetadata,
+  listCandidateRecords,
+} from "@/app/lib/candidate-store";
 import { getContributionStoreMetadata, listAllContributions } from "@/app/lib/contribution-store";
 import {
   getReviewChatStoreMetadata,
@@ -33,7 +37,10 @@ import {
   type DebateLane,
 } from "@/app/lib/reasoning-types";
 import {
+  archiveCandidate,
   createFounderMaintainerRevision,
+  promoteCandidateToContribution,
+  rejectCandidate,
   reprocessContributionEvidenceDocument,
   reprocessReviewerEvidenceDocument,
   retryContributionAiIntake,
@@ -324,17 +331,26 @@ export default async function ContributionReviewPage({
 
           <section className={styles.panel}>
             {maintainerReviewConfigured ? (
-              <form action={unlockReviewConsole} className={styles.reviewForm}>
+              <form
+                action={unlockReviewConsole}
+                className={styles.reviewForm}
+                data-testid="maintainer-unlock-form"
+              >
                 <label className={styles.field}>
                   <span>Maintainer key</span>
                   <input
                     autoComplete="current-password"
+                    data-testid="maintainer-key-input"
                     name="maintainerKey"
                     placeholder="Enter maintainer key"
                     type="password"
                   />
                 </label>
-                <button className={styles.submitButton} type="submit">
+                <button
+                  className={styles.submitButton}
+                  data-testid="maintainer-unlock-submit"
+                  type="submit"
+                >
                   Unlock review console
                 </button>
                 <p className={styles.prefillNote}>
@@ -358,18 +374,25 @@ export default async function ContributionReviewPage({
     );
   }
 
-  const [contributions, metadata, reviewChatStore, reviewEvidenceStore] = await Promise.all([
-    listAllContributions({
-      roomSlug: scopedRoomSlug,
-      topicId: scopedTopicId,
-      limit: 50,
-      status: status || undefined,
-      lane: scopedLane,
-    }),
-    getContributionStoreMetadata(),
-    getReviewChatStoreMetadata(),
-    getReviewEvidenceStoreMetadata(),
-  ]);
+  const [contributions, metadata, reviewChatStore, reviewEvidenceStore, candidateRecords, candidateStore] =
+    await Promise.all([
+      listAllContributions({
+        roomSlug: scopedRoomSlug,
+        topicId: scopedTopicId,
+        limit: 50,
+        status: status || undefined,
+        lane: scopedLane,
+      }),
+      getContributionStoreMetadata(),
+      getReviewChatStoreMetadata(),
+      getReviewEvidenceStoreMetadata(),
+      listCandidateRecords({
+        roomId: scopedRoomSlug,
+        topicId: scopedTopicId,
+        limit: 50,
+      }),
+      getCandidateStoreMetadata(),
+    ]);
   const [reviewChatEntries, reviewEvidenceEntries] = await Promise.all([
     Promise.all(
       contributions.map(async (item) => [
@@ -412,6 +435,30 @@ export default async function ContributionReviewPage({
   });
   const publicSubmissions = sortedContributions.filter(isOutsidePublicContribution);
   const publicReviewQueue = publicSubmissions.filter(isReviewableContribution);
+  const filteredCandidates = candidateRecords.filter((item) => {
+    if (scopedLane && item.proposedLane !== scopedLane) {
+      return false;
+    }
+
+    if (status && status !== "pending" && status !== "needs review") {
+      return false;
+    }
+
+    return true;
+  });
+  const pendingCandidates = filteredCandidates.filter(
+    (item) => item.reviewStatus === "pending_human_review",
+  );
+  const candidateSummary = {
+    pending: filteredCandidates.filter(
+      (item) => item.reviewStatus === "pending_human_review",
+    ).length,
+    promoted: filteredCandidates.filter(
+      (item) => item.reviewStatus === "promoted_to_public_contribution",
+    ).length,
+    rejected: filteredCandidates.filter((item) => item.reviewStatus === "rejected").length,
+    archived: filteredCandidates.filter((item) => item.reviewStatus === "archived").length,
+  };
   const publicSpotlightItems = (
     publicReviewQueue.length ? publicReviewQueue : publicSubmissions
   ).slice(0, 3);
@@ -496,6 +543,138 @@ export default async function ContributionReviewPage({
               <strong>{topicSummary.changedCard}</strong>
               <p>Records marked by human review as changing the live synthesis.</p>
             </article>
+          </div>
+
+          <div className={styles.publicSubmissionPanel} id="candidate-queue">
+            <div className={styles.queueHeader}>
+              <div>
+                <span className={styles.eyebrow}>Pre-ledger candidate queue</span>
+                <h2>Review structured `/ask` candidates before they touch the public ledger.</h2>
+              </div>
+              <Link className={styles.topicSnapshotLink} href="/ask">
+                Open `/ask`
+              </Link>
+            </div>
+
+            <p className={styles.prefillNote}>{candidateStore.note}</p>
+
+            <div className={styles.summaryRow}>
+              <article className={styles.summaryCard}>
+                <span>Pending</span>
+                <strong>{candidateSummary.pending}</strong>
+              </article>
+              <article className={styles.summaryCard}>
+                <span>Promoted</span>
+                <strong>{candidateSummary.promoted}</strong>
+              </article>
+              <article className={styles.summaryCard}>
+                <span>Rejected</span>
+                <strong>{candidateSummary.rejected}</strong>
+              </article>
+              <article className={styles.summaryCard}>
+                <span>Archived</span>
+                <strong>{candidateSummary.archived}</strong>
+              </article>
+            </div>
+
+            {pendingCandidates.length ? (
+              <div className={styles.publicSubmissionList}>
+                {pendingCandidates.map((item) => (
+                  <article
+                    className={styles.publicSubmissionCard}
+                    data-testid={`candidate-card-${item.id}`}
+                    id={`candidate-${item.id}`}
+                    key={item.id}
+                  >
+                    <div className={styles.statusBar}>
+                      <span className={styles.badge}>{item.reviewStatus}</span>
+                      <span className={styles.badge}>{debateLaneLabels[item.proposedLane]}</span>
+                      <span className={styles.badge}>{item.roomId} / {item.topicId}</span>
+                      <span className={styles.seed}>actual card change: false</span>
+                    </div>
+                    <h3>{item.normalizedTitle}</h3>
+                    <p>{item.normalizedBody}</p>
+                    <p className={styles.prefillNote}>
+                      Raw user text: {item.rawUserText}
+                    </p>
+                    <dl className={styles.spotlightFacts}>
+                      <div>
+                        <dt>Attachment target</dt>
+                        <dd>{item.proposedAttachmentTarget.label}</dd>
+                      </div>
+                      <div>
+                        <dt>Evidence status</dt>
+                        <dd>{item.evidenceStatus}</dd>
+                      </div>
+                      <div>
+                        <dt>Impact field</dt>
+                        <dd>{item.impactField.join(", ")}</dd>
+                      </div>
+                      <div>
+                        <dt>Scale map</dt>
+                        <dd>{item.scaleMap.join(" / ")}</dd>
+                      </div>
+                    </dl>
+                    {item.evidenceAnchor ? (
+                      <p className={styles.prefillNote}>
+                        Evidence anchor: {item.evidenceAnchor}
+                      </p>
+                    ) : null}
+                    {item.internalAiNotes[0] ? (
+                      <p className={styles.prefillNote}>
+                        AI-assisted structuring: {item.internalAiNotes[0].summary}
+                      </p>
+                    ) : null}
+                    <div className={styles.candidateActionRow}>
+                      <form action={promoteCandidateToContribution}>
+                        <input name="candidateId" type="hidden" value={item.id} />
+                        <input
+                          name="reviewerLabel"
+                          type="hidden"
+                          value="Civic Logos maintainer review"
+                        />
+                        <button
+                          className={styles.submitButton}
+                          data-testid={`candidate-promote-${item.id}`}
+                          type="submit"
+                        >
+                          Promote to public contribution
+                        </button>
+                      </form>
+                      <form action={rejectCandidate}>
+                        <input name="candidateId" type="hidden" value={item.id} />
+                        <button
+                          className={styles.secondaryButton}
+                          data-testid={`candidate-reject-${item.id}`}
+                          type="submit"
+                        >
+                          Reject
+                        </button>
+                      </form>
+                      <form action={archiveCandidate}>
+                        <input name="candidateId" type="hidden" value={item.id} />
+                        <button
+                          className={styles.secondaryButton}
+                          data-testid={`candidate-archive-${item.id}`}
+                          type="submit"
+                        >
+                          Archive
+                        </button>
+                      </form>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            ) : (
+              <div className={styles.emptyState}>
+                <span className={styles.eyebrow}>No pending candidates</span>
+                <h2>No pre-ledger `/ask` candidates match this scope yet.</h2>
+                <p>
+                  `/ask` can still structure a candidate for human review without creating a
+                  public contribution, changing synthesis, or creating a revision event.
+                </p>
+              </div>
+            )}
           </div>
 
           {publicSpotlightItems.length ? (
@@ -981,6 +1160,7 @@ export default async function ContributionReviewPage({
               return (
                 <article
                   className={styles.contribution}
+                  data-testid={`contribution-card-${item.id}`}
                   id={`review-${item.id}`}
                   key={item.id}
                 >
@@ -1033,6 +1213,29 @@ export default async function ContributionReviewPage({
                         </>
                       ) : null}
                     </p>
+                  ) : null}
+                  {item.candidateSource ? (
+                    <div className={styles.reviewSummary}>
+                      <strong>Candidate promotion provenance</strong>
+                      <p>
+                        Source candidate ID: {item.candidateSource.sourceCandidateId}
+                      </p>
+                      <p>
+                        Candidate intake origin: {item.candidateSource.origin} · AI assisted:{" "}
+                        {item.candidateSource.aiAssisted ? "yes" : "no"} · Promoted by{" "}
+                        {item.candidateSource.promotedBy} on{" "}
+                        {new Date(item.candidateSource.promotedAt).toLocaleString("en-US", {
+                          dateStyle: "medium",
+                          timeStyle: "short",
+                        })}
+                      </p>
+                      <p>Raw intake text: {item.candidateSource.rawUserText}</p>
+                      {item.candidateSource.internalAiNotes.map((note) => (
+                        <p key={`${item.id}-${note.provider}-${note.createdAt}`}>
+                          AI note: {note.summary}
+                        </p>
+                      ))}
+                    </div>
                   ) : null}
                   {item.reviewChallengeSource ? (
                     <p>

@@ -164,6 +164,10 @@ function getIntakeContextPrimaryActionLabel(
 }
 
 function getPromotionLabel(state: TopicChatPromotionState) {
+  if (state === "candidate-suggested") {
+    return "Candidate saved";
+  }
+
   if (state === "auto-recorded") {
     return "System-recorded";
   }
@@ -389,6 +393,21 @@ function getReviewQueueHref(
   return `/review/contributions?${searchParams.toString()}`;
 }
 
+function getCandidateQueueHref(
+  roomSlug: IssueRoomSlug,
+  topicId: string,
+  candidateId?: string,
+) {
+  const searchParams = new URLSearchParams({
+    roomSlug,
+    topicId,
+  });
+
+  return `/review/contributions?${searchParams.toString()}#${
+    candidateId ? `candidate-${candidateId}` : "candidate-queue"
+  }`;
+}
+
 function getRecordViewHref(
   filter: "needs-review" | "ai-assisted",
   attachment?: PromotionAttachmentFilter,
@@ -582,6 +601,9 @@ function getSessionImpact(messages: TopicChatMessage[]) {
   const promotedMessages = messages.filter(
     (message) => message.role === "assistant" && message.promotion,
   );
+  const candidateSuggestedMessages = promotedMessages.filter(
+    (message) => message.promotion?.state === "candidate-suggested",
+  );
   const autoRecordedMessages = promotedMessages.filter(
     (message) => message.promotion?.state === "auto-recorded",
   );
@@ -591,11 +613,13 @@ function getSessionImpact(messages: TopicChatMessage[]) {
 
   return {
     promotedMessages,
+    candidateSuggestedCount: candidateSuggestedMessages.length,
     autoRecordedCount: autoRecordedMessages.length,
     sentToReviewCount: sentToReviewMessages.length,
     exploratoryCount: promotedMessages.filter(
       (message) => message.promotion?.state === "not-added",
     ).length,
+    candidateAttachmentCounts: getAttachmentCounts(candidateSuggestedMessages),
     autoRecordedAttachmentCounts: getAttachmentCounts(autoRecordedMessages),
     sentToReviewAttachmentCounts: getAttachmentCounts(sentToReviewMessages),
   };
@@ -616,7 +640,7 @@ export default function TopicAiPanel({
   const [messages, setMessages] = useState<TopicChatMessage[]>(initialMessages);
   const [issues, setIssues] = useState<TopicAiIssue[]>([]);
   const [disclaimer, setDisclaimer] = useState(
-    "These AIs stay visible as separate AIs. The room only changes when Civic Logos system-records an AI-origin update with provenance or sends a proposal to human review.",
+    "These AIs stay visible as separate AIs. They may help structure internal candidate suggestions, but they do not change the public record on their own.",
   );
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [activeProvider, setActiveProvider] = useState<ProviderRequest | null>(null);
@@ -1227,33 +1251,28 @@ export default function TopicAiPanel({
 
         <div className={styles.sessionImpactGrid}>
           <article className={styles.sessionImpactCard}>
-            <span className={styles.sessionImpactLabel}>System-recorded</span>
-            <strong>{sessionImpact.autoRecordedCount}</strong>
+            <span className={styles.sessionImpactLabel}>Candidate suggestions</span>
+            <strong>{sessionImpact.candidateSuggestedCount}</strong>
             <p>
-              Narrow AI-origin suggestions recorded with provenance under the
-              current review policy. They remain inspectable and challengeable;
-              AI is not the final judge.
+              Internal pre-ledger candidates created from this chat. They enter
+              the human review queue without changing public contribution counts,
+              revision history, or visible synthesis.
             </p>
-            {sessionImpact.autoRecordedCount ? (
+            {sessionImpact.candidateSuggestedCount ? (
               <>
                 <a
                   className={styles.promotionLink}
-                  href={getRecordViewHref("ai-assisted", undefined, undefined, activeIntakeId || undefined)}
+                  href={getCandidateQueueHref(roomSlug, topicId)}
                 >
-                  Open AI-assisted ledger
+                  Open candidate queue
                 </a>
-                {sessionImpact.autoRecordedAttachmentCounts.length ? (
+                {sessionImpact.candidateAttachmentCounts.length ? (
                   <div className={styles.sessionTargetMap}>
-                    {sessionImpact.autoRecordedAttachmentCounts.map((item) => (
+                    {sessionImpact.candidateAttachmentCounts.map((item) => (
                       <a
                         className={styles.sessionTargetLink}
-                        href={getRecordViewHref(
-                          "ai-assisted",
-                          item.attachment,
-                          undefined,
-                          activeIntakeId || undefined,
-                        )}
-                        key={`auto-recorded-target-${item.attachment}`}
+                        href={getCandidateQueueHref(roomSlug, topicId)}
+                        key={`candidate-target-${item.attachment}`}
                       >
                         {item.label} {item.count}
                       </a>
@@ -1264,32 +1283,34 @@ export default function TopicAiPanel({
             ) : null}
           </article>
           <article className={styles.sessionImpactCard}>
-            <span className={styles.sessionImpactLabel}>Sent to review</span>
-            <strong>{sessionImpact.sentToReviewCount}</strong>
+            <span className={styles.sessionImpactLabel}>Legacy AI-origin writes</span>
+            <strong>{sessionImpact.autoRecordedCount + sessionImpact.sentToReviewCount}</strong>
             <p>
-              AI turns that became proposed record changes and now
-              depend on a human decision.
+              Older topic-chat sessions may still show AI-origin record entries
+              from the prior policy. New turns now stop at internal candidates
+              only.
             </p>
-            {sessionImpact.sentToReviewCount ? (
+            {sessionImpact.autoRecordedCount + sessionImpact.sentToReviewCount ? (
               <>
                 <a
                   className={styles.promotionLink}
-                  href={getRecordViewHref("needs-review", undefined, undefined, activeIntakeId || undefined)}
+                  href={getRecordViewHref("ai-assisted", undefined, undefined, activeIntakeId || undefined)}
                 >
-                  Open needs-review ledger
+                  Open legacy AI-assisted ledger
                 </a>
-                {sessionImpact.sentToReviewAttachmentCounts.length ? (
+                {sessionImpact.autoRecordedAttachmentCounts.length ||
+                sessionImpact.sentToReviewAttachmentCounts.length ? (
                   <div className={styles.sessionTargetMap}>
-                    {sessionImpact.sentToReviewAttachmentCounts.map((item) => (
+                    {[...sessionImpact.autoRecordedAttachmentCounts, ...sessionImpact.sentToReviewAttachmentCounts].map((item, index) => (
                       <a
                         className={styles.sessionTargetLink}
                         href={getRecordViewHref(
-                          "needs-review",
+                          "ai-assisted",
                           item.attachment,
                           undefined,
                           activeIntakeId || undefined,
                         )}
-                        key={`sent-to-review-target-${item.attachment}`}
+                        key={`legacy-target-${item.attachment}-${index}`}
                       >
                         {item.label} {item.count}
                       </a>
@@ -1304,7 +1325,7 @@ export default function TopicAiPanel({
             <strong>{sessionImpact.exploratoryCount}</strong>
             <p>
               AI turns that stayed chat-only because they were not yet
-              specific or grounded enough for the public record.
+              specific or grounded enough to justify even an internal candidate.
             </p>
           </article>
         </div>
@@ -1362,7 +1383,8 @@ export default function TopicAiPanel({
                       className={`${styles.promotionBadge} ${
                         item.message.promotion.state === "auto-recorded"
                           ? styles.promotionRecorded
-                          : item.message.promotion.state === "sent-to-review"
+                          : item.message.promotion.state === "sent-to-review" ||
+                              item.message.promotion.state === "candidate-suggested"
                             ? styles.promotionReview
                             : styles.promotionExploratory
                       }`}
@@ -1398,6 +1420,21 @@ export default function TopicAiPanel({
                           </div>
                         ) : null}
                       </dl>
+                    ) : null}
+
+                    {item.message.promotion.candidateId ? (
+                      <div className={styles.promotionActions}>
+                        <a
+                          className={styles.promotionLink}
+                          href={getCandidateQueueHref(
+                            roomSlug,
+                            topicId,
+                            item.message.promotion.candidateId,
+                          )}
+                        >
+                          View candidate queue entry
+                        </a>
+                      </div>
                     ) : null}
 
                     {item.message.promotion.contributionId ? (

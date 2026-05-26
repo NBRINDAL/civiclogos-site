@@ -1,0 +1,383 @@
+.shell {
+  display: grid;
+  gap: 24px;
+}
+
+.hero,
+.trustBlock,
+.topicBanner,
+.chatPanel,
+.candidatePanel,
+.replyCard,
+.candidateCard,
+.readOnlyCard,
+.safeguardCard,
+.emptyState,
+.transcriptItem,
+.errorState {
+  padding: 24px;
+  border: 1px solid rgba(18, 33, 39, 0.12);
+  border-radius: 24px;
+  background: rgba(255, 251, 245, 0.86);
+  box-shadow: 0 18px 38px rgba(18, 33, 39, 0.08);
+}
+
+.prototypeNotice {
+  padding: 16px 18px;
+  border: 1px solid rgba(var(--brand-red-rgb), 0.18);
+  border-radius: 18px;
+  background: rgba(181, 94, 51, 0.08);
+}
+
+.hero,
+.trustBlock,
+.topicBanner,
+.chatPanel,
+.candidatePanel,
+.replyCard,
+.candidateCard,
+.readOnlyCard,
+.safeguardCard,
+.emptyState {
+  display: grid;
+  gap: 16px;
+}
+
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--signal);
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.eyebrow::before {
+  content: "";
+  width: 28px;
+  height: 1px;
+  background: currentColor;
+}
+
+.hero h1,
+.trustBlock h2,
+.topicBanner h2,
+.panelHeader h2,
+.candidateCard h3 {
+  color: var(--foreground);
+  font-family: var(--font-serif), serif;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  line-height: 1.06;
+}
+
+.hero h1 {
+  font-size: clamp(2.4rem, 5vw, 4rem);
+}
+
+.heroCopy,
+.trustBlock p,
+.topicBanner p,
+.replyCard p,
+.candidateCard p,
+.readOnlyCard p,
+.noteBlock p,
+.prototypeNotice p,
+.field span,
+.field textarea,
+.transcriptItem p,
+.emptyState p,
+.safeguardList,
+.factGrid dd,
+.errorState p,
+.issueItem {
+  color: var(--muted);
+  line-height: 1.7;
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(320px, 0.85fr);
+  gap: 24px;
+  align-items: start;
+}
+
+.flowTrack {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.flowStep {
+  display: inline-flex;
+  align-items: center;
+  min-height: 38px;
+  padding: 0 14px;
+  border: 1px solid rgba(var(--brand-blue-rgb), 0.16);
+  border-radius: 999px;
+  background: rgba(244, 250, 255, 0.92);
+  color: var(--foreground);
+  font-size: 0.88rem;
+  font-weight: 700;
+}
+
+.flowStep:not(:last-child)::after {
+  content: "\2192";
+  margin-left: 12px;
+  color: var(--signal);
+}
+
+.boundaryList {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding-left: 20px;
+  color: var(--muted);
+  line-height: 1.7;
+}
+
+.auditNote {
+  padding: 14px 16px;
+  border: 1px solid rgba(var(--brand-green-rgb), 0.18);
+  border-radius: 18px;
+  background: rgba(244, 250, 239, 0.9);
+  color: var(--foreground);
+  font-weight: 700;
+}
+
+.panelHeader {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.field {
+  display: grid;
+  gap: 10px;
+}
+
+.field span {
+  color: var(--foreground);
+  font-size: 0.92rem;
+  font-weight: 700;
+}
+
+.field textarea {
+  width: 100%;
+  min-height: 180px;
+  padding: 16px 18px;
+  border: 1px solid rgba(18, 33, 39, 0.14);
+  border-radius: 20px;
+  background: rgba(255, 252, 247, 0.94);
+  resize: vertical;
+}
+
+.actions,
+.badgeRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.replyBody {
+  white-space: pre-wrap;
+}
+
+.primaryAction,
+.secondaryAction,
+.linkAction {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 46px;
+  padding: 0 18px;
+  border-radius: 999px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.primaryAction {
+  border: 1px solid transparent;
+  background: var(--foreground);
+  color: #fff7ee;
+}
+
+.secondaryAction,
+.linkAction {
+  border: 1px solid rgba(18, 33, 39, 0.14);
+  background: rgba(255, 251, 245, 0.92);
+  color: var(--foreground);
+}
+
+.transcript {
+  display: grid;
+  gap: 16px;
+}
+
+.transcriptList {
+  display: grid;
+  gap: 12px;
+}
+
+.transcriptItem {
+  padding: 18px;
+}
+
+.userMessage {
+  border-color: rgba(42, 65, 102, 0.18);
+  background: rgba(42, 65, 102, 0.07);
+}
+
+.assistantMessage {
+  border-color: rgba(91, 110, 69, 0.2);
+  background: rgba(91, 110, 69, 0.08);
+}
+
+.transcriptMeta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  color: var(--signal);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+  padding: 0 12px;
+  border: 1px solid rgba(18, 33, 39, 0.12);
+  border-radius: 999px;
+  background: rgba(18, 33, 39, 0.06);
+  color: var(--foreground);
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.factGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.factGrid div,
+.noteBlock {
+  display: grid;
+  gap: 6px;
+  padding: 16px;
+  border: 1px solid rgba(18, 33, 39, 0.1);
+  border-radius: 18px;
+  background: rgba(255, 251, 245, 0.94);
+}
+
+.factGrid dt,
+.noteBlock strong {
+  color: var(--signal);
+  font-size: 0.76rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.recordList {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.recordList li {
+  display: grid;
+  gap: 4px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(18, 33, 39, 0.08);
+}
+
+.recordList li:first-child {
+  padding-top: 0;
+  border-top: 0;
+}
+
+.recordList span {
+  color: var(--signal);
+  font-size: 0.76rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.recordList p {
+  margin: 0;
+}
+
+.safeguardCard {
+  border-color: rgba(91, 110, 69, 0.2);
+  background: rgba(91, 110, 69, 0.08);
+}
+
+.safeguardList {
+  margin: 0;
+  padding-left: 18px;
+}
+
+.limitations {
+  font-size: 0.92rem;
+}
+
+.issueList,
+.errorState {
+  border-color: rgba(181, 94, 51, 0.2);
+  background: rgba(181, 94, 51, 0.08);
+}
+
+.issueList {
+  display: grid;
+  gap: 8px;
+  padding: 16px 18px;
+  border: 1px solid rgba(181, 94, 51, 0.2);
+  border-radius: 18px;
+}
+
+.issueItem strong {
+  color: var(--foreground);
+}
+
+@media (max-width: 960px) {
+  .layout,
+  .factGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .panelHeader,
+  .transcriptMeta {
+    display: grid;
+  }
+}
+
+@media (max-width: 720px) {
+  .hero,
+.trustBlock,
+  .topicBanner,
+  .chatPanel,
+  .candidatePanel,
+  .replyCard,
+  .candidateCard,
+  .readOnlyCard,
+  .safeguardCard,
+  .emptyState,
+  .transcriptItem,
+  .errorState {
+    padding: 20px;
+    border-radius: 20px;
+  }
+}

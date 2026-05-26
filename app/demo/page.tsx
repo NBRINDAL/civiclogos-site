@@ -155,9 +155,15 @@ export default async function DemoPage() {
   const latestRevision =
     healthcareCard.revisionHistory[healthcareCard.revisionHistory.length - 1];
   const providerLabels = getProviderLabels(demoContribution);
-  const contributionHref = demoContribution
-    ? getExactContributionHref(topicHref, demoContribution)
-    : `${topicHref}?view=ledger#contribution-record`;
+  const v2CandidateOutput = [
+    "economic-assumption-challenge",
+    "healthcare/topic-001",
+    "Savings-capture assumption",
+    "unsourced but coherent",
+    "patients/providers/insurers/employers",
+    "pending human review",
+    "actual card change: false",
+  ];
 
   const demoSteps = [
     {
@@ -238,7 +244,7 @@ export default async function DemoPage() {
           <SiteBrand className={styles.brand} href="/" subtitle="Guided demo" />
 
           <nav className={styles.nav}>
-            <Link href="/">Home</Link>
+            <Link href="/">Main chat</Link>
             <Link href="/healthcare">Healthcare room</Link>
             <Link href="/press">Press</Link>
             <Link href="/ledger">Ledger</Link>
@@ -263,11 +269,11 @@ export default async function DemoPage() {
               <strong>{metadata.mode}</strong>.
             </p>
             <div className={styles.heroActions}>
-              <Link className={styles.primaryAction} href={topicHref}>
-                Open the healthcare card
+              <Link className={styles.primaryAction} href="/">
+                Open main chat
               </Link>
-              <Link className={styles.secondaryAction} href={contributionHref}>
-                Inspect the ledger record
+              <Link className={styles.secondaryAction} href={topicHref}>
+                Open the healthcare card
               </Link>
             </div>
           </div>
@@ -295,6 +301,43 @@ export default async function DemoPage() {
       </header>
 
       <main className={styles.main}>
+        <section className={styles.recordsSection}>
+          <div className={styles.sectionIntro}>
+            <span className={styles.eyebrow}>V2 demo note</span>
+            <h2>Chat-first candidate intake is live on the healthcare card.</h2>
+            <p>
+              The new `/ask` path is a pre-ledger intake. It structures a candidate
+              first, then waits for human promotion before anything can become a
+              public contribution.
+            </p>
+          </div>
+
+          <div className={styles.recordGrid}>
+            <article className={styles.recordCard}>
+              <span className={styles.recordLabel}>Healthcare example</span>
+              <h3>Natural-language intake</h3>
+              <p className={styles.demoQuote}>
+                “This healthcare claim assumes savings will reach patients, but
+                institutions may capture them.”
+              </p>
+              <p className={styles.demoAuditNote}>
+                /ask does not change public counts, does not create RevisionEvents,
+                and does not change synthesis.
+              </p>
+            </article>
+
+            <article className={styles.recordCard}>
+              <span className={styles.recordLabel}>Structured output</span>
+              <h3>Candidate returned for human review</h3>
+              <ul className={styles.demoList}>
+                {v2CandidateOutput.map((item) => (
+                  <li key={item}>{item}</li>
+                ))}
+              </ul>
+            </article>
+          </div>
+        </section>
+
         <section className={styles.timelineSection}>
           <div className={styles.sectionIntro}>
             <span className={styles.eyebrow}>Guided path</span>

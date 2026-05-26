@@ -82,6 +82,7 @@ const directLinks = [
     label: "Healthcare protocol JSON",
     href: "/api/ledger/healthcare/topic-001",
   },
+  { label: "Ask Civic Logos", href: "/ask" },
   { label: "Demo", href: "/demo" },
   { label: "Challenge", href: "/challenge" },
   { label: "Institutions", href: "/institutions" },
@@ -100,7 +101,7 @@ export default function LedgerPage() {
         <nav className={styles.nav}>
           <SiteBrand className={styles.brand} href="/" subtitle="Reasoning Ledger" />
           <div className={styles.navLinks}>
-            <Link href="/">Home</Link>
+            <Link href="/">Main chat</Link>
             <Link href="/demo">Demo</Link>
             <Link href="/challenge">Challenge</Link>
             <Link href="/press">Press</Link>
@@ -118,14 +119,14 @@ export default function LedgerPage() {
               revision history.
             </p>
             <div className={styles.heroActions}>
+              <Link className={styles.primaryAction} href="/">
+                Open main chat
+              </Link>
               <Link
-                className={styles.primaryAction}
+                className={styles.secondaryAction}
                 href="/healthcare/topic-001?view=ledger#contribution-record"
               >
                 Inspect healthcare ledger
-              </Link>
-              <Link className={styles.secondaryAction} href="/demo">
-                Watch demo
               </Link>
             </div>
           </div>
@@ -160,6 +161,28 @@ export default function LedgerPage() {
             revision. The next milestone is the first outside public
             contribution.
           </p>
+        </section>
+
+        <section className={styles.grantNote}>
+          <span className={styles.eyebrow}>V2 status</span>
+          <p>
+            <strong>V2 candidate intake is active.</strong>
+          </p>
+          <ul className={styles.auditList}>
+            <li>AI may create pre-ledger candidate records.</li>
+            <li>Candidate records are not public contributions.</li>
+            <li>Promotion requires human review.</li>
+            <li>RevisionEvents still require the existing public review path.</li>
+          </ul>
+          <p>
+            /ask does not change public counts, does not create RevisionEvents,
+            and does not change synthesis.
+          </p>
+          <div className={styles.heroActions}>
+            <Link className={styles.primaryAction} href="/ask">
+              Open `/ask`
+            </Link>
+          </div>
         </section>
 
         <section className={styles.twoColumn}>

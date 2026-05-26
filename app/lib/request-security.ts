@@ -1,5 +1,44 @@
 import { NextRequest, NextResponse } from "next/server";
 
+function normalizeLoopbackHostname(hostname: string) {
+  const normalized = hostname.toLowerCase();
+
+  if (
+    normalized === "localhost" ||
+    normalized === "127.0.0.1" ||
+    normalized === "::1" ||
+    normalized === "[::1]"
+  ) {
+    return "loopback";
+  }
+
+  return normalized;
+}
+
+function getResolvedPort(url: URL) {
+  if (url.port) {
+    return url.port;
+  }
+
+  return url.protocol === "https:" ? "443" : "80";
+}
+
+function isEquivalentLoopbackOrigin(origin: string, request: NextRequest) {
+  try {
+    const originUrl = new URL(origin);
+    const requestUrl = request.nextUrl;
+
+    return (
+      originUrl.protocol === requestUrl.protocol &&
+      getResolvedPort(originUrl) === getResolvedPort(requestUrl) &&
+      normalizeLoopbackHostname(originUrl.hostname) === "loopback" &&
+      normalizeLoopbackHostname(requestUrl.hostname) === "loopback"
+    );
+  } catch {
+    return false;
+  }
+}
+
 function getAllowedOrigins(request: NextRequest) {
   const configuredOrigins = (process.env.CIVIC_LOGOS_ALLOWED_ORIGINS ?? "")
     .split(",")
@@ -17,7 +56,7 @@ export function requireSameOriginRequest(request: NextRequest) {
     return null;
   }
 
-  if (getAllowedOrigins(request).has(origin)) {
+  if (getAllowedOrigins(request).has(origin) || isEquivalentLoopbackOrigin(origin, request)) {
     return null;
   }
 

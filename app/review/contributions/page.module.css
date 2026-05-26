@@ -447,6 +447,12 @@
   line-height: 1;
 }
 
+.candidateActionRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
 .sectionTitle {
   font-size: clamp(1.9rem, 3.5vw, 2.6rem);
 }

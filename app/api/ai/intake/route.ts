@@ -6,6 +6,7 @@ import {
   getHomeIntakeCookieName,
   serializeHomeIntakeCookie,
 } from "@/app/lib/home-intake-cookie";
+import { shouldUseSecureCookies } from "@/app/lib/cookie-security";
 import { createHomeIntakeEntry, getHomeIntakeStoreMetadata } from "@/app/lib/home-intake-store";
 
 export const runtime = "nodejs";
@@ -107,7 +108,10 @@ export async function POST(request: NextRequest) {
     maxAge: 60 * 20,
     path: "/",
     sameSite: "lax",
-    secure: true,
+    secure: shouldUseSecureCookies({
+      protocol: request.nextUrl.protocol,
+      host: request.nextUrl.host,
+    }),
   });
 
   return response;

@@ -2,14 +2,12 @@ import { randomUUID } from "node:crypto";
 import { revalidatePath } from "next/cache";
 import { NextRequest, NextResponse } from "next/server";
 import {
-  getRoomHref,
   getRoomTopicCard,
-  getRoomTopicHref,
   issueRooms,
   type IssueRoomSlug,
 } from "@/app/lib/civic-logos";
-import { createContribution, reviewContribution } from "@/app/lib/contribution-store";
-import { sendContributionReviewedNotification, sendContributionSubmittedNotification } from "@/app/lib/maintainer-notifications";
+import { buildCandidateSuggestion } from "@/app/lib/candidate-ai";
+import { createCandidateRecord } from "@/app/lib/candidate-store";
 import {
   askTopicCard,
   getTopicCardReaderContext,
@@ -21,6 +19,7 @@ import {
   getTopicChatSessionCookieName,
   isTopicChatSessionId,
 } from "@/app/lib/topic-chat-session";
+import { shouldUseSecureCookies } from "@/app/lib/cookie-security";
 import {
   createTopicChatMessage,
   getTopicChatStoreMetadata,
@@ -51,20 +50,18 @@ function isProvider(value: string): value is "openai" | "anthropic" | "all" {
   return value === "openai" || value === "anthropic" || value === "all";
 }
 
-function revalidateTopicSurfaces(roomSlug: IssueRoomSlug, topicId: string) {
+function revalidateReviewerQueue() {
   revalidatePath("/review/contributions");
-  revalidatePath(getRoomHref(roomSlug));
-  revalidatePath(getRoomTopicHref(roomSlug, topicId));
 }
 
-async function promoteAnswerToRecord(args: {
+async function suggestAnswerCandidate(args: {
   roomSlug: IssueRoomSlug;
   topicId: string;
-  topicTitle: string;
   question: string;
   answer: TopicAiAnswer;
   providerRequest: "openai" | "anthropic" | "all";
   context: string;
+  sourceMessageId: string;
   promotionAlreadyUsed: boolean;
 }) {
   const proposal = await buildTopicChatPromotionProposal({
@@ -79,17 +76,8 @@ async function promoteAnswerToRecord(args: {
       usedPromotionSlot: args.promotionAlreadyUsed,
       promotion: {
         state: "not-added",
-        note: "This AI answer remained exploratory and was not added to the public record.",
-      } satisfies TopicChatPromotion,
-    };
-  }
-
-  if (!proposal.title || !proposal.body) {
-    return {
-      usedPromotionSlot: args.promotionAlreadyUsed,
-      promotion: {
-        state: "not-added",
-        note: "A possible record update was detected, but it was not specific enough to store cleanly.",
+        note:
+          "This AI answer remained exploratory. Civic Logos did not create a public ledger record or a candidate suggestion from this turn.",
       } satisfies TopicChatPromotion,
     };
   }
@@ -99,104 +87,55 @@ async function promoteAnswerToRecord(args: {
       usedPromotionSlot: true,
       promotion: {
         state: "not-added",
-        note: "Parallel-AI mode kept this answer comparative after another useful update was already captured from the same turn.",
+        note:
+          "Parallel-AI mode kept this turn comparative after one internal candidate suggestion was already captured from the same message.",
       } satisfies TopicChatPromotion,
     };
   }
 
-  const contribution = await createContribution({
+  const suggestion = await buildCandidateSuggestion({
     roomSlug: args.roomSlug,
     topicId: args.topicId,
-    topicTitle: args.topicTitle,
-    lane: proposal.lane,
-    title: proposal.title,
-    body: proposal.body,
-    author: {
-      name:
-        args.answer.provider === "openai"
-          ? "GPT assisted topic chat"
-          : "Claude assisted topic chat",
-      expertise:
-        "AI-assisted topic chat suggestion generated inside Civic Logos and routed through the topic record gate.",
-    },
-    draftSource: {
-      provider: args.answer.provider,
-      providerLabel:
-        args.answer.provider === "openai" ? "GPT AI" : "Claude AI",
-      model: args.answer.model,
-      question: args.question,
-      generatedAt: args.answer.generatedAt,
-    },
+    rawUserText: args.question,
   });
-
-  if (proposal.decision === "obvious" && args.providerRequest !== "all") {
-    const reviewedContribution = await reviewContribution(contribution.id, {
-      status: proposal.changedSynthesis === false ? "accepted" : "incorporated",
-      assignedToKind: proposal.assignmentKind,
-      assignedToLabel: proposal.assignmentLabel,
-      changedSynthesis: proposal.changedSynthesis ?? true,
-      publicRecordNote:
-        proposal.publicRecordNote ||
-        "A narrow update from the live topic chat was system-recorded with AI-origin provenance under the current review policy.",
-      decisionReason:
-        proposal.publicRecordNote ||
-        "System-recorded from live topic chat under the AI-origin capture policy; the record remains inspectable and challengeable.",
-      reviewerNote:
-        proposal.reviewerNote ||
-        `System-recorded from ${args.answer.provider} topic chat because the proposed update was narrow enough for AI-origin record capture; future human review or public challenge can still revise it.`,
-    });
-
-    if (reviewedContribution) {
-      void sendContributionReviewedNotification(reviewedContribution);
-      revalidateTopicSurfaces(args.roomSlug, args.topicId);
-    }
-
-    return {
-      usedPromotionSlot: true,
-      promotion: {
-        state: "auto-recorded",
-        note:
-          proposal.publicRecordNote ||
-          "A narrow update from this topic chat was system-recorded with AI-origin provenance and remains open to review.",
-        contributionId: contribution.id,
-        contributionStatus: proposal.changedSynthesis === false ? "accepted" : "incorporated",
-        lane: proposal.lane,
-        assignmentKind: proposal.assignmentKind,
-        assignmentLabel: proposal.assignmentLabel,
-        changedSynthesis: proposal.changedSynthesis ?? true,
-      } satisfies TopicChatPromotion,
-    };
-  }
-
-  void sendContributionSubmittedNotification({
-    ...contribution,
-    author: {
-      name:
-        args.answer.provider === "openai"
-          ? "GPT assisted topic chat"
-          : "Claude assisted topic chat",
-      email: undefined,
-      expertise:
-        "AI-assisted topic chat suggestion generated inside Civic Logos and routed to the maintainer queue.",
+  const candidate = await createCandidateRecord({
+    sourceMessageId: args.sourceMessageId,
+    roomId: args.roomSlug,
+    topicId: args.topicId,
+    rawUserText: args.question,
+    normalizedTitle: suggestion.draft.normalized_title,
+    normalizedBody: suggestion.draft.normalized_body,
+    proposedLane: suggestion.draft.proposed_lane,
+    proposedAttachmentTarget: {
+      kind: suggestion.draft.proposed_attachment_target_kind,
+      label: suggestion.draft.proposed_attachment_target_label,
     },
+    scaleMap: suggestion.draft.scale_map,
+    evidenceStatus: suggestion.draft.evidence_status,
+    evidenceAnchor: suggestion.draft.evidence_anchor,
+    evidentialDistance: suggestion.draft.evidential_distance,
+    impactField: suggestion.draft.impact_field,
+    internalAiNotes: [suggestion.note],
+    aiAssisted: true,
+    origin: "human_submitted_via_ai_intake",
   });
-  revalidateTopicSurfaces(args.roomSlug, args.topicId);
+  revalidateReviewerQueue();
 
   return {
     usedPromotionSlot: true,
     promotion: {
-      state: "sent-to-review",
+      state: "candidate-suggested",
       note:
-        args.providerRequest === "all"
-          ? "Parallel-AI mode treated this as useful enough for the review queue, but not safe enough to auto-record."
-          : proposal.reviewerNote ||
-            "This AI answer was turned into a draft update and sent to the human review queue.",
-      contributionId: contribution.id,
-      contributionStatus: contribution.status,
-      lane: proposal.lane,
-      assignmentKind: proposal.assignmentKind,
-      assignmentLabel: proposal.assignmentLabel,
-      changedSynthesis: proposal.changedSynthesis ?? null,
+        suggestion.note.shortReply ||
+        "This turn produced an internal candidate suggestion for human review. The public ledger did not change.",
+      candidateId: candidate.id,
+      candidateReviewStatus: candidate.reviewStatus,
+      actualCardChange: false,
+      publicSubmission: false,
+      lane: candidate.proposedLane,
+      assignmentKind: candidate.proposedAttachmentTarget.kind,
+      assignmentLabel: candidate.proposedAttachmentTarget.label,
+      changedSynthesis: false,
     } satisfies TopicChatPromotion,
   };
 }
@@ -270,8 +209,8 @@ export async function POST(request: NextRequest) {
   }
 
   const existingSessionId = request.cookies.get(getTopicChatSessionCookieName())?.value;
-  const sessionId = isTopicChatSessionId(existingSessionId)
-    ? existingSessionId!
+  const sessionId = existingSessionId && isTopicChatSessionId(existingSessionId)
+    ? existingSessionId
     : createTopicChatSessionId();
   const runId = randomUUID();
 
@@ -312,14 +251,14 @@ export async function POST(request: NextRequest) {
   const promotedAnswers: TopicAiAnswer[] = [];
 
   for (const answer of result.answers) {
-    const { promotion, usedPromotionSlot } = await promoteAnswerToRecord({
+    const { promotion, usedPromotionSlot } = await suggestAnswerCandidate({
       roomSlug,
       topicId,
-      topicTitle: topic.title,
       question,
       answer,
       providerRequest: provider,
       context: preparedContext.context,
+      sourceMessageId: userMessage.id,
       promotionAlreadyUsed,
     });
 
@@ -370,7 +309,10 @@ export async function POST(request: NextRequest) {
       httpOnly: true,
       path: "/",
       sameSite: "lax",
-      secure: process.env.NODE_ENV === "production",
+      secure: shouldUseSecureCookies({
+        protocol: request.nextUrl.protocol,
+        host: request.nextUrl.host,
+      }),
       maxAge: 60 * 60 * 24 * 30,
     });
   }

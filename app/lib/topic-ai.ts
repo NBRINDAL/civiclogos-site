@@ -237,6 +237,7 @@ function buildReaderPrompt(
     "Answer the visitor's question only from the Civic Logos topic card context below.",
     "You are an AI assistant, not the final judge.",
     "Do not claim the public record has changed.",
+    "Do not imply that AI can create a public record entry, revision event, or synthesis change on its own.",
     "Be calm, serious, and direct.",
     "If the question cannot be answered confidently from the current card, say what assumption, objection, evidence, or measurement gap is still open.",
     "Prefer 2-4 short paragraphs or a short bullet list when helpful.",
@@ -458,6 +459,6 @@ export async function askTopicCard(
     answers,
     issues,
     disclaimer:
-      "These are AI responses generated from the current topic card, visible contribution record, and your scoped topic chat in this session. They only affect the public record when Civic Logos sends a proposal into human review or system-records a narrow AI-origin update with provenance under the current capture policy. AI is not the final judge.",
+      "These are AI responses generated from the current topic card, visible contribution record, and your scoped topic chat in this session. They may help structure internal candidate suggestions, but they do not create public contributions, revision events, or synthesis changes on their own. AI is not the final judge.",
   };
 }

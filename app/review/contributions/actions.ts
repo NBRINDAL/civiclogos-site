@@ -18,6 +18,10 @@ import {
   updateContributionEvidenceExcerpt as persistContributionEvidenceExcerpt,
 } from "@/app/lib/contribution-store";
 import {
+  getCandidateById,
+  updateCandidateReviewStatus,
+} from "@/app/lib/candidate-store";
+import {
   createEvidenceDocument,
   refreshEvidenceDocumentExtraction,
 } from "@/app/lib/evidence-document-store";
@@ -85,10 +89,147 @@ function normalizeReviewForComparison(
   };
 }
 
+function revalidateContributionSurfaces(roomSlug: IssueRoomSlug, topicId: string) {
+  revalidatePath("/ask");
+  revalidatePath("/ledger");
+  revalidatePath("/review/contributions");
+  revalidatePath(getRoomHref(roomSlug));
+  revalidatePath(getRoomTopicHref(roomSlug, topicId));
+}
+
 export async function unlockReviewConsole(formData: FormData) {
   const maintainerKey = String(formData.get("maintainerKey") ?? "").trim();
 
   await setMaintainerSession(maintainerKey);
+  revalidatePath("/review/contributions");
+}
+
+export async function promoteCandidateToContribution(formData: FormData) {
+  if (!(await hasMaintainerSession())) {
+    return;
+  }
+
+  const id = String(formData.get("candidateId") ?? "").trim();
+  const reviewerLabel =
+    String(formData.get("reviewerLabel") ?? "").trim() ||
+    "Civic Logos maintainer review";
+
+  if (!id) {
+    return;
+  }
+
+  const candidate = await getCandidateById(id);
+
+  if (
+    !candidate ||
+    candidate.reviewStatus !== "pending_human_review" ||
+    !isRoomSlug(candidate.roomId)
+  ) {
+    return;
+  }
+
+  const topicCard = getRoomTopicCard(candidate.roomId, candidate.topicId);
+
+  if (!topicCard) {
+    return;
+  }
+
+  const promotedAt = new Date().toISOString();
+  const contribution = await createContribution({
+    roomSlug: candidate.roomId,
+    topicId: candidate.topicId,
+    topicTitle: topicCard.title,
+    lane: candidate.proposedLane,
+    title: candidate.normalizedTitle,
+    body: candidate.normalizedBody,
+    author: {
+      name: "Public contributor via /ask",
+      expertise:
+        "Human-submitted through Civic Logos AI intake and promoted into the public contribution queue by human review.",
+    },
+    candidateSource: {
+      sourceCandidateId: candidate.id,
+      sourceMessageId: candidate.sourceMessageId,
+      rawUserText: candidate.rawUserText,
+      internalAiNotes: candidate.internalAiNotes,
+      origin: candidate.origin,
+      aiAssisted: true,
+      publicSubmission: true,
+      promotedBy: reviewerLabel,
+      promotedAt,
+    },
+  });
+
+  await updateCandidateReviewStatus(
+    candidate.id,
+    "promoted_to_public_contribution",
+    contribution.id,
+  );
+
+  void sendContributionSubmittedNotification({
+    ...contribution,
+    author: {
+      ...contribution.author,
+      email: undefined,
+    },
+  });
+
+  revalidateContributionSurfaces(candidate.roomId, candidate.topicId);
+}
+
+export async function rejectCandidate(formData: FormData) {
+  if (!(await hasMaintainerSession())) {
+    return;
+  }
+
+  const id = String(formData.get("candidateId") ?? "").trim();
+
+  if (!id) {
+    return;
+  }
+
+  const candidate = await getCandidateById(id);
+
+  if (!candidate || candidate.reviewStatus !== "pending_human_review") {
+    return;
+  }
+
+  await updateCandidateReviewStatus(id, "rejected");
+
+  if (isRoomSlug(candidate.roomId)) {
+    revalidateContributionSurfaces(candidate.roomId, candidate.topicId);
+    return;
+  }
+
+  revalidatePath("/ask");
+  revalidatePath("/review/contributions");
+}
+
+export async function archiveCandidate(formData: FormData) {
+  if (!(await hasMaintainerSession())) {
+    return;
+  }
+
+  const id = String(formData.get("candidateId") ?? "").trim();
+
+  if (!id) {
+    return;
+  }
+
+  const candidate = await getCandidateById(id);
+
+  if (!candidate || candidate.reviewStatus !== "pending_human_review") {
+    return;
+  }
+
+  await updateCandidateReviewStatus(id, "archived");
+
+  if (isRoomSlug(candidate.roomId)) {
+    revalidateContributionSurfaces(candidate.roomId, candidate.topicId);
+    return;
+  }
+
+  revalidatePath("/ask");
   revalidatePath("/review/contributions");
 }
 

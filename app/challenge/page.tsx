@@ -200,7 +200,7 @@ export default async function ChallengePage({
         <nav className={styles.nav}>
           <SiteBrand className={styles.brand} href="/" subtitle="Public challenge" />
           <div className={styles.navLinks}>
-            <Link href="/">Home</Link>
+            <Link href="/">Main chat</Link>
             <Link href="/press">Press</Link>
             <Link href="/demo">Demo</Link>
             <Link href="/ledger">Ledger</Link>
@@ -224,8 +224,8 @@ export default async function ChallengePage({
               >
                 Pressure-test the healthcare card
               </Link>
-              <Link className={styles.secondaryAction} href="/demo">
-                Watch the 8-step demo
+              <Link className={styles.secondaryAction} href="/">
+                Open main chat
               </Link>
             </div>
           </div>
@@ -243,6 +243,9 @@ export default async function ChallengePage({
 
       <main className={styles.main}>
         <section className={styles.ctaStrip} aria-label="Challenge actions">
+          <Link className={styles.secondaryAction} href="/">
+            Open main chat
+          </Link>
           <Link
             className={styles.primaryAction}
             href={contributionHref("objection", inboundReferralSource)}

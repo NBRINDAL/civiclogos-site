@@ -1,0 +1,449 @@
+.page {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 24px;
+  isolation: isolate;
+}
+
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background:
+    radial-gradient(circle at 10% 12%, rgba(var(--brand-red-rgb), 0.12), transparent 24%),
+    radial-gradient(circle at 84% 18%, rgba(var(--brand-blue-rgb), 0.14), transparent 30%),
+    radial-gradient(circle at 50% 88%, rgba(var(--brand-green-rgb), 0.14), transparent 24%),
+    linear-gradient(180deg, rgba(252, 249, 243, 0.9), rgba(243, 239, 231, 0.96));
+}
+
+.header,
+.main {
+  width: min(1380px, 100%);
+}
+
+.header {
+  display: grid;
+  gap: 28px;
+  padding: 20px 0 24px;
+}
+
+.headerBar,
+.hero,
+.railCard,
+.workspaceIntro {
+  padding: 24px;
+  border: 1px solid rgba(18, 33, 39, 0.12);
+  border-radius: 28px;
+  background: rgba(255, 251, 245, 0.84);
+  box-shadow: 0 20px 44px rgba(18, 33, 39, 0.07);
+  backdrop-filter: blur(14px);
+}
+
+.headerBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.brand {
+  flex: 0 0 auto;
+}
+
+.topNav {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 18px;
+  color: var(--muted);
+}
+
+.topNav a {
+  position: relative;
+  padding-bottom: 4px;
+}
+
+.topNav a::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: 1px;
+  transform: scaleX(0);
+  transform-origin: left;
+  background: currentColor;
+  transition: transform 180ms ease;
+}
+
+.hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(320px, 0.8fr);
+  gap: 22px;
+  align-items: start;
+}
+
+.eyebrow,
+.panelLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--signal);
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.eyebrow::before,
+.panelLabel::before {
+  content: "";
+  width: 28px;
+  height: 1px;
+  background: currentColor;
+}
+
+.heroCopy,
+.heroPanel,
+.railCard,
+.workspaceIntro {
+  display: grid;
+  gap: 16px;
+}
+
+.heroCopy h1,
+.heroPanel h2,
+.railHeader h2,
+.workspaceIntro h2 {
+  color: var(--foreground);
+  font-family: var(--font-serif), serif;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  line-height: 1.04;
+  text-wrap: balance;
+}
+
+.heroCopy h1 {
+  font-size: clamp(3rem, 6vw, 5.2rem);
+}
+
+.lead,
+.supporting,
+.heroPanel p,
+.railNote,
+.workspaceIntro p,
+.routeCard p,
+.promptList,
+.scopeMeta,
+.workspaceMeta {
+  color: var(--muted);
+  line-height: 1.72;
+}
+
+.lead {
+  font-size: 1.08rem;
+}
+
+.heroActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 6px;
+}
+
+.primaryAction,
+.secondaryAction,
+.inlineLink {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  padding: 0 18px;
+  border-radius: 999px;
+  font-weight: 700;
+  text-decoration: none;
+  transition:
+    transform 180ms ease,
+    background 180ms ease,
+    border-color 180ms ease;
+}
+
+.primaryAction {
+  border: 1px solid transparent;
+  background: var(--foreground);
+  color: #fff7ee;
+  box-shadow: 0 12px 28px rgba(var(--brand-blue-rgb), 0.22);
+}
+
+.secondaryAction,
+.inlineLink {
+  border: 1px solid rgba(18, 33, 39, 0.14);
+  background: rgba(255, 251, 245, 0.88);
+  color: var(--foreground);
+}
+
+.heroPanel {
+  border-color: rgba(var(--brand-blue-rgb), 0.18);
+  background:
+    linear-gradient(180deg, rgba(var(--brand-blue-rgb), 0.08), rgba(var(--brand-green-rgb), 0.1) 54%, rgba(255, 251, 245, 0.9));
+}
+
+.heroPanel h2 {
+  font-size: clamp(1.8rem, 3vw, 2.6rem);
+}
+
+.heroStats {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.heroStats div {
+  display: grid;
+  gap: 4px;
+  padding: 14px 16px;
+  border: 1px solid rgba(18, 33, 39, 0.08);
+  border-radius: 18px;
+  background: rgba(255, 251, 245, 0.78);
+}
+
+.heroStats strong {
+  color: var(--foreground);
+  font-family: var(--font-serif), serif;
+  font-size: 1.5rem;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  line-height: 1;
+}
+
+.heroStats span {
+  color: var(--signal);
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.statusNote {
+  padding: 14px 16px;
+  border: 1px solid rgba(var(--brand-green-rgb), 0.18);
+  border-radius: 18px;
+  background: rgba(244, 250, 239, 0.92);
+  color: var(--foreground);
+  font-weight: 700;
+}
+
+.statusWarn {
+  border-color: rgba(var(--brand-red-rgb), 0.18);
+  background: rgba(181, 94, 51, 0.08);
+}
+
+.scopeMeta,
+.workspaceMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.scopeMeta span,
+.workspaceMeta span {
+  display: inline-flex;
+  align-items: center;
+  min-height: 34px;
+  padding: 0 12px;
+  border: 1px solid rgba(18, 33, 39, 0.1);
+  border-radius: 999px;
+  background: rgba(255, 251, 245, 0.78);
+  color: var(--foreground);
+  font-size: 0.85rem;
+}
+
+.main {
+  display: grid;
+  grid-template-columns: minmax(260px, 320px) minmax(0, 1fr);
+  gap: 24px;
+  align-items: start;
+  padding-bottom: 72px;
+}
+
+.sideRail {
+  position: sticky;
+  top: 24px;
+  display: grid;
+  gap: 18px;
+}
+
+.railHeader {
+  display: grid;
+  gap: 8px;
+}
+
+.railHeader h2 {
+  font-size: 1.45rem;
+}
+
+.promptList {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding-left: 18px;
+}
+
+.routeList {
+  display: grid;
+  gap: 10px;
+}
+
+.routeCard {
+  display: grid;
+  gap: 6px;
+  padding: 16px;
+  border: 1px solid rgba(18, 33, 39, 0.1);
+  border-radius: 20px;
+  background: rgba(255, 252, 247, 0.94);
+  color: inherit;
+  text-decoration: none;
+}
+
+.routeCard strong {
+  color: var(--foreground);
+  font-size: 0.98rem;
+}
+
+.routeCard p {
+  margin: 0;
+  font-size: 0.92rem;
+}
+
+.workspaceColumn {
+  display: grid;
+  gap: 18px;
+}
+
+.workspaceIntro {
+  border-color: rgba(var(--brand-blue-rgb), 0.18);
+}
+
+.workspaceIntroHeader {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.workspaceIntro h2 {
+  font-size: clamp(1.9rem, 3vw, 2.6rem);
+}
+
+.flowTrack {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.flowStep {
+  display: inline-flex;
+  align-items: center;
+  min-height: 38px;
+  padding: 0 14px;
+  border: 1px solid rgba(var(--brand-blue-rgb), 0.16);
+  border-radius: 999px;
+  background: rgba(244, 250, 255, 0.92);
+  color: var(--foreground);
+  font-size: 0.88rem;
+  font-weight: 700;
+}
+
+.flowStep:not(:last-child)::after {
+  content: "\2192";
+  margin-left: 12px;
+  color: var(--signal);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .topNav a:hover::after {
+    transform: scaleX(1);
+  }
+
+  .primaryAction:hover,
+  .secondaryAction:hover,
+  .inlineLink:hover,
+  .routeCard:hover {
+    transform: translateY(-2px);
+  }
+
+  .primaryAction:hover {
+    background: var(--accent);
+  }
+
+  .secondaryAction:hover,
+  .inlineLink:hover,
+  .routeCard:hover {
+    border-color: rgba(var(--brand-blue-rgb), 0.24);
+    background: rgba(244, 250, 255, 0.92);
+  }
+}
+
+@media (max-width: 1160px) {
+  .main,
+  .hero {
+    grid-template-columns: 1fr;
+  }
+
+  .sideRail {
+    position: static;
+    order: 2;
+  }
+
+  .workspaceColumn {
+    order: 1;
+  }
+}
+
+@media (max-width: 820px) {
+  .headerBar,
+  .workspaceIntroHeader {
+    display: grid;
+  }
+
+  .topNav {
+    justify-content: flex-start;
+  }
+
+  .heroStats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 720px) {
+  .page {
+    padding: 16px;
+  }
+
+  .headerBar,
+  .hero,
+  .railCard,
+  .workspaceIntro {
+    padding: 20px;
+    border-radius: 22px;
+  }
+
+  .heroCopy h1 {
+    font-size: clamp(2.7rem, 14vw, 4.1rem);
+  }
+
+  .heroPanel > p:first-of-type {
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 5;
+  }
+}
+
+@media (max-width: 520px) {
+  .heroStats {
+    grid-template-columns: 1fr;
+  }
+}

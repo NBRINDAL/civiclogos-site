@@ -1,5 +1,6 @@
 import { createHash, timingSafeEqual } from "node:crypto";
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
+import { shouldUseSecureCookies } from "./cookie-security";
 
 export const maintainerSessionCookieName = "civiclogos_maintainer_session";
 
@@ -68,12 +69,16 @@ export async function setMaintainerSession(maintainerKey: string) {
   }
 
   const cookieStore = await cookies();
+  const headerStore = await headers();
   cookieStore.set(maintainerSessionCookieName, hashMaintainerKey(maintainerKey.trim()), {
     httpOnly: true,
     maxAge: maintainerSessionMaxAgeSeconds,
     path: "/",
     sameSite: "lax",
-    secure: process.env.NODE_ENV === "production",
+    secure: shouldUseSecureCookies({
+      protocol: headerStore.get("x-forwarded-proto"),
+      host: headerStore.get("x-forwarded-host") ?? headerStore.get("host"),
+    }),
   });
 
   return true;

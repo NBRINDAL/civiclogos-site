@@ -299,6 +299,34 @@
   margin: 0;
 }
 
+.demoQuote,
+.demoAuditNote {
+  padding: 14px 16px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.68);
+}
+
+.demoQuote {
+  border: 1px solid rgba(var(--brand-blue-rgb), 0.16);
+  color: var(--foreground);
+  font-weight: 700;
+}
+
+.demoAuditNote {
+  border: 1px solid rgba(var(--brand-green-rgb), 0.18);
+  color: var(--foreground);
+  font-weight: 700;
+}
+
+.demoList {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding-left: 20px;
+  color: var(--muted);
+  line-height: 1.7;
+}
+
 .ctaBand {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;

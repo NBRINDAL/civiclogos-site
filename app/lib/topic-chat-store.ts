@@ -72,6 +72,38 @@ export async function getTopicChatStoreMetadata() {
   return withTopicChatStore((store) => store.getTopicChatStoreMetadata());
 }
 
+export async function inspectTopicChatStoreMetadata(args?: {
+  avoidPrototypeInitialization?: boolean;
+}) {
+  if (isDatabaseTopicChatStoreConfigured()) {
+    try {
+      return await databaseStore.getTopicChatStoreMetadata();
+    } catch (error) {
+      console.error("Topic chat database store failed while inspecting metadata.", error);
+
+      if (args?.avoidPrototypeInitialization) {
+        return {
+          prototype: true,
+          mode: "fallback" as const,
+          note: withFallbackNote(
+            "Persistent topic chat storage is unavailable.",
+          ),
+        };
+      }
+    }
+  }
+
+  if (args?.avoidPrototypeInitialization) {
+    return {
+      prototype: true,
+      mode: "prototype" as const,
+      note: "Prototype topic chat storage is active while persistent storage is being finalized.",
+    };
+  }
+
+  return getTopicChatStoreMetadata();
+}
+
 export async function listTopicChatMessages(filters: ListTopicChatFilters) {
   return withTopicChatStore((store) => store.listTopicChatMessages(filters));
 }

@@ -170,10 +170,11 @@ function buildPromotionPrompt(args: {
   context: string;
 }) {
   return [
-    "Decide whether this AI answer should become part of the Civic Logos topic record.",
+    "Decide whether this AI answer should produce an internal Civic Logos candidate suggestion for human review.",
     "Most chat exchanges should remain exploratory and return decision=none.",
-    "Use decision=obvious only when the answer contains a narrow, inspectable, directly grounded update that fits the explicit AI-origin capture policy. It must be system-recorded with provenance, remain challengeable, and never be framed as human-approved or final.",
-    "Use decision=review when the answer suggests a useful record change, but it still depends on interpretive judgment, contested framing, or a human deciding whether the change should move the card.",
+    "Never treat an AI answer as a direct public-record write, a synthesis change, or a revision event.",
+    "Use decision=review when the answer suggests a useful candidate record that a human reviewer may later promote, reject, or archive.",
+    "Use decision=obvious sparingly and only as a stronger form of candidate-suggestion confidence. It still does not authorize any public-ledger mutation.",
     "When decision=none, leave title/body as brief placeholders and keep assignment_kind=unclear.",
     "Return only JSON that matches the requested schema.",
     "",
@@ -213,7 +214,7 @@ async function buildOpenAiProposal(args: {
         temperature: 0.2,
         max_output_tokens: 500,
         instructions:
-          "You are a Civic Logos record-gate assistant. You do not rewrite the public record or decide truth. You only classify whether a chat answer should remain exploratory, go to human review, or fit the narrow AI-origin capture policy for a system-recorded provisional record.",
+          "You are a Civic Logos candidate-gate assistant. You do not rewrite the public record or decide truth. You only classify whether a chat answer should remain exploratory or suggest an internal candidate for human review.",
         input: [
           {
             role: "user",
@@ -284,7 +285,7 @@ async function buildAnthropicProposal(args: {
         model: config.model,
         max_tokens: 500,
         system:
-          "You are a Civic Logos record-gate assistant. You do not rewrite the public record or decide truth. You only classify whether a chat answer should remain exploratory, go to human review, or fit the narrow AI-origin capture policy for a system-recorded provisional record. Return only JSON that matches the requested schema.",
+          "You are a Civic Logos candidate-gate assistant. You do not rewrite the public record or decide truth. You only classify whether a chat answer should remain exploratory or suggest an internal candidate for human review. Return only JSON that matches the requested schema.",
         messages: [
           {
             role: "user",

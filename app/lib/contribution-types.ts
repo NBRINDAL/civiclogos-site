@@ -1,4 +1,5 @@
 import type { IssueRoomSlug } from "./civic-logos";
+import type { CandidateInternalAiNote, CandidateOrigin } from "./candidate-types";
 import type {
   DebateLane,
   EvidenceSource,
@@ -53,6 +54,18 @@ export type ReviewChallengeSource = {
   source: "review-decision";
   sourceTitle?: string;
   createdAt: string;
+};
+
+export type CandidatePromotionSource = {
+  sourceCandidateId: string;
+  sourceMessageId: string;
+  rawUserText: string;
+  internalAiNotes: CandidateInternalAiNote[];
+  origin: CandidateOrigin;
+  aiAssisted: true;
+  publicSubmission: true;
+  promotedBy: string;
+  promotedAt: string;
 };
 
 export type EvidenceExtraction = {
@@ -151,6 +164,7 @@ export type Contribution = TopicCardReference & {
   author: ContributionAuthor;
   referralSource?: ContributionReferralSource;
   draftSource?: AssistedDraftSource;
+  candidateSource?: CandidatePromotionSource;
   reviewChallengeSource?: ReviewChallengeSource;
   status: ReviewStatus;
   createdAt: string;
@@ -170,6 +184,7 @@ export type CreateContributionInput = TopicCardReference & {
   author: ContributionAuthor;
   referralSource?: ContributionReferralSource;
   draftSource?: AssistedDraftSource;
+  candidateSource?: CandidatePromotionSource;
   reviewChallengeSource?: ReviewChallengeSource;
 };
 
@@ -210,6 +225,7 @@ export function toPublicContributionRecord(item: Contribution): PublicContributi
       expertise: item.author.expertise,
     },
     draftSource: item.draftSource,
+    candidateSource: item.candidateSource,
     reviewChallengeSource: item.reviewChallengeSource,
     status: item.status,
     createdAt: item.createdAt,

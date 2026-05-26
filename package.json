@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "protocol:check": "node scripts/validate-ledger-protocol.mjs"
+    "protocol:check": "node scripts/validate-ledger-protocol.mjs",
+    "candidate:flow:check": "node scripts/check-candidate-flow.mjs"
   },
   "dependencies": {
     "next": "16.2.6",

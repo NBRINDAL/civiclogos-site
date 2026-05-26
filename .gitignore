@@ -43,5 +43,10 @@ next-env.d.ts
 
 # prototype contribution store
 /data/prototype-contributions.runtime.json
+/data/prototype-candidates.runtime.json
+/data/prototype-evidence-index.runtime.json
 /data/prototype-home-intakes.runtime.json
+/data/prototype-review-chat.runtime.json
+/data/prototype-review-evidence.runtime.json
 /data/prototype-topic-chat.runtime.json
+/tmp-next-start-*.log
