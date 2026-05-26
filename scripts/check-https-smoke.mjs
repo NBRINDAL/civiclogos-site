@@ -1,6 +1,13 @@
+import { execFile, spawn } from "node:child_process";
+import { mkdtemp, rm, writeFile } from "node:fs/promises";
+import os from "node:os";
+import path from "node:path";
+import { promisify } from "node:util";
+
 const readOnlyPrompt = "What changed in this card?";
 const contributionPrompt =
   "This healthcare claim assumes savings will reach patients, but institutions may capture them.";
+const execFileAsync = promisify(execFile);
 
 function assert(condition, message) {
   if (!condition) {
@@ -41,15 +48,152 @@ async function fetchWithTimeout(url, options = {}, timeoutMs = 20000) {
   }
 }
 
+function isProtectedVercelPreview(baseUrl) {
+  const hostname = new URL(baseUrl).hostname.toLowerCase();
+  return hostname.endsWith(".vercel.app");
+}
+
+async function runVercelCurl(baseUrl, pathname, options = {}) {
+  const method = options.method ?? "GET";
+  const body =
+    typeof options.body === "string"
+      ? options.body
+      : options.body
+        ? JSON.stringify(options.body)
+        : null;
+  const headers = Object.entries(options.headers ?? {});
+  const curlArgs = [
+    "--yes",
+    "vercel",
+    "curl",
+    pathname,
+    "--deployment",
+    baseUrl,
+    "--",
+    "--silent",
+    "--show-error",
+    "--write-out",
+    "__STATUS__:%{http_code}",
+    "--request",
+    method,
+  ];
+
+  for (const [name, value] of headers) {
+    curlArgs.push("--header", `${name}: ${value}`);
+  }
+
+  if (body !== null && process.platform !== "win32") {
+    curlArgs.push("--data", body);
+  }
+
+  const result =
+    process.platform === "win32"
+      ? await (async () => {
+          let tempDirPath = null;
+          const psArrayItems = curlArgs
+            .map((value) => `'${String(value).replace(/'/g, "''")}'`)
+            .join(", ");
+          const psCommand = [
+            `$cmd = '${(process.env.ProgramFiles ?? "C:\\Program Files").replace(/'/g, "''")}\\nodejs\\npx.cmd'`,
+            `$args = @(${psArrayItems})`,
+          ];
+
+          if (body !== null) {
+            tempDirPath = await mkdtemp(path.join(os.tmpdir(), "civiclogos-smoke-"));
+            const payloadPath = path.join(tempDirPath, "payload.json");
+            await writeFile(payloadPath, body, "utf8");
+            psCommand.push(
+              `$args += @('--data-binary', '@${payloadPath.replace(/'/g, "''")}')`,
+            );
+          }
+
+          psCommand.push("& $cmd @args");
+          try {
+            return await execFileAsync(
+              "powershell.exe",
+              ["-NoProfile", "-Command", psCommand.join("; ")],
+              {
+                cwd: process.cwd(),
+                maxBuffer: 20_000_000,
+                windowsHide: true,
+              },
+            );
+          } finally {
+            if (tempDirPath) {
+              await rm(tempDirPath, { force: true, recursive: true });
+            }
+          }
+        })()
+      : await new Promise((resolve, reject) => {
+          const child = spawn("npx", curlArgs, {
+            cwd: process.cwd(),
+            stdio: ["ignore", "pipe", "pipe"],
+            windowsHide: true,
+          });
+          let stdout = "";
+          let stderr = "";
+
+          child.stdout.on("data", (chunk) => {
+            stdout += chunk.toString();
+          });
+          child.stderr.on("data", (chunk) => {
+            stderr += chunk.toString();
+          });
+          child.once("error", reject);
+          child.once("exit", (code) => {
+            if (code !== 0) {
+              reject(
+                new Error(
+                  `vercel curl ${pathname} failed with exit code ${code}.${stderr ? ` ${stderr.trim()}` : ""}`,
+                ),
+              );
+              return;
+            }
+
+            resolve({ stderr, stdout });
+          });
+        });
+  const output = result.stdout;
+  const marker = "__STATUS__:";
+  const markerIndex = output.lastIndexOf(marker);
+  assert(markerIndex >= 0, `Could not parse HTTP status from vercel curl output for ${pathname}.`);
+  const bodyText = output.slice(0, markerIndex);
+  const statusText = output.slice(markerIndex + marker.length).trim();
+  const status = Number(statusText);
+  assert(Number.isFinite(status), `Invalid HTTP status from vercel curl for ${pathname}: ${statusText}`);
+
+  return {
+    ok: status >= 200 && status < 300,
+    status,
+    text: async () => bodyText,
+    json: async () => JSON.parse(bodyText),
+  };
+}
+
+async function request(baseUrl, pathname, options = {}) {
+  if (isProtectedVercelPreview(baseUrl)) {
+    return runVercelCurl(baseUrl, pathname, options);
+  }
+
+  return fetchWithTimeout(`${baseUrl}${pathname}`, options);
+}
+
 async function fetchHtml(url) {
-  const response = await fetchWithTimeout(url);
+  const baseUrl = normalizeBaseUrl(url);
+  const pathname = new URL(url).pathname + new URL(url).search;
+  const response = await request(baseUrl, pathname);
   const body = await response.text();
   assert(response.ok, `GET ${url} failed with ${response.status}.`);
   return normalizeText(body);
 }
 
 async function fetchJson(url, options = {}) {
-  const response = await fetchWithTimeout(url, options);
+  const parsed = new URL(url);
+  const response = await request(
+    normalizeBaseUrl(url),
+    parsed.pathname + parsed.search,
+    options,
+  );
   const payload = await response.json();
   return { response, payload };
 }
