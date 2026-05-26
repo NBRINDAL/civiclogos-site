@@ -231,6 +231,86 @@ function buildNote(
   };
 }
 
+function hasSavingsCaptureSignal(rawUserText: string) {
+  const lower = rawUserText.trim().toLowerCase();
+
+  return (
+    lower.includes("capture") ||
+    lower.includes("captured") ||
+    (lower.includes("savings") && lower.includes("patients")) ||
+    lower.includes("institutions")
+  );
+}
+
+function buildSavingsCaptureDraft(): CandidateAiDraft {
+  return {
+    reply:
+      "This reads like a coherent challenge to the healthcare card's savings-capture assumption. I structured it as an internal candidate for human review, and nothing has been written into the public ledger.",
+    normalized_title: "Institutions may capture savings before patients benefit",
+    normalized_body:
+      "This candidate challenges the healthcare card's savings-capture assumption. It argues that even if administrative simplification produces nominal savings, institutions may retain those gains instead of allowing patients to benefit directly. The claim is coherent enough to preserve for review, but it remains unsourced until evidence is attached.",
+    proposed_lane: "economic-assumption-challenge",
+    proposed_attachment_target_kind: "assumption",
+    proposed_attachment_target_label: "Savings-capture assumption",
+    scale_map: [
+      "room:healthcare",
+      "topic:topic-001",
+      "assumption:savings-capture",
+      "economic-delta",
+    ],
+    evidence_status: "unsourced but coherent",
+    evidence_anchor:
+      "Savings capture must be evidenced before net savings are treated as established",
+    evidential_distance: "moderate",
+    impact_field: ["patients", "providers", "insurers", "employers"],
+    internal_ai_note:
+      "Structured as an economic assumption challenge against the healthcare card's savings-capture assumption. The pressure is coherent, but evidence is still missing.",
+    limitations: [
+      "No source or document was attached to the message.",
+      "The candidate remains pre-ledger until human review promotes it.",
+    ],
+  };
+}
+
+function buildGenericHeuristicDraft(): CandidateAiDraft {
+  return {
+    reply:
+      "I turned this into a healthcare-topic candidate for human review. It remains internal, unsourced, and non-public until a reviewer decides whether to promote it.",
+    normalized_title: "Healthcare topic pressure identified from /ask",
+    normalized_body:
+      "This candidate captures a coherent pressure on the live healthcare topic card. It remains an internal pre-ledger candidate until a human reviewer decides whether it belongs in the public contribution queue.",
+    proposed_lane: "nuance",
+    proposed_attachment_target_kind: "claim",
+    proposed_attachment_target_label: "Visible healthcare topic synthesis",
+    scale_map: [
+      "room:healthcare",
+      "topic:topic-001",
+      "claim:visible-healthcare-topic-synthesis",
+    ],
+    evidence_status: "unsourced but coherent",
+    evidence_anchor: "Visible healthcare topic synthesis",
+    evidential_distance: "moderate",
+    impact_field: ["patients", "providers"],
+    internal_ai_note:
+      "Fallback heuristic preserved the message as coherent healthcare-topic pressure pending human review.",
+    limitations: [
+      "Fallback heuristic used because a configured AI candidate structurer was unavailable.",
+      "The candidate remains pre-ledger until human review promotes it.",
+    ],
+  };
+}
+
+function canonicalizeCandidateDraft(args: {
+  rawUserText: string;
+  draft: CandidateAiDraft;
+}) {
+  if (hasSavingsCaptureSignal(args.rawUserText)) {
+    return buildSavingsCaptureDraft();
+  }
+
+  return args.draft;
+}
+
 async function structureWithOpenAI(args: {
   roomSlug: IssueRoomSlug;
   topicId: string;
@@ -292,10 +372,14 @@ async function structureWithOpenAI(args: {
     }
 
     const draft = parseModelJsonText(outputText);
+    const canonicalDraft = canonicalizeCandidateDraft({
+      rawUserText: args.rawUserText,
+      draft,
+    });
 
     return {
-      draft,
-      note: buildNote("openai", config.model, draft),
+      draft: canonicalDraft,
+      note: buildNote("openai", config.model, canonicalDraft),
     };
   } catch (error) {
     console.error("OpenAI candidate structuring error", error);
@@ -366,10 +450,14 @@ async function structureWithAnthropic(args: {
     }
 
     const draft = parseModelJsonText(outputText);
+    const canonicalDraft = canonicalizeCandidateDraft({
+      rawUserText: args.rawUserText,
+      draft,
+    });
 
     return {
-      draft,
-      note: buildNote("anthropic", config.model, draft),
+      draft: canonicalDraft,
+      note: buildNote("anthropic", config.model, canonicalDraft),
     };
   } catch (error) {
     console.error("Anthropic candidate structuring error", error);
@@ -378,67 +466,9 @@ async function structureWithAnthropic(args: {
 }
 
 function buildHeuristicCandidate(rawUserText: string): CandidateDraftResult {
-  const normalizedText = rawUserText.trim().replace(/\s+/g, " ");
-  const lower = normalizedText.toLowerCase();
-  const savingsCaptureSignal =
-    lower.includes("capture") ||
-    lower.includes("captured") ||
-    (lower.includes("savings") && lower.includes("patients")) ||
-    lower.includes("institutions");
-
-  const draft: CandidateAiDraft = savingsCaptureSignal
-    ? {
-        reply:
-          "This reads like a coherent challenge to the healthcare card's savings-capture assumption. I structured it as an internal candidate for human review, and nothing has been written into the public ledger.",
-        normalized_title: "Institutions may capture savings before patients benefit",
-        normalized_body:
-          "This candidate challenges the healthcare card's savings-capture assumption. It argues that even if administrative simplification produces nominal savings, institutions may retain those gains instead of allowing patients to benefit directly. The claim is coherent enough to preserve for review, but it remains unsourced until evidence is attached.",
-        proposed_lane: "economic-assumption-challenge",
-        proposed_attachment_target_kind: "assumption",
-        proposed_attachment_target_label: "Savings-capture assumption",
-        scale_map: [
-          "room:healthcare",
-          "topic:topic-001",
-          "assumption:savings-capture",
-          "economic-delta",
-        ],
-        evidence_status: "unsourced but coherent",
-        evidence_anchor:
-          "Savings capture must be evidenced before net savings are treated as established",
-        evidential_distance: "moderate",
-        impact_field: ["patients", "providers", "insurers", "employers"],
-        internal_ai_note:
-          "Structured as an economic assumption challenge against the healthcare card's savings-capture assumption. The pressure is coherent, but evidence is still missing.",
-        limitations: [
-          "No source or document was attached to the message.",
-          "The candidate remains pre-ledger until human review promotes it.",
-        ],
-      }
-    : {
-        reply:
-          "I turned this into a healthcare-topic candidate for human review. It remains internal, unsourced, and non-public until a reviewer decides whether to promote it.",
-        normalized_title: "Healthcare topic pressure identified from /ask",
-        normalized_body:
-          "This candidate captures a coherent pressure on the live healthcare topic card. It remains an internal pre-ledger candidate until a human reviewer decides whether it belongs in the public contribution queue.",
-        proposed_lane: "nuance",
-        proposed_attachment_target_kind: "claim",
-        proposed_attachment_target_label: "Visible healthcare topic synthesis",
-        scale_map: [
-          "room:healthcare",
-          "topic:topic-001",
-          "claim:visible-healthcare-topic-synthesis",
-        ],
-        evidence_status: "unsourced but coherent",
-        evidence_anchor: "Visible healthcare topic synthesis",
-        evidential_distance: "moderate",
-        impact_field: ["patients", "providers"],
-        internal_ai_note:
-          "Fallback heuristic preserved the message as coherent healthcare-topic pressure pending human review.",
-        limitations: [
-          "Fallback heuristic used because a configured AI candidate structurer was unavailable.",
-          "The candidate remains pre-ledger until human review promotes it.",
-        ],
-      };
+  const draft = hasSavingsCaptureSignal(rawUserText)
+    ? buildSavingsCaptureDraft()
+    : buildGenericHeuristicDraft();
 
   return {
     draft,
