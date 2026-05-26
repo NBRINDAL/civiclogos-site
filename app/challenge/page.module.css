@@ -229,10 +229,20 @@
   gap: 14px;
 }
 
-.exampleGrid {
+.exampleGrid,
+.promptGrid,
+.statusGrid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 14px;
+}
+
+.exampleGrid {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
+.promptGrid,
+.statusGrid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
 .smallCard {
@@ -323,6 +333,8 @@
 
   .cardGrid,
   .exampleGrid,
+  .promptGrid,
+  .statusGrid,
   .proofGrid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -340,6 +352,8 @@
 
   .cardGrid,
   .exampleGrid,
+  .promptGrid,
+  .statusGrid,
   .proofGrid {
     grid-template-columns: 1fr;
   }

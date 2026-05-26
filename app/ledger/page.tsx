@@ -164,6 +164,36 @@ export default function LedgerPage() {
 
         <section className={styles.twoColumn}>
           <article className={styles.panel}>
+            <span className={styles.eyebrow}>Public-record audit</span>
+            <h2>The first revision proved the ledger loop can move a card without faking public uptake.</h2>
+            <ul className={styles.auditList}>
+              <li>Origin was labeled as founder-maintainer, not outside public submission.</li>
+              <li>AI-reader notes were recorded as advisory structure.</li>
+              <li>Human review decided incorporation.</li>
+              <li>The visible synthesis changed only after review.</li>
+              <li>The revision trace preserved the before/after state.</li>
+            </ul>
+          </article>
+
+          <article className={styles.panel}>
+            <span className={styles.eyebrow}>Next public test</span>
+            <h2>The first outside contribution is still the next milestone.</h2>
+            <p>
+              Prototype examples and founder-maintainer records stay labeled
+              separately. The public runway now asks a stranger to make one
+              useful objection, evidence source, correction, implementation
+              concern, or economic assumption challenge.
+            </p>
+            <div className={styles.heroActions}>
+              <Link className={styles.primaryAction} href="/challenge">
+                See how to contribute
+              </Link>
+            </div>
+          </article>
+        </section>
+
+        <section className={styles.twoColumn}>
+          <article className={styles.panel}>
             <span className={styles.eyebrow}>What it is</span>
             <h2>A versioned public reasoning record.</h2>
             <p>

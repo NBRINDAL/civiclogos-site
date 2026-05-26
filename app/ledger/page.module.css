@@ -135,6 +135,15 @@
   line-height: 1.72;
 }
 
+.auditList {
+  display: grid;
+  gap: 10px;
+  margin: 18px 0 0;
+  padding-left: 20px;
+  color: var(--muted);
+  line-height: 1.68;
+}
+
 .heroActions {
   display: flex;
   flex-wrap: wrap;

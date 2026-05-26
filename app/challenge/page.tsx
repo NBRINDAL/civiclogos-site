@@ -42,24 +42,59 @@ const notItems = [
   "Not an endorsement request",
 ] as const;
 
-const bestFirstContributionExamples = [
+const firstContributionExamples = [
   {
     lane: "objection",
-    title: "One strong objection",
+    title: "Strong objection",
     body: "The card assumes administrative simplification lowers costs, but savings may be captured by intermediaries unless the record specifies who receives the benefit.",
+    why: "A good objection names the exact claim under pressure and the failure mode a reviewer should inspect.",
     action: "Start an objection draft",
   },
   {
     lane: "evidence",
-    title: "One concrete evidence source",
+    title: "Evidence source",
     body: "A credible report, policy document, dataset, or paper that measures prior authorization burden, claims friction, documentation time, or triage outcomes.",
+    why: "A good source says what it supports, narrows, or challenges instead of simply dropping a link.",
     action: "Start an evidence draft",
   },
   {
     lane: "correction",
-    title: "One correction",
+    title: "Correction",
     body: "A specific factual, numeric, definitional, or scope issue that should be changed before the card is treated as a reliable public record.",
+    why: "A good correction is small enough to verify and precise enough for a human reviewer to accept or reject.",
     action: "Start a correction draft",
+  },
+  {
+    lane: "implementation-concern",
+    title: "Implementation concern",
+    body: "The card names AI-assisted triage, but it still needs human-escalation thresholds, liability boundaries, and fail-safe rules before the proposal is operational.",
+    why: "A good implementation concern explains what would break during deployment, not just whether the idea sounds appealing.",
+    action: "Start an implementation draft",
+  },
+  {
+    lane: "economic-assumption-challenge",
+    title: "Economic assumption challenge",
+    body: "The card should not treat gross administrative savings as net public savings until transition costs and savings-capture rules are attached to evidence.",
+    why: "A good economic challenge identifies the assumption that controls whether the card's upside is real.",
+    action: "Start an economic draft",
+  },
+] as const;
+
+const guidedContributionPrompts = [
+  {
+    lane: "objection",
+    prompt: "What is the strongest reason this card might be wrong?",
+    detail: "Use this if you see an overclaim, missing counterargument, or hidden assumption.",
+  },
+  {
+    lane: "evidence",
+    prompt: "What evidence would make this card stronger or weaker?",
+    detail: "Use this if you have a source, dataset, paper, or concrete institutional example.",
+  },
+  {
+    lane: "implementation-concern",
+    prompt: "What implementation detail is currently under-specified?",
+    detail: "Use this if the idea depends on workflow, staffing, liability, escalation, or adoption details.",
   },
 ] as const;
 
@@ -97,6 +132,28 @@ export default async function ChallengePage({
   ]);
 
   const contributionCounts = getContributionCountSummary(contributions);
+  const currentStatusItems = [
+    {
+      label: "Founder-maintainer revision",
+      value: "Complete",
+      note: "The first synthesis change is labeled as maintainer-origin and visible in the revision trace.",
+    },
+    {
+      label: "Outside public submissions",
+      value: String(contributionCounts.publicSubmissions),
+      note: "The first real outside contribution is still the next public milestone.",
+    },
+    {
+      label: "Next milestone",
+      value: "First outside contribution",
+      note: "The goal is one useful public objection, source, correction, or implementation challenge.",
+    },
+    {
+      label: "Prototype examples",
+      value: "Labeled",
+      note: `${contributionCounts.prototypeExamples} prototype examples remain separate from public uptake.`,
+    },
+  ];
   const proofStats = [
     {
       label: "Prototype records",
@@ -111,7 +168,7 @@ export default async function ChallengePage({
     {
       label: "Changed-card records",
       value: String(contributionCounts.changedCard),
-      note: "These are records whose human review says they changed the public card.",
+      note: "These count only when human review and a live revision trace changed the public card.",
     },
     {
       label: "Outside submissions so far",
@@ -209,6 +266,22 @@ export default async function ChallengePage({
           </Link>
         </section>
 
+        <section className={styles.proofSection}>
+          <div className={styles.sectionIntro}>
+            <span className={styles.eyebrow}>Current status</span>
+            <h2>The first public-record revision is complete. The first outside contribution is next.</h2>
+          </div>
+          <div className={styles.statusGrid}>
+            {currentStatusItems.map((item) => (
+              <article className={styles.proofCard} key={item.label}>
+                <span>{item.label}</span>
+                <strong>{item.value}</strong>
+                <p>{item.note}</p>
+              </article>
+            ))}
+          </div>
+        </section>
+
         <section className={styles.twoColumn}>
           <article className={styles.panel}>
             <span className={styles.eyebrow}>What this is</span>
@@ -247,23 +320,45 @@ export default async function ChallengePage({
 
         <section className={styles.exampleSection}>
           <div className={styles.sectionIntro}>
-            <span className={styles.eyebrow}>Best first contribution</span>
-            <h2>Good contributions are specific enough to review.</h2>
+            <span className={styles.eyebrow}>First contribution runway</span>
+            <h2>What makes a good first contribution?</h2>
             <p>
               The first outside submission does not need to solve healthcare. It
               needs to make one part of the card more accurate, complete, or honest.
             </p>
           </div>
           <div className={styles.exampleGrid}>
-            {bestFirstContributionExamples.map((item) => (
+            {firstContributionExamples.map((item) => (
               <article className={styles.exampleCard} key={item.title}>
                 <h3>{item.title}</h3>
                 <p>{item.body}</p>
+                <p>{item.why}</p>
                 <Link
                   className={styles.exampleAction}
                   href={contributionHref(item.lane, inboundReferralSource)}
                 >
                   {item.action}
+                </Link>
+              </article>
+            ))}
+          </div>
+        </section>
+
+        <section className={styles.exampleSection}>
+          <div className={styles.sectionIntro}>
+            <span className={styles.eyebrow}>Guided prompts</span>
+            <h2>If you are not sure where to start, answer one of these.</h2>
+          </div>
+          <div className={styles.promptGrid}>
+            {guidedContributionPrompts.map((item) => (
+              <article className={styles.exampleCard} key={item.prompt}>
+                <h3>{item.prompt}</h3>
+                <p>{item.detail}</p>
+                <Link
+                  className={styles.exampleAction}
+                  href={contributionHref(item.lane, inboundReferralSource)}
+                >
+                  Start this contribution
                 </Link>
               </article>
             ))}
