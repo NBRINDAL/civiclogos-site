@@ -54,6 +54,8 @@ These must remain true on any public non-local host:
 
 Run this after the preview deployment URL exists.
 
+- [ ] `npm run https:smoke:check -- https://your-preview-url`
+
 Routes:
 
 - [ ] `/`
@@ -96,6 +98,8 @@ Proceed only if the preview checklist passes.
 ## 6. Production HTTPS smoke test
 
 Repeat the same checks on production:
+
+- [ ] `npm run https:smoke:check -- https://civiclogos.com`
 
 - [ ] `/`
 - [ ] `/ask`

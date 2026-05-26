@@ -258,6 +258,12 @@ npm run protocol:check
 npm run candidate:flow:check
 ```
 
+For a deployed preview or production URL, run:
+
+```bash
+npm run https:smoke:check -- https://your-deployment-url
+```
+
 Then smoke test the deployed HTTPS URL:
 
 - `/` renders as the main chat shell

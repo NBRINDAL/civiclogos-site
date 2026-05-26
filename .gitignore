@@ -50,3 +50,5 @@ next-env.d.ts
 /data/prototype-review-evidence.runtime.json
 /data/prototype-topic-chat.runtime.json
 /tmp-next-start-*.log
+
+.vercel
