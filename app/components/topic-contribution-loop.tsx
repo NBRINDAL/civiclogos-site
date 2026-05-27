@@ -1097,12 +1097,14 @@ function getScoreTransparencySlices(
   scoreLabel: string,
   contributions: readonly PublicContribution[],
 ): ScoreContributionSlice[] {
-  return getScoreTransparencySliceDefinitions(scoreLabel).map((slice) => ({
-    ...slice,
-    count: contributions.filter((contribution) =>
-      matchesScoreContributionSlice(contribution, slice),
-    ).length,
-  }));
+  return getScoreTransparencySliceDefinitions(scoreLabel)
+    .map((slice) => ({
+      ...slice,
+      count: contributions.filter((contribution) =>
+        matchesScoreContributionSlice(contribution, slice),
+      ).length,
+    }))
+    .filter((slice) => slice.count > 0);
 }
 
 function getLatestScoreTransparencyContribution(

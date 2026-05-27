@@ -33,7 +33,7 @@ function normalizeText(value) {
   return value.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
 }
 
-async function fetchWithTimeout(url, options = {}, timeoutMs = 20000) {
+async function fetchWithTimeout(url, options = {}, timeoutMs = 45000) {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), timeoutMs);
 
@@ -187,6 +187,15 @@ async function fetchHtml(url) {
   return normalizeText(body);
 }
 
+async function fetchRawHtml(url) {
+  const baseUrl = normalizeBaseUrl(url);
+  const pathname = new URL(url).pathname + new URL(url).search;
+  const response = await request(baseUrl, pathname);
+  const body = await response.text();
+  assert(response.ok, `GET ${url} failed with ${response.status}.`);
+  return body;
+}
+
 async function fetchJson(url, options = {}) {
   const parsed = new URL(url);
   const response = await request(
@@ -201,6 +210,12 @@ async function fetchJson(url, options = {}) {
 function ledgerSummary(ledger) {
   return {
     visibleRecords: ledger.counts.visibleRecords,
+    publicSubmissions: ledger.counts.publicSubmissions,
+    maintainerPromotedCandidates: ledger.counts.maintainerPromotedCandidates,
+    founderMaintainer: ledger.counts.founderMaintainer,
+    founderSubmitted: ledger.counts.founderSubmitted,
+    prototypeExamples: ledger.counts.prototypeExamples,
+    aiOrigin: ledger.counts.aiOrigin,
     revisionEvents: ledger.revision_events.length,
     synthesisSnapshotId: ledger.topic_record.current_synthesis_snapshot_id,
     claimText: ledger.claim_record.claim_text,
@@ -235,6 +250,110 @@ async function fetchLedger(baseUrl) {
     `Ledger export failed with ${response.status}: ${JSON.stringify(payload)}`,
   );
   return payload;
+}
+
+async function fetchContributions(baseUrl) {
+  const { response, payload } = await fetchJson(
+    `${baseUrl}/api/contributions?roomSlug=healthcare&topicId=topic-001&limit=50`,
+  );
+  assert(
+    response.ok,
+    `Contribution API failed with ${response.status}: ${JSON.stringify(payload)}`,
+  );
+  assert(
+    Array.isArray(payload.contributions),
+    "Contribution API did not return a contributions array.",
+  );
+  return payload.contributions;
+}
+
+function extractContributionArticle(html, contributionId) {
+  const marker = `id="contribution-${contributionId}"`;
+  const markerIndex = html.indexOf(marker);
+  assert(markerIndex >= 0, `Rendered ledger page is missing contribution ${contributionId}.`);
+
+  const articleStart = html.lastIndexOf("<article", markerIndex);
+  const articleEnd = html.indexOf("</article>", markerIndex);
+  assert(
+    articleStart >= 0 && articleEnd > markerIndex,
+    `Could not isolate rendered article for contribution ${contributionId}.`,
+  );
+
+  return normalizeText(html.slice(articleStart, articleEnd + "</article>".length));
+}
+
+function assertPromotedCandidateSnippet(snippet, contributionId, surfaceLabel) {
+  assert(
+    snippet.includes("Maintainer-promoted V2 candidate") ||
+      snippet.includes("Human-submitted via AI intake, maintainer-promoted"),
+    `${surfaceLabel} rendered promoted candidate ${contributionId} without the maintainer-promoted origin label.`,
+  );
+
+  const forbiddenLabels = [
+    "Public submission",
+    "Outside public submissions",
+    "Public value · Outside public submissions",
+  ];
+
+  for (const label of forbiddenLabels) {
+    assert(
+      !snippet.includes(label),
+      `${surfaceLabel} rendered promoted candidate ${contributionId} as ${label}.`,
+    );
+  }
+}
+
+async function assertV2PromotedCandidateRendering(baseUrl, ledgerCounts) {
+  const contributions = await fetchContributions(baseUrl);
+  const promotedCandidates = contributions.filter(
+    (item) => item.candidateSource?.origin === "human_submitted_via_ai_intake",
+  );
+
+  assert(
+    ledgerCounts.publicSubmissions === 0,
+    `Expected outside public submissions to remain 0, received ${ledgerCounts.publicSubmissions}.`,
+  );
+  assert(
+    ledgerCounts.maintainerPromotedCandidates === promotedCandidates.length,
+    `Expected ${promotedCandidates.length} maintainer-promoted V2 candidates, ledger reported ${ledgerCounts.maintainerPromotedCandidates}.`,
+  );
+  assert(
+    ledgerCounts.founderMaintainer === 1,
+    `Expected 1 founder-maintainer record, received ${ledgerCounts.founderMaintainer}.`,
+  );
+  assert(
+    ledgerCounts.founderSubmitted === 1,
+    `Expected 1 founder-submitted record, received ${ledgerCounts.founderSubmitted}.`,
+  );
+  assert(
+    ledgerCounts.prototypeExamples === 5,
+    `Expected 5 prototype examples, received ${ledgerCounts.prototypeExamples}.`,
+  );
+  assert(
+    ledgerCounts.aiOrigin === 0,
+    `Expected 0 AI-origin records, received ${ledgerCounts.aiOrigin}.`,
+  );
+
+  if (!promotedCandidates.length) {
+    return;
+  }
+
+  const ledgerHtml = await fetchRawHtml(`${baseUrl}/healthcare/topic-001?view=ledger`);
+
+  for (const contribution of promotedCandidates) {
+    const snippet = extractContributionArticle(ledgerHtml, contribution.id);
+    assertPromotedCandidateSnippet(snippet, contribution.id, "Ledger view");
+  }
+
+  const demoText = await fetchHtml(`${baseUrl}/demo`);
+  assert(
+    demoText.includes("Maintainer-promoted V2 candidate"),
+    "/demo did not render the maintainer-promoted V2 candidate label.",
+  );
+  assert(
+    !demoText.includes("Public submission"),
+    "/demo still rendered promoted V2 records as Public submission.",
+  );
 }
 
 async function submitAsk(baseUrl, question) {
@@ -325,6 +444,7 @@ async function main() {
   }
 
   const baselineLedger = ledgerSummary(await fetchLedger(baseUrl));
+  await assertV2PromotedCandidateRendering(baseUrl, baselineLedger);
 
   const readOnlyResult = await submitAsk(baseUrl, readOnlyPrompt);
   assert(

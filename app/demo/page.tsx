@@ -24,6 +24,8 @@ import type { PublicContribution } from "../lib/contribution-types";
 import { debateLaneLabels } from "../lib/reasoning-types";
 import styles from "./page.module.css";
 
+export const dynamic = "force-dynamic";
+
 function formatTimestamp(value: string) {
   return new Intl.DateTimeFormat("en-US", {
     dateStyle: "medium",

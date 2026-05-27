@@ -1119,19 +1119,21 @@ function getScoreTransparencySlices(
   scoreLabel: string,
   liveContributions: readonly PublicContribution[],
 ): ScoreTransparencySlice[] {
-  return getScoreTransparencySliceDefinitions(scoreLabel).map((slice) => ({
-    ...slice,
-    count: liveContributions.filter((contribution) =>
-      matchesContributionSlice(contribution, slice),
-    ).length,
-    href: getContributionLedgerHref({
-      recordView: slice.recordView,
-      attachment: slice.attachment,
-      reviewStatus: slice.reviewStatus,
-      origin: slice.origin,
-      lane: slice.lane,
-    }),
-  }));
+  return getScoreTransparencySliceDefinitions(scoreLabel)
+    .map((slice) => ({
+      ...slice,
+      count: liveContributions.filter((contribution) =>
+        matchesContributionSlice(contribution, slice),
+      ).length,
+      href: getContributionLedgerHref({
+        recordView: slice.recordView,
+        attachment: slice.attachment,
+        reviewStatus: slice.reviewStatus,
+        origin: slice.origin,
+        lane: slice.lane,
+      }),
+    }))
+    .filter((slice) => slice.count > 0);
 }
 
 function getLatestScoreTransparencyContribution(
