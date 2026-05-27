@@ -32,6 +32,7 @@ const genericEnergyUtterance = "Energy affects many systems.";
 const physicsReadOnlyPrompt = "What are the standard baselines?";
 const physicsPlanckReadOnlyPrompt =
   "What does the physics card say about Planck identities?";
+const physicsMoveForwardReadOnlyPrompt = "What would move the physics card forward?";
 const physicsDefinitionReadOnlyPrompt =
   "Is this treating Planck identities as definitions or physical proof?";
 const healthcareChangedReadOnlyPrompt = "What changed in the healthcare card?";
@@ -903,6 +904,24 @@ async function main() {
     await assertCandidateCount(
       baselineCandidateCount,
       "Physics definition read-only /ask",
+    );
+
+    const physicsMoveForwardReadOnlyPayload = await submitAsk(
+      physicsMoveForwardReadOnlyPrompt,
+    );
+    assertExpectedPhysicsReadOnlyShape(
+      physicsMoveForwardReadOnlyPayload,
+      "what_would_move_this_card",
+    );
+    const afterPhysicsMoveForwardReadOnlyLedger = ledgerSummary(await fetchLedger());
+    assertLedgerUnchanged(
+      afterPhysicsMoveForwardReadOnlyLedger,
+      baselineLedger,
+      "Physics move-forward read-only /ask",
+    );
+    await assertCandidateCount(
+      baselineCandidateCount,
+      "Physics move-forward read-only /ask",
     );
 
     const physicsFollowUpJar = new CookieJar();

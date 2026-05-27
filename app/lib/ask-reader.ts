@@ -846,6 +846,8 @@ export function detectAskIntent(question: string): AskIntent {
       "what would move this card",
       "what would move the card",
       "what would move this card forward",
+      "what would move the physics card",
+      "what would move the physics card forward",
       "what would strengthen this card",
       "what would strengthen the card",
       "how could this card move",
