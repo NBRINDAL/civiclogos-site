@@ -3,13 +3,13 @@ import postgres, { type Sql } from "postgres";
 import type {
   CreateTopicChatMessageInput,
   TopicChatMessage,
+  TopicChatRoomSlug,
   TopicChatStoreMetadata,
 } from "./topic-chat-types";
-import type { IssueRoomSlug } from "./civic-logos";
 
 type ListTopicChatFilters = {
   sessionId: string;
-  roomSlug?: IssueRoomSlug;
+  roomSlug?: TopicChatRoomSlug;
   topicId?: string;
   limit?: number;
 };
@@ -116,7 +116,7 @@ function rowToMessage(row: TopicChatRow): TopicChatMessage {
     id: row.id,
     sessionId: row.session_id,
     runId: row.run_id,
-    roomSlug: row.room_slug as IssueRoomSlug,
+    roomSlug: row.room_slug as TopicChatRoomSlug,
     topicId: row.topic_id,
     topicTitle: row.topic_title,
     role: row.role,

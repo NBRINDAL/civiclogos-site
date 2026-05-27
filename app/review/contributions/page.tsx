@@ -1,6 +1,7 @@
 import Link from "next/link";
 import {
   getRoomTopicCard,
+  getRoomTopicCards,
   getRoomTopicHref,
   issueRooms,
   type IssueRoomSlug,
@@ -9,6 +10,7 @@ import {
   getCandidateStoreMetadata,
   listCandidateRecords,
 } from "@/app/lib/candidate-store";
+import { getCandidateLaneLabel } from "@/app/lib/candidate-types";
 import { getContributionStoreMetadata, listAllContributions } from "@/app/lib/contribution-store";
 import {
   getReviewChatStoreMetadata,
@@ -41,6 +43,7 @@ import {
   createFounderMaintainerRevision,
   promoteCandidateToContribution,
   rejectCandidate,
+  routeCandidateToExistingTopic,
   reprocessContributionEvidenceDocument,
   reprocessReviewerEvidenceDocument,
   retryContributionAiIntake,
@@ -71,6 +74,21 @@ function isRoomSlug(value: string): value is IssueRoomSlug {
 
 function isDebateLane(value: string): value is DebateLane {
   return debateLaneOptions.includes(value as DebateLane);
+}
+
+function getCandidateStatusLabel(status: string) {
+  return status === "needs_routing" ? "Needs routing" : status;
+}
+
+function formatCandidateRouteTarget(args: {
+  routedRoomId?: string;
+  routedTopicId?: string;
+}) {
+  if (!args.routedRoomId || !args.routedTopicId) {
+    return "No confident topic route";
+  }
+
+  return `${args.routedRoomId} / ${args.routedTopicId}`;
 }
 
 const reviewStatusPriority: Record<string, number> = {
@@ -446,10 +464,15 @@ export default async function ContributionReviewPage({
 
     return true;
   });
-  const pendingCandidates = filteredCandidates.filter(
-    (item) => item.reviewStatus === "pending_human_review",
+  const queuedCandidates = filteredCandidates.filter(
+    (item) =>
+      item.reviewStatus === "pending_human_review" ||
+      item.reviewStatus === "needs_routing",
   );
   const candidateSummary = {
+    needsRouting: filteredCandidates.filter(
+      (item) => item.reviewStatus === "needs_routing",
+    ).length,
     pending: filteredCandidates.filter(
       (item) => item.reviewStatus === "pending_human_review",
     ).length,
@@ -464,6 +487,13 @@ export default async function ContributionReviewPage({
   ).slice(0, 3);
   const topicSummary = getContributionCountSummary(topicTotalContributions);
   const filterSummary = getContributionCountSummary(sortedContributions);
+  const routeTargets = (Object.keys(issueRooms) as IssueRoomSlug[]).flatMap((roomSlug) =>
+    getRoomTopicCards(roomSlug).map((card) => ({
+      roomSlug,
+      topicId: card.id,
+      topicTitle: card.title,
+    })),
+  );
   const scopeLabel =
     scopedRoomSlug && scopedTopicId
       ? `${scopedRoomSlug} / ${scopedTopicId}`
@@ -560,6 +590,10 @@ export default async function ContributionReviewPage({
 
             <div className={styles.summaryRow}>
               <article className={styles.summaryCard}>
+                <span>Needs routing</span>
+                <strong>{candidateSummary.needsRouting}</strong>
+              </article>
+              <article className={styles.summaryCard}>
                 <span>Pending</span>
                 <strong>{candidateSummary.pending}</strong>
               </article>
@@ -577,9 +611,9 @@ export default async function ContributionReviewPage({
               </article>
             </div>
 
-            {pendingCandidates.length ? (
+            {queuedCandidates.length ? (
               <div className={styles.publicSubmissionList}>
-                {pendingCandidates.map((item) => (
+                {queuedCandidates.map((item) => (
                   <article
                     className={styles.publicSubmissionCard}
                     data-testid={`candidate-card-${item.id}`}
@@ -587,8 +621,10 @@ export default async function ContributionReviewPage({
                     key={item.id}
                   >
                     <div className={styles.statusBar}>
-                      <span className={styles.badge}>{item.reviewStatus}</span>
-                      <span className={styles.badge}>{debateLaneLabels[item.proposedLane]}</span>
+                      <span className={styles.badge}>
+                        {getCandidateStatusLabel(item.reviewStatus)}
+                      </span>
+                      <span className={styles.badge}>{getCandidateLaneLabel(item.proposedLane)}</span>
                       <span className={styles.badge}>{item.roomId} / {item.topicId}</span>
                       <span className={styles.seed}>actual card change: false</span>
                     </div>
@@ -615,6 +651,42 @@ export default async function ContributionReviewPage({
                         <dd>{item.scaleMap.join(" / ")}</dd>
                       </div>
                     </dl>
+                    <p className={styles.prefillNote}>
+                      Proposed route:{" "}
+                      {formatCandidateRouteTarget({
+                        routedRoomId: item.routedRoomId,
+                        routedTopicId: item.routedTopicId,
+                      })}
+                    </p>
+                    <p className={styles.prefillNote}>
+                      Routing status: {item.routingStatus} · Route confidence:{" "}
+                      {item.routeConfidence}
+                    </p>
+                    <p className={styles.prefillNote}>Route reason: {item.routeReason}</p>
+                    {item.matchedSignals.length ? (
+                      <p className={styles.prefillNote}>
+                        Matched signals: {item.matchedSignals.join(", ")}
+                      </p>
+                    ) : null}
+                    {item.rejectedRoutes.length ? (
+                      <div className={styles.suggestionSummary}>
+                        <strong>Rejected routes</strong>
+                        {item.rejectedRoutes.map((route) => (
+                          <p
+                            key={`${route.roomId}-${route.topicId ?? "none"}-${route.reason}`}
+                          >
+                            {formatCandidateRouteTarget({
+                              routedRoomId: route.roomId,
+                              routedTopicId: route.topicId,
+                            })}{" "}
+                            · {route.confidence} confidence · {route.reason}
+                            {route.matchedSignals.length
+                              ? ` Signals: ${route.matchedSignals.join(", ")}`
+                              : ""}
+                          </p>
+                        ))}
+                      </div>
+                    ) : null}
                     {item.evidenceAnchor ? (
                       <p className={styles.prefillNote}>
                         Evidence anchor: {item.evidenceAnchor}
@@ -626,19 +698,59 @@ export default async function ContributionReviewPage({
                       </p>
                     ) : null}
                     <div className={styles.candidateActionRow}>
-                      <form action={promoteCandidateToContribution}>
+                      {item.reviewStatus === "pending_human_review" ? (
+                        <form action={promoteCandidateToContribution}>
+                          <input name="candidateId" type="hidden" value={item.id} />
+                          <input
+                            name="reviewerLabel"
+                            type="hidden"
+                            value="Civic Logos maintainer review"
+                          />
+                          <button
+                            className={styles.submitButton}
+                            data-testid={`candidate-promote-${item.id}`}
+                            type="submit"
+                          >
+                            Promote to public contribution
+                          </button>
+                        </form>
+                      ) : null}
+                      <form action={routeCandidateToExistingTopic}>
                         <input name="candidateId" type="hidden" value={item.id} />
-                        <input
-                          name="reviewerLabel"
-                          type="hidden"
-                          value="Civic Logos maintainer review"
-                        />
+                        <label className={styles.field}>
+                          <span>
+                            {item.reviewStatus === "needs_routing"
+                              ? "Route to existing topic"
+                              : "Reroute before promotion"}
+                          </span>
+                          <select
+                            aria-label={`Route ${item.id} to existing topic`}
+                            data-testid={`candidate-route-topic-${item.id}`}
+                            defaultValue={
+                              item.routedRoomId && item.routedTopicId
+                                ? `${item.routedRoomId}::${item.routedTopicId}`
+                                : "physics-foundations::topic-001"
+                            }
+                            name="routeTarget"
+                          >
+                            {routeTargets.map((target) => (
+                              <option
+                                key={`${target.roomSlug}-${target.topicId}`}
+                                value={`${target.roomSlug}::${target.topicId}`}
+                              >
+                                {target.roomSlug} / {target.topicId} - {target.topicTitle}
+                              </option>
+                            ))}
+                          </select>
+                        </label>
                         <button
                           className={styles.submitButton}
-                          data-testid={`candidate-promote-${item.id}`}
+                          data-testid={`candidate-route-${item.id}`}
                           type="submit"
                         >
-                          Promote to public contribution
+                          {item.reviewStatus === "needs_routing"
+                            ? "Route to existing topic"
+                            : "Reroute before promotion"}
                         </button>
                       </form>
                       <form action={rejectCandidate}>

@@ -13,7 +13,7 @@ import { getContributionCountSummary } from "@/app/lib/contribution-counts";
 import {
   listPublicContributions,
 } from "@/app/lib/contribution-store";
-import { getRoomTopicCard } from "@/app/lib/civic-logos";
+import { getRoomTopicCard, type IssueRoomSlug } from "@/app/lib/civic-logos";
 import { getCurrentVisibleSynthesis } from "@/app/lib/public-record-revisions";
 import {
   inspectTopicChatStoreMetadata,
@@ -161,8 +161,6 @@ export default async function MainChatWorkspace({
     askSessionId && !askDeployment.prototypeReadOnlyMode
       ? await listTopicChatMessages({
           sessionId: askSessionId,
-          roomSlug: roomId,
-          topicId,
           limit: 24,
         })
       : [];
@@ -187,6 +185,36 @@ export default async function MainChatWorkspace({
           recordsUsed: latestAssistantMessage.promotion.recordsUsed ?? [],
         }
       : null;
+  const initialResultTopic =
+    initialCandidate &&
+    (initialCandidate.reviewStatus === "needs_routing" ||
+      initialCandidate.roomId === "unrouted" ||
+      initialCandidate.topicId === "unrouted")
+      ? {
+          roomId: initialCandidate.roomId,
+          topicId: initialCandidate.topicId,
+          topicTitle: "Unrouted candidate",
+          banner:
+            "Civic Logos could not confidently attach this to an existing topic. It has been saved as an internal candidate needing maintainer routing.",
+        }
+      : initialCandidate
+        ? {
+            roomId: initialCandidate.roomId,
+            topicId: initialCandidate.topicId,
+            topicTitle:
+              getRoomTopicCard(initialCandidate.roomId as IssueRoomSlug, initialCandidate.topicId)
+                ?.title ?? topic.title,
+            banner: `Attached to existing topic: ${initialCandidate.roomId} / ${initialCandidate.topicId}. Candidate only, pending human review, with no public ledger write.`,
+          }
+        : initialReadOnly
+          ? {
+              roomId,
+              topicId,
+              topicTitle: topic.title,
+              banner:
+                "This answer is read-only. It was generated from the public healthcare / topic-001 ledger, and no candidate was created.",
+            }
+          : null;
   const counts = getContributionCountSummary(contributions);
   const currentSynthesis = getCurrentVisibleSynthesis({
     baseSynthesis: topic.currentRead,
@@ -220,8 +248,8 @@ export default async function MainChatWorkspace({
             <h1>Make chat the front door, and keep the public record inspectable.</h1>
             <p className={styles.lead}>
               This is now the main interaction surface. Ask read-only questions from the
-              live healthcare ledger, or speak naturally and let Civic Logos structure a
-              pre-ledger candidate for human review.
+              live healthcare ledger, or speak naturally and let Civic Logos route a
+              pre-ledger candidate to an existing topic when the fit is clear.
             </p>
             <p className={styles.supporting}>
               The website remains the public audit surface. The chat is the interaction
@@ -348,9 +376,10 @@ export default async function MainChatWorkspace({
             </div>
 
             <p>
-              Read-only questions are answered from the current public ledger. Contribution-style
-              statements are structured into internal candidates that wait in the human review
-              queue before anything can become a public contribution.
+              Read-only questions are answered from the current public healthcare ledger.
+              Contribution-style statements are structured into internal candidates that can
+              attach to healthcare, route to the existing Physics Foundations topic, or stay
+              unrouted for maintainer routing before anything can become a public contribution.
             </p>
 
             <div className={styles.flowTrack} aria-label="V2 ask flow">
@@ -362,7 +391,8 @@ export default async function MainChatWorkspace({
             </div>
 
             <div className={styles.workspaceMeta}>
-              <span>Current topic hard-gate: healthcare / topic-001</span>
+              <span>Read-only source: healthcare / topic-001</span>
+              <span>Contribution routing can attach to existing topics or stay unrouted</span>
               <span>No room expansion</span>
               <span>No static card creation</span>
               <span>No automatic public ledger writes</span>
@@ -382,6 +412,7 @@ export default async function MainChatWorkspace({
             }
             initialMessages={initialMessages}
             initialReadOnly={initialReadOnly}
+            initialResultTopic={initialResultTopic}
             prototypeReadOnlyNotice={askDeployment.notice}
             topic={{
               roomId,

@@ -7,6 +7,8 @@ import type { CandidateReviewStatus } from "./candidate-types";
 import type { IssueRoomSlug } from "./civic-logos";
 import type { DebateLane, ReviewStatus, ReviewTargetKind } from "./reasoning-types";
 
+export type TopicChatRoomSlug = IssueRoomSlug | "unrouted";
+
 export type TopicChatPromotionState =
   | "read-only-answer"
   | "candidate-suggested"
@@ -35,7 +37,7 @@ export type TopicChatMessage = {
   id: string;
   sessionId: string;
   runId: string;
-  roomSlug: IssueRoomSlug;
+  roomSlug: TopicChatRoomSlug;
   topicId: string;
   topicTitle: string;
   role: "user" | "assistant";

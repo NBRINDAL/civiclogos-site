@@ -8,15 +8,24 @@ import type {
   CandidateEvidentialDistance,
   CandidateEvidenceStatus,
   CandidateInternalAiNote,
+  CandidateLane,
 } from "./candidate-types";
-import { getRoomTopicCard, type IssueRoomSlug } from "./civic-logos";
-import { debateLaneOptions, reviewTargetKindOptions, type DebateLane } from "./reasoning-types";
+import { candidateLaneOptions } from "./candidate-types";
+import type { AskCandidateRoute } from "./ask-routing";
+import {
+  hasFoundationalPhysicsSignal,
+  hasHealthcareAskSignal,
+  hasSavingsCaptureSignal,
+  hasSymbolicPhysicsSignal,
+} from "./ask-intake-signals";
+import { getRoomTopicCard } from "./civic-logos";
+import { reviewTargetKindOptions } from "./reasoning-types";
 
 type CandidateAiDraft = {
   reply: string;
   normalized_title: string;
   normalized_body: string;
-  proposed_lane: DebateLane;
+  proposed_lane: CandidateLane;
   proposed_attachment_target_kind: CandidateAttachmentTarget["kind"];
   proposed_attachment_target_label: string;
   scale_map: string[];
@@ -75,7 +84,7 @@ const candidateSchema = {
     normalized_body: { type: "string" },
     proposed_lane: {
       type: "string",
-      enum: [...debateLaneOptions],
+      enum: [...candidateLaneOptions],
     },
     proposed_attachment_target_kind: {
       type: "string",
@@ -91,6 +100,7 @@ const candidateSchema = {
       type: "string",
       enum: [
         "unsourced but coherent",
+        "symbolic/mathematical proposal, not empirical evidence",
         "source-linked",
         "document-backed",
         "unsupported",
@@ -115,38 +125,63 @@ const candidateSchema = {
 } as const;
 
 function buildCandidatePrompt(args: {
-  roomSlug: IssueRoomSlug;
-  topicId: string;
+  routing: AskCandidateRoute;
   rawUserText: string;
 }) {
-  const card = getRoomTopicCard(args.roomSlug, args.topicId);
+  const routeNote =
+    args.routing.routeType === "existing-topic"
+      ? (() => {
+          const card = getRoomTopicCard(args.routing.roomId, args.routing.topicId);
 
-  if (!card) {
-    throw new Error("Candidate AI could not load the live topic card.");
-  }
+          if (!card) {
+            throw new Error("Candidate AI could not load the routed live topic card.");
+          }
+
+          return {
+            route: {
+              state: "existing-topic",
+              room: args.routing.roomId,
+              topicId: args.routing.topicId,
+              title: card.title,
+              fitSummary: args.routing.fitSummary,
+            },
+            current_topic: {
+              room: args.routing.roomId,
+              topicId: args.routing.topicId,
+              title: card.title,
+              thesis: card.thesis,
+              currentRead: card.currentRead,
+              assumptions: card.assumptions,
+              openQuestions: card.openQuestions,
+              economicDelta: card.economicDelta,
+              stakeholders: card.stakeholders,
+            },
+          };
+        })()
+      : {
+          route: {
+            state: "unrouted",
+            room: args.routing.roomId,
+            topicId: args.routing.topicId,
+            title: args.routing.topicTitle,
+            fitSummary: args.routing.fitSummary,
+          },
+          current_topic: null,
+        };
 
   return JSON.stringify(
     {
       instructions: [
         "You are a Civic Logos pre-ledger candidate structurer.",
-        "Convert one user message into a structured candidate record for human review.",
+        "Convert one user message into a structured internal candidate record for human review.",
         "Do not claim the public record changed.",
         "Do not create a revision, synthesis change, or public contribution.",
-        "Use the existing healthcare topic only. If the message is coherent but unsourced, preserve it as unsourced but coherent instead of pretending it has evidence.",
-        "Prefer the smallest honest record that a human reviewer can later promote, reject, or archive.",
-        "Treat savings-capture concerns as assumption pressure, not proof.",
+        "If the message is coherent but unsourced, preserve it honestly instead of inventing evidence.",
+        "If the route is unrouted, keep the candidate internal and scoped for maintainer routing rather than pretending it already belongs to a public card.",
+        "Prefer the smallest honest record that a human reviewer can later promote, reject, archive, or route.",
+        "Treat symbolic or mathematical reformulations as proposals, not empirical evidence.",
       ],
-      current_topic: {
-        room: args.roomSlug,
-        topicId: args.topicId,
-        title: card.title,
-        thesis: card.thesis,
-        currentRead: card.currentRead,
-        assumptions: card.assumptions,
-        openQuestions: card.openQuestions,
-        economicDelta: card.economicDelta,
-        stakeholders: card.stakeholders,
-      },
+      ...routeNote,
       raw_user_text: args.rawUserText,
       reminder:
         "Return only JSON. The candidate is internal and starts with actual card change false by default because human review has not promoted it.",
@@ -231,17 +266,6 @@ function buildNote(
   };
 }
 
-function hasSavingsCaptureSignal(rawUserText: string) {
-  const lower = rawUserText.trim().toLowerCase();
-
-  return (
-    lower.includes("capture") ||
-    lower.includes("captured") ||
-    (lower.includes("savings") && lower.includes("patients")) ||
-    lower.includes("institutions")
-  );
-}
-
 function buildSavingsCaptureDraft(): CandidateAiDraft {
   return {
     reply:
@@ -272,48 +296,180 @@ function buildSavingsCaptureDraft(): CandidateAiDraft {
   };
 }
 
-function buildGenericHeuristicDraft(): CandidateAiDraft {
+function buildFoundationalPhysicsDraft(args: {
+  rawUserText: string;
+  routedToExistingTopic: boolean;
+}): CandidateAiDraft {
+  const proposedLane: CandidateLane = hasSymbolicPhysicsSignal(args.rawUserText)
+    ? "symbolic_interpretation"
+    : "proposed_reformulation";
+  const routingScaleMap = args.routedToExistingTopic
+    ? [
+        "room:physics-foundations",
+        "topic:topic-001",
+        "claim:reformulation-review-boundary",
+      ]
+    : [
+        "room:unrouted",
+        "topic:unrouted",
+        "routing:needs-maintainer-routing",
+        "domain:foundational-physics",
+      ];
+
   return {
     reply:
-      "I turned this into a healthcare-topic candidate for human review. It remains internal, unsourced, and non-public until a reviewer decides whether to promote it.",
-    normalized_title: "Healthcare topic pressure identified from /ask",
+      args.routedToExistingTopic
+        ? "This reads like a symbolic or reformulation-style pressure on the Physics Foundations card. I structured it as an internal candidate for human review, and nothing has been written into the public ledger."
+        : "This reads like a foundational-physics proposal, but Civic Logos could not attach it to a topic confidently enough for public routing. I saved it as an internal candidate needing maintainer routing, and nothing has been written into the public ledger.",
+    normalized_title: "Symbolic reformulation pressure on physics foundations",
     normalized_body:
-      "This candidate captures a coherent pressure on the live healthcare topic card. It remains an internal pre-ledger candidate until a human reviewer decides whether it belongs in the public contribution queue.",
-    proposed_lane: "nuance",
+      "This candidate preserves a symbolic or mathematical proposal aimed at foundational physics. The message appears to offer a reformulation or interpretive chain rather than empirical evidence. It should be reviewed for whether it changes notation, assumptions, predictions, or physical interpretation before any public attachment is considered.",
+    proposed_lane: proposedLane,
     proposed_attachment_target_kind: "claim",
-    proposed_attachment_target_label: "Visible healthcare topic synthesis",
-    scale_map: [
-      "room:healthcare",
-      "topic:topic-001",
-      "claim:visible-healthcare-topic-synthesis",
+    proposed_attachment_target_label:
+      "Distinguish an equivalent reformulation from a new physical claim",
+    scale_map: routingScaleMap,
+    evidence_status: "symbolic/mathematical proposal, not empirical evidence",
+    evidence_anchor:
+      "Clarify what changes notation, assumptions, predictions, or empirical commitments before treating the proposal as synthesis pressure",
+    evidential_distance: "far",
+    impact_field: [
+      "physicists",
+      "physics students",
+      "reviewers",
+      "public readers",
     ],
-    evidence_status: "unsourced but coherent",
-    evidence_anchor: "Visible healthcare topic synthesis",
-    evidential_distance: "moderate",
-    impact_field: ["patients", "providers"],
     internal_ai_note:
-      "Fallback heuristic preserved the message as coherent healthcare-topic pressure pending human review.",
+      "Structured as a foundational-physics reformulation candidate. The message should be reviewed as symbolic pressure first, not as empirical support or a public-record change.",
     limitations: [
-      "Fallback heuristic used because a configured AI candidate structurer was unavailable.",
+      "The message does not supply empirical evidence or a document-backed source.",
       "The candidate remains pre-ledger until human review promotes it.",
     ],
   };
 }
 
+function buildUnroutedDraft(rawUserText: string): CandidateAiDraft {
+  return {
+    reply:
+      "I preserved this as an internal candidate needing maintainer routing because Civic Logos could not confidently attach it to an existing topic. Nothing has been written into the public ledger.",
+    normalized_title: "Internal candidate awaiting maintainer routing",
+    normalized_body: `This candidate preserves a coherent pressure or concern from /ask, but it is not yet attached to an existing topic. The current message was saved for maintainer routing instead of being forced into the wrong public card: ${rawUserText.trim()}`,
+    proposed_lane: "nuance",
+    proposed_attachment_target_kind: "unclear",
+    proposed_attachment_target_label: "Maintainer routing required",
+    scale_map: [
+      "room:unrouted",
+      "topic:unrouted",
+      "routing:needs-maintainer-routing",
+    ],
+    evidence_status: "unsourced but coherent",
+    evidence_anchor: "No confident existing-topic attachment was available",
+    evidential_distance: "far",
+    impact_field: ["maintainer review", "topic routing"],
+    internal_ai_note:
+      "Structured as an unrouted candidate because the message did not match an existing live topic strongly enough.",
+    limitations: [
+      "No existing topic was selected confidently enough for attachment.",
+      "The candidate remains pre-ledger until a maintainer routes or rejects it.",
+    ],
+  };
+}
+
+function buildGenericHeuristicDraft(route: AskCandidateRoute): CandidateAiDraft {
+  if (route.routeType === "existing-topic") {
+    return {
+      reply:
+        `I turned this into an internal candidate attached to ${route.roomId} / ${route.topicId} for human review. It remains unsourced, non-public, and does not change the ledger on its own.`,
+      normalized_title: `${route.topicTitle} pressure identified from /ask`,
+      normalized_body:
+        `This candidate captures a coherent pressure on the existing topic ${route.topicTitle}. It remains an internal pre-ledger candidate until a human reviewer decides whether it belongs in the public contribution queue.`,
+      proposed_lane: "nuance",
+      proposed_attachment_target_kind: "claim",
+      proposed_attachment_target_label: `${route.topicTitle} synthesis pressure`,
+      scale_map: [
+        `room:${route.roomId}`,
+        `topic:${route.topicId}`,
+        `claim:${route.topicId}-synthesis-pressure`,
+      ],
+      evidence_status: "unsourced but coherent",
+      evidence_anchor: route.topicTitle,
+      evidential_distance: "moderate",
+      impact_field:
+        route.roomId === "physics-foundations"
+          ? ["physicists", "physics students", "reviewers"]
+          : route.roomId === "healthcare"
+            ? ["patients", "providers"]
+            : ["public readers", "maintainer review"],
+      internal_ai_note:
+        `Fallback heuristic preserved the message as coherent pressure on ${route.roomId} / ${route.topicId} pending human review.`,
+      limitations: [
+        "Fallback heuristic used because a configured AI candidate structurer was unavailable.",
+        "The candidate remains pre-ledger until human review promotes it.",
+      ],
+    };
+  }
+
+  return {
+    reply:
+      "I preserved this as an internal unrouted candidate for human review. It remains internal, unsourced, and non-public until a maintainer decides where it belongs.",
+    normalized_title: "Internal unrouted pressure identified from /ask",
+    normalized_body:
+      "This candidate captures a coherent pressure from /ask, but Civic Logos could not confidently attach it to an existing topic. It remains an internal pre-ledger candidate until a maintainer routes it or decides it should be rejected or archived.",
+    proposed_lane: "nuance",
+    proposed_attachment_target_kind: "unclear",
+    proposed_attachment_target_label: "Maintainer routing required",
+    scale_map: [
+      "room:unrouted",
+      "topic:unrouted",
+      "routing:needs-maintainer-routing",
+    ],
+    evidence_status: "unsourced but coherent",
+    evidence_anchor: "No confident existing-topic attachment was available",
+    evidential_distance: "far",
+    impact_field: ["maintainer review", "topic routing"],
+    internal_ai_note:
+      "Fallback heuristic preserved the message as coherent internal pressure pending maintainer routing.",
+    limitations: [
+      "Fallback heuristic used because a configured AI candidate structurer was unavailable.",
+      "The candidate remains pre-ledger until a maintainer routes, promotes, rejects, or archives it.",
+    ],
+  };
+}
+
 function canonicalizeCandidateDraft(args: {
+  route: AskCandidateRoute;
   rawUserText: string;
   draft: CandidateAiDraft;
 }) {
-  if (hasSavingsCaptureSignal(args.rawUserText)) {
+  if (
+    args.route.routeType === "existing-topic" &&
+    args.route.roomId === "healthcare" &&
+    hasSavingsCaptureSignal(args.rawUserText)
+  ) {
     return buildSavingsCaptureDraft();
+  }
+
+  if (hasFoundationalPhysicsSignal(args.rawUserText)) {
+    return buildFoundationalPhysicsDraft({
+      rawUserText: args.rawUserText,
+      routedToExistingTopic:
+        args.route.routeType === "existing-topic" &&
+        args.route.roomId === "physics-foundations",
+    });
+  }
+
+  if (
+    args.route.routeType === "unrouted" &&
+    !hasHealthcareAskSignal(args.rawUserText)
+  ) {
+    return buildUnroutedDraft(args.rawUserText);
   }
 
   return args.draft;
 }
 
 async function structureWithOpenAI(args: {
-  roomSlug: IssueRoomSlug;
-  topicId: string;
+  routing: AskCandidateRoute;
   rawUserText: string;
 }): Promise<CandidateDraftResult | null> {
   const config = getOpenAIProviderConfig();
@@ -373,6 +529,7 @@ async function structureWithOpenAI(args: {
 
     const draft = parseModelJsonText(outputText);
     const canonicalDraft = canonicalizeCandidateDraft({
+      route: args.routing,
       rawUserText: args.rawUserText,
       draft,
     });
@@ -388,8 +545,7 @@ async function structureWithOpenAI(args: {
 }
 
 async function structureWithAnthropic(args: {
-  roomSlug: IssueRoomSlug;
-  topicId: string;
+  routing: AskCandidateRoute;
   rawUserText: string;
 }): Promise<CandidateDraftResult | null> {
   const config = getAnthropicProviderConfig();
@@ -451,6 +607,7 @@ async function structureWithAnthropic(args: {
 
     const draft = parseModelJsonText(outputText);
     const canonicalDraft = canonicalizeCandidateDraft({
+      route: args.routing,
       rawUserText: args.rawUserText,
       draft,
     });
@@ -465,20 +622,24 @@ async function structureWithAnthropic(args: {
   }
 }
 
-function buildHeuristicCandidate(rawUserText: string): CandidateDraftResult {
-  const draft = hasSavingsCaptureSignal(rawUserText)
-    ? buildSavingsCaptureDraft()
-    : buildGenericHeuristicDraft();
+function buildHeuristicCandidate(args: {
+  routing: AskCandidateRoute;
+  rawUserText: string;
+}): CandidateDraftResult {
+  const canonicalDraft = canonicalizeCandidateDraft({
+    route: args.routing,
+    rawUserText: args.rawUserText,
+    draft: buildGenericHeuristicDraft(args.routing),
+  });
 
   return {
-    draft,
-    note: buildNote("heuristic", undefined, draft),
+    draft: canonicalDraft,
+    note: buildNote("heuristic", undefined, canonicalDraft),
   };
 }
 
 export async function buildCandidateSuggestion(args: {
-  roomSlug: IssueRoomSlug;
-  topicId: string;
+  routing: AskCandidateRoute;
   rawUserText: string;
 }) {
   const openAiResult = await structureWithOpenAI(args);
@@ -493,5 +654,5 @@ export async function buildCandidateSuggestion(args: {
     return anthropicResult;
   }
 
-  return buildHeuristicCandidate(args.rawUserText);
+  return buildHeuristicCandidate(args);
 }

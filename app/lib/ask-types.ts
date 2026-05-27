@@ -13,6 +13,7 @@ export type AskReadOnlyIntent =
 export type AskIntent = AskReadOnlyIntent | "candidate_intake";
 
 export type AskRecordReferenceKind =
+  | "TopicCard"
   | "ClaimRecord"
   | "ContributionRecord"
   | "RevisionEvent"

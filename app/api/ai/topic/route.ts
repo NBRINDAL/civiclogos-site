@@ -7,6 +7,7 @@ import {
   type IssueRoomSlug,
 } from "@/app/lib/civic-logos";
 import { buildCandidateSuggestion } from "@/app/lib/candidate-ai";
+import { getPromotableContributionLane } from "@/app/lib/candidate-types";
 import { createCandidateRecord } from "@/app/lib/candidate-store";
 import {
   askTopicCard,
@@ -93,9 +94,34 @@ async function suggestAnswerCandidate(args: {
     };
   }
 
+  const topicCard = getRoomTopicCard(args.roomSlug, args.topicId);
+
+  if (!topicCard) {
+    return {
+      usedPromotionSlot: false,
+      promotion: {
+        state: "not-added",
+        note: "The current topic card could not be loaded for internal candidate suggestion.",
+      } satisfies TopicChatPromotion,
+    };
+  }
+
   const suggestion = await buildCandidateSuggestion({
-    roomSlug: args.roomSlug,
-    topicId: args.topicId,
+    routing: {
+      routeType: "existing-topic",
+      roomId: args.roomSlug,
+      topicId: args.topicId,
+      topicTitle: topicCard.title,
+      banner: `Attached to existing topic: ${args.roomSlug} / ${args.topicId}. Candidate only, pending human review, with no public ledger write.`,
+      routingStatus: "routed",
+      routedRoomId: args.roomSlug,
+      routedTopicId: args.topicId,
+      routeConfidence: "high",
+      routeReason:
+        "Attached to an existing topic-scoped AI session before human review.",
+      matchedSignals: [`topic-scoped:${args.roomSlug}/${args.topicId}`],
+      rejectedRoutes: [],
+    },
     rawUserText: args.question,
   });
   const candidate = await createCandidateRecord({
@@ -116,6 +142,14 @@ async function suggestAnswerCandidate(args: {
     evidentialDistance: suggestion.draft.evidential_distance,
     impactField: suggestion.draft.impact_field,
     internalAiNotes: [suggestion.note],
+    routingStatus: "routed",
+    routedRoomId: args.roomSlug,
+    routedTopicId: args.topicId,
+    routeConfidence: "high",
+    routeReason:
+      "Candidate suggestion came from an existing topic-scoped AI session and remains pending human review.",
+    matchedSignals: [`topic-scoped:${args.roomSlug}/${args.topicId}`],
+    rejectedRoutes: [],
     aiAssisted: true,
     origin: "human_submitted_via_ai_intake",
   });
@@ -132,7 +166,7 @@ async function suggestAnswerCandidate(args: {
       candidateReviewStatus: candidate.reviewStatus,
       actualCardChange: false,
       publicSubmission: false,
-      lane: candidate.proposedLane,
+      lane: getPromotableContributionLane(candidate.proposedLane),
       assignmentKind: candidate.proposedAttachmentTarget.kind,
       assignmentLabel: candidate.proposedAttachmentTarget.label,
       changedSynthesis: false,

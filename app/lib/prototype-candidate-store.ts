@@ -2,11 +2,13 @@ import { randomUUID } from "node:crypto";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { access, mkdir, readFile, writeFile } from "node:fs/promises";
-import type {
+import {
   CandidateRecord,
   CandidateReviewStatus,
   CandidateStoreDocument,
   CreateCandidateInput,
+  RouteCandidateToTopicInput,
+  resolveCandidateRoutingMetadata,
 } from "./candidate-types";
 
 type ListCandidateFilters = {
@@ -90,6 +92,24 @@ function sortNewestFirst<T extends { createdAt: string }>(items: readonly T[]) {
   );
 }
 
+function normalizeCandidate(candidate: CandidateRecord): CandidateRecord {
+  return {
+    ...candidate,
+    ...resolveCandidateRoutingMetadata({
+      roomId: candidate.roomId,
+      topicId: candidate.topicId,
+      reviewStatus: candidate.reviewStatus,
+      routingStatus: candidate.routingStatus,
+      routedRoomId: candidate.routedRoomId,
+      routedTopicId: candidate.routedTopicId,
+      routeConfidence: candidate.routeConfidence,
+      routeReason: candidate.routeReason,
+      matchedSignals: candidate.matchedSignals,
+      rejectedRoutes: candidate.rejectedRoutes,
+    }),
+  };
+}
+
 export async function getCandidateStoreMetadata() {
   const storePath = await resolveStorePath();
   return {
@@ -103,7 +123,7 @@ export async function getCandidateStoreMetadata() {
 export async function listCandidateRecords(filters: ListCandidateFilters = {}) {
   const document = await readStoreDocument();
 
-  return sortNewestFirst(document.candidates)
+  return sortNewestFirst(document.candidates.map(normalizeCandidate))
     .filter((item) => {
       if (filters.roomId && item.roomId !== filters.roomId) {
         return false;
@@ -124,18 +144,32 @@ export async function listCandidateRecords(filters: ListCandidateFilters = {}) {
 
 export async function getCandidateById(id: string) {
   const document = await readStoreDocument();
-  return document.candidates.find((item) => item.id === id) ?? null;
+  const candidate = document.candidates.find((item) => item.id === id) ?? null;
+  return candidate ? normalizeCandidate(candidate) : null;
 }
 
 export async function createCandidateRecord(input: CreateCandidateInput) {
   return enqueueWrite(async () => {
     const document = await readStoreDocument();
     const timestamp = new Date().toISOString();
+    const routing = resolveCandidateRoutingMetadata({
+      roomId: input.roomId,
+      topicId: input.topicId,
+      reviewStatus: input.reviewStatus ?? "pending_human_review",
+      routingStatus: input.routingStatus,
+      routedRoomId: input.routedRoomId,
+      routedTopicId: input.routedTopicId,
+      routeConfidence: input.routeConfidence,
+      routeReason: input.routeReason,
+      matchedSignals: input.matchedSignals,
+      rejectedRoutes: input.rejectedRoutes,
+    });
     const candidate: CandidateRecord = {
       ...input,
       id: randomUUID(),
       reviewStatus: input.reviewStatus ?? "pending_human_review",
       promotedContributionId: input.promotedContributionId,
+      ...routing,
       createdAt: timestamp,
       updatedAt: timestamp,
     };
@@ -143,7 +177,37 @@ export async function createCandidateRecord(input: CreateCandidateInput) {
     document.candidates.push(candidate);
     await writeStoreDocument(document);
 
-    return candidate;
+    return normalizeCandidate(candidate);
+  });
+}
+
+export async function routeCandidateToTopic(
+  id: string,
+  input: RouteCandidateToTopicInput,
+) {
+  return enqueueWrite(async () => {
+    const document = await readStoreDocument();
+    const candidate = document.candidates.find((item) => item.id === id);
+
+    if (!candidate) {
+      return null;
+    }
+
+    candidate.roomId = input.roomId;
+    candidate.topicId = input.topicId;
+    candidate.reviewStatus = input.reviewStatus;
+    candidate.routingStatus = input.routingStatus;
+    candidate.routedRoomId = input.routedRoomId ?? input.roomId;
+    candidate.routedTopicId = input.routedTopicId ?? input.topicId;
+    candidate.routeConfidence = input.routeConfidence ?? candidate.routeConfidence;
+    candidate.routeReason = input.routeReason ?? candidate.routeReason;
+    candidate.matchedSignals = input.matchedSignals ?? candidate.matchedSignals;
+    candidate.rejectedRoutes = input.rejectedRoutes ?? candidate.rejectedRoutes;
+    candidate.scaleMap = input.scaleMap ?? candidate.scaleMap;
+    candidate.updatedAt = new Date().toISOString();
+    await writeStoreDocument(document);
+
+    return normalizeCandidate(candidate);
   });
 }
 
@@ -165,6 +229,6 @@ export async function updateCandidateReviewStatus(
     candidate.updatedAt = new Date().toISOString();
     await writeStoreDocument(document);
 
-    return candidate;
+    return normalizeCandidate(candidate);
   });
 }

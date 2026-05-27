@@ -9,6 +9,7 @@ import {
   getAnthropicProviderConfig,
   getOpenAIProviderConfig,
 } from "./ai-provider-config";
+import { hasFoundationalPhysicsSignal } from "./ask-intake-signals";
 import type {
   HomeIntakeRouting,
   ProviderHomeIntakeRouting,
@@ -487,7 +488,8 @@ function buildPhysicsFoundationsRouting(
     keywordHits.length >= 2 ||
     (keywordHits.length >= 1 && hasPhysicsPhrase) ||
     (normalizedPrompt.includes("quantum") &&
-      normalizedPrompt.includes("relativity"));
+      normalizedPrompt.includes("relativity")) ||
+    hasFoundationalPhysicsSignal(prompt);
 
   if (!hasEnoughPhysicsSignal) {
     return null;

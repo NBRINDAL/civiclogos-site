@@ -5,6 +5,7 @@ is the public entry point and `/about` preserves the older homepage.
 
 ## 1. Pre-deploy branch checks
 
+- [ ] Feature work is frozen for the V2 release candidate
 - [ ] `npm run lint`
 - [ ] `npm run build`
 - [ ] `npm run protocol:check`
@@ -31,6 +32,7 @@ Set the following per environment before expecting full public candidate intake:
 - [ ] `CIVIC_LOGOS_ALLOWED_ORIGINS` includes all first-party write origins that should be allowed
 - [ ] `OPENAI_API_KEY` and `OPENAI_MODEL` if OpenAI-backed ask/candidate AI should be active
 - [ ] `ANTHROPIC_API_KEY` and `ANTHROPIC_MODEL` if Anthropic-backed ask/candidate AI should be active
+- [ ] AI keys are configured, or read-only behavior without AI-backed intake is understood
 - [ ] SMTP/contact env vars if `/api/contact` should be active
 
 Preview notes:
@@ -63,7 +65,9 @@ Routes:
 - [ ] `/about`
 - [ ] `/ledger`
 - [ ] `/demo`
+- [ ] `/challenge`
 - [ ] `/healthcare/topic-001?view=ledger`
+- [ ] `/rooms/physics-foundations/topic-001`
 - [ ] `/review/contributions` shows the lock screen in a fresh session
 
 Behavior:
@@ -74,7 +78,10 @@ Behavior:
 - [ ] `/ledger` shows V2 candidate-intake status
 - [ ] `/demo` shows the healthcare V2 example
 - [ ] Read-only ask creates no `CandidateRecord`
-- [ ] Contribution-style ask creates a `CandidateRecord` only if durable storage is configured
+- [ ] Contribution-style healthcare ask creates a `CandidateRecord` only if durable storage is configured
+- [ ] Symbolic physics input routes to Physics Foundations
+- [ ] Ambiguous input becomes `needs_routing`
+- [ ] False-positive inputs do not force a route
 - [ ] No public `ContributionRecord` is created without maintainer promotion
 - [ ] No `RevisionEvent` is created by `/` or `/ask`
 - [ ] Synthesis does not change
@@ -106,10 +113,15 @@ Repeat the same checks on production:
 - [ ] `/about`
 - [ ] `/ledger`
 - [ ] `/demo`
+- [ ] `/challenge`
 - [ ] `/healthcare/topic-001?view=ledger`
+- [ ] `/rooms/physics-foundations/topic-001`
 - [ ] `/review/contributions` lock screen
 - [ ] Read-only ask creates no `CandidateRecord`
-- [ ] Contribution ask creates a `CandidateRecord` only if durable storage is configured
+- [ ] Contribution-style healthcare ask creates a `CandidateRecord` only if durable storage is configured
+- [ ] Symbolic physics input routes to Physics Foundations
+- [ ] Ambiguous input becomes `needs_routing`
+- [ ] False-positive inputs do not force a route
 - [ ] No public `ContributionRecord` without promotion
 - [ ] No `RevisionEvent` from `/` or `/ask`
 - [ ] No synthesis change

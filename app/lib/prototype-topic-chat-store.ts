@@ -5,13 +5,13 @@ import { access, mkdir, readFile, writeFile } from "node:fs/promises";
 import type {
   CreateTopicChatMessageInput,
   TopicChatMessage,
+  TopicChatRoomSlug,
   TopicChatStoreDocument,
 } from "./topic-chat-types";
-import type { IssueRoomSlug } from "./civic-logos";
 
 type ListTopicChatFilters = {
   sessionId: string;
-  roomSlug?: IssueRoomSlug;
+  roomSlug?: TopicChatRoomSlug;
   topicId?: string;
   limit?: number;
 };

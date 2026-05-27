@@ -1,9 +1,9 @@
 import type {
   CreateTopicChatMessageInput,
   TopicChatMessage,
+  TopicChatRoomSlug,
   TopicChatStoreMetadata,
 } from "./topic-chat-types";
-import type { IssueRoomSlug } from "./civic-logos";
 import {
   createDatabaseTopicChatStore,
   isDatabaseTopicChatStoreConfigured,
@@ -11,7 +11,7 @@ import {
 
 type ListTopicChatFilters = {
   sessionId: string;
-  roomSlug?: IssueRoomSlug;
+  roomSlug?: TopicChatRoomSlug;
   topicId?: string;
   limit?: number;
 };

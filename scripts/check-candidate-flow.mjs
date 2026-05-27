@@ -15,10 +15,26 @@ const publicHostHeaders = {
 };
 const demoUtterance =
   "This healthcare claim assumes savings will reach patients, but institutions may capture them.";
+const healthcareLiabilityUtterance =
+  "AI triage may create liability and human escalation problems.";
+const healthcareTransitionUtterance =
+  "Administrative simplification might have transition costs.";
+const symbolicPhysicsUtterance = "0 → i + (-i) → i·(-i) → 1";
+const planckUtterance =
+  "Planck identities may reveal physical structure, not just definitions.";
+const quantumGravityUtterance =
+  "Quantum gravity needs a baseline between GR and QM.";
+const ambiguousUtterance = "This seems wrong but I don’t know where it belongs.";
+const affectsEveryoneUtterance = "This idea affects everyone eventually.";
+const genericSystemUtterance = "The system is broken.";
+const symbolicPatternUtterance = "There is a deeper symbolic pattern here.";
+const genericEnergyUtterance = "Energy affects many systems.";
+const unsupportedReadOnlyPrompt =
+  "What evidence is attached to the quantum gravity Planck baseline between GR and QM?";
 const rejectUtterance =
   "This healthcare claim still assumes savings will reach patients, but institutions may capture them before patients benefit.";
 const archiveUtterance =
-  "This healthcare simplification case may still overstate pass-through because institutions can hold onto the gains.";
+  "Planck identities and quantum gravity framing can still be overread as physical evidence when they may only be a reformulation.";
 
 const runtimeFiles = {
   candidates: path.join(workspaceRoot, "data", "prototype-candidates.runtime.json"),
@@ -350,6 +366,97 @@ function assertExpectedCandidateShape(payload) {
     payload.candidate.publicSubmission === false,
     "Ask candidate should report publicSubmission false.",
   );
+  assert(
+    payload.candidate.routingStatus === "routed",
+    `Expected routed candidate metadata, received ${payload.candidate.routingStatus}.`,
+  );
+  assert(
+    payload.candidate.routedRoomId === "healthcare" &&
+      payload.candidate.routedTopicId === "topic-001",
+    `Expected routed healthcare metadata, received ${payload.candidate.routedRoomId}/${payload.candidate.routedTopicId}.`,
+  );
+  assert(
+    payload.candidate.routeConfidence === "high",
+    `Expected high route confidence, received ${payload.candidate.routeConfidence}.`,
+  );
+  assert(
+    payload.candidate.matchedSignals.includes("savings-capture assumption"),
+    `Expected savings-capture routing signal, received ${payload.candidate.matchedSignals?.join(", ")}.`,
+  );
+}
+
+function assertExpectedPhysicsCandidateShape(payload) {
+  assert(payload?.candidate, "Physics ask response did not include a candidate.");
+  assert(
+    payload.candidate.roomId === "physics-foundations" &&
+      payload.candidate.topicId === "topic-001",
+    `Expected Physics Foundations topic, received ${payload.candidate.roomId}/${payload.candidate.topicId}.`,
+  );
+  assert(
+    payload.candidate.proposedLane === "proposed_reformulation" ||
+      payload.candidate.proposedLane === "symbolic_interpretation",
+    `Expected a symbolic physics lane, received ${payload.candidate.proposedLane}.`,
+  );
+  assert(
+    payload.candidate.proposedAttachmentTarget?.label ===
+      "Distinguish an equivalent reformulation from a new physical claim",
+    `Unexpected physics attachment target ${payload.candidate.proposedAttachmentTarget?.label}.`,
+  );
+  assert(
+    payload.candidate.evidenceStatus ===
+      "symbolic/mathematical proposal, not empirical evidence",
+    `Unexpected physics evidence status ${payload.candidate.evidenceStatus}.`,
+  );
+  assert(
+    payload.candidate.reviewStatus === "pending_human_review",
+    `Expected pending_human_review, received ${payload.candidate.reviewStatus}.`,
+  );
+  assert(
+    payload.candidate.publicSubmission === false &&
+      payload.candidate.actualCardChange === false,
+    "Physics candidate should remain pre-ledger with no actual card change.",
+  );
+  assert(
+    payload.candidate.routingStatus === "routed",
+    `Expected routed physics metadata, received ${payload.candidate.routingStatus}.`,
+  );
+  assert(
+    payload.candidate.routedRoomId === "physics-foundations" &&
+      payload.candidate.routedTopicId === "topic-001",
+    `Expected routed physics metadata, received ${payload.candidate.routedRoomId}/${payload.candidate.routedTopicId}.`,
+  );
+  assert(
+    payload.candidate.routeConfidence === "high" ||
+      payload.candidate.routeConfidence === "medium",
+    `Expected medium or high route confidence, received ${payload.candidate.routeConfidence}.`,
+  );
+}
+
+function assertExpectedUnroutedCandidateShape(payload) {
+  assert(payload?.candidate, "Unrouted ask response did not include a candidate.");
+  assert(
+    payload.candidate.roomId === "unrouted" &&
+      payload.candidate.topicId === "unrouted",
+    `Expected unrouted candidate, received ${payload.candidate.roomId}/${payload.candidate.topicId}.`,
+  );
+  assert(
+    payload.candidate.reviewStatus === "needs_routing",
+    `Expected needs_routing, received ${payload.candidate.reviewStatus}.`,
+  );
+  assert(
+    payload.candidate.publicSubmission === false &&
+      payload.candidate.actualCardChange === false,
+    "Unrouted candidate should remain pre-ledger with no actual card change.",
+  );
+  assert(
+    payload.candidate.routingStatus === "needs_routing" ||
+      payload.candidate.routingStatus === "rejected_route",
+    `Expected unrouted metadata, received ${payload.candidate.routingStatus}.`,
+  );
+  assert(
+    payload.candidate.routeConfidence === "low",
+    `Expected low route confidence, received ${payload.candidate.routeConfidence}.`,
+  );
 }
 
 function assertExpectedReadOnlyShape(payload) {
@@ -363,6 +470,50 @@ function assertExpectedReadOnlyShape(payload) {
   assert(
     Array.isArray(payload.readOnly.recordsUsed) && payload.readOnly.recordsUsed.length > 0,
     "Read-only ask response did not include records used.",
+  );
+}
+
+function assertExpectedHealthcareRoute(payload, expectedSignals = []) {
+  assert(payload?.candidate, "Healthcare route test did not include a candidate.");
+  assert(
+    payload.candidate.roomId === "healthcare" &&
+      payload.candidate.topicId === "topic-001",
+    `Expected healthcare/topic-001, received ${payload.candidate.roomId}/${payload.candidate.topicId}.`,
+  );
+  assert(
+    payload.candidate.routingStatus === "routed",
+    `Expected routed healthcare metadata, received ${payload.candidate.routingStatus}.`,
+  );
+  assert(
+    payload.candidate.routedRoomId === "healthcare" &&
+      payload.candidate.routedTopicId === "topic-001",
+    `Expected healthcare routed topic metadata, received ${payload.candidate.routedRoomId}/${payload.candidate.routedTopicId}.`,
+  );
+  assert(
+    payload.candidate.routeConfidence === "high" ||
+      payload.candidate.routeConfidence === "medium",
+    `Expected medium or high healthcare route confidence, received ${payload.candidate.routeConfidence}.`,
+  );
+
+  for (const signal of expectedSignals) {
+    assert(
+      payload.candidate.matchedSignals.includes(signal),
+      `Expected healthcare matched signal ${signal}, received ${payload.candidate.matchedSignals?.join(", ")}.`,
+    );
+  }
+}
+
+function assertExpectedUnsupportedReadOnlyShape(payload) {
+  assertExpectedReadOnlyShape(payload);
+  assert(
+    payload.reply ===
+      "Civic Logos found a likely topic, but read-only ledger summaries for that topic are not built yet.",
+    `Unexpected unsupported read-only reply: ${payload.reply}.`,
+  );
+  assert(
+    payload.topic.roomId === "physics-foundations" &&
+      payload.topic.topicId === "topic-001",
+    `Expected likely physics topic, received ${payload.topic.roomId}/${payload.topic.topicId}.`,
   );
 }
 
@@ -506,6 +657,14 @@ async function findCandidateRecord(candidateId) {
   return document.candidates.find((item) => item.id === candidateId) ?? null;
 }
 
+async function assertCandidateCount(expectedCount, label) {
+  const actualCount = await getCandidateCount();
+  assert(
+    actualCount === expectedCount,
+    `${label} should set candidate count to ${expectedCount}, received ${actualCount}.`,
+  );
+}
+
 function assertLedgerUnchanged(after, before, label) {
   assert(
     after.visibleRecords === before.visibleRecords,
@@ -635,10 +794,19 @@ async function main() {
     assertExpectedReadOnlyShape(readOnlyPayload);
     const afterReadOnlyLedger = ledgerSummary(await fetchLedger());
     assertLedgerUnchanged(afterReadOnlyLedger, baselineLedger, "Read-only /ask");
-    const afterReadOnlyCandidateCount = await getCandidateCount();
-    assert(
-      afterReadOnlyCandidateCount === baselineCandidateCount,
-      `Read-only /ask changed candidate count from ${baselineCandidateCount} to ${afterReadOnlyCandidateCount}.`,
+    await assertCandidateCount(baselineCandidateCount, "Read-only /ask");
+
+    const unsupportedReadOnlyPayload = await submitAsk(unsupportedReadOnlyPrompt);
+    assertExpectedUnsupportedReadOnlyShape(unsupportedReadOnlyPayload);
+    const afterUnsupportedReadOnlyLedger = ledgerSummary(await fetchLedger());
+    assertLedgerUnchanged(
+      afterUnsupportedReadOnlyLedger,
+      baselineLedger,
+      "Unsupported topic read-only /ask",
+    );
+    await assertCandidateCount(
+      baselineCandidateCount,
+      "Unsupported topic read-only /ask",
     );
 
     const askPayload = await submitAsk(demoUtterance);
@@ -646,20 +814,174 @@ async function main() {
 
     const afterAskLedger = ledgerSummary(await fetchLedger());
     assertLedgerUnchanged(afterAskLedger, baselineLedger, "Candidate /ask");
-    const afterCandidateAskCount = await getCandidateCount();
+    await assertCandidateCount(baselineCandidateCount + 1, "Candidate /ask");
+
+    const healthcareLiabilityPayload = await submitAsk(healthcareLiabilityUtterance);
+    assertExpectedHealthcareRoute(healthcareLiabilityPayload, [
+      "AI triage",
+      "human escalation",
+      "liability",
+    ]);
+    const afterHealthcareLiabilityLedger = ledgerSummary(await fetchLedger());
+    assertLedgerUnchanged(
+      afterHealthcareLiabilityLedger,
+      baselineLedger,
+      "Healthcare liability /ask",
+    );
+    await assertCandidateCount(
+      baselineCandidateCount + 2,
+      "Healthcare liability /ask",
+    );
+
+    const healthcareTransitionPayload = await submitAsk(healthcareTransitionUtterance);
+    assertExpectedHealthcareRoute(healthcareTransitionPayload, [
+      "administrative simplification",
+      "transition costs",
+    ]);
+    const afterHealthcareTransitionLedger = ledgerSummary(await fetchLedger());
+    assertLedgerUnchanged(
+      afterHealthcareTransitionLedger,
+      baselineLedger,
+      "Healthcare transition /ask",
+    );
+    await assertCandidateCount(
+      baselineCandidateCount + 3,
+      "Healthcare transition /ask",
+    );
+
+    const physicsPayload = await submitAsk(symbolicPhysicsUtterance);
+    assertExpectedPhysicsCandidateShape(physicsPayload);
     assert(
-      afterCandidateAskCount === baselineCandidateCount + 1,
-      `Candidate /ask should increase candidate count to ${baselineCandidateCount + 1}, received ${afterCandidateAskCount}.`,
+      physicsPayload.candidate.roomId !== "healthcare",
+      "Symbolic physics input incorrectly routed to healthcare.",
+    );
+
+    const afterPhysicsLedger = ledgerSummary(await fetchLedger());
+    assertLedgerUnchanged(afterPhysicsLedger, baselineLedger, "Physics /ask");
+    await assertCandidateCount(baselineCandidateCount + 4, "Physics /ask");
+
+    const planckPayload = await submitAsk(planckUtterance);
+    assertExpectedPhysicsCandidateShape(planckPayload);
+    assert(
+      planckPayload.candidate.matchedSignals.includes("Planck") &&
+        planckPayload.candidate.matchedSignals.includes("physical structure"),
+      `Expected Planck and physical structure signals, received ${planckPayload.candidate.matchedSignals?.join(", ")}.`,
+    );
+    const afterPlanckLedger = ledgerSummary(await fetchLedger());
+    assertLedgerUnchanged(afterPlanckLedger, baselineLedger, "Planck /ask");
+    await assertCandidateCount(baselineCandidateCount + 5, "Planck /ask");
+
+    const quantumGravityPayload = await submitAsk(quantumGravityUtterance);
+    assertExpectedPhysicsCandidateShape(quantumGravityPayload);
+    assert(
+      quantumGravityPayload.candidate.matchedSignals.includes("quantum gravity"),
+      `Expected quantum gravity signal, received ${quantumGravityPayload.candidate.matchedSignals?.join(", ")}.`,
+    );
+    const afterQuantumGravityLedger = ledgerSummary(await fetchLedger());
+    assertLedgerUnchanged(
+      afterQuantumGravityLedger,
+      baselineLedger,
+      "Quantum gravity /ask",
+    );
+    await assertCandidateCount(
+      baselineCandidateCount + 6,
+      "Quantum gravity /ask",
+    );
+
+    const ambiguousPayload = await submitAsk(ambiguousUtterance);
+    assertExpectedUnroutedCandidateShape(ambiguousPayload);
+
+    const afterAmbiguousLedger = ledgerSummary(await fetchLedger());
+    assertLedgerUnchanged(afterAmbiguousLedger, baselineLedger, "Unrouted /ask");
+    await assertCandidateCount(baselineCandidateCount + 7, "Unrouted /ask");
+
+    const affectsEveryonePayload = await submitAsk(affectsEveryoneUtterance);
+    assertExpectedUnroutedCandidateShape(affectsEveryonePayload);
+    const afterAffectsEveryoneLedger = ledgerSummary(await fetchLedger());
+    assertLedgerUnchanged(
+      afterAffectsEveryoneLedger,
+      baselineLedger,
+      "Affects everyone /ask",
+    );
+    await assertCandidateCount(
+      baselineCandidateCount + 8,
+      "Affects everyone /ask",
+    );
+
+    const genericSystemPayload = await submitAsk(genericSystemUtterance);
+    assertExpectedUnroutedCandidateShape(genericSystemPayload);
+    assert(
+      genericSystemPayload.candidate.routedRoomId !== "healthcare",
+      "Generic system statement should not propose healthcare routing.",
+    );
+    const afterGenericSystemLedger = ledgerSummary(await fetchLedger());
+    assertLedgerUnchanged(
+      afterGenericSystemLedger,
+      baselineLedger,
+      "Generic system /ask",
+    );
+    await assertCandidateCount(
+      baselineCandidateCount + 9,
+      "Generic system /ask",
+    );
+
+    const symbolicPatternPayload = await submitAsk(symbolicPatternUtterance);
+    assertExpectedUnroutedCandidateShape(symbolicPatternPayload);
+    assert(
+      symbolicPatternPayload.candidate.routedRoomId !== "physics-foundations",
+      "Symbolic-only statement should not route to Physics Foundations.",
+    );
+    const afterSymbolicPatternLedger = ledgerSummary(await fetchLedger());
+    assertLedgerUnchanged(
+      afterSymbolicPatternLedger,
+      baselineLedger,
+      "Symbolic-only /ask",
+    );
+    await assertCandidateCount(
+      baselineCandidateCount + 10,
+      "Symbolic-only /ask",
+    );
+
+    const genericEnergyPayload = await submitAsk(genericEnergyUtterance);
+    assertExpectedUnroutedCandidateShape(genericEnergyPayload);
+    assert(
+      genericEnergyPayload.candidate.routedRoomId !== "physics-foundations",
+      "Generic energy statement should not route to Physics Foundations.",
+    );
+    const afterGenericEnergyLedger = ledgerSummary(await fetchLedger());
+    assertLedgerUnchanged(
+      afterGenericEnergyLedger,
+      baselineLedger,
+      "Generic energy /ask",
+    );
+    await assertCandidateCount(
+      baselineCandidateCount + 11,
+      "Generic energy /ask",
     );
 
     const { cookieJar } = await unlockReviewConsole();
     const reviewPageBeforePromotion = await fetchReviewPage(cookieJar);
+    const reviewPageBeforePromotionText = normalizeText(reviewPageBeforePromotion);
+    assert(
+      reviewPageBeforePromotionText.includes("Route confidence: high"),
+      "Review page did not show candidate route confidence metadata.",
+    );
+    assert(
+      reviewPageBeforePromotionText.includes("Matched signals: savings-capture assumption"),
+      "Review page did not show candidate matched routing signals.",
+    );
+    const rerouteForm = findCandidateActionForm(
+      reviewPageBeforePromotion,
+      askPayload.candidate.id,
+      "Reroute before promotion",
+    );
     const promoteForm = findCandidateActionForm(
       reviewPageBeforePromotion,
       askPayload.candidate.id,
       "Promote to public contribution",
     );
 
+    assert(rerouteForm, "Could not find the reroute button form for the ask candidate.");
     assert(promoteForm, "Could not find the promote button form for the ask candidate.");
     await submitReviewForm(cookieJar, promoteForm);
 
@@ -794,6 +1116,66 @@ async function main() {
       "Review page did not show the preserved raw intake text after promotion.",
     );
 
+    const reviewPageBeforeRouting = await fetchReviewPage(cookieJar);
+    const routeForm = findCandidateActionForm(
+      reviewPageBeforeRouting,
+      ambiguousPayload.candidate.id,
+      "Route to existing topic",
+    );
+    assert(routeForm, "Could not find the route button form for the unrouted candidate.");
+    await submitReviewForm(cookieJar, routeForm, {
+      routeTarget: "physics-foundations::topic-001",
+    });
+
+    const routedCandidate = await waitFor(
+      "candidate routing",
+      async () => {
+        const candidate = await findCandidateRecord(ambiguousPayload.candidate.id);
+        assert(candidate, "Routed candidate record disappeared.");
+        assert(
+          candidate.reviewStatus === "pending_human_review",
+          `Expected routed candidate status pending_human_review, received ${candidate.reviewStatus}.`,
+        );
+        assert(
+          candidate.roomId === "physics-foundations" && candidate.topicId === "topic-001",
+          `Expected routed candidate to attach to Physics Foundations, received ${candidate.roomId}/${candidate.topicId}.`,
+        );
+        return candidate;
+      },
+      15000,
+    );
+    const afterRoutingLedger = ledgerSummary(await fetchLedger());
+    assertLedgerUnchanged(afterRoutingLedger, afterPromotionLedger, "Route action");
+
+    const reviewPageAfterRouting = await fetchReviewPage(cookieJar);
+    const routedRejectForm = findCandidateActionForm(
+      reviewPageAfterRouting,
+      ambiguousPayload.candidate.id,
+      "Reject",
+    );
+    assert(routedRejectForm, "Could not find the reject button for the routed candidate.");
+    await submitReviewForm(cookieJar, routedRejectForm);
+
+    const rejectedRoutedCandidate = await waitFor(
+      "candidate rejection after routing",
+      async () => {
+        const candidate = await findCandidateRecord(ambiguousPayload.candidate.id);
+        assert(candidate, "Rejected routed candidate record disappeared.");
+        assert(
+          candidate.reviewStatus === "rejected",
+          `Expected rejected routed candidate status, received ${candidate.reviewStatus}.`,
+        );
+        return candidate;
+      },
+      15000,
+    );
+    assert(
+      !rejectedRoutedCandidate.promotedContributionId,
+      "Rejected routed candidate should not have a promoted contribution ID.",
+    );
+    const afterRejectLedger = ledgerSummary(await fetchLedger());
+    assertLedgerUnchanged(afterRejectLedger, afterPromotionLedger, "Reject action");
+
     const rejectPayload = await submitAsk(rejectUtterance);
     assertExpectedCandidateShape(rejectPayload);
     const afterRejectAskLedger = ledgerSummary(await fetchLedger());
@@ -802,6 +1184,7 @@ async function main() {
       afterPromotionLedger,
       "Reject test /ask",
     );
+    await assertCandidateCount(baselineCandidateCount + 12, "Reject test /ask");
 
     const reviewPageBeforeReject = await fetchReviewPage(cookieJar);
     const rejectForm = findCandidateActionForm(
@@ -830,17 +1213,18 @@ async function main() {
       "Rejected candidate should not have a promoted contribution ID.",
     );
 
-    const afterRejectLedger = ledgerSummary(await fetchLedger());
-    assertLedgerUnchanged(afterRejectLedger, afterPromotionLedger, "Reject action");
+    const afterSecondRejectLedger = ledgerSummary(await fetchLedger());
+    assertLedgerUnchanged(afterSecondRejectLedger, afterPromotionLedger, "Second reject action");
 
     const archivePayload = await submitAsk(archiveUtterance);
-    assertExpectedCandidateShape(archivePayload);
+    assertExpectedPhysicsCandidateShape(archivePayload);
     const afterArchiveAskLedger = ledgerSummary(await fetchLedger());
     assertLedgerUnchanged(
       afterArchiveAskLedger,
       afterPromotionLedger,
       "Archive test /ask",
     );
+    await assertCandidateCount(baselineCandidateCount + 13, "Archive test /ask");
 
     const reviewPageBeforeArchive = await fetchReviewPage(cookieJar);
     const archiveForm = findCandidateActionForm(
@@ -877,6 +1261,8 @@ async function main() {
       JSON.stringify(
         {
           askCandidateId: askPayload.candidate.id,
+          physicsCandidateId: physicsPayload.candidate.id,
+          unroutedCandidateId: ambiguousPayload.candidate.id,
           promotedContributionId: promotedContribution.id,
           rejectedCandidateId: rejectPayload.candidate.id,
           archivedCandidateId: archivePayload.candidate.id,
@@ -889,6 +1275,9 @@ async function main() {
     );
     console.log(
       `Promoted candidate status: ${candidateAfterPromotion.reviewStatus} -> contribution ${candidateAfterPromotion.promotedContributionId}`,
+    );
+    console.log(
+      `Routed candidate status: ${routedCandidate.reviewStatus} at ${routedCandidate.roomId}/${routedCandidate.topicId}`,
     );
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);

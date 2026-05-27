@@ -6,6 +6,7 @@ import type {
   CandidateRecord,
   CandidateReviewStatus,
   CreateCandidateInput,
+  RouteCandidateToTopicInput,
 } from "./candidate-types";
 
 type ListCandidateFilters = {
@@ -29,6 +30,10 @@ type CandidateStoreAdapter = {
   ) => Promise<CandidateRecord[]>;
   getCandidateById: (id: string) => Promise<CandidateRecord | null>;
   createCandidateRecord: (input: CreateCandidateInput) => Promise<CandidateRecord>;
+  routeCandidateToTopic: (
+    id: string,
+    input: RouteCandidateToTopicInput,
+  ) => Promise<CandidateRecord | null>;
   updateCandidateReviewStatus: (
     id: string,
     reviewStatus: CandidateReviewStatus,
@@ -71,6 +76,7 @@ async function withCandidateStore<T>(
     listCandidateRecords: prototypeStoreModule.listCandidateRecords,
     getCandidateById: prototypeStoreModule.getCandidateById,
     createCandidateRecord: prototypeStoreModule.createCandidateRecord,
+    routeCandidateToTopic: prototypeStoreModule.routeCandidateToTopic,
     updateCandidateReviewStatus: prototypeStoreModule.updateCandidateReviewStatus,
   };
 
@@ -123,6 +129,13 @@ export async function getCandidateById(id: string) {
 
 export async function createCandidateRecord(input: CreateCandidateInput) {
   return withCandidateStore((store) => store.createCandidateRecord(input));
+}
+
+export async function routeCandidateToTopic(
+  id: string,
+  input: RouteCandidateToTopicInput,
+) {
+  return withCandidateStore((store) => store.routeCandidateToTopic(id, input));
 }
 
 export async function updateCandidateReviewStatus(

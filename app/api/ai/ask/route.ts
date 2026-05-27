@@ -3,11 +3,14 @@ import { revalidatePath } from "next/cache";
 import {
   answerReadOnlyAsk,
   askReadOnlyAnswerNote,
+  detectAskIntent,
 } from "@/app/lib/ask-reader";
+import { routeAskCandidate } from "@/app/lib/ask-routing";
 import { getAskDeploymentState } from "@/app/lib/ask-deployment-state";
 import type { AskMode } from "@/app/lib/ask-types";
 import { getRoomTopicCard, type IssueRoomSlug } from "@/app/lib/civic-logos";
 import { buildCandidateSuggestion } from "@/app/lib/candidate-ai";
+import { getPromotableContributionLane } from "@/app/lib/candidate-types";
 import {
   createCandidateRecord,
   inspectCandidateStoreMetadata,
@@ -27,8 +30,10 @@ import type { TopicChatPromotion } from "@/app/lib/topic-chat-types";
 
 export const runtime = "nodejs";
 
-const ASK_ROOM_SLUG: IssueRoomSlug = "healthcare";
-const ASK_TOPIC_ID = "topic-001";
+const READ_ONLY_ROOM_SLUG: IssueRoomSlug = "healthcare";
+const READ_ONLY_TOPIC_ID = "topic-001";
+const unsupportedReadOnlyReply =
+  "Civic Logos found a likely topic, but read-only ledger summaries for that topic are not built yet.";
 
 type AskPayload = {
   question?: unknown;
@@ -95,9 +100,9 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Choose a valid provider." }, { status: 400 });
   }
 
-  const topic = getRoomTopicCard(ASK_ROOM_SLUG, ASK_TOPIC_ID);
+  const defaultReadOnlyTopic = getRoomTopicCard(READ_ONLY_ROOM_SLUG, READ_ONLY_TOPIC_ID);
 
-  if (!topic) {
+  if (!defaultReadOnlyTopic) {
     return NextResponse.json({ error: "The live healthcare intake topic is unavailable." }, { status: 404 });
   }
 
@@ -110,19 +115,18 @@ export async function POST(request: NextRequest) {
     request.headers.get("x-forwarded-host") ?? request.nextUrl.host;
   const requestProtocol =
     request.headers.get("x-forwarded-proto") ?? request.nextUrl.protocol;
-  const [chatStoreMetadata, candidateStoreMetadata, readOnlyAnswer] =
+  const detectedIntent = detectAskIntent(question);
+  const [chatStoreMetadata, candidateStoreMetadata, readOnlyRoute] =
     await Promise.all([
-    inspectTopicChatStoreMetadata({
-      avoidPrototypeInitialization: true,
-    }),
-    inspectCandidateStoreMetadata({
-      avoidPrototypeInitialization: true,
-    }),
-    answerReadOnlyAsk({
-      roomSlug: ASK_ROOM_SLUG,
-      topicId: ASK_TOPIC_ID,
-      question,
-    }),
+      inspectTopicChatStoreMetadata({
+        avoidPrototypeInitialization: true,
+      }),
+      inspectCandidateStoreMetadata({
+        avoidPrototypeInitialization: true,
+      }),
+      detectedIntent === "candidate_intake"
+        ? Promise.resolve(null)
+        : routeAskCandidate(question),
     ]);
   const askDeployment = getAskDeploymentState({
     candidateStore: candidateStoreMetadata,
@@ -130,6 +134,58 @@ export async function POST(request: NextRequest) {
     host: requestHost,
     protocol: requestProtocol,
   });
+  const readOnlyChatTarget =
+    readOnlyRoute?.routeType === "existing-topic"
+      ? {
+          roomSlug: readOnlyRoute.roomId,
+          topicId: readOnlyRoute.topicId,
+          topicTitle: readOnlyRoute.topicTitle,
+        }
+      : {
+          roomSlug: READ_ONLY_ROOM_SLUG,
+          topicId: READ_ONLY_TOPIC_ID,
+          topicTitle: defaultReadOnlyTopic.title,
+        };
+  const readOnlyAnswer =
+    detectedIntent === "candidate_intake"
+      ? null
+      : readOnlyRoute?.routeType === "existing-topic" &&
+          (readOnlyRoute.roomId !== READ_ONLY_ROOM_SLUG ||
+            readOnlyRoute.topicId !== READ_ONLY_TOPIC_ID)
+        ? {
+            intent: detectedIntent,
+            answer: unsupportedReadOnlyReply,
+            note: askReadOnlyAnswerNote,
+            recordsUsed: [
+              {
+                kind: "TopicCard" as const,
+                label: `${readOnlyRoute.roomId} / ${readOnlyRoute.topicId} - ${readOnlyRoute.topicTitle}`,
+              },
+            ],
+          }
+        : await answerReadOnlyAsk({
+            roomSlug: READ_ONLY_ROOM_SLUG,
+            topicId: READ_ONLY_TOPIC_ID,
+            question,
+          });
+  const readOnlyTopic = readOnlyRoute?.routeType === "existing-topic"
+    ? {
+        roomId: readOnlyRoute.roomId,
+        topicId: readOnlyRoute.topicId,
+        topicTitle: readOnlyRoute.topicTitle,
+        banner:
+          readOnlyRoute.roomId === READ_ONLY_ROOM_SLUG &&
+          readOnlyRoute.topicId === READ_ONLY_TOPIC_ID
+            ? "This answer is read-only. It was generated from the public healthcare / topic-001 ledger, and no candidate was created."
+            : "This answer is read-only. Civic Logos found a likely existing topic, but deterministic ledger summaries for that topic are not built yet, and no candidate was created.",
+      }
+    : {
+        roomId: READ_ONLY_ROOM_SLUG,
+        topicId: READ_ONLY_TOPIC_ID,
+        topicTitle: defaultReadOnlyTopic.title,
+        banner:
+          "This answer is read-only. It was generated from the public healthcare / topic-001 ledger, and no candidate was created.",
+      };
 
   if (readOnlyAnswer) {
     const mode: AskMode = "read-only";
@@ -145,9 +201,9 @@ export async function POST(request: NextRequest) {
     const userMessageInput = {
       sessionId,
       runId,
-      roomSlug: ASK_ROOM_SLUG,
-      topicId: ASK_TOPIC_ID,
-      topicTitle: topic.title,
+      roomSlug: readOnlyChatTarget.roomSlug,
+      topicId: readOnlyChatTarget.topicId,
+      topicTitle: readOnlyChatTarget.topicTitle,
       role: "user" as const,
       body: question,
       createdAt: new Date().toISOString(),
@@ -156,9 +212,9 @@ export async function POST(request: NextRequest) {
     const assistantMessageInput = {
       sessionId,
       runId,
-      roomSlug: ASK_ROOM_SLUG,
-      topicId: ASK_TOPIC_ID,
-      topicTitle: topic.title,
+      roomSlug: readOnlyChatTarget.roomSlug,
+      topicId: readOnlyChatTarget.topicId,
+      topicTitle: readOnlyChatTarget.topicTitle,
       role: "assistant" as const,
       body: readOnlyAnswer.answer,
       createdAt: new Date().toISOString(),
@@ -183,8 +239,8 @@ export async function POST(request: NextRequest) {
 
           return listTopicChatMessages({
             sessionId,
-            roomSlug: ASK_ROOM_SLUG,
-            topicId: ASK_TOPIC_ID,
+            roomSlug: readOnlyChatTarget.roomSlug,
+            topicId: readOnlyChatTarget.topicId,
             limit: 24,
           });
         })();
@@ -193,13 +249,7 @@ export async function POST(request: NextRequest) {
       mode,
       intent: readOnlyAnswer.intent,
       reply: readOnlyAnswer.answer,
-      topic: {
-        roomId: ASK_ROOM_SLUG,
-        topicId: ASK_TOPIC_ID,
-        topicTitle: topic.title,
-        banner:
-          "Current topic: healthcare / topic-001. This intake is hard-gated to the live healthcare card for the first Civic Logos V2 demo.",
-      },
+      topic: readOnlyTopic,
       candidate: null,
       readOnly: {
         intent: readOnlyAnswer.intent,
@@ -249,43 +299,50 @@ export async function POST(request: NextRequest) {
     );
   }
 
+  const candidateRoute = await routeAskCandidate(question);
   const previousMessages = await listTopicChatMessages({
     sessionId,
-    roomSlug: ASK_ROOM_SLUG,
-    topicId: ASK_TOPIC_ID,
+    roomSlug: candidateRoute.roomId,
+    topicId: candidateRoute.topicId,
     limit: 18,
   });
 
   const userMessage = await createTopicChatMessage({
     sessionId,
     runId,
-    roomSlug: ASK_ROOM_SLUG,
-    topicId: ASK_TOPIC_ID,
-    topicTitle: topic.title,
+    roomSlug: candidateRoute.roomId,
+    topicId: candidateRoute.topicId,
+    topicTitle: candidateRoute.topicTitle,
     role: "user",
     body: question,
     createdAt: new Date().toISOString(),
     promptCategory: "topic-chat",
   });
 
-  const preparedContext = await getTopicCardReaderContext(ASK_ROOM_SLUG, ASK_TOPIC_ID);
-
-  if (!preparedContext) {
-    return NextResponse.json({ error: "The live healthcare intake topic is unavailable." }, { status: 404 });
-  }
-
   const [readerResult, suggestion] = await Promise.all([
-    askTopicCard({
-      roomSlug: ASK_ROOM_SLUG,
-      topicId: ASK_TOPIC_ID,
-      question,
-      provider,
-      history: [...previousMessages, userMessage],
-      preparedContext,
-    }),
+    candidateRoute.routeType === "existing-topic"
+      ? (async () => {
+          const preparedContext = await getTopicCardReaderContext(
+            candidateRoute.roomId,
+            candidateRoute.topicId,
+          );
+
+          if (!preparedContext) {
+            throw new Error("The routed intake topic is unavailable.");
+          }
+
+          return askTopicCard({
+            roomSlug: candidateRoute.roomId,
+            topicId: candidateRoute.topicId,
+            question,
+            provider,
+            history: [...previousMessages, userMessage],
+            preparedContext,
+          });
+        })()
+      : Promise.resolve(null),
     buildCandidateSuggestion({
-      roomSlug: ASK_ROOM_SLUG,
-      topicId: ASK_TOPIC_ID,
+      routing: candidateRoute,
       rawUserText: question,
     }),
   ]);
@@ -293,8 +350,8 @@ export async function POST(request: NextRequest) {
 
   const candidate = await createCandidateRecord({
     sourceMessageId: userMessage.id,
-    roomId: ASK_ROOM_SLUG,
-    topicId: ASK_TOPIC_ID,
+    roomId: candidateRoute.roomId,
+    topicId: candidateRoute.topicId,
     rawUserText: question,
     normalizedTitle: suggestion.draft.normalized_title,
     normalizedBody: suggestion.draft.normalized_body,
@@ -309,6 +366,17 @@ export async function POST(request: NextRequest) {
     evidentialDistance: suggestion.draft.evidential_distance,
     impactField: suggestion.draft.impact_field,
     internalAiNotes: [suggestion.note],
+    reviewStatus:
+      candidateRoute.routeType === "unrouted"
+        ? "needs_routing"
+        : "pending_human_review",
+    routingStatus: candidateRoute.routingStatus,
+    routedRoomId: candidateRoute.routedRoomId,
+    routedTopicId: candidateRoute.routedTopicId,
+    routeConfidence: candidateRoute.routeConfidence,
+    routeReason: candidateRoute.routeReason,
+    matchedSignals: candidateRoute.matchedSignals,
+    rejectedRoutes: candidateRoute.rejectedRoutes,
     aiAssisted: true,
     origin: "human_submitted_via_ai_intake",
   });
@@ -326,7 +394,7 @@ export async function POST(request: NextRequest) {
     candidateReviewStatus: candidate.reviewStatus,
     actualCardChange: false,
     publicSubmission: false,
-    lane: candidate.proposedLane,
+    lane: getPromotableContributionLane(candidate.proposedLane),
     assignmentKind: candidate.proposedAttachmentTarget.kind,
     assignmentLabel: candidate.proposedAttachmentTarget.label,
     changedSynthesis: false,
@@ -335,9 +403,9 @@ export async function POST(request: NextRequest) {
   await createTopicChatMessage({
     sessionId,
     runId,
-    roomSlug: ASK_ROOM_SLUG,
-    topicId: ASK_TOPIC_ID,
-    topicTitle: topic.title,
+    roomSlug: candidateRoute.roomId,
+    topicId: candidateRoute.topicId,
+    topicTitle: candidateRoute.topicTitle,
     role: "assistant",
     provider: firstAnswer?.provider,
     model: firstAnswer?.model,
@@ -350,8 +418,8 @@ export async function POST(request: NextRequest) {
   const [messages, chatStore, candidateStore] = await Promise.all([
     listTopicChatMessages({
       sessionId,
-      roomSlug: ASK_ROOM_SLUG,
-      topicId: ASK_TOPIC_ID,
+      roomSlug: candidateRoute.roomId,
+      topicId: candidateRoute.topicId,
       limit: 24,
     }),
     inspectTopicChatStoreMetadata(),
@@ -363,11 +431,10 @@ export async function POST(request: NextRequest) {
     intent: "candidate_intake",
     reply: aiReply,
     topic: {
-      roomId: ASK_ROOM_SLUG,
-      topicId: ASK_TOPIC_ID,
-      topicTitle: topic.title,
-      banner:
-        "Current topic: healthcare / topic-001. This intake is hard-gated to the live healthcare card for the first Civic Logos V2 demo.",
+      roomId: candidateRoute.roomId,
+      topicId: candidateRoute.topicId,
+      topicTitle: candidateRoute.topicTitle,
+      banner: candidateRoute.banner,
     },
     candidate: {
       ...candidate,

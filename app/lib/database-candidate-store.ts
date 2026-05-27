@@ -1,14 +1,17 @@
 import { randomUUID } from "node:crypto";
 import postgres, { type Sql } from "postgres";
-import type {
+import {
   CandidateAttachmentTarget,
   CandidateEvidentialDistance,
   CandidateEvidenceStatus,
   CandidateInternalAiNote,
   CandidateOrigin,
   CandidateRecord,
+  CandidateRejectedRoute,
   CandidateReviewStatus,
   CreateCandidateInput,
+  RouteCandidateToTopicInput,
+  resolveCandidateRoutingMetadata,
 } from "./candidate-types";
 
 type ListCandidateFilters = {
@@ -36,6 +39,13 @@ type CandidateRow = {
   internal_ai_notes: CandidateInternalAiNote[];
   review_status: CandidateReviewStatus;
   promoted_contribution_id: string | null;
+  routing_status: CandidateRecord["routingStatus"] | null;
+  routed_room_id: string | null;
+  routed_topic_id: string | null;
+  route_confidence: CandidateRecord["routeConfidence"] | null;
+  route_reason: string | null;
+  matched_signals: string[] | null;
+  rejected_routes: CandidateRejectedRoute[] | null;
   ai_assisted: boolean;
   origin: CandidateOrigin;
   created_at: string | Date;
@@ -55,6 +65,10 @@ type DatabaseCandidateStore = {
   ) => Promise<CandidateRecord[]>;
   getCandidateById: (id: string) => Promise<CandidateRecord | null>;
   createCandidateRecord: (input: CreateCandidateInput) => Promise<CandidateRecord>;
+  routeCandidateToTopic: (
+    id: string,
+    input: RouteCandidateToTopicInput,
+  ) => Promise<CandidateRecord | null>;
   updateCandidateReviewStatus: (
     id: string,
     reviewStatus: CandidateReviewStatus,
@@ -120,11 +134,53 @@ async function ensureCandidateTable() {
           internal_ai_notes jsonb not null,
           review_status text not null,
           promoted_contribution_id text,
+          routing_status text,
+          routed_room_id text,
+          routed_topic_id text,
+          route_confidence text,
+          route_reason text,
+          matched_signals jsonb,
+          rejected_routes jsonb,
           ai_assisted boolean not null,
           origin text not null,
           created_at timestamptz not null,
           updated_at timestamptz not null
         )
+      `;
+
+      await sql`
+        alter table civiclogos_candidate_records
+        add column if not exists routing_status text
+      `;
+
+      await sql`
+        alter table civiclogos_candidate_records
+        add column if not exists routed_room_id text
+      `;
+
+      await sql`
+        alter table civiclogos_candidate_records
+        add column if not exists routed_topic_id text
+      `;
+
+      await sql`
+        alter table civiclogos_candidate_records
+        add column if not exists route_confidence text
+      `;
+
+      await sql`
+        alter table civiclogos_candidate_records
+        add column if not exists route_reason text
+      `;
+
+      await sql`
+        alter table civiclogos_candidate_records
+        add column if not exists matched_signals jsonb
+      `;
+
+      await sql`
+        alter table civiclogos_candidate_records
+        add column if not exists rejected_routes jsonb
       `;
 
       await sql`
@@ -147,6 +203,19 @@ function normalizeDate(value: string | Date) {
 }
 
 function rowToCandidate(row: CandidateRow): CandidateRecord {
+  const routing = resolveCandidateRoutingMetadata({
+    roomId: row.room_id,
+    topicId: row.topic_id,
+    reviewStatus: row.review_status,
+    routingStatus: row.routing_status ?? undefined,
+    routedRoomId: row.routed_room_id ?? undefined,
+    routedTopicId: row.routed_topic_id ?? undefined,
+    routeConfidence: row.route_confidence ?? undefined,
+    routeReason: row.route_reason ?? undefined,
+    matchedSignals: row.matched_signals ?? undefined,
+    rejectedRoutes: row.rejected_routes ?? undefined,
+  });
+
   return {
     id: row.id,
     sourceMessageId: row.source_message_id,
@@ -165,6 +234,7 @@ function rowToCandidate(row: CandidateRow): CandidateRecord {
     internalAiNotes: row.internal_ai_notes,
     reviewStatus: row.review_status,
     promotedContributionId: row.promoted_contribution_id ?? undefined,
+    ...routing,
     aiAssisted: true,
     origin: row.origin,
     createdAt: normalizeDate(row.created_at),
@@ -223,11 +293,24 @@ export function createDatabaseCandidateStore(): DatabaseCandidateStore {
       await ensureCandidateTable();
       const sql = getSqlClient();
       const timestamp = new Date().toISOString();
+      const routing = resolveCandidateRoutingMetadata({
+        roomId: input.roomId,
+        topicId: input.topicId,
+        reviewStatus: input.reviewStatus ?? "pending_human_review",
+        routingStatus: input.routingStatus,
+        routedRoomId: input.routedRoomId,
+        routedTopicId: input.routedTopicId,
+        routeConfidence: input.routeConfidence,
+        routeReason: input.routeReason,
+        matchedSignals: input.matchedSignals,
+        rejectedRoutes: input.rejectedRoutes,
+      });
       const candidate: CandidateRecord = {
         ...input,
         id: randomUUID(),
         reviewStatus: input.reviewStatus ?? "pending_human_review",
         promotedContributionId: input.promotedContributionId,
+        ...routing,
         createdAt: timestamp,
         updatedAt: timestamp,
       };
@@ -251,6 +334,13 @@ export function createDatabaseCandidateStore(): DatabaseCandidateStore {
           internal_ai_notes,
           review_status,
           promoted_contribution_id,
+          routing_status,
+          routed_room_id,
+          routed_topic_id,
+          route_confidence,
+          route_reason,
+          matched_signals,
+          rejected_routes,
           ai_assisted,
           origin,
           created_at,
@@ -273,6 +363,13 @@ export function createDatabaseCandidateStore(): DatabaseCandidateStore {
           ${sql.json(candidate.internalAiNotes)},
           ${candidate.reviewStatus},
           ${candidate.promotedContributionId ?? null},
+          ${candidate.routingStatus},
+          ${candidate.routedRoomId ?? null},
+          ${candidate.routedTopicId ?? null},
+          ${candidate.routeConfidence},
+          ${candidate.routeReason},
+          ${sql.json(candidate.matchedSignals)},
+          ${sql.json(candidate.rejectedRoutes)},
           ${candidate.aiAssisted},
           ${candidate.origin},
           ${candidate.createdAt},
@@ -281,6 +378,59 @@ export function createDatabaseCandidateStore(): DatabaseCandidateStore {
       `;
 
       return candidate;
+    },
+
+    async routeCandidateToTopic(id, input) {
+      await ensureCandidateTable();
+      const sql = getSqlClient();
+      const updatedAt = new Date().toISOString();
+      const rows = input.scaleMap
+        ? await sql<CandidateRow[]>`
+            update civiclogos_candidate_records
+            set
+              room_id = ${input.roomId},
+              topic_id = ${input.topicId},
+              review_status = ${input.reviewStatus},
+              routing_status = ${input.routingStatus},
+              routed_room_id = ${input.routedRoomId ?? input.roomId},
+              routed_topic_id = ${input.routedTopicId ?? input.topicId},
+              route_confidence = ${input.routeConfidence ?? null},
+              route_reason = ${input.routeReason ?? null},
+              matched_signals = ${
+                input.matchedSignals ? sql.json(input.matchedSignals) : null
+              },
+              rejected_routes = ${
+                input.rejectedRoutes ? sql.json(input.rejectedRoutes) : null
+              },
+              scale_map = ${sql.json(input.scaleMap)},
+              updated_at = ${updatedAt}
+            where id = ${id}
+            returning *
+          `
+        : await sql<CandidateRow[]>`
+            update civiclogos_candidate_records
+            set
+              room_id = ${input.roomId},
+              topic_id = ${input.topicId},
+              review_status = ${input.reviewStatus},
+              routing_status = ${input.routingStatus},
+              routed_room_id = ${input.routedRoomId ?? input.roomId},
+              routed_topic_id = ${input.routedTopicId ?? input.topicId},
+              route_confidence = ${input.routeConfidence ?? null},
+              route_reason = ${input.routeReason ?? null},
+              matched_signals = ${
+                input.matchedSignals ? sql.json(input.matchedSignals) : null
+              },
+              rejected_routes = ${
+                input.rejectedRoutes ? sql.json(input.rejectedRoutes) : null
+              },
+              updated_at = ${updatedAt}
+            where id = ${id}
+            returning *
+          `;
+
+      const row = rows[0];
+      return row ? rowToCandidate(row) : null;
     },
 
     async updateCandidateReviewStatus(id, reviewStatus, promotedContributionId) {

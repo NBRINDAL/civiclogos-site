@@ -19,8 +19,13 @@ import {
 } from "@/app/lib/contribution-store";
 import {
   getCandidateById,
+  routeCandidateToTopic as persistCandidateRouting,
   updateCandidateReviewStatus,
 } from "@/app/lib/candidate-store";
+import {
+  getPromotableContributionLane,
+  type CandidateRejectedRoute,
+} from "@/app/lib/candidate-types";
 import {
   createEvidenceDocument,
   refreshEvidenceDocumentExtraction,
@@ -97,6 +102,23 @@ function revalidateContributionSurfaces(roomSlug: IssueRoomSlug, topicId: string
   revalidatePath(getRoomTopicHref(roomSlug, topicId));
 }
 
+function buildRoutedCandidateScaleMap(
+  existingScaleMap: readonly string[],
+  roomSlug: IssueRoomSlug,
+  topicId: string,
+) {
+  const filtered = existingScaleMap.filter(
+    (item) =>
+      item !== "room:unrouted" &&
+      item !== "topic:unrouted" &&
+      item !== "routing:needs-maintainer-routing",
+  );
+
+  return Array.from(
+    new Set([`room:${roomSlug}`, `topic:${topicId}`, ...filtered]),
+  );
+}
+
 export async function unlockReviewConsole(formData: FormData) {
   const maintainerKey = String(formData.get("maintainerKey") ?? "").trim();
 
@@ -139,7 +161,7 @@ export async function promoteCandidateToContribution(formData: FormData) {
     roomSlug: candidate.roomId,
     topicId: candidate.topicId,
     topicTitle: topicCard.title,
-    lane: candidate.proposedLane,
+    lane: getPromotableContributionLane(candidate.proposedLane),
     title: candidate.normalizedTitle,
     body: candidate.normalizedBody,
     author: {
@@ -190,7 +212,11 @@ export async function rejectCandidate(formData: FormData) {
 
   const candidate = await getCandidateById(id);
 
-  if (!candidate || candidate.reviewStatus !== "pending_human_review") {
+  if (
+    !candidate ||
+    (candidate.reviewStatus !== "pending_human_review" &&
+      candidate.reviewStatus !== "needs_routing")
+  ) {
     return;
   }
 
@@ -218,7 +244,11 @@ export async function archiveCandidate(formData: FormData) {
 
   const candidate = await getCandidateById(id);
 
-  if (!candidate || candidate.reviewStatus !== "pending_human_review") {
+  if (
+    !candidate ||
+    (candidate.reviewStatus !== "pending_human_review" &&
+      candidate.reviewStatus !== "needs_routing")
+  ) {
     return;
   }
 
@@ -230,6 +260,84 @@ export async function archiveCandidate(formData: FormData) {
   }
 
   revalidatePath("/ask");
+  revalidatePath("/review/contributions");
+}
+
+export async function routeCandidateToExistingTopic(formData: FormData) {
+  if (!(await hasMaintainerSession())) {
+    return;
+  }
+
+  const id = String(formData.get("candidateId") ?? "").trim();
+  const routeTarget = String(formData.get("routeTarget") ?? "").trim();
+  const [parsedRoomSlug, parsedTopicId] = routeTarget.split("::");
+  const roomSlugRaw =
+    parsedRoomSlug || String(formData.get("roomSlug") ?? "").trim();
+  const topicId = parsedTopicId || String(formData.get("topicId") ?? "").trim();
+
+  if (!id || !isRoomSlug(roomSlugRaw) || !topicId) {
+    return;
+  }
+
+  const candidate = await getCandidateById(id);
+  const topicCard = getRoomTopicCard(roomSlugRaw, topicId);
+
+  if (
+    !candidate ||
+    (candidate.reviewStatus !== "needs_routing" &&
+      candidate.reviewStatus !== "pending_human_review") ||
+    !topicCard
+  ) {
+    return;
+  }
+
+  const nextRejectedRoutes = [...candidate.rejectedRoutes];
+  const previousRouteChanged =
+    candidate.routedRoomId &&
+    candidate.routedTopicId &&
+    (candidate.routedRoomId !== roomSlugRaw || candidate.routedTopicId !== topicId);
+
+  if (previousRouteChanged) {
+    const previousRoutedRoomId = candidate.routedRoomId;
+    const previousRoutedTopicId = candidate.routedTopicId;
+
+    if (!previousRoutedRoomId || !previousRoutedTopicId) {
+      return;
+    }
+
+    nextRejectedRoutes.push({
+      roomId: previousRoutedRoomId,
+      topicId: previousRoutedTopicId,
+      confidence: candidate.routeConfidence,
+      reason:
+        "Maintainer rerouted this candidate away from the previous proposed topic before promotion.",
+      matchedSignals: candidate.matchedSignals,
+    } satisfies CandidateRejectedRoute);
+  }
+
+  await persistCandidateRouting(candidate.id, {
+    roomId: roomSlugRaw,
+    topicId,
+    reviewStatus: "pending_human_review",
+    routingStatus: "routed",
+    routedRoomId: roomSlugRaw,
+    routedTopicId: topicId,
+    routeConfidence: "high",
+    routeReason:
+      candidate.reviewStatus === "needs_routing"
+        ? `Maintainer routed this candidate to ${roomSlugRaw} / ${topicId} after Civic Logos left it unrouted.`
+        : `Maintainer rerouted this candidate to ${roomSlugRaw} / ${topicId} before promotion.`,
+    matchedSignals: Array.from(
+      new Set([
+        ...candidate.matchedSignals,
+        `maintainer-route:${roomSlugRaw}/${topicId}`,
+      ]),
+    ),
+    rejectedRoutes: nextRejectedRoutes,
+    scaleMap: buildRoutedCandidateScaleMap(candidate.scaleMap, roomSlugRaw, topicId),
+  });
+
+  revalidateContributionSurfaces(roomSlugRaw, topicId);
   revalidatePath("/review/contributions");
 }
 

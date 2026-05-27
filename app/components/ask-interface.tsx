@@ -50,6 +50,7 @@ type AskInterfaceProps = {
   }) | null;
   initialMessages: TopicChatMessage[];
   initialReadOnly: AskReadOnlyResult | null;
+  initialResultTopic?: AskResponse["topic"] | null;
   prototypeReadOnlyNotice: string | null;
   topic: {
     roomId: string;
@@ -61,6 +62,49 @@ type AskInterfaceProps = {
 
 const demoUtterance =
   "This healthcare claim assumes savings will reach patients, but institutions may capture them.";
+
+function getTopicHref(roomId: string, topicId: string) {
+  if (roomId === "unrouted" || topicId === "unrouted") {
+    return "/review/contributions#candidate-queue";
+  }
+
+  return roomId === "healthcare"
+    ? `/healthcare/${topicId}`
+    : `/rooms/${roomId}/${topicId}`;
+}
+
+function formatTopicLabel(candidate: CandidateRecord) {
+  if (candidate.roomId === "unrouted" || candidate.topicId === "unrouted") {
+    return "unrouted";
+  }
+
+  return `${candidate.roomId} / ${candidate.topicId}`;
+}
+
+function formatRouteTarget(roomId?: string, topicId?: string) {
+  if (!roomId || !topicId) {
+    return "No confident topic route";
+  }
+
+  return `${roomId} / ${topicId}`;
+}
+
+function buildInitialResultTopic(args: {
+  initialResultTopic: AskInterfaceProps["initialResultTopic"];
+  topic: AskInterfaceProps["topic"];
+}): AskResponse["topic"] {
+  if (args.initialResultTopic) {
+    return args.initialResultTopic;
+  }
+
+  return {
+    roomId: args.topic.roomId,
+    topicId: args.topic.topicId,
+    topicTitle: args.topic.topicTitle,
+    banner:
+      "Read-only questions are answered from the live healthcare card. Contribution-style messages may attach to an existing topic or stay internal as unrouted candidates.",
+  };
+}
 
 function formatTimestamp(value: string) {
   return new Intl.DateTimeFormat("en-US", {
@@ -78,6 +122,7 @@ export default function AskInterface({
   initialCandidate,
   initialMessages,
   initialReadOnly,
+  initialResultTopic = null,
   prototypeReadOnlyNotice,
   topic,
   workspaceMode = false,
@@ -90,6 +135,12 @@ export default function AskInterface({
   const [readOnlyResult, setReadOnlyResult] = useState(initialReadOnly);
   const [messages, setMessages] = useState(initialMessages);
   const [issues, setIssues] = useState<AskResponse["issues"]>([]);
+  const [resultTopic, setResultTopic] = useState<AskResponse["topic"]>(() =>
+    buildInitialResultTopic({
+      initialResultTopic,
+      topic,
+    }),
+  );
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
@@ -127,6 +178,7 @@ export default function AskInterface({
         setReadOnlyResult(payload.readOnly);
         setMessages(payload.messages);
         setIssues(payload.issues);
+        setResultTopic(payload.topic);
         setQuestion("");
       } catch {
         setErrorMessage("Civic Logos could not reach the ask endpoint right now.");
@@ -187,13 +239,16 @@ export default function AskInterface({
 
           <section className={styles.topicBanner} data-testid="ask-topic-banner">
             <div>
-              <span className={styles.eyebrow}>Current topic</span>
+              <span className={styles.eyebrow}>Current public reader card</span>
               <h2>{topic.topicTitle}</h2>
             </div>
             <p>
-              Hard-gated to <strong>{topic.roomId} / {topic.topicId}</strong> for the first
-              V2 demo. No new room is created, no new topic card is created, and no public
-              ledger count changes from this page.
+              Read-only ledger questions are answered from <strong>{topic.roomId} / {topic.topicId}</strong>.
+              Contribution-style messages may attach to that card, route to the existing
+              Physics Foundations topic when the signal is clearly foundational-science,
+              or stay internal as unrouted candidates needing maintainer routing. No new
+              room or topic is created automatically, and no public ledger count changes
+              from this page.
             </p>
           </section>
         </>
@@ -245,8 +300,16 @@ export default function AskInterface({
             >
               {isPending ? "Processing ask..." : "Ask Civic Logos"}
             </button>
-            <Link className={styles.linkAction} href="/healthcare/topic-001">
-              Open live healthcare card
+            <Link
+              className={styles.linkAction}
+              href={getTopicHref(
+                candidate?.roomId ?? topic.roomId,
+                candidate?.topicId ?? topic.topicId,
+              )}
+            >
+              {candidate?.roomId === "unrouted"
+                ? "Open maintainer queue"
+                : "Open routed topic"}
             </Link>
           </div>
 
@@ -299,6 +362,11 @@ export default function AskInterface({
                       <strong>{message.role === "assistant" ? "Civic Logos" : "You"}</strong>
                       <span>{formatTimestamp(message.createdAt)}</span>
                     </div>
+                    {message.roomSlug !== topic.roomId || message.topicId !== topic.topicId ? (
+                      <p className={styles.limitations}>
+                        Route: {message.roomSlug} / {message.topicId}
+                      </p>
+                    ) : null}
                     <p>{message.body}</p>
                   </article>
                 ))}
@@ -331,12 +399,63 @@ export default function AskInterface({
 
           {resultMode === "candidate" && candidate ? (
             <>
-              <article className={styles.candidateCard} data-testid="ask-candidate-card">
+            <article className={styles.candidateCard} data-testid="ask-candidate-card">
                 <div className={styles.badgeRow}>
                   <span className={styles.badge}>{candidate.reviewStatus}</span>
                   <span className={styles.badge}>actual card change: false</span>
                   <span className={styles.badge}>public submission: false</span>
                 </div>
+
+                <div className={styles.noteBlock}>
+                  <strong>Route</strong>
+                  <p>{resultTopic.banner}</p>
+                </div>
+
+                <div className={styles.noteBlock}>
+                  <strong>Routing metadata</strong>
+                  <p>{candidate.routeReason}</p>
+                  <p className={styles.limitations}>
+                    Routing status: {candidate.routingStatus} · Proposed route:{" "}
+                    {formatRouteTarget(candidate.routedRoomId, candidate.routedTopicId)} ·
+                    Confidence: {candidate.routeConfidence}
+                  </p>
+                  {candidate.matchedSignals.length ? (
+                    <p className={styles.limitations}>
+                      Matched signals: {candidate.matchedSignals.join(", ")}
+                    </p>
+                  ) : null}
+                  {candidate.rejectedRoutes.length ? (
+                    <ul className={styles.recordList}>
+                      {candidate.rejectedRoutes.map((route) => (
+                        <li
+                          key={`${route.roomId}-${route.topicId ?? "none"}-${route.reason}`}
+                        >
+                          <span>Rejected route</span>
+                          <p>
+                            {formatRouteTarget(route.roomId, route.topicId)} ·{" "}
+                            {route.confidence} confidence
+                          </p>
+                          <p>{route.reason}</p>
+                          {route.matchedSignals.length ? (
+                            <p className={styles.limitations}>
+                              Signals: {route.matchedSignals.join(", ")}
+                            </p>
+                          ) : null}
+                        </li>
+                      ))}
+                    </ul>
+                  ) : null}
+                </div>
+
+                {candidate.reviewStatus === "needs_routing" ? (
+                  <div className={styles.noteBlock}>
+                    <strong>Needs routing</strong>
+                    <p>
+                      Civic Logos could not confidently attach this to an existing topic.
+                      It has been saved as an internal candidate needing maintainer routing.
+                    </p>
+                  </div>
+                ) : null}
 
                 <h3>{candidate.normalizedTitle}</h3>
                 <p>{candidate.normalizedBody}</p>
@@ -348,7 +467,7 @@ export default function AskInterface({
                   </div>
                   <div>
                     <dt>Topic</dt>
-                    <dd>{candidate.roomId} / {candidate.topicId}</dd>
+                    <dd>{formatTopicLabel(candidate)}</dd>
                   </div>
                   <div>
                     <dt>Attachment target</dt>
@@ -411,6 +530,11 @@ export default function AskInterface({
                   <span className={styles.badge}>
                     {getAskReadOnlyIntentLabel(readOnlyResult.intent)}
                   </span>
+                </div>
+
+                <div className={styles.noteBlock}>
+                  <strong>Route</strong>
+                  <p>{resultTopic.banner}</p>
                 </div>
 
                 <div className={styles.noteBlock}>
