@@ -282,8 +282,12 @@ export default async function MainChatWorkspace({
                 <span>pending review</span>
               </div>
               <div>
+                <strong>{counts.changedCard}</strong>
+                <span>formal RevisionEvent</span>
+              </div>
+              <div>
                 <strong>{topic.revisionHistory.length}</strong>
-                <span>revision trace events</span>
+                <span>visible revision-trace updates</span>
               </div>
               <div>
                 <strong>
@@ -304,6 +308,14 @@ export default async function MainChatWorkspace({
                 record, create RevisionEvents, or change synthesis.
               </p>
             )}
+            <p className={styles.statusNote}>
+              Record-origin counts: <strong>{counts.publicSubmissions}</strong> outside
+              public submissions; <strong>{counts.maintainerPromotedCandidates}</strong>{" "}
+              maintainer-promoted V2 candidates; <strong>{counts.founderMaintainer}</strong>{" "}
+              founder-maintainer records; <strong>{counts.founderSubmitted}</strong>{" "}
+              founder-submitted records; <strong>{counts.prototypeExamples}</strong>{" "}
+              prototype examples; <strong>{counts.aiOrigin}</strong> AI-origin records.
+            </p>
 
             <div className={styles.scopeMeta}>
               <span>

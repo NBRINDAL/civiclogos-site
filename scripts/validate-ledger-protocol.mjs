@@ -550,7 +550,16 @@ function evaluateConformanceCase(testCase) {
     case "public-private-boundary-email-redaction":
       return !(input.public_record_fields ?? []).some((field) => field.includes("email"));
     case "origin-label-preserved":
-      return !(input.origin === "founder_maintainer" && input.counts_as_outside_public_submission === true);
+      return !(
+        [
+          "founder_maintainer",
+          "founder_submitted",
+          "maintainer_promoted_candidate",
+          "ai_origin",
+          "prototype_fixture",
+        ].includes(input.origin) &&
+        input.counts_as_outside_public_submission === true
+      );
     case "reviewer-disclosure-required":
       return Boolean(input.reviewer_label && input.reviewer_disclosure_note && input.reviewer_conflict_note);
     case "appeal-cannot-mutate-without-review":

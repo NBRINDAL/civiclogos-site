@@ -94,6 +94,8 @@ function mapOrigin(contribution: PublicContribution) {
   switch (origin) {
     case "human-submitted":
       return "outside_public_submission";
+    case "maintainer-promoted-candidate":
+      return "maintainer_promoted_candidate";
     case "founder-maintainer":
       return "founder_maintainer";
     case "founder-submitted":
@@ -118,6 +120,8 @@ function actorTypeForContribution(contribution: PublicContribution) {
   switch (mapOrigin(contribution)) {
     case "outside_public_submission":
       return "outside_public_contributor";
+    case "maintainer_promoted_candidate":
+      return "maintainer";
     case "founder_maintainer":
       return "founder_maintainer";
     case "founder_submitted":
@@ -611,12 +615,16 @@ function buildActorRecords(contributions: readonly PublicContribution[]) {
       contribution.author.expertise ||
       mapOrigin(contribution).replaceAll("_", " "),
     disclosure_note:
-      contribution.author.expertise ||
-      "Public contributor label exported without private contact metadata.",
+      mapOrigin(contribution) === "maintainer_promoted_candidate"
+        ? "Pre-ledger V2 candidate promoted by maintainer review; not counted as outside public submission."
+        : contribution.author.expertise ||
+          "Public contributor label exported without private contact metadata.",
     conflict_disclosures: contribution.isSeedExample
       ? ["Prototype fixture; not outside public uptake."]
       : contribution.draftSource
         ? ["AI-assisted source record; not a final AI judgment."]
+        : contribution.candidateSource
+          ? ["Maintainer-promoted V2 intake candidate; not outside public uptake."]
         : [],
     created_at: contribution.createdAt,
   }));

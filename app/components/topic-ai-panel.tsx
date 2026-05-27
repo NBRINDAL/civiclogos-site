@@ -251,6 +251,7 @@ function getContributionStatusLabel(filter: ContributionStatusFilter) {
 function getContributionOriginContextLabel(origin: string) {
   if (
     origin === "human-submitted" ||
+    origin === "maintainer-promoted-candidate" ||
     origin === "founder-maintainer" ||
     origin === "founder-submitted" ||
     origin === "ai-origin" ||

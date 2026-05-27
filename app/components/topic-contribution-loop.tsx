@@ -200,6 +200,9 @@ const contributionAttachmentFilterLabels: Record<ContributionAttachmentFilter, s
 const contributionOriginFilterLabels: Record<ContributionOriginFilter, string> = {
   "all-origins": "All origins",
   "human-submitted": getContributionOriginLabel("human-submitted"),
+  "maintainer-promoted-candidate": getContributionOriginLabel(
+    "maintainer-promoted-candidate",
+  ),
   "founder-maintainer": getContributionOriginLabel("founder-maintainer"),
   "founder-submitted": getContributionOriginLabel("founder-submitted"),
   "ai-origin": getContributionOriginLabel("ai-origin"),
@@ -253,6 +256,7 @@ function normalizeContributionOriginFilter(
   if (
     value === "all-origins" ||
     value === "human-submitted" ||
+    value === "maintainer-promoted-candidate" ||
     value === "founder-maintainer" ||
     value === "founder-submitted" ||
     value === "ai-origin" ||
@@ -828,11 +832,13 @@ function getSubmissionRecordType(contribution: PublicContribution) {
       ? "Prototype example"
       : origin === "ai-origin"
         ? "AI-origin contribution"
+        : origin === "maintainer-promoted-candidate"
+          ? "Maintainer-promoted V2 candidate"
         : origin === "founder-maintainer"
           ? "Founder-maintainer revision"
         : origin === "founder-submitted"
           ? "Founder-submitted contribution"
-          : "Public submission";
+          : "Outside public submission";
 
   if (contribution.evidenceDocument) {
     return `${type} - Document-backed submission`;
@@ -860,15 +866,19 @@ function getAdminReviewNote(contribution: PublicContribution) {
     return "Founder-submitted record. It is non-prototype evidence or review work, but it is not counted as outside public usage.";
   }
 
+  if (origin === "maintainer-promoted-candidate") {
+    return "Maintainer-promoted V2 candidate. It is a public ledger record created only after review action, not an outside public submission.";
+  }
+
   if (origin === "founder-maintainer") {
     return "This is a founder-maintainer revision, not an outside public submission. It must pass AI-assisted sorting and human incorporation before it can move the visible synthesis.";
   }
 
   if (contribution.evidenceDocument) {
-    return "Public submission with an uploaded document. The document stays attached while human review decides placement and synthesis impact.";
+    return "Outside public submission with an uploaded document. The document stays attached while human review decides placement and synthesis impact.";
   }
 
-  return "Public submission. It enters human review before it can change the visible synthesis, attachment record, or score pressure.";
+  return "Outside public submission. It enters human review before it can change the visible synthesis, attachment record, or score pressure.";
 }
 
 function getSubmissionSuggestedAttachment(contribution: PublicContribution) {
@@ -1043,6 +1053,10 @@ function getScoreTransparencySliceDefinitions(
     case "Public value":
       return [
         { label: "Outside public submissions", origin: "human-submitted" },
+        {
+          label: "Maintainer-promoted V2 candidates",
+          origin: "maintainer-promoted-candidate",
+        },
         { label: "Changed-card record", recordView: "changed-card" },
       ];
     default:
@@ -1496,6 +1510,9 @@ export default function TopicContributionLoop({
       "human-submitted": attachmentFilteredContributions.filter(
         (item) => getContributionOrigin(item) === "human-submitted",
       ).length,
+      "maintainer-promoted-candidate": attachmentFilteredContributions.filter(
+        (item) => getContributionOrigin(item) === "maintainer-promoted-candidate",
+      ).length,
       "ai-origin": attachmentFilteredContributions.filter(
         (item) => getContributionOrigin(item) === "ai-origin",
       ).length,
@@ -1698,7 +1715,7 @@ export default function TopicContributionLoop({
     [roomSlug, topicId, topicTitle],
   );
   const recordPreviewLabels = useMemo(() => {
-    const labels = ["Public submission"];
+    const labels = ["Outside public submission"];
 
     if (draftState) {
       labels.push("AI-origin draft");
@@ -2616,7 +2633,7 @@ export default function TopicContributionLoop({
               <span className={styles.sectionLabel}>After you submit</span>
               <div className={styles.reviewStepGrid}>
                 <div>
-                  <strong>1. Public submission</strong>
+                  <strong>1. Outside public submission</strong>
                   <p>The record is labeled by origin, lane, date, and attachment target.</p>
                 </div>
                 <div>

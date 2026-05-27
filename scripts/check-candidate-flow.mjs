@@ -256,6 +256,8 @@ async function waitFor(description, check, timeoutMs = 15000) {
 function ledgerSummary(ledger) {
   return {
     visibleRecords: ledger.counts.visibleRecords,
+    publicSubmissions: ledger.counts.publicSubmissions,
+    maintainerPromotedCandidates: ledger.counts.maintainerPromotedCandidates,
     aiOrigin: ledger.counts.aiOrigin,
     revisionEvents: ledger.revision_events.length,
     claimText: ledger.claim_record.claim_text,
@@ -1035,6 +1037,15 @@ async function main() {
       "Promotion changed the public ai-origin count.",
     );
     assert(
+      afterPromotionLedger.publicSubmissions === baselineLedger.publicSubmissions,
+      "Promotion changed the outside public submission count.",
+    );
+    assert(
+      afterPromotionLedger.maintainerPromotedCandidates ===
+        baselineLedger.maintainerPromotedCandidates + 1,
+      "Promotion did not increment the maintainer-promoted V2 candidate count.",
+    );
+    assert(
       afterPromotionLedger.claimText === baselineLedger.claimText,
       "Promotion changed the live synthesis text.",
     );
@@ -1092,8 +1103,8 @@ async function main() {
       (item) => item.contribution_id === promotedContribution.id,
     );
     assert(
-      promotedContributionRecord?.origin === "outside_public_submission",
-      `Promoted record should export as outside_public_submission, received ${promotedContributionRecord?.origin}.`,
+      promotedContributionRecord?.origin === "maintainer_promoted_candidate",
+      `Promoted record should export as maintainer_promoted_candidate, received ${promotedContributionRecord?.origin}.`,
     );
 
     const reviewPageAfterPromotionText = normalizeText(

@@ -172,16 +172,16 @@ export function buildInstitutionalInquiryContext(
       : null,
     sourceExactRecordPublicUptakeLabel
       ? {
-          label: "Public uptake status",
+          label: "Record-origin status",
           value: sourceExactRecordPublicUptakeLabel,
         }
       : null,
     sourceExactRecordPublicUptakeNote
-      ? { label: "Public uptake note", value: sourceExactRecordPublicUptakeNote }
+      ? { label: "Record-origin note", value: sourceExactRecordPublicUptakeNote }
       : null,
     sourceExactRecordPublicUptakeLinks.length
       ? {
-          label: "Public uptake slices",
+          label: "Origin count slices",
           value: sourceExactRecordPublicUptakeLinks.map((item) => item.label).join(", "),
         }
       : null,
@@ -238,7 +238,7 @@ export function buildInstitutionalInquiryContext(
       ? { label: "Open source AI turn", href: sourceExactRecordSourceTurnHref }
       : null,
     sourceExactRecordPublicUptakeHref
-      ? { label: "Open public uptake record", href: sourceExactRecordPublicUptakeHref }
+      ? { label: "Open linked provenance record", href: sourceExactRecordPublicUptakeHref }
       : null,
     ...sourceExactRecordPublicUptakeLinks.map((item) => ({
       label: `Open ${item.label}`,

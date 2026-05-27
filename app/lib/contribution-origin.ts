@@ -2,12 +2,14 @@ import type { ContributionAuthor } from "./contribution-types";
 
 type ContributionOriginInput = {
   author: Omit<ContributionAuthor, "email">;
+  candidateSource?: unknown;
   draftSource?: unknown;
   isSeedExample?: boolean;
 };
 
 export type ContributionOrigin =
   | "human-submitted"
+  | "maintainer-promoted-candidate"
   | "founder-maintainer"
   | "founder-submitted"
   | "ai-origin"
@@ -16,7 +18,7 @@ export type ContributionOrigin =
 export function isFounderMaintainerContribution(
   contribution: ContributionOriginInput,
 ) {
-  if (contribution.isSeedExample || contribution.draftSource) {
+  if (contribution.isSeedExample || contribution.draftSource || contribution.candidateSource) {
     return false;
   }
 
@@ -33,6 +35,7 @@ export function isFounderSubmittedContribution(contribution: ContributionOriginI
   if (
     contribution.isSeedExample ||
     contribution.draftSource ||
+    contribution.candidateSource ||
     isFounderMaintainerContribution(contribution)
   ) {
     return false;
@@ -61,6 +64,10 @@ export function getContributionOrigin(
     return "ai-origin";
   }
 
+  if (contribution.candidateSource) {
+    return "maintainer-promoted-candidate";
+  }
+
   if (isFounderMaintainerContribution(contribution)) {
     return "founder-maintainer";
   }
@@ -80,11 +87,13 @@ export function getContributionOriginLabel(origin: ContributionOrigin) {
       return "Founder-maintainer";
     case "founder-submitted":
       return "Founder-submitted";
+    case "maintainer-promoted-candidate":
+      return "Maintainer-promoted V2 candidate";
     case "seed-example":
       return "Prototype example";
     case "human-submitted":
     default:
-      return "Public submission";
+      return "Outside public submission";
   }
 }
 

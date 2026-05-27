@@ -97,7 +97,7 @@
     {
       "id": "origin-label-preserved",
       "category": "public_private_field_boundary",
-      "description": "Founder-maintainer, founder-submitted, AI-origin, and prototype records must stay labeled separately from outside public submissions.",
+      "description": "Founder-maintainer, founder-submitted, maintainer-promoted candidate, AI-origin, and prototype records must stay labeled separately from outside public submissions.",
       "input": {
         "origin": "founder_maintainer",
         "counts_as_outside_public_submission": true

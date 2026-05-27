@@ -260,8 +260,24 @@ export default async function HealthcareIssueRoomPage({
                 <dd>{pressureTestCounts.publicSubmissions}</dd>
               </div>
               <div>
+                <dt>Maintainer-promoted V2</dt>
+                <dd>{pressureTestCounts.maintainerPromotedCandidates}</dd>
+              </div>
+              <div>
                 <dt>Founder-submitted</dt>
                 <dd>{pressureTestCounts.founderSubmitted}</dd>
+              </div>
+              <div>
+                <dt>Founder-maintainer</dt>
+                <dd>{pressureTestCounts.founderMaintainer}</dd>
+              </div>
+              <div>
+                <dt>Prototype examples</dt>
+                <dd>{pressureTestCounts.prototypeExamples}</dd>
+              </div>
+              <div>
+                <dt>AI-origin records</dt>
+                <dd>{pressureTestCounts.aiOrigin}</dd>
               </div>
             </dl>
 
@@ -269,6 +285,10 @@ export default async function HealthcareIssueRoomPage({
               Current record mode: <strong>{contributionMetadata.mode}</strong>.
               Prototype examples visible: <strong>{pressureTestCounts.prototypeExamples}</strong>.
               Founder-submitted records: <strong>{pressureTestCounts.founderSubmitted}</strong>.
+              Founder-maintainer records: <strong>{pressureTestCounts.founderMaintainer}</strong>.
+              Maintainer-promoted V2 candidates:{" "}
+              <strong>{pressureTestCounts.maintainerPromotedCandidates}</strong>.
+              AI-origin records: <strong>{pressureTestCounts.aiOrigin}</strong>.
               Outside public submissions: <strong>{pressureTestCounts.publicSubmissions}</strong>.
             </p>
           </div>

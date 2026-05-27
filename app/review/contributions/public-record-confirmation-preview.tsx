@@ -202,7 +202,7 @@ export default function PublicRecordConfirmationPreview({
           <dt>Expected count changes</dt>
           <dd>
             {attemptsPublicRecordChange
-              ? "Changed-card records +1; Revision trace +1; Outside public submissions +0."
+              ? "Changed-card records +1; formal RevisionEvent +1; visible revision-trace update +1; outside public submissions +0."
               : "No public-record count change unless incorporated with actual card change yes."}
           </dd>
         </div>

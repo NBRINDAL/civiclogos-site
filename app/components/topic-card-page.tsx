@@ -237,7 +237,11 @@ function getPilotInquiryRecordContext({
     }
 
     if (origin === "human-submitted") {
-      return "public submission";
+      return "outside public submission";
+    }
+
+    if (origin === "maintainer-promoted-candidate") {
+      return "maintainer-promoted V2 candidate";
     }
 
     if (origin === "founder-submitted") {
@@ -315,6 +319,9 @@ function getPilotInquiryRecordContext({
     const founderMaintainerCount = liveContributions.filter(
       (item) => getContributionOrigin(item) === "founder-maintainer",
     ).length;
+    const maintainerPromotedCandidateCount = liveContributions.filter(
+      (item) => getContributionOrigin(item) === "maintainer-promoted-candidate",
+    ).length;
     const aiOriginCount = liveContributions.filter(
       (item) => getContributionOrigin(item) === "ai-origin",
     ).length;
@@ -344,6 +351,12 @@ function getPilotInquiryRecordContext({
         href: getContributionLedgerHref({ origin: "founder-maintainer" }),
       },
       {
+        label: `Maintainer-promoted V2 candidates · ${maintainerPromotedCandidateCount}`,
+        href: getContributionLedgerHref({
+          origin: "maintainer-promoted-candidate",
+        }),
+      },
+      {
         label: `AI-origin record · ${aiOriginCount}`,
         href: getContributionLedgerHref({ origin: "ai-origin" }),
       },
@@ -353,7 +366,7 @@ function getPilotInquiryRecordContext({
     );
     let publicUptakeLabel = "No public uptake yet";
     let publicUptakeNote =
-      "The visible healthcare record is still waiting for outside public uptake; prototype, founder-submitted, founder-maintainer, and AI-origin records stay labeled separately.";
+      "The visible healthcare record is still waiting for outside public uptake; prototype, founder-submitted, founder-maintainer, maintainer-promoted V2 candidate, and AI-origin records stay labeled separately.";
     let publicUptakeContribution: PublicContribution | null = null;
 
     if (origin === "human-submitted" && contribution.review?.reviewedAt) {
@@ -387,6 +400,16 @@ function getPilotInquiryRecordContext({
       publicUptakeLabel = "Founder-maintainer revision is awaiting review";
       publicUptakeNote =
         "This proposed maintainer revision is waiting for AI-assisted sorting and human incorporation before it can change the visible synthesis.";
+      publicUptakeContribution = contribution;
+    } else if (origin === "maintainer-promoted-candidate" && contribution.review?.reviewedAt) {
+      publicUptakeLabel = "Maintainer-promoted V2 candidate is visible";
+      publicUptakeNote =
+        "This record began as a pre-ledger V2 candidate and entered the public ledger only after maintainer promotion; it is not counted as an outside public submission.";
+      publicUptakeContribution = contribution;
+    } else if (origin === "maintainer-promoted-candidate") {
+      publicUptakeLabel = "Maintainer-promoted V2 candidate is awaiting review";
+      publicUptakeNote =
+        "This record began as a pre-ledger V2 candidate. It is public after maintainer promotion, but it is not outside public uptake.";
       publicUptakeContribution = contribution;
     } else if (origin === "ai-origin" && contribution.review?.reviewedAt) {
       publicUptakeLabel = "Reviewed AI-origin record is visible";
@@ -424,7 +447,7 @@ function getPilotInquiryRecordContext({
         sliceLabel,
         pilotGrounding: hasReviewedNonSeedRecord
           ? "A non-prototype record is now visible, but this prototype example is still the strongest reviewed live object currently carrying the pilot handoff."
-          : "The strongest visible pilot-facing record is still a prototype example because no outside public, founder-submitted, founder-maintainer, or AI-origin contribution has yet been reviewed into a stronger live object.",
+          : "The strongest visible pilot-facing record is still a prototype example because no outside public, founder-submitted, founder-maintainer, maintainer-promoted V2 candidate, or AI-origin contribution has yet been reviewed into a stronger live object.",
         publicUptakeLabel,
         publicUptakeNote,
         publicUptakeContribution,
@@ -1081,6 +1104,10 @@ function getScoreTransparencySliceDefinitions(
     case "Public value":
       return [
         { label: "Outside public submissions", origin: "human-submitted" },
+        {
+          label: "Maintainer-promoted V2 candidates",
+          origin: "maintainer-promoted-candidate",
+        },
         { label: "Changed-card record", recordView: "changed-card" },
       ];
     default:
@@ -1910,6 +1937,9 @@ export default async function TopicCardPage({
   const publicSubmissionContributions = liveContributions.filter(
     (item) => getContributionOrigin(item) === "human-submitted",
   );
+  const maintainerPromotedCandidateContributions = liveContributions.filter(
+    (item) => getContributionOrigin(item) === "maintainer-promoted-candidate",
+  );
   const founderSubmittedContributions = liveContributions.filter(
     (item) => getContributionOrigin(item) === "founder-submitted",
   );
@@ -1990,6 +2020,7 @@ export default async function TopicCardPage({
   const originCounts = (
     [
       "human-submitted",
+      "maintainer-promoted-candidate",
       "founder-maintainer",
       "founder-submitted",
       "ai-origin",
@@ -2713,6 +2744,10 @@ export default async function TopicCardPage({
                   <strong>{publicSubmissionContributions.length}</strong>
                 </div>
                 <div>
+                  <span>Maintainer-promoted V2</span>
+                  <strong>{maintainerPromotedCandidateContributions.length}</strong>
+                </div>
+                <div>
                   <span>Founder-maintainer</span>
                   <strong>{founderMaintainerContributions.length}</strong>
                 </div>
@@ -2835,6 +2870,8 @@ export default async function TopicCardPage({
                     <h3>
                       {publicSubmissionContributions.length
                         ? "Outside public submissions are now visible on this card."
+                        : maintainerPromotedCandidateContributions.length
+                          ? "Maintainer-promoted V2 candidates are visible, but outside public review is still the next proof step."
                         : founderMaintainerContributions.length
                           ? "A founder-maintainer revision is visible, but outside public review is still the next proof step."
                         : founderSubmittedContributions.length
@@ -2845,18 +2882,34 @@ export default async function TopicCardPage({
                       {publicSubmissionContributions.length
                         ? `${publicSubmissionContributions.length} outside submission${
                             publicSubmissionContributions.length === 1 ? "" : "s"
-                          } visible. Prototype examples, founder-maintainer revisions, founder-submitted records, and AI-origin records remain labeled so the ledger does not pretend to have more public uptake than it has.`
+                          } visible. Prototype examples, founder-maintainer revisions, founder-submitted records, maintainer-promoted V2 candidates, and AI-origin records remain labeled so the ledger does not pretend to have more public uptake than it has.`
+                        : maintainerPromotedCandidateContributions.length
+                          ? `${maintainerPromotedCandidateContributions.length} maintainer-promoted V2 candidate${
+                              maintainerPromotedCandidateContributions.length === 1 ? "" : "s"
+                            }, ${founderMaintainerContributions.length} founder-maintainer revision${
+                              founderMaintainerContributions.length === 1 ? "" : "s"
+                            }, ${founderSubmittedContributions.length} founder-submitted record${
+                              founderSubmittedContributions.length === 1 ? "" : "s"
+                            }, ${prototypeExampleContributions.length} prototype example${
+                              prototypeExampleContributions.length === 1 ? "" : "s"
+                            }, and ${assistedRecordContributions.length} AI-origin record${
+                              assistedRecordContributions.length === 1 ? "" : "s"
+                            } are visible. The outside public submission count remains ${publicSubmissionContributions.length}; maintainer promotion records are public ledger records, not outside submissions.`
                         : founderMaintainerContributions.length
                           ? `${founderMaintainerContributions.length} founder-maintainer revision${
                               founderMaintainerContributions.length === 1 ? "" : "s"
                             }, ${founderSubmittedContributions.length} founder-submitted record${
                               founderSubmittedContributions.length === 1 ? "" : "s"
+                            }, ${maintainerPromotedCandidateContributions.length} maintainer-promoted V2 candidate${
+                              maintainerPromotedCandidateContributions.length === 1 ? "" : "s"
                             }, and ${assistedRecordContributions.length} AI-origin record${
                               assistedRecordContributions.length === 1 ? "" : "s"
                             } are visible. Maintainer revisions can move the card only after AI-assisted sorting and human incorporation; the next useful move is still one outside objection, evidence source, or correction.`
                         : founderSubmittedContributions.length
                           ? `${founderSubmittedContributions.length} founder-submitted record${
                               founderSubmittedContributions.length === 1 ? "" : "s"
+                            }, ${maintainerPromotedCandidateContributions.length} maintainer-promoted V2 candidate${
+                              maintainerPromotedCandidateContributions.length === 1 ? "" : "s"
                             } and ${assistedRecordContributions.length} AI-origin record${
                               assistedRecordContributions.length === 1 ? "" : "s"
                             } are visible. The next useful move is still one outside objection, evidence source, or correction that can enter human review.`
@@ -2866,6 +2919,8 @@ export default async function TopicCardPage({
                             founderMaintainerContributions.length === 1 ? "" : "s"
                           }, ${founderSubmittedContributions.length} founder-submitted record${
                             founderSubmittedContributions.length === 1 ? "" : "s"
+                          }, ${maintainerPromotedCandidateContributions.length} maintainer-promoted V2 candidate${
+                            maintainerPromotedCandidateContributions.length === 1 ? "" : "s"
                           }, and ${assistedRecordContributions.length} AI-origin record${
                             assistedRecordContributions.length === 1 ? "" : "s"
                           } are visible. The next useful move is one real objection, evidence source, or correction that can enter human review.`}
@@ -4375,7 +4430,11 @@ export default async function TopicCardPage({
                               activeIntakeContextId,
                             )}
                           >
-                            Open public uptake record
+                            {getContributionOrigin(
+                              institutionalPilotRecordContext.publicUptakeContribution,
+                            ) === "human-submitted"
+                              ? "Open public uptake record"
+                              : "Open non-outside public record"}
                           </Link>
                         </div>
                       ) : null}

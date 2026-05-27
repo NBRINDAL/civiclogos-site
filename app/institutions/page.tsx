@@ -218,6 +218,15 @@ export default async function InstitutionsPage({
   const founderSubmittedExamples = healthcareContributions.filter(
     isFounderSubmittedContribution,
   );
+  const founderMaintainerExamples = healthcareContributions.filter(
+    (item) => getContributionOrigin(item) === "founder-maintainer",
+  );
+  const maintainerPromotedCandidateExamples = healthcareContributions.filter(
+    (item) => getContributionOrigin(item) === "maintainer-promoted-candidate",
+  );
+  const aiOriginExamples = healthcareContributions.filter(
+    (item) => getContributionOrigin(item) === "ai-origin",
+  );
   const prototypeExamples = healthcareContributions.filter(
     (item) => item.isSeedExample,
   );
@@ -426,8 +435,13 @@ export default async function InstitutionsPage({
                 <strong>{pendingReviewExamples.length} pending review</strong>
                 <strong>{changedCardExamples.length} changed-card records</strong>
                 <strong>{publicSubmissionExamples.length} outside public submissions</strong>
+                <strong>
+                  {maintainerPromotedCandidateExamples.length} maintainer-promoted V2 candidates
+                </strong>
                 <strong>{founderSubmittedExamples.length} founder-submitted records</strong>
+                <strong>{founderMaintainerExamples.length} founder-maintainer records</strong>
                 <strong>{prototypeExamples.length} prototype examples</strong>
+                <strong>{aiOriginExamples.length} AI-origin records</strong>
               </div>
               <p>
                 The sample below uses the current visible healthcare record instead
@@ -436,9 +450,13 @@ export default async function InstitutionsPage({
               <p className={styles.proofDisclosure}>
                 {publicSubmissionExamples.length
                   ? "Outside public submissions are now visible in this pilot snapshot."
+                  : maintainerPromotedCandidateExamples.length
+                    ? "Maintainer-promoted V2 candidates are visible in this pilot snapshot, but outside public submissions remain separate and are not implied."
+                  : founderMaintainerExamples.length
+                    ? "Founder-maintainer records are visible in this pilot snapshot, but outside public submissions remain separate and are not implied."
                   : founderSubmittedExamples.length
                     ? "Founder-submitted records are visible in this pilot snapshot, but outside public submissions remain separate and are not implied."
-                    : "No outside public submission has been reviewed into this snapshot yet; the visible records are still prototype-led and labeled that way."}
+                    : "No outside public submission has been reviewed into this snapshot yet; the visible records are still prototype-led or internally labeled."}
               </p>
             </article>
 

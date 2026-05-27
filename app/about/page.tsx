@@ -342,16 +342,16 @@ export default async function Home({
       : null,
     sourceExactRecordPublicUptakeLabel
       ? {
-          label: "Public uptake status",
+          label: "Record-origin status",
           value: sourceExactRecordPublicUptakeLabel,
         }
       : null,
     sourceExactRecordPublicUptakeNote
-      ? { label: "Public uptake note", value: sourceExactRecordPublicUptakeNote }
+      ? { label: "Record-origin note", value: sourceExactRecordPublicUptakeNote }
       : null,
     sourceExactRecordPublicUptakeLinks.length
       ? {
-          label: "Public uptake slices",
+          label: "Origin count slices",
           value: sourceExactRecordPublicUptakeLinks
             .map((item) => item.label)
             .join(", "),
@@ -417,7 +417,7 @@ export default async function Home({
       ? { label: "Open source AI turn", href: sourceExactRecordSourceTurnHref }
       : null,
     sourceExactRecordPublicUptakeHref
-      ? { label: "Open public uptake record", href: sourceExactRecordPublicUptakeHref }
+      ? { label: "Open linked provenance record", href: sourceExactRecordPublicUptakeHref }
       : null,
     ...sourceExactRecordPublicUptakeLinks.map((item) => ({
       label: `Open ${item.label}`,
@@ -498,13 +498,13 @@ export default async function Home({
             ? `- Pilot grounding: ${sourceExactRecordPilotGrounding}`
             : null,
           sourceExactRecordPublicUptakeLabel
-            ? `- Public uptake status: ${sourceExactRecordPublicUptakeLabel}`
+            ? `- Record-origin status: ${sourceExactRecordPublicUptakeLabel}`
             : null,
           sourceExactRecordPublicUptakeNote
-            ? `- Public uptake note: ${sourceExactRecordPublicUptakeNote}`
+            ? `- Record-origin note: ${sourceExactRecordPublicUptakeNote}`
             : null,
           sourceExactRecordPublicUptakeLinks.length
-            ? `- Public uptake slices: ${sourceExactRecordPublicUptakeLinks
+            ? `- Origin count slices: ${sourceExactRecordPublicUptakeLinks
                 .map((item) => item.label)
                 .join(", ")}`
             : null,
@@ -774,16 +774,34 @@ export default async function Home({
                 <dd>{campaignRecordStats.publicSubmissions}</dd>
               </div>
               <div>
+                <dt>Maintainer-promoted V2</dt>
+                <dd>{campaignRecordStats.maintainerPromotedCandidates}</dd>
+              </div>
+              <div>
                 <dt>Founder-submitted</dt>
                 <dd>{campaignRecordStats.founderSubmitted}</dd>
+              </div>
+              <div>
+                <dt>Founder-maintainer</dt>
+                <dd>{campaignRecordStats.founderMaintainer}</dd>
+              </div>
+              <div>
+                <dt>Prototype examples</dt>
+                <dd>{campaignRecordStats.prototypeExamples}</dd>
+              </div>
+              <div>
+                <dt>AI-origin records</dt>
+                <dd>{campaignRecordStats.aiOrigin}</dd>
               </div>
             </dl>
             <p className={styles.campaignRecordNote}>
               Current record mode: <strong>{campaignContributionMetadata.mode}</strong>.
-              Prototype examples visible:{" "}
-              <strong>{campaignRecordStats.prototypeExamples}</strong>.
-              Founder-submitted records visible:{" "}
-              <strong>{campaignRecordStats.founderSubmitted}</strong>. Outside
+              Prototype examples visible: <strong>{campaignRecordStats.prototypeExamples}</strong>.
+              Founder-submitted records: <strong>{campaignRecordStats.founderSubmitted}</strong>.
+              Founder-maintainer records: <strong>{campaignRecordStats.founderMaintainer}</strong>.
+              Maintainer-promoted V2 candidates:{" "}
+              <strong>{campaignRecordStats.maintainerPromotedCandidates}</strong>.
+              AI-origin records: <strong>{campaignRecordStats.aiOrigin}</strong>. Outside
               public submissions stay separate at{" "}
               <strong>{campaignRecordStats.publicSubmissions}</strong> until a real
               contributor enters the review loop.

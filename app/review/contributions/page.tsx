@@ -549,6 +549,11 @@ export default async function ContributionReviewPage({
               <p>Maintainer-authored revision proposals that still require AI-assisted sorting and human incorporation.</p>
             </article>
             <article className={styles.provenanceCard}>
+              <span>Maintainer-promoted V2 candidates</span>
+              <strong>{topicSummary.maintainerPromotedCandidates}</strong>
+              <p>Pre-ledger V2 candidates promoted by maintainer action; public records, not outside submissions.</p>
+            </article>
+            <article className={styles.provenanceCard}>
               <span>Needs human review</span>
               <strong>{topicSummary.pendingReview}</strong>
               <p>Pending or needs-review records awaiting maintainer judgment.</p>
@@ -793,7 +798,7 @@ export default async function ContributionReviewPage({
             <div className={styles.publicSubmissionPanel}>
               <div className={styles.queueHeader}>
                 <div>
-                  <span className={styles.eyebrow}>Public submission spotlight</span>
+                  <span className={styles.eyebrow}>Outside public submission spotlight</span>
                   <h2>
                     {publicReviewQueue.length
                       ? "Review these outside submissions first."
@@ -869,7 +874,8 @@ export default async function ContributionReviewPage({
                 it will appear with its lane, AI sorting, suggested attachment, and
                 human-review status. Prototype examples stay labeled separately so
                 Civic Logos never has to pretend seeded, founder-maintainer,
-                or founder-submitted records are outside public use.
+                founder-submitted, or maintainer-promoted V2 candidate records are
+                outside public use.
               </p>
               <div className={styles.emptyActionGrid}>
                 <Link

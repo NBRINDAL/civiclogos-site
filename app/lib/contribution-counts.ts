@@ -24,6 +24,9 @@ export function getContributionCountSummary(contributions: readonly PublicContri
     publicSubmissions: contributions.filter(isOutsidePublicContribution).length,
     founderMaintainer: contributions.filter(isFounderMaintainerContribution).length,
     founderSubmitted: contributions.filter(isFounderSubmittedContribution).length,
+    maintainerPromotedCandidates: contributions.filter(
+      (item) => getContributionOrigin(item) === "maintainer-promoted-candidate",
+    ).length,
     aiOrigin: contributions.filter((item) => getContributionOrigin(item) === "ai-origin").length,
     prototypeExamples: contributions.filter((item) => item.isSeedExample).length,
     documentBacked: contributions.filter((item) => item.evidenceDocument).length,

@@ -144,6 +144,11 @@ export default async function ChallengePage({
       note: "The first real outside contribution is still the next public milestone.",
     },
     {
+      label: "Maintainer-promoted V2 candidates",
+      value: String(contributionCounts.maintainerPromotedCandidates),
+      note: "V2 candidate test records stay public only after maintainer promotion and do not count as outside submissions.",
+    },
+    {
       label: "Next milestone",
       value: "First outside contribution",
       note: "The goal is one useful public objection, source, correction, or implementation challenge.",
@@ -152,6 +157,11 @@ export default async function ChallengePage({
       label: "Prototype examples",
       value: "Labeled",
       note: `${contributionCounts.prototypeExamples} prototype examples remain separate from public uptake.`,
+    },
+    {
+      label: "AI-origin records",
+      value: String(contributionCounts.aiOrigin),
+      note: "AI-origin records stay labeled separately from outside public uptake.",
     },
   ];
   const proofStats = [
@@ -179,6 +189,21 @@ export default async function ChallengePage({
       label: "Founder-submitted test record",
       value: String(contributionCounts.founderSubmitted),
       note: "Non-prototype records from Civic Logos stay labeled separately and do not count as outside public uptake.",
+    },
+    {
+      label: "Founder-maintainer records",
+      value: String(contributionCounts.founderMaintainer),
+      note: "Founder-maintainer revisions are formal review records, not outside public submissions.",
+    },
+    {
+      label: "Maintainer-promoted V2 candidates",
+      value: String(contributionCounts.maintainerPromotedCandidates),
+      note: "Candidate promotions preserve maintainer provenance and remain separate from outside public submissions.",
+    },
+    {
+      label: "AI-origin records",
+      value: String(contributionCounts.aiOrigin),
+      note: "AI-origin records are labeled separately and do not imply external participation.",
     },
     {
       label: "Database mode",

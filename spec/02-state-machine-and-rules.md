@@ -126,7 +126,7 @@ Rollback and correction are additive. A later correction creates a new contribut
 
 - `AppealRecord` objects challenge an existing public ledger object; they do not overwrite that object.
 - An appeal may target a `ContributionRecord`, `HumanReviewDecision`, `RevisionEvent`, `SynthesisSnapshot`, `ClaimRecord`, `EvidenceObject`, or `MetricScore`.
-- Appeals must preserve origin labels. Prototype, founder-maintainer, AI-origin, and institutional-pilot appeals must not count as outside public submissions.
+- Appeals must preserve origin labels. Prototype, founder-maintainer, maintainer-promoted V2 candidate, AI-origin, and institutional-pilot appeals must not count as outside public submissions.
 - AI readers may attach advisory notes to an appeal, but an `AIReaderNote` cannot resolve the appeal or mutate synthesis.
 - If an appeal changes a public object, the change must move through a new `HumanReviewDecision` and, when synthesis changes, a new `RevisionEvent`.
 - Rejected appeals remain visible with a public reason when they are part of the public record.

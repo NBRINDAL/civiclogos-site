@@ -161,6 +161,11 @@ export default function LedgerPage() {
             revision. The next milestone is the first outside public
             contribution.
           </p>
+          <p>
+            Count wording is intentionally split: the healthcare ledger currently
+            has 1 formal RevisionEvent, while visible revision-trace updates may
+            include supporting narrative checkpoints.
+          </p>
         </section>
 
         <section className={styles.grantNote}>

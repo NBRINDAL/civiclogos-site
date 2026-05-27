@@ -40,6 +40,7 @@
       "type": "string",
       "enum": [
         "outside_public_submission",
+        "maintainer_promoted_candidate",
         "founder_submitted",
         "founder_maintainer",
         "ai_origin",
