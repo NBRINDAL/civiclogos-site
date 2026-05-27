@@ -258,7 +258,7 @@ async function fetchLedger(baseUrl) {
 
 async function fetchContributions(baseUrl) {
   const { response, payload } = await fetchJson(
-    `${baseUrl}/api/contributions?roomSlug=healthcare&topicId=topic-001&limit=50`,
+    `${baseUrl}/api/contributions`,
   );
   assert(
     response.ok,
