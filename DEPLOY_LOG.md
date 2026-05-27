@@ -56,3 +56,53 @@ Production checks:
 - Production candidate intake reported database-backed storage in the HTTPS smoke script.
 - `visibleRecords` stayed at `10` during `/ask` checks.
 - `revisionEvents` stayed at `1`.
+
+## 2026-05-27 - V2 Phase 3 Physics Foundations Read-Only
+
+Release commit:
+
+- `09840a6` - `Merge Civic Logos V2 Phase 3 physics read-only`
+
+Preview deployment:
+
+- URL: `https://civiclogos-site-j45lqhi5w-civic-logos.vercel.app`
+- Vercel deployment ID: `dpl_EDjuC6sUB1iRm5KrkUoYmaUQhNUW`
+- Result: passed
+
+Preview checks:
+
+- `npm run https:smoke:check -- https://civiclogos-site-j45lqhi5w-civic-logos.vercel.app`
+- `/`, `/ask`, `/about`, `/ledger`, `/demo`, `/healthcare/topic-001?view=ledger`, `/rooms/physics-foundations/topic-001`, and `/review/contributions` rendered expected public or gated surfaces.
+- Healthcare read-only ask returned read-only mode and created no candidate.
+- Physics read-only ask returned `standard_baselines` from `physics-foundations/topic-001` and created no candidate.
+- Healthcare contribution-style ask created a pre-ledger candidate only.
+- Physics contribution-style ask created a pre-ledger candidate only.
+- Ambiguous input became `needs_routing`.
+- No `/ask` path created a public `ContributionRecord`, `RevisionEvent`, or synthesis change.
+- Preview candidate intake reported database-backed storage.
+- `visibleRecords` stayed at `10`; `revisionEvents` stayed at `1`.
+
+Production deployment:
+
+- URL: `https://civiclogos.com`
+- Vercel deployment ID: `dpl_2KUkUzHrxgqwBoBoyhkE2XBjK9r9`
+- Result: passed
+
+Production checks:
+
+- `npm run https:smoke:check -- https://civiclogos.com`
+- `/`, `/ask`, `/about`, `/ledger`, `/demo`, `/healthcare/topic-001?view=ledger`, `/rooms/physics-foundations/topic-001`, and `/review/contributions` rendered expected public or gated surfaces.
+- Healthcare read-only ask returned read-only mode and created no candidate.
+- Physics read-only ask returned `standard_baselines` from `physics-foundations/topic-001` and created no candidate.
+- Healthcare contribution-style ask created a pre-ledger candidate only.
+- Physics contribution-style ask created a pre-ledger candidate only.
+- Ambiguous input became `needs_routing`.
+- No `/ask` path created a public `ContributionRecord`, `RevisionEvent`, or synthesis change.
+- Production candidate intake reported database-backed storage.
+- `visibleRecords` stayed at `10`; `revisionEvents` stayed at `1`.
+
+Session-context safety:
+
+- Local `candidate:flow:check` confirmed Physics follow-ups stay on Physics and Healthcare follow-ups stay on Healthcare.
+- Strong Healthcare and Physics contribution signals override prior session topic.
+- Ambiguous contribution-style statements remain internal `needs_routing` candidates instead of inheriting session topic.
