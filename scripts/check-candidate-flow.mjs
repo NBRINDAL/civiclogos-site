@@ -29,8 +29,9 @@ const affectsEveryoneUtterance = "This idea affects everyone eventually.";
 const genericSystemUtterance = "The system is broken.";
 const symbolicPatternUtterance = "There is a deeper symbolic pattern here.";
 const genericEnergyUtterance = "Energy affects many systems.";
-const unsupportedReadOnlyPrompt =
-  "What evidence is attached to the quantum gravity Planck baseline between GR and QM?";
+const physicsReadOnlyPrompt = "What are the standard baselines?";
+const physicsDefinitionReadOnlyPrompt =
+  "Is this treating Planck identities as definitions or physical proof?";
 const rejectUtterance =
   "This healthcare claim still assumes savings will reach patients, but institutions may capture them before patients benefit.";
 const archiveUtterance =
@@ -388,7 +389,15 @@ function assertExpectedCandidateShape(payload) {
 }
 
 function assertExpectedPhysicsCandidateShape(payload) {
-  assert(payload?.candidate, "Physics ask response did not include a candidate.");
+  assert(
+    payload?.candidate,
+    `Physics ask response did not include a candidate: ${JSON.stringify({
+      mode: payload?.mode,
+      intent: payload?.intent,
+      reply: payload?.reply,
+      topic: payload?.topic,
+    })}.`,
+  );
   assert(
     payload.candidate.roomId === "physics-foundations" &&
       payload.candidate.topicId === "topic-001",
@@ -505,17 +514,27 @@ function assertExpectedHealthcareRoute(payload, expectedSignals = []) {
   }
 }
 
-function assertExpectedUnsupportedReadOnlyShape(payload) {
+function assertExpectedPhysicsReadOnlyShape(payload, expectedIntent) {
   assertExpectedReadOnlyShape(payload);
   assert(
-    payload.reply ===
-      "Civic Logos found a likely topic, but read-only ledger summaries for that topic are not built yet.",
-    `Unexpected unsupported read-only reply: ${payload.reply}.`,
+    payload.intent === expectedIntent,
+    `Expected physics read-only intent ${expectedIntent}, received ${payload.intent}.`,
   );
   assert(
     payload.topic.roomId === "physics-foundations" &&
       payload.topic.topicId === "topic-001",
-    `Expected likely physics topic, received ${payload.topic.roomId}/${payload.topic.topicId}.`,
+    `Expected physics read-only topic, received ${payload.topic.roomId}/${payload.topic.topicId}.`,
+  );
+  assert(
+    payload.reply.includes("Planck") ||
+      payload.reply.includes("quantum theory") ||
+      payload.reply.includes("general relativity"),
+    `Physics read-only answer did not include conservative physics framing: ${payload.reply}.`,
+  );
+  assert(
+    payload.topic.banner.includes("read-only") &&
+      payload.topic.banner.includes("Physics Foundations"),
+    `Unexpected physics read-only banner: ${payload.topic.banner}.`,
   );
 }
 
@@ -798,17 +817,38 @@ async function main() {
     assertLedgerUnchanged(afterReadOnlyLedger, baselineLedger, "Read-only /ask");
     await assertCandidateCount(baselineCandidateCount, "Read-only /ask");
 
-    const unsupportedReadOnlyPayload = await submitAsk(unsupportedReadOnlyPrompt);
-    assertExpectedUnsupportedReadOnlyShape(unsupportedReadOnlyPayload);
-    const afterUnsupportedReadOnlyLedger = ledgerSummary(await fetchLedger());
+    const physicsReadOnlyPayload = await submitAsk(physicsReadOnlyPrompt);
+    assertExpectedPhysicsReadOnlyShape(
+      physicsReadOnlyPayload,
+      "standard_baselines",
+    );
+    const afterPhysicsReadOnlyLedger = ledgerSummary(await fetchLedger());
     assertLedgerUnchanged(
-      afterUnsupportedReadOnlyLedger,
+      afterPhysicsReadOnlyLedger,
       baselineLedger,
-      "Unsupported topic read-only /ask",
+      "Physics standard-baseline read-only /ask",
     );
     await assertCandidateCount(
       baselineCandidateCount,
-      "Unsupported topic read-only /ask",
+      "Physics standard-baseline read-only /ask",
+    );
+
+    const physicsDefinitionReadOnlyPayload = await submitAsk(
+      physicsDefinitionReadOnlyPrompt,
+    );
+    assertExpectedPhysicsReadOnlyShape(
+      physicsDefinitionReadOnlyPayload,
+      "definition_vs_interpretation",
+    );
+    const afterPhysicsDefinitionReadOnlyLedger = ledgerSummary(await fetchLedger());
+    assertLedgerUnchanged(
+      afterPhysicsDefinitionReadOnlyLedger,
+      baselineLedger,
+      "Physics definition read-only /ask",
+    );
+    await assertCandidateCount(
+      baselineCandidateCount,
+      "Physics definition read-only /ask",
     );
 
     const askPayload = await submitAsk(demoUtterance);

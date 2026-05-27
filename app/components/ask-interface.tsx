@@ -526,7 +526,7 @@ export default function AskInterface({
             <>
               <article className={styles.readOnlyCard} data-testid="ask-read-only-card">
                 <div className={styles.badgeRow}>
-                  <span className={styles.badge}>read-only answer</span>
+                  <span className={styles.badge}>Mode: Read-only ledger answer</span>
                   <span className={styles.badge}>
                     {getAskReadOnlyIntentLabel(readOnlyResult.intent)}
                   </span>

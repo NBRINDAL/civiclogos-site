@@ -8,7 +8,11 @@ export type AskReadOnlyIntent =
   | "revision_trace"
   | "current_synthesis"
   | "contribution_status"
-  | "what_would_move_this_card";
+  | "what_would_move_this_card"
+  | "standard_baselines"
+  | "planck_identity_status"
+  | "definition_vs_interpretation"
+  | "evidence_burden";
 
 export type AskIntent = AskReadOnlyIntent | "candidate_intake";
 
@@ -55,6 +59,14 @@ export function getAskReadOnlyIntentLabel(intent: AskReadOnlyIntent) {
       return "Contribution status";
     case "what_would_move_this_card":
       return "What would move this card";
+    case "standard_baselines":
+      return "Standard baselines";
+    case "planck_identity_status":
+      return "Planck identity status";
+    case "definition_vs_interpretation":
+      return "Definition vs interpretation";
+    case "evidence_burden":
+      return "Evidence burden";
     default:
       return "Read-only answer";
   }

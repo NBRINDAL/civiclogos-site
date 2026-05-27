@@ -5,6 +5,7 @@ import path from "node:path";
 import { promisify } from "node:util";
 
 const readOnlyPrompt = "What changed in this card?";
+const physicsReadOnlyPrompt = "What are the standard baselines?";
 const contributionPrompt =
   "This healthcare claim assumes savings will reach patients, but institutions may capture them.";
 const execFileAsync = promisify(execFile);
@@ -384,6 +385,25 @@ function assertReadOnlyAnswer(payload) {
   );
 }
 
+function assertPhysicsReadOnlyAnswer(payload) {
+  assertReadOnlyAnswer(payload);
+  assert(
+    payload.intent === "standard_baselines",
+    `Expected physics standard_baselines intent, received ${payload.intent}.`,
+  );
+  assert(
+    payload.topic?.roomId === "physics-foundations" &&
+      payload.topic?.topicId === "topic-001",
+    `Expected physics-foundations/topic-001, received ${payload.topic?.roomId}/${payload.topic?.topicId}.`,
+  );
+  assert(
+    payload.reply.includes("Planck") &&
+      payload.reply.includes("quantum theory") &&
+      payload.reply.includes("general relativity"),
+    "Physics read-only answer did not include conservative baseline framing.",
+  );
+}
+
 function assertContributionCandidate(payload) {
   assert(payload.mode === "candidate", `Expected candidate mode, received ${payload.mode}.`);
   assert(payload.candidate, "Contribution ask did not return a candidate.");
@@ -454,6 +474,19 @@ async function main() {
   assertReadOnlyAnswer(readOnlyResult.payload);
   const afterReadOnlyLedger = ledgerSummary(await fetchLedger(baseUrl));
   assertLedgerUnchanged(afterReadOnlyLedger, baselineLedger, "Read-only ask");
+
+  const physicsReadOnlyResult = await submitAsk(baseUrl, physicsReadOnlyPrompt);
+  assert(
+    physicsReadOnlyResult.response.ok,
+    `Physics read-only ask failed with ${physicsReadOnlyResult.response.status}: ${JSON.stringify(physicsReadOnlyResult.payload)}`,
+  );
+  assertPhysicsReadOnlyAnswer(physicsReadOnlyResult.payload);
+  const afterPhysicsReadOnlyLedger = ledgerSummary(await fetchLedger(baseUrl));
+  assertLedgerUnchanged(
+    afterPhysicsReadOnlyLedger,
+    baselineLedger,
+    "Physics read-only ask",
+  );
 
   const contributionResult = await submitAsk(baseUrl, contributionPrompt);
   const afterContributionLedger = ledgerSummary(await fetchLedger(baseUrl));

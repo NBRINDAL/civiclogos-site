@@ -32,6 +32,8 @@ export const runtime = "nodejs";
 
 const READ_ONLY_ROOM_SLUG: IssueRoomSlug = "healthcare";
 const READ_ONLY_TOPIC_ID = "topic-001";
+const PHYSICS_READ_ONLY_ROOM_SLUG: IssueRoomSlug = "physics-foundations";
+const PHYSICS_READ_ONLY_TOPIC_ID = "topic-001";
 const unsupportedReadOnlyReply =
   "Civic Logos found a likely topic, but read-only ledger summaries for that topic are not built yet.";
 
@@ -46,6 +48,54 @@ function asTrimmedString(value: unknown) {
 
 function isProvider(value: string): value is "openai" | "anthropic" | "all" {
   return value === "openai" || value === "anthropic" || value === "all";
+}
+
+function isPhysicsSpecificReadOnlyIntent(intent: ReturnType<typeof detectAskIntent>) {
+  return (
+    intent === "standard_baselines" ||
+    intent === "planck_identity_status" ||
+    intent === "definition_vs_interpretation" ||
+    intent === "evidence_burden"
+  );
+}
+
+function hasPhysicsReadOnlySignal(question: string) {
+  return /\bphysics\b|\bplanck\b|\bquantum\b|\bgeneral relativity\b|\brelativity\b|\bquantum gravity\b|\bgr\b|\bqm\b|\bfounder(?:'s|s)? interpretation\b|\bstandard baselines?\b/i.test(
+    question,
+  );
+}
+
+function isPhysicsContributionStatement(question: string) {
+  return (
+    !question.includes("?") &&
+    /\b(planck|quantum|gravity|general relativity|physical structure|foundational physics|collapse)\b/i.test(
+      question,
+    ) &&
+    /\b(may reveal|might reveal|may show|might show|could imply|could indicate|not just definitions|not merely definitions|can still be overread|overread|may only be|only be a reformulation|be a reformulation|reveals|proves)\b/i.test(
+      question,
+    )
+  );
+}
+
+function buildReadOnlyTopicBanner(args: {
+  roomId: string;
+  topicId: string;
+}) {
+  if (
+    args.roomId === READ_ONLY_ROOM_SLUG &&
+    args.topicId === READ_ONLY_TOPIC_ID
+  ) {
+    return "This answer is read-only. It was generated from the public healthcare / topic-001 ledger, and no candidate was created.";
+  }
+
+  if (
+    args.roomId === PHYSICS_READ_ONLY_ROOM_SLUG &&
+    args.topicId === PHYSICS_READ_ONLY_TOPIC_ID
+  ) {
+    return "This answer is read-only. It was generated from the existing Physics Foundations / topic-001 public topic, and no candidate was created.";
+  }
+
+  return "This answer is read-only. Civic Logos found a likely existing topic, but deterministic ledger summaries for that topic are not built yet, and no candidate was created.";
 }
 
 export async function POST(request: NextRequest) {
@@ -115,7 +165,9 @@ export async function POST(request: NextRequest) {
     request.headers.get("x-forwarded-host") ?? request.nextUrl.host;
   const requestProtocol =
     request.headers.get("x-forwarded-proto") ?? request.nextUrl.protocol;
-  const detectedIntent = detectAskIntent(question);
+  const detectedIntent = isPhysicsContributionStatement(question)
+    ? "candidate_intake"
+    : detectAskIntent(question);
   const [chatStoreMetadata, candidateStoreMetadata, readOnlyRoute] =
     await Promise.all([
       inspectTopicChatStoreMetadata({
@@ -135,7 +187,19 @@ export async function POST(request: NextRequest) {
     protocol: requestProtocol,
   });
   const readOnlyChatTarget =
-    readOnlyRoute?.routeType === "existing-topic"
+    detectedIntent !== "candidate_intake" &&
+    (isPhysicsSpecificReadOnlyIntent(detectedIntent) ||
+      hasPhysicsReadOnlySignal(question))
+      ? {
+          roomSlug: PHYSICS_READ_ONLY_ROOM_SLUG,
+          topicId: PHYSICS_READ_ONLY_TOPIC_ID,
+          topicTitle:
+            getRoomTopicCard(
+              PHYSICS_READ_ONLY_ROOM_SLUG,
+              PHYSICS_READ_ONLY_TOPIC_ID,
+            )?.title ?? "Standard Physics Foundations Baseline",
+        }
+      : readOnlyRoute?.routeType === "existing-topic"
       ? {
           roomSlug: readOnlyRoute.roomId,
           topicId: readOnlyRoute.topicId,
@@ -149,9 +213,16 @@ export async function POST(request: NextRequest) {
   const readOnlyAnswer =
     detectedIntent === "candidate_intake"
       ? null
-      : readOnlyRoute?.routeType === "existing-topic" &&
-          (readOnlyRoute.roomId !== READ_ONLY_ROOM_SLUG ||
-            readOnlyRoute.topicId !== READ_ONLY_TOPIC_ID)
+      : await answerReadOnlyAsk({
+          roomSlug: readOnlyChatTarget.roomSlug,
+          topicId: readOnlyChatTarget.topicId,
+          question,
+        }) ??
+        (readOnlyRoute?.routeType === "existing-topic" &&
+        (readOnlyRoute.roomId !== READ_ONLY_ROOM_SLUG ||
+          readOnlyRoute.topicId !== READ_ONLY_TOPIC_ID) &&
+        (readOnlyRoute.roomId !== PHYSICS_READ_ONLY_ROOM_SLUG ||
+          readOnlyRoute.topicId !== PHYSICS_READ_ONLY_TOPIC_ID)
         ? {
             intent: detectedIntent,
             answer: unsupportedReadOnlyReply,
@@ -163,29 +234,16 @@ export async function POST(request: NextRequest) {
               },
             ],
           }
-        : await answerReadOnlyAsk({
-            roomSlug: READ_ONLY_ROOM_SLUG,
-            topicId: READ_ONLY_TOPIC_ID,
-            question,
-          });
-  const readOnlyTopic = readOnlyRoute?.routeType === "existing-topic"
-    ? {
-        roomId: readOnlyRoute.roomId,
-        topicId: readOnlyRoute.topicId,
-        topicTitle: readOnlyRoute.topicTitle,
-        banner:
-          readOnlyRoute.roomId === READ_ONLY_ROOM_SLUG &&
-          readOnlyRoute.topicId === READ_ONLY_TOPIC_ID
-            ? "This answer is read-only. It was generated from the public healthcare / topic-001 ledger, and no candidate was created."
-            : "This answer is read-only. Civic Logos found a likely existing topic, but deterministic ledger summaries for that topic are not built yet, and no candidate was created.",
-      }
-    : {
-        roomId: READ_ONLY_ROOM_SLUG,
-        topicId: READ_ONLY_TOPIC_ID,
-        topicTitle: defaultReadOnlyTopic.title,
-        banner:
-          "This answer is read-only. It was generated from the public healthcare / topic-001 ledger, and no candidate was created.",
-      };
+        : null);
+  const readOnlyTopic = {
+    roomId: readOnlyChatTarget.roomSlug,
+    topicId: readOnlyChatTarget.topicId,
+    topicTitle: readOnlyChatTarget.topicTitle,
+    banner: buildReadOnlyTopicBanner({
+      roomId: readOnlyChatTarget.roomSlug,
+      topicId: readOnlyChatTarget.topicId,
+    }),
+  };
 
   if (readOnlyAnswer) {
     const mode: AskMode = "read-only";
