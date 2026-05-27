@@ -369,6 +369,19 @@ async function fetchHtml(pathname, extraHeaders = {}) {
   return response.text();
 }
 
+async function fetchHtmlWithJar(pathname, cookieJar, extraHeaders = {}) {
+  const response = await fetchWithTimeout(
+    `${baseUrl}${pathname}`,
+    {
+      headers: extraHeaders,
+    },
+    20000,
+    cookieJar,
+  );
+  assert(response.ok, `${pathname} request failed with ${response.status}.`);
+  return response.text();
+}
+
 function assertExpectedCandidateShape(payload) {
   assert(payload?.candidate, "Ask response did not include a candidate.");
   assert(
@@ -1514,6 +1527,91 @@ async function main() {
       "Ambiguous statement with session context",
     );
 
+    const readOnlyUiJar = new CookieJar();
+    await submitAskWithJar(readOnlyPrompt, readOnlyUiJar);
+    const readOnlyUiText = normalizeText(await fetchHtmlWithJar("/", readOnlyUiJar));
+    assert(
+      readOnlyUiText.includes("Mode: Read-only ledger answer"),
+      "Read-only UI did not show read-only mode.",
+    );
+    assert(
+      readOnlyUiText.includes("No candidate created."),
+      "Read-only UI did not show No candidate created.",
+    );
+    assert(
+      readOnlyUiText.includes("No public record changed."),
+      "Read-only UI did not show No public record changed.",
+    );
+    assert(
+      readOnlyUiText.includes("Answered from the public ledger."),
+      "Read-only UI did not explain that the answer came from the public ledger.",
+    );
+    await assertCandidateCount(
+      baselineCandidateCount + 16,
+      "Read-only UI text check",
+    );
+
+    const candidateUiJar = new CookieJar();
+    const candidateUiPayload = await submitAskWithJar(demoUtterance, candidateUiJar);
+    assertExpectedCandidateShape(candidateUiPayload);
+    const candidateUiText = normalizeText(
+      await fetchHtmlWithJar("/", candidateUiJar),
+    );
+    assert(
+      candidateUiText.includes("Mode: Pre-ledger candidate"),
+      "Candidate UI did not show pre-ledger candidate mode.",
+    );
+    assert(
+      candidateUiText.includes("Pending human review."),
+      "Candidate UI did not show Pending human review.",
+    );
+    assert(
+      candidateUiText.includes("Not a public contribution yet."),
+      "Candidate UI did not distinguish the candidate from a public contribution.",
+    );
+    assert(
+      candidateUiText.includes("Actual card change: false."),
+      "Candidate UI did not show Actual card change: false.",
+    );
+    assert(
+      candidateUiText.includes("Structured as a pre-ledger candidate."),
+      "Candidate UI did not explain that the response was structured as a candidate.",
+    );
+    await assertCandidateCount(
+      baselineCandidateCount + 17,
+      "Candidate UI text check",
+    );
+
+    const unroutedUiJar = new CookieJar();
+    const unroutedUiPayload = await submitAskWithJar(
+      ambiguousUtterance,
+      unroutedUiJar,
+    );
+    assertExpectedUnroutedCandidateShape(unroutedUiPayload);
+    const unroutedUiText = normalizeText(await fetchHtmlWithJar("/", unroutedUiJar));
+    assert(
+      unroutedUiText.includes("Mode: Needs routing"),
+      "Unrouted UI did not show needs-routing mode.",
+    );
+    assert(
+      unroutedUiText.includes(
+        "Civic Logos could not confidently attach this to an existing topic.",
+      ),
+      "Unrouted UI did not explain that no confident topic route was found.",
+    );
+    assert(
+      unroutedUiText.includes("Maintainer routing required before promotion."),
+      "Unrouted UI did not show maintainer routing requirement.",
+    );
+    assert(
+      unroutedUiText.includes("Held for maintainer routing."),
+      "Unrouted UI did not explain that the candidate was held for routing.",
+    );
+    await assertCandidateCount(
+      baselineCandidateCount + 18,
+      "Unrouted UI text check",
+    );
+
     const afterSessionSafetyLedger = ledgerSummary(await fetchLedger());
     assertLedgerUnchanged(
       afterSessionSafetyLedger,
@@ -1531,6 +1629,8 @@ async function main() {
           healthcareSwitchCandidateId: healthcareSwitchPayload.candidate.id,
           physicsSwitchCandidateId: physicsSwitchPayload.candidate.id,
           ambiguousWithContextCandidateId: ambiguousWithContextPayload.candidate.id,
+          candidateUiCandidateId: candidateUiPayload.candidate.id,
+          unroutedUiCandidateId: unroutedUiPayload.candidate.id,
           promotedContributionId: promotedContribution.id,
           rejectedCandidateId: rejectPayload.candidate.id,
           archivedCandidateId: archivePayload.candidate.id,

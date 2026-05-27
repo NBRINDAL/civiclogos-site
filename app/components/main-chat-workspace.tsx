@@ -25,10 +25,12 @@ const roomId = "healthcare";
 const topicId = "topic-001";
 
 const readerPrompts = [
-  "What changed in this card?",
+  "What changed in the healthcare card?",
   "What remains unresolved?",
   "What evidence is attached?",
   "What would move this card forward?",
+  "What does the Physics Foundations card say about Planck identities?",
+  "What is still unresolved in Physics Foundations?",
 ] as const;
 
 const publicSurfaceLinks = [
@@ -388,7 +390,7 @@ export default async function MainChatWorkspace({
             <div className={styles.workspaceIntroHeader}>
               <div>
                 <span className={styles.eyebrow}>Ask-first surface</span>
-                <h2>Ask the live healthcare card in plain language.</h2>
+                <h2>Ask the public reasoning ledger in plain language.</h2>
               </div>
               <Link className={styles.inlineLink} href="/healthcare/topic-001?view=ledger#contribution-record">
                 Open exact ledger slice
@@ -411,7 +413,7 @@ export default async function MainChatWorkspace({
             </div>
 
             <div className={styles.workspaceMeta}>
-              <span>Read-only source: healthcare / topic-001</span>
+              <span>Active context is shown above the message box</span>
               <span>Contribution routing can attach to existing topics or stay unrouted</span>
               <span>No room expansion</span>
               <span>No static card creation</span>

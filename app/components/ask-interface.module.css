@@ -12,6 +12,10 @@
 .candidateCard,
 .readOnlyCard,
 .safeguardCard,
+.promptPanel,
+.modeGuide,
+.statusNote,
+.resultExplainer,
 .emptyState,
 .transcriptItem,
 .errorState {
@@ -38,6 +42,9 @@
 .candidateCard,
 .readOnlyCard,
 .safeguardCard,
+.promptPanel,
+.modeGuide,
+.resultExplainer,
 .emptyState {
   display: grid;
   gap: 16px;
@@ -65,6 +72,7 @@
 .trustBlock h2,
 .topicBanner h2,
 .panelHeader h2,
+.promptPanel h3,
 .candidateCard h3 {
   color: var(--foreground);
   font-family: var(--font-serif), serif;
@@ -86,6 +94,10 @@
 .readOnlyCard p,
 .noteBlock p,
 .prototypeNotice p,
+.statusNote,
+.modeGuide,
+.promptGroup strong,
+.resultExplainer p,
 .field span,
 .field textarea,
 .transcriptItem p,
@@ -164,6 +176,107 @@
 
 .activeContext strong {
   color: var(--foreground);
+}
+
+.topicChipRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.topicChip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 30px;
+  padding: 0 10px;
+  border: 1px solid rgba(var(--brand-blue-rgb), 0.14);
+  border-radius: 999px;
+  background: rgba(244, 250, 255, 0.84);
+  color: var(--foreground);
+  font-size: 0.76rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.statusNote {
+  border-color: rgba(var(--brand-green-rgb), 0.18);
+  background: rgba(244, 250, 239, 0.78);
+  color: var(--foreground);
+  font-weight: 700;
+}
+
+.promptPanel {
+  border-color: rgba(var(--brand-blue-rgb), 0.14);
+  background:
+    radial-gradient(circle at top left, rgba(244, 250, 255, 0.9), transparent 42%),
+    rgba(255, 251, 245, 0.88);
+}
+
+.promptPanel h3 {
+  margin-top: 6px;
+  font-size: clamp(1.45rem, 2.4vw, 2rem);
+}
+
+.promptGroup {
+  display: grid;
+  gap: 10px;
+}
+
+.promptGroup strong {
+  color: var(--foreground);
+  font-size: 0.82rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.promptGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.promptChip {
+  min-height: 40px;
+  padding: 9px 13px;
+  border: 1px solid rgba(18, 33, 39, 0.12);
+  border-radius: 999px;
+  background: rgba(255, 252, 247, 0.94);
+  color: var(--foreground);
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.88rem;
+  font-weight: 700;
+  text-align: left;
+}
+
+.promptChip:hover,
+.promptChip:focus-visible {
+  border-color: rgba(var(--brand-blue-rgb), 0.34);
+  background: rgba(244, 250, 255, 0.92);
+}
+
+.modeGuide {
+  border-color: rgba(181, 94, 51, 0.16);
+  background: rgba(181, 94, 51, 0.07);
+}
+
+.modeGuide strong,
+.resultExplainer strong {
+  color: var(--signal);
+  font-size: 0.76rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.modeGuide ul {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding-left: 18px;
 }
 
 .field {
@@ -332,6 +445,22 @@
   margin: 0;
 }
 
+.resultExplainer {
+  border-color: rgba(var(--brand-green-rgb), 0.2);
+  background: rgba(244, 250, 239, 0.9);
+}
+
+.resultExplainer p {
+  color: var(--foreground);
+  font-weight: 700;
+}
+
+.tryAgainRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
 .safeguardCard {
   border-color: rgba(91, 110, 69, 0.2);
   background: rgba(91, 110, 69, 0.08);
@@ -386,6 +515,10 @@
   .candidateCard,
   .readOnlyCard,
   .safeguardCard,
+  .promptPanel,
+  .modeGuide,
+  .statusNote,
+  .resultExplainer,
   .emptyState,
   .transcriptItem,
   .errorState {

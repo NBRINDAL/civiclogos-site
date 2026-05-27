@@ -63,6 +63,21 @@ type AskInterfaceProps = {
 const demoUtterance =
   "This healthcare claim assumes savings will reach patients, but institutions may capture them.";
 
+const readOnlyStarterPrompts = [
+  "What changed in the healthcare card?",
+  "What remains unresolved?",
+  "What evidence is attached?",
+  "What would move this card forward?",
+  "What does the Physics Foundations card say about Planck identities?",
+  "What is still unresolved in Physics Foundations?",
+] as const;
+
+const contributionStarterPrompts = [
+  "I want to challenge the savings-capture assumption.",
+  "AI triage may need clearer human-escalation thresholds.",
+  "Planck identities may reveal physical structure, not just definitions.",
+] as const;
+
 function getTopicHref(roomId: string, topicId: string) {
   if (roomId === "unrouted" || topicId === "unrouted") {
     return "/review/contributions#candidate-queue";
@@ -79,6 +94,22 @@ function formatTopicLabel(candidate: CandidateRecord) {
   }
 
   return `${candidate.roomId} / ${candidate.topicId}`;
+}
+
+function formatTopicScope(roomId: string, topicId: string) {
+  if (roomId === "unrouted" || topicId === "unrouted") {
+    return "Unrouted";
+  }
+
+  if (roomId === "healthcare") {
+    return `Healthcare / ${topicId}`;
+  }
+
+  if (roomId === "physics-foundations") {
+    return `Physics Foundations / ${topicId}`;
+  }
+
+  return `${roomId} / ${topicId}`;
 }
 
 function formatRouteTarget(roomId?: string, topicId?: string) {
@@ -117,6 +148,18 @@ function getLatestAssistantReply(messages: TopicChatMessage[]) {
   return [...messages].reverse().find((item) => item.role === "assistant")?.body ?? "";
 }
 
+function getLatestUserMessage(messages: TopicChatMessage[]) {
+  return [...messages].reverse().find((item) => item.role === "user")?.body ?? "";
+}
+
+function isUnroutedCandidate(candidate: CandidateRecord | null) {
+  return (
+    candidate?.reviewStatus === "needs_routing" ||
+    candidate?.roomId === "unrouted" ||
+    candidate?.topicId === "unrouted"
+  );
+}
+
 export default function AskInterface({
   candidateIntakeEnabled,
   initialCandidate,
@@ -145,6 +188,17 @@ export default function AskInterface({
   const [isPending, startTransition] = useTransition();
 
   const latestReply = getLatestAssistantReply(messages);
+  const latestUserMessage = getLatestUserMessage(messages);
+  const topicScopeLabel = formatTopicScope(resultTopic.roomId, resultTopic.topicId);
+  const candidateNeedsRouting = isUnroutedCandidate(candidate);
+  const resultExplainer =
+    resultMode === "read-only"
+      ? "Answered from the public ledger. No public record was changed."
+      : resultMode === "candidate" && candidateNeedsRouting
+        ? "Held for maintainer routing. No public record was changed."
+        : resultMode === "candidate"
+          ? "Structured as a pre-ledger candidate. No public record was changed."
+          : null;
 
   function submitQuestion(nextQuestion: string) {
     startTransition(async () => {
@@ -264,6 +318,10 @@ export default function AskInterface({
                 Active topic: <strong>{resultTopic.roomId} / {resultTopic.topicId}</strong>{" "}
                 - {resultTopic.topicTitle}. Strong topic signals override this context.
               </p>
+              <div className={styles.topicChipRow} aria-label="Current ask scope">
+                <span className={styles.topicChip}>{topicScopeLabel}</span>
+                <span className={styles.topicChip}>No automatic public write</span>
+              </div>
             </div>
             <button
               className={styles.secondaryAction}
@@ -281,6 +339,59 @@ export default function AskInterface({
               <p>{prototypeReadOnlyNotice}</p>
             </div>
           ) : null}
+
+          <div className={styles.statusNote} role="note">
+            V2 is live as a controlled update. Candidate intake is active, but the
+            first outside public contribution is still open.
+          </div>
+
+          <section className={styles.promptPanel} aria-labelledby="ask-starter-title">
+            <div>
+              <span className={styles.eyebrow}>What can I ask?</span>
+              <h3 id="ask-starter-title">Start with a question, or offer a contribution for review.</h3>
+            </div>
+
+            <div className={styles.promptGroup}>
+              <strong>Read-only examples</strong>
+              <div className={styles.promptGrid}>
+                {readOnlyStarterPrompts.map((prompt) => (
+                  <button
+                    className={styles.promptChip}
+                    key={prompt}
+                    onClick={() => setQuestion(prompt)}
+                    type="button"
+                  >
+                    {prompt}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className={styles.promptGroup}>
+              <strong>Contribution examples</strong>
+              <div className={styles.promptGrid}>
+                {contributionStarterPrompts.map((prompt) => (
+                  <button
+                    className={styles.promptChip}
+                    key={prompt}
+                    onClick={() => setQuestion(prompt)}
+                    type="button"
+                  >
+                    {prompt}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </section>
+
+          <div className={styles.modeGuide}>
+            <strong>Before you submit</strong>
+            <ul>
+              <li>Questions usually return read-only ledger answers.</li>
+              <li>Claims, objections, sources, corrections, or concerns may become pre-ledger candidates.</li>
+              <li>Nothing enters the public record until human review.</li>
+            </ul>
+          </div>
 
           <label className={styles.field}>
             <span>Message</span>
@@ -405,10 +516,25 @@ export default function AskInterface({
             <>
             <article className={styles.candidateCard} data-testid="ask-candidate-card">
                 <div className={styles.badgeRow}>
-                  <span className={styles.badge}>{candidate.reviewStatus}</span>
-                  <span className={styles.badge}>actual card change: false</span>
-                  <span className={styles.badge}>public submission: false</span>
+                  <span className={styles.badge}>
+                    Mode: {candidateNeedsRouting ? "Needs routing" : "Pre-ledger candidate"}
+                  </span>
+                  <span className={styles.badge}>
+                    {candidateNeedsRouting
+                      ? "Maintainer routing required before promotion."
+                      : "Pending human review."}
+                  </span>
+                  <span className={styles.badge}>Not a public contribution yet.</span>
+                  <span className={styles.badge}>Actual card change: false.</span>
+                  <span className={styles.badge}>{formatTopicScope(candidate.roomId, candidate.topicId)}</span>
                 </div>
+
+                {resultExplainer ? (
+                  <div className={styles.resultExplainer}>
+                    <strong>What happened?</strong>
+                    <p>{resultExplainer}</p>
+                  </div>
+                ) : null}
 
                 <div className={styles.noteBlock}>
                   <strong>Route</strong>
@@ -457,6 +583,7 @@ export default function AskInterface({
                     <p>
                       Civic Logos could not confidently attach this to an existing topic.
                       It has been saved as an internal candidate needing maintainer routing.
+                      Maintainer routing required before promotion.
                     </p>
                   </div>
                 ) : null}
@@ -514,6 +641,20 @@ export default function AskInterface({
                     ) : null}
                   </div>
                 ))}
+
+                <div className={styles.tryAgainRow}>
+                  <button
+                    className={styles.secondaryAction}
+                    onClick={() =>
+                      setQuestion(
+                        `As a read-only question, what does the ledger say about this? ${candidate.rawUserText}`,
+                      )
+                    }
+                    type="button"
+                  >
+                    Ask as read-only question
+                  </button>
+                </div>
               </article>
 
               <article className={styles.safeguardCard}>
@@ -531,10 +672,20 @@ export default function AskInterface({
               <article className={styles.readOnlyCard} data-testid="ask-read-only-card">
                 <div className={styles.badgeRow}>
                   <span className={styles.badge}>Mode: Read-only ledger answer</span>
+                  <span className={styles.badge}>No candidate created.</span>
+                  <span className={styles.badge}>No public record changed.</span>
+                  <span className={styles.badge}>{topicScopeLabel}</span>
                   <span className={styles.badge}>
                     {getAskReadOnlyIntentLabel(readOnlyResult.intent)}
                   </span>
                 </div>
+
+                {resultExplainer ? (
+                  <div className={styles.resultExplainer}>
+                    <strong>What happened?</strong>
+                    <p>{resultExplainer}</p>
+                  </div>
+                ) : null}
 
                 <div className={styles.noteBlock}>
                   <strong>Route</strong>
@@ -559,6 +710,22 @@ export default function AskInterface({
                     ))}
                   </ul>
                 </div>
+
+                {latestUserMessage ? (
+                  <div className={styles.tryAgainRow}>
+                    <button
+                      className={styles.secondaryAction}
+                      onClick={() =>
+                        setQuestion(
+                          `I want to contribute this for human review: ${latestUserMessage}`,
+                        )
+                      }
+                      type="button"
+                    >
+                      Structure as candidate for review
+                    </button>
+                  </div>
+                ) : null}
               </article>
 
               <article className={styles.safeguardCard}>
