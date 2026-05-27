@@ -8,6 +8,9 @@ const readOnlyPrompt = "What changed in this card?";
 const physicsReadOnlyPrompt = "What are the standard baselines?";
 const contributionPrompt =
   "This healthcare claim assumes savings will reach patients, but institutions may capture them.";
+const physicsContributionPrompt =
+  "Planck identities may reveal physical structure, not just definitions.";
+const ambiguousPrompt = "This seems wrong but I don’t know where it belongs.";
 const execFileAsync = promisify(execFile);
 
 function assert(condition, message) {
@@ -442,6 +445,48 @@ function assertContributionCandidate(payload) {
   );
 }
 
+function assertPhysicsContributionCandidate(payload) {
+  assert(payload.mode === "candidate", `Expected candidate mode, received ${payload.mode}.`);
+  assert(payload.candidate, "Physics contribution ask did not return a candidate.");
+  assert(
+    payload.candidate.roomId === "physics-foundations" &&
+      payload.candidate.topicId === "topic-001",
+    `Unexpected physics candidate topic ${payload.candidate.roomId}/${payload.candidate.topicId}.`,
+  );
+  assert(
+    payload.candidate.proposedLane === "proposed_reformulation" ||
+      payload.candidate.proposedLane === "symbolic_interpretation",
+    `Unexpected physics candidate lane ${payload.candidate.proposedLane}.`,
+  );
+  assert(
+    payload.candidate.reviewStatus === "pending_human_review",
+    `Unexpected physics review status ${payload.candidate.reviewStatus}.`,
+  );
+  assert(
+    payload.candidate.actualCardChange === false &&
+      payload.candidate.publicSubmission === false,
+    "Physics candidate should remain pre-ledger with no actual card change.",
+  );
+}
+
+function assertUnroutedCandidate(payload) {
+  assert(payload.mode === "candidate", `Expected candidate mode, received ${payload.mode}.`);
+  assert(payload.candidate, "Ambiguous ask did not return an internal candidate.");
+  assert(
+    payload.candidate.reviewStatus === "needs_routing",
+    `Expected needs_routing, received ${payload.candidate.reviewStatus}.`,
+  );
+  assert(
+    payload.candidate.roomId === "unrouted" || payload.candidate.topicId === "unrouted",
+    `Expected unrouted candidate, received ${payload.candidate.roomId}/${payload.candidate.topicId}.`,
+  );
+  assert(
+    payload.candidate.actualCardChange === false &&
+      payload.candidate.publicSubmission === false,
+    "Unrouted candidate should remain pre-ledger with no actual card change.",
+  );
+}
+
 async function main() {
   const baseUrl = normalizeBaseUrl(process.argv[2]);
 
@@ -452,6 +497,7 @@ async function main() {
     ["/ledger", "V2 candidate intake is active."],
     ["/demo", "This healthcare claim assumes savings will reach patients, but institutions may capture them."],
     ["/healthcare/topic-001?view=ledger", "Administrative Simplification and AI-Assisted Triage"],
+    ["/rooms/physics-foundations/topic-001", "Standard Physics Foundations Baseline"],
     ["/review/contributions", "Review console locked."],
   ];
 
@@ -525,12 +571,36 @@ async function main() {
   assertContributionCandidate(contributionResult.payload);
   assertLedgerUnchanged(afterContributionLedger, baselineLedger, "Contribution ask");
 
+  const physicsContributionResult = await submitAsk(baseUrl, physicsContributionPrompt);
+  const afterPhysicsContributionLedger = ledgerSummary(await fetchLedger(baseUrl));
+  assert(
+    physicsContributionResult.response.ok,
+    `Physics contribution ask failed with ${physicsContributionResult.response.status}: ${JSON.stringify(physicsContributionResult.payload)}`,
+  );
+  assertPhysicsContributionCandidate(physicsContributionResult.payload);
+  assertLedgerUnchanged(
+    afterPhysicsContributionLedger,
+    baselineLedger,
+    "Physics contribution ask",
+  );
+
+  const ambiguousResult = await submitAsk(baseUrl, ambiguousPrompt);
+  const afterAmbiguousLedger = ledgerSummary(await fetchLedger(baseUrl));
+  assert(
+    ambiguousResult.response.ok,
+    `Ambiguous ask failed with ${ambiguousResult.response.status}: ${JSON.stringify(ambiguousResult.payload)}`,
+  );
+  assertUnroutedCandidate(ambiguousResult.payload);
+  assertLedgerUnchanged(afterAmbiguousLedger, baselineLedger, "Ambiguous ask");
+
   console.log(
     JSON.stringify(
       {
         baseUrl,
         candidateIntake: "database-enabled",
         candidateId: contributionResult.payload.candidate.id,
+        physicsCandidateId: physicsContributionResult.payload.candidate.id,
+        ambiguousCandidateId: ambiguousResult.payload.candidate.id,
         visibleRecords: baselineLedger.visibleRecords,
         revisionEvents: baselineLedger.revisionEvents,
       },

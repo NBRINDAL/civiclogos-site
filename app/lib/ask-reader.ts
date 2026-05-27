@@ -747,6 +747,8 @@ export function detectAskIntent(question: string): AskIntent {
     includesAny(normalizedQuestion, [
       "what changed in this card",
       "what changed in the card",
+      "what changed in the healthcare card",
+      "what changed in healthcare card",
       "what changed on this card",
       "why did the synthesis change",
       "why did this card change",
@@ -760,6 +762,9 @@ export function detectAskIntent(question: string): AskIntent {
   if (
     includesAny(normalizedQuestion, [
       "what are the strongest objections",
+      "what about the strongest objection",
+      "what is the strongest objection",
+      "strongest objection",
       "what are the main objections",
       "what are the biggest objections",
       "strongest objections",
