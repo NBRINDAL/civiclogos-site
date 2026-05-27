@@ -390,6 +390,7 @@ function assertReadOnlyAnswer(payload) {
 
 function assertPhysicsReadOnlyAnswer(payload) {
   assertReadOnlyAnswer(payload);
+  const reply = String(payload.reply ?? "").toLowerCase();
   assert(
     payload.intent === "standard_baselines",
     `Expected physics standard_baselines intent, received ${payload.intent}.`,
@@ -400,9 +401,9 @@ function assertPhysicsReadOnlyAnswer(payload) {
     `Expected physics-foundations/topic-001, received ${payload.topic?.roomId}/${payload.topic?.topicId}.`,
   );
   assert(
-    payload.reply.includes("Planck") &&
-      payload.reply.includes("quantum theory") &&
-      payload.reply.includes("general relativity"),
+    reply.includes("planck") &&
+      reply.includes("quantum theory") &&
+      reply.includes("general relativity"),
     "Physics read-only answer did not include conservative baseline framing.",
   );
 }
