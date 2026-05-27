@@ -297,6 +297,28 @@ async function submitAsk(question, extraHeaders = {}) {
   return payload;
 }
 
+async function submitAskWithJar(question, cookieJar, extraHeaders = {}) {
+  const response = await fetchWithTimeout(
+    `${baseUrl}/api/ai/ask`,
+    {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        ...extraHeaders,
+      },
+      body: JSON.stringify({
+        question,
+        provider: "openai",
+      }),
+    },
+    20000,
+    cookieJar,
+  );
+  const payload = await response.json();
+  assert(response.ok, payload.error ?? `Ask request failed with ${response.status}.`);
+  return payload;
+}
+
 async function submitAskExpectingError(question, expectedStatus, extraHeaders = {}) {
   const response = await fetchWithTimeout(
     `${baseUrl}/api/ai/ask`,
@@ -849,6 +871,34 @@ async function main() {
     await assertCandidateCount(
       baselineCandidateCount,
       "Physics definition read-only /ask",
+    );
+
+    const physicsFollowUpJar = new CookieJar();
+    const contextualPhysicsReadOnlyPayload = await submitAskWithJar(
+      physicsReadOnlyPrompt,
+      physicsFollowUpJar,
+    );
+    assertExpectedPhysicsReadOnlyShape(
+      contextualPhysicsReadOnlyPayload,
+      "standard_baselines",
+    );
+    const physicsFollowUpPayload = await submitAskWithJar(
+      "What remains unresolved?",
+      physicsFollowUpJar,
+    );
+    assertExpectedPhysicsReadOnlyShape(
+      physicsFollowUpPayload,
+      "unresolved_questions",
+    );
+    const afterPhysicsFollowUpLedger = ledgerSummary(await fetchLedger());
+    assertLedgerUnchanged(
+      afterPhysicsFollowUpLedger,
+      baselineLedger,
+      "Physics contextual follow-up read-only /ask",
+    );
+    await assertCandidateCount(
+      baselineCandidateCount,
+      "Physics contextual follow-up read-only /ask",
     );
 
     const askPayload = await submitAsk(demoUtterance);

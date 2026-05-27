@@ -42,6 +42,12 @@ type AskPayload = {
   provider?: unknown;
 };
 
+type ReadOnlyChatTarget = {
+  roomSlug: IssueRoomSlug;
+  topicId: string;
+  topicTitle: string;
+};
+
 function asTrimmedString(value: unknown) {
   return typeof value === "string" ? value.trim() : "";
 }
@@ -63,6 +69,29 @@ function hasPhysicsReadOnlySignal(question: string) {
   return /\bphysics\b|\bplanck\b|\bquantum\b|\bgeneral relativity\b|\brelativity\b|\bquantum gravity\b|\bgr\b|\bqm\b|\bfounder(?:'s|s)? interpretation\b|\bstandard baselines?\b/i.test(
     question,
   );
+}
+
+function isSupportedReadOnlyTopic(
+  roomSlug: string,
+  topicId: string,
+): roomSlug is IssueRoomSlug {
+  return (
+    (roomSlug === READ_ONLY_ROOM_SLUG && topicId === READ_ONLY_TOPIC_ID) ||
+    (roomSlug === PHYSICS_READ_ONLY_ROOM_SLUG &&
+      topicId === PHYSICS_READ_ONLY_TOPIC_ID)
+  );
+}
+
+function buildReadOnlyTarget(
+  roomSlug: IssueRoomSlug,
+  topicId: string,
+  fallbackTitle?: string,
+): ReadOnlyChatTarget {
+  return {
+    roomSlug,
+    topicId,
+    topicTitle: getRoomTopicCard(roomSlug, topicId)?.title ?? fallbackTitle ?? topicId,
+  };
 }
 
 function isPhysicsContributionStatement(question: string) {
@@ -186,30 +215,50 @@ export async function POST(request: NextRequest) {
     host: requestHost,
     protocol: requestProtocol,
   });
+  const recentSessionMessages =
+    detectedIntent !== "candidate_intake" &&
+    existingSessionId &&
+    !askDeployment.prototypeReadOnlyMode
+      ? await listTopicChatMessages({
+          sessionId,
+          limit: 12,
+        })
+      : [];
+  const contextualReadOnlyTarget = [...recentSessionMessages]
+    .reverse()
+    .reduce<ReadOnlyChatTarget | null>((target, message) => {
+      if (target || !isSupportedReadOnlyTopic(message.roomSlug, message.topicId)) {
+        return target;
+      }
+
+      return buildReadOnlyTarget(
+        message.roomSlug,
+        message.topicId,
+        message.topicTitle,
+      );
+    }, null);
   const readOnlyChatTarget =
     detectedIntent !== "candidate_intake" &&
     (isPhysicsSpecificReadOnlyIntent(detectedIntent) ||
       hasPhysicsReadOnlySignal(question))
-      ? {
-          roomSlug: PHYSICS_READ_ONLY_ROOM_SLUG,
-          topicId: PHYSICS_READ_ONLY_TOPIC_ID,
-          topicTitle:
-            getRoomTopicCard(
-              PHYSICS_READ_ONLY_ROOM_SLUG,
-              PHYSICS_READ_ONLY_TOPIC_ID,
-            )?.title ?? "Standard Physics Foundations Baseline",
-        }
+      ? buildReadOnlyTarget(
+          PHYSICS_READ_ONLY_ROOM_SLUG,
+          PHYSICS_READ_ONLY_TOPIC_ID,
+          "Standard Physics Foundations Baseline",
+        )
       : readOnlyRoute?.routeType === "existing-topic"
-      ? {
-          roomSlug: readOnlyRoute.roomId,
-          topicId: readOnlyRoute.topicId,
-          topicTitle: readOnlyRoute.topicTitle,
-        }
-      : {
-          roomSlug: READ_ONLY_ROOM_SLUG,
-          topicId: READ_ONLY_TOPIC_ID,
-          topicTitle: defaultReadOnlyTopic.title,
-        };
+      ? buildReadOnlyTarget(
+          readOnlyRoute.roomId,
+          readOnlyRoute.topicId,
+          readOnlyRoute.topicTitle,
+        )
+      : contextualReadOnlyTarget
+        ? contextualReadOnlyTarget
+        : buildReadOnlyTarget(
+            READ_ONLY_ROOM_SLUG,
+            READ_ONLY_TOPIC_ID,
+            defaultReadOnlyTopic.title,
+          );
   const readOnlyAnswer =
     detectedIntent === "candidate_intake"
       ? null
