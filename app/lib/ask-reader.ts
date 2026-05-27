@@ -26,6 +26,67 @@ function normalizeQuestion(question: string) {
   return ` ${question.toLowerCase().replace(/[^\w\s]/g, " ").replace(/\s+/g, " ").trim()} `;
 }
 
+function isQuestionLike(question: string) {
+  const normalizedQuestion = normalizeQuestion(question);
+
+  return (
+    question.includes("?") ||
+    includesAny(normalizedQuestion, [
+      "what",
+      "why",
+      "how",
+      "does",
+      "do",
+      "is",
+      "are",
+      "can",
+      "should",
+      "explain",
+      "summarize",
+      "tell me",
+    ])
+  );
+}
+
+function looksLikePhysicsContributionStatement(question: string) {
+  const normalizedQuestion = normalizeQuestion(question);
+
+  if (question.includes("?")) {
+    return false;
+  }
+
+  const hasPhysicsSignal = includesAny(normalizedQuestion, [
+    "planck",
+    "quantum",
+    "gravity",
+    "general relativity",
+    "physical structure",
+    "symbolic sequence",
+    "foundational physics",
+    "collapse",
+  ]);
+  const hasContributionClaim = includesAny(normalizedQuestion, [
+    "may reveal",
+    "might reveal",
+    "may show",
+    "might show",
+    "should be treated",
+    "could imply",
+    "could indicate",
+    "not just definitions",
+    "not merely definitions",
+    "can still be overread",
+    "overread",
+    "may only be",
+    "only be a reformulation",
+    "be a reformulation",
+    "proves",
+    "reveals",
+  ]);
+
+  return hasPhysicsSignal && hasContributionClaim;
+}
+
 function includesAny(normalizedQuestion: string, patterns: readonly string[]) {
   return patterns.some((pattern) => normalizedQuestion.includes(` ${pattern} `));
 }
@@ -399,13 +460,295 @@ function answerWhatWouldMoveThisCard(args: {
   };
 }
 
+function physicsTopicReference(card: NonNullable<ReturnType<typeof getRoomTopicCard>>) {
+  return asRecordReference(
+    "TopicCard",
+    `physics-foundations/${card.id} - ${card.title}`,
+    `physics-foundations/${card.id}`,
+  );
+}
+
+function answerPhysicsCurrentSynthesis(args: {
+  card: NonNullable<ReturnType<typeof getRoomTopicCard>>;
+}) {
+  return {
+    answer: [
+      "The current public synthesis for physics-foundations/topic-001 is:",
+      "",
+      args.card.currentRead,
+      "",
+      "Conservative framing: standard quantum theory and general relativity remain highly successful in their tested domains, while their unification remains unresolved.",
+    ].join("\n"),
+    recordsUsed: dedupeReferences([
+      physicsTopicReference(args.card),
+      asRecordReference("ClaimRecord", args.card.thesis, `claim:physics-foundations:${args.card.id}:primary`),
+    ]),
+  };
+}
+
+function answerPhysicsStandardBaselines(args: {
+  card: NonNullable<ReturnType<typeof getRoomTopicCard>>;
+}) {
+  const evidenceReferences = args.card.evidence.slice(0, 3);
+
+  return {
+    answer: [
+      "The physics card treats the standard baseline as deliberately conservative:",
+      "- Quantum theory, quantum field theory, and general relativity are highly successful in their tested domains.",
+      "- Quantum theory and general relativity are not yet unified into a settled quantum-gravity framework.",
+      "- Planck units are useful dimensional scales built from constants such as c, hbar, and G.",
+      "- Planck-unit relationships should be separated from claims about physical microstructure, discreteness, collapse, or new empirical physics.",
+      "",
+      "A proposed reformulation should say whether it changes notation, assumptions, predictions, or empirical commitments.",
+    ].join("\n"),
+    recordsUsed: dedupeReferences([
+      physicsTopicReference(args.card),
+      ...evidenceReferences.map((item) =>
+        asRecordReference("CardEvidence", `${item.title} [${item.status}]`),
+      ),
+    ]),
+  };
+}
+
+function answerPhysicsPlanckIdentityStatus(args: {
+  card: NonNullable<ReturnType<typeof getRoomTopicCard>>;
+}) {
+  const planckEvidence = args.card.evidence.find((item) =>
+    item.title.toLowerCase().includes("planck"),
+  );
+
+  return {
+    answer: [
+      "The card treats Planck units and Planck-style identities as valid definitions or mathematical/dimensional relationships unless a separate argument is supplied.",
+      "",
+      "A Planck-unit identity does not by itself prove physical discreteness, a collapse structure, spacetime pixelation, or new empirical physics. It can be a useful formal anchor, but moving from definition to physical interpretation requires stated assumptions, predictions, and evidence burdens.",
+      "",
+      "Founder-submitted physics material can therefore be held as a scoped interpretation or proposed reformulation without becoming settled synthesis.",
+    ].join("\n"),
+    recordsUsed: dedupeReferences([
+      physicsTopicReference(args.card),
+      ...(planckEvidence
+        ? [
+            asRecordReference(
+              "CardEvidence",
+              `${planckEvidence.title} [${planckEvidence.status}]`,
+            ),
+          ]
+        : []),
+      asRecordReference("OpenQuestionRecord", args.card.openQuestions[0]),
+    ]),
+  };
+}
+
+function answerPhysicsStrongestObjections(args: {
+  card: NonNullable<ReturnType<typeof getRoomTopicCard>>;
+}) {
+  const secondaryCaution = args.card.anticipatedObjection
+    ? ["", "A second caution is:", `- ${args.card.anticipatedObjection}`]
+    : [];
+
+  return {
+    answer: [
+      "The strongest objection currently named by the physics card is:",
+      `- ${args.card.strongestObjection}`,
+      ...secondaryCaution,
+      "",
+      "The conservative reader note is that mathematical elegance, rewritten constants, or dimensional identities should not be treated as evidence unless the proposal identifies changed assumptions, predictions, or empirical commitments.",
+    ].join("\n"),
+    recordsUsed: dedupeReferences([
+      physicsTopicReference(args.card),
+      asRecordReference("ObjectionRecord", args.card.strongestObjection),
+      ...(args.card.anticipatedObjection
+        ? [asRecordReference("ObjectionRecord", args.card.anticipatedObjection)]
+        : []),
+    ]),
+  };
+}
+
+function answerPhysicsUnresolvedQuestions(args: {
+  card: NonNullable<ReturnType<typeof getRoomTopicCard>>;
+}) {
+  return {
+    answer: [
+      "The Physics Foundations card keeps these questions unresolved:",
+      ...args.card.openQuestions.map((item) => `- ${item}`),
+      "",
+      "The unresolved center is not whether standard theories work in tested domains; it is how to separate definitions, empirical success, unresolved unification problems, and proposed reformulations without overclaiming.",
+    ].join("\n"),
+    recordsUsed: dedupeReferences([
+      physicsTopicReference(args.card),
+      ...args.card.openQuestions.map((item) =>
+        asRecordReference("OpenQuestionRecord", item),
+      ),
+    ]),
+  };
+}
+
+function answerPhysicsWhatWouldMoveThisCard(args: {
+  card: NonNullable<ReturnType<typeof getRoomTopicCard>>;
+}) {
+  return {
+    answer: [
+      "The card would move forward with:",
+      ...args.card.whatWouldStrengthen.map((item) => `- ${item}`),
+      "",
+      "For a reformulation, the key review step is to say whether it changes notation, assumptions, predictions, or empirical commitments, then attach evidence or a falsifiable constraint accordingly.",
+    ].join("\n"),
+    recordsUsed: dedupeReferences([
+      physicsTopicReference(args.card),
+      ...args.card.whatWouldStrengthen.map((item) =>
+        asRecordReference("StrengtheningPath", item),
+      ),
+    ]),
+  };
+}
+
+function answerPhysicsDefinitionVsInterpretation(args: {
+  card: NonNullable<ReturnType<typeof getRoomTopicCard>>;
+}) {
+  return {
+    answer: [
+      "The card separates definition from interpretation this way:",
+      "- Definitions and dimensional relationships can be valid without proving a new physical ontology.",
+      "- Planck units can mark useful scales, but they do not alone establish discreteness, collapse structure, or a new empirical mechanism.",
+      "- Physical interpretation requires extra assumptions, and a synthesis-changing claim needs either empirical support or a clear testable commitment.",
+      "",
+      "So yes: the card can hold founder-submitted Planck material as a scoped interpretation or proposed reformulation, but not as settled proof.",
+    ].join("\n"),
+    recordsUsed: dedupeReferences([
+      physicsTopicReference(args.card),
+      asRecordReference("CardEvidence", "Planck-unit definitions [Established definition]"),
+      asRecordReference("OpenQuestionRecord", args.card.openQuestions[0]),
+    ]),
+  };
+}
+
+function answerPhysicsEvidenceBurden(args: {
+  card: NonNullable<ReturnType<typeof getRoomTopicCard>>;
+}) {
+  const evidenceLines = args.card.evidence.map(
+    (item) => `- ${item.title} [${item.status}]: ${item.note}`,
+  );
+
+  return {
+    answer: [
+      "The evidence burden is high because the topic is distinguishing standard definitions from synthesis-changing physics claims.",
+      "",
+      "Visible evidence/status layer:",
+      ...evidenceLines,
+      "",
+      "A Planck-unit identity or symbolic chain would need more than dimensional validity to move the card. It should identify what changes, what stays equivalent to standard notation, what prediction or empirical commitment follows, and what observation or argument would count against it.",
+    ].join("\n"),
+    recordsUsed: dedupeReferences([
+      physicsTopicReference(args.card),
+      ...args.card.evidence.map((item) =>
+        asRecordReference("CardEvidence", `${item.title} [${item.status}]`),
+      ),
+      ...args.card.whatWouldStrengthen.map((item) =>
+        asRecordReference("StrengtheningPath", item),
+      ),
+    ]),
+  };
+}
+
+function answerPhysicsReadOnlyAsk(args: {
+  card: NonNullable<ReturnType<typeof getRoomTopicCard>>;
+  intent: AskIntent;
+}) {
+  switch (args.intent) {
+    case "current_synthesis":
+      return answerPhysicsCurrentSynthesis({ card: args.card });
+    case "standard_baselines":
+      return answerPhysicsStandardBaselines({ card: args.card });
+    case "planck_identity_status":
+      return answerPhysicsPlanckIdentityStatus({ card: args.card });
+    case "strongest_objections":
+      return answerPhysicsStrongestObjections({ card: args.card });
+    case "unresolved_questions":
+      return answerPhysicsUnresolvedQuestions({ card: args.card });
+    case "what_would_move_this_card":
+      return answerPhysicsWhatWouldMoveThisCard({ card: args.card });
+    case "definition_vs_interpretation":
+      return answerPhysicsDefinitionVsInterpretation({ card: args.card });
+    case "evidence_burden":
+    case "evidence_summary":
+      return answerPhysicsEvidenceBurden({ card: args.card });
+    default:
+      return null;
+  }
+}
+
 export function detectAskIntent(question: string): AskIntent {
   const normalizedQuestion = normalizeQuestion(question);
+  const questionLike = isQuestionLike(question);
+
+  if (looksLikePhysicsContributionStatement(question)) {
+    return "candidate_intake";
+  }
+
+  if (
+    questionLike &&
+    includesAny(normalizedQuestion, [
+      "standard baselines",
+      "standard baseline",
+      "what are the baselines",
+      "what are the standard baselines",
+    ])
+  ) {
+    return "standard_baselines";
+  }
+
+  if (
+    questionLike &&
+    includesAny(normalizedQuestion, [
+      "definition or interpretation",
+      "definitions or interpretation",
+      "definition vs interpretation",
+      "definitions vs interpretation",
+      "definition versus interpretation",
+      "definitions versus interpretation",
+      "definitions or physical proof",
+      "definition or physical proof",
+      "not just definitions",
+      "as definitions or physical proof",
+    ])
+  ) {
+    return "definition_vs_interpretation";
+  }
+
+  if (
+    questionLike &&
+    includesAny(normalizedQuestion, [
+      "planck identities",
+      "planck identity",
+      "planck units",
+      "what does it say about planck",
+      "what does the card say about planck",
+    ])
+  ) {
+    return "planck_identity_status";
+  }
+
+  if (
+    questionLike &&
+    includesAny(normalizedQuestion, [
+      "evidence burden",
+      "burden of evidence",
+      "what evidence burden",
+      "what would count as evidence",
+      "what evidence would be needed",
+      "what proof would be needed",
+    ])
+  ) {
+    return "evidence_burden";
+  }
 
   if (
     includesAny(normalizedQuestion, [
       "what changed in this card",
       "what changed in the card",
+      "what changed in the healthcare card",
+      "what changed in healthcare card",
       "what changed on this card",
       "why did the synthesis change",
       "why did this card change",
@@ -419,6 +762,9 @@ export function detectAskIntent(question: string): AskIntent {
   if (
     includesAny(normalizedQuestion, [
       "what are the strongest objections",
+      "what about the strongest objection",
+      "what is the strongest objection",
+      "strongest objection",
       "what are the main objections",
       "what are the biggest objections",
       "strongest objections",
@@ -470,6 +816,9 @@ export function detectAskIntent(question: string): AskIntent {
     includesAny(normalizedQuestion, [
       "current synthesis",
       "current read",
+      "what does the physics card currently say",
+      "what does the physics card say",
+      "what does this physics card say",
       "what does this card say now",
       "what does the card say now",
       "what is the current synthesis",
@@ -519,13 +868,31 @@ export async function answerReadOnlyAsk(input: {
     return null;
   }
 
-  if (input.roomSlug !== "healthcare" || input.topicId !== "topic-001") {
-    return null;
-  }
-
   const card = getRoomTopicCard(input.roomSlug, input.topicId);
 
   if (!card) {
+    return null;
+  }
+
+  if (input.roomSlug === "physics-foundations" && input.topicId === "topic-001") {
+    const resolved = answerPhysicsReadOnlyAsk({
+      card,
+      intent,
+    });
+
+    if (!resolved) {
+      return null;
+    }
+
+    return {
+      intent,
+      answer: resolved.answer,
+      note: readOnlyAnswerNote,
+      recordsUsed: resolved.recordsUsed,
+    };
+  }
+
+  if (input.roomSlug !== "healthcare" || input.topicId !== "topic-001") {
     return null;
   }
 

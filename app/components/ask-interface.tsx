@@ -239,11 +239,11 @@ export default function AskInterface({
 
           <section className={styles.topicBanner} data-testid="ask-topic-banner">
             <div>
-              <span className={styles.eyebrow}>Current public reader card</span>
-              <h2>{topic.topicTitle}</h2>
+              <span className={styles.eyebrow}>Active public reader context</span>
+              <h2>{resultTopic.topicTitle}</h2>
             </div>
             <p>
-              Read-only ledger questions are answered from <strong>{topic.roomId} / {topic.topicId}</strong>.
+              Read-only ledger questions are answered from <strong>{resultTopic.roomId} / {resultTopic.topicId}</strong>.
               Contribution-style messages may attach to that card, route to the existing
               Physics Foundations topic when the signal is clearly foundational-science,
               or stay internal as unrouted candidates needing maintainer routing. No new
@@ -260,6 +260,10 @@ export default function AskInterface({
             <div>
               <span className={styles.eyebrow}>Chat intake</span>
               <h2>Ask a question or pressure-test the card in plain language.</h2>
+              <p className={styles.activeContext} data-testid="ask-active-topic">
+                Active topic: <strong>{resultTopic.roomId} / {resultTopic.topicId}</strong>{" "}
+                - {resultTopic.topicTitle}. Strong topic signals override this context.
+              </p>
             </div>
             <button
               className={styles.secondaryAction}
@@ -303,13 +307,13 @@ export default function AskInterface({
             <Link
               className={styles.linkAction}
               href={getTopicHref(
-                candidate?.roomId ?? topic.roomId,
-                candidate?.topicId ?? topic.topicId,
+                candidate?.roomId ?? resultTopic.roomId,
+                candidate?.topicId ?? resultTopic.topicId,
               )}
             >
               {candidate?.roomId === "unrouted"
                 ? "Open maintainer queue"
-                : "Open routed topic"}
+                : "Open active topic"}
             </Link>
           </div>
 
@@ -526,7 +530,7 @@ export default function AskInterface({
             <>
               <article className={styles.readOnlyCard} data-testid="ask-read-only-card">
                 <div className={styles.badgeRow}>
-                  <span className={styles.badge}>read-only answer</span>
+                  <span className={styles.badge}>Mode: Read-only ledger answer</span>
                   <span className={styles.badge}>
                     {getAskReadOnlyIntentLabel(readOnlyResult.intent)}
                   </span>

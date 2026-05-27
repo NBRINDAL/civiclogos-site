@@ -208,11 +208,19 @@ export default async function MainChatWorkspace({
           }
         : initialReadOnly
           ? {
-              roomId,
-              topicId,
-              topicTitle: topic.title,
+              roomId: latestAssistantMessage?.roomSlug ?? roomId,
+              topicId: latestAssistantMessage?.topicId ?? topicId,
+              topicTitle:
+                latestAssistantMessage?.topicTitle ??
+                getRoomTopicCard(
+                  (latestAssistantMessage?.roomSlug ?? roomId) as IssueRoomSlug,
+                  latestAssistantMessage?.topicId ?? topicId,
+                )?.title ??
+                topic.title,
               banner:
-                "This answer is read-only. It was generated from the public healthcare / topic-001 ledger, and no candidate was created.",
+                latestAssistantMessage?.roomSlug === "physics-foundations"
+                  ? "This answer is read-only. It was generated from the existing Physics Foundations / topic-001 public topic, and no candidate was created."
+                  : "This answer is read-only. It was generated from the public healthcare / topic-001 ledger, and no candidate was created.",
             }
           : null;
   const counts = getContributionCountSummary(contributions);

@@ -29,8 +29,12 @@ const affectsEveryoneUtterance = "This idea affects everyone eventually.";
 const genericSystemUtterance = "The system is broken.";
 const symbolicPatternUtterance = "There is a deeper symbolic pattern here.";
 const genericEnergyUtterance = "Energy affects many systems.";
-const unsupportedReadOnlyPrompt =
-  "What evidence is attached to the quantum gravity Planck baseline between GR and QM?";
+const physicsReadOnlyPrompt = "What are the standard baselines?";
+const physicsPlanckReadOnlyPrompt =
+  "What does the physics card say about Planck identities?";
+const physicsDefinitionReadOnlyPrompt =
+  "Is this treating Planck identities as definitions or physical proof?";
+const healthcareChangedReadOnlyPrompt = "What changed in the healthcare card?";
 const rejectUtterance =
   "This healthcare claim still assumes savings will reach patients, but institutions may capture them before patients benefit.";
 const archiveUtterance =
@@ -51,6 +55,16 @@ const runtimeFiles = {
   ),
   topicChat: path.join(workspaceRoot, "data", "prototype-topic-chat.runtime.json"),
 };
+let askRequestCounter = 1;
+
+function withAskRequestHeaders(extraHeaders = {}) {
+  const headers = {
+    "x-forwarded-for": `192.0.2.${askRequestCounter}`,
+    ...extraHeaders,
+  };
+  askRequestCounter = askRequestCounter === 250 ? 1 : askRequestCounter + 1;
+  return headers;
+}
 
 function assert(condition, message) {
   if (!condition) {
@@ -282,7 +296,7 @@ async function submitAsk(question, extraHeaders = {}) {
       method: "POST",
       headers: {
         "content-type": "application/json",
-        ...extraHeaders,
+        ...withAskRequestHeaders(extraHeaders),
       },
       body: JSON.stringify({
         question,
@@ -296,6 +310,28 @@ async function submitAsk(question, extraHeaders = {}) {
   return payload;
 }
 
+async function submitAskWithJar(question, cookieJar, extraHeaders = {}) {
+  const response = await fetchWithTimeout(
+    `${baseUrl}/api/ai/ask`,
+    {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        ...withAskRequestHeaders(extraHeaders),
+      },
+      body: JSON.stringify({
+        question,
+        provider: "openai",
+      }),
+    },
+    20000,
+    cookieJar,
+  );
+  const payload = await response.json();
+  assert(response.ok, payload.error ?? `Ask request failed with ${response.status}.`);
+  return payload;
+}
+
 async function submitAskExpectingError(question, expectedStatus, extraHeaders = {}) {
   const response = await fetchWithTimeout(
     `${baseUrl}/api/ai/ask`,
@@ -303,7 +339,7 @@ async function submitAskExpectingError(question, expectedStatus, extraHeaders = 
       method: "POST",
       headers: {
         "content-type": "application/json",
-        ...extraHeaders,
+        ...withAskRequestHeaders(extraHeaders),
       },
       body: JSON.stringify({
         question,
@@ -388,7 +424,15 @@ function assertExpectedCandidateShape(payload) {
 }
 
 function assertExpectedPhysicsCandidateShape(payload) {
-  assert(payload?.candidate, "Physics ask response did not include a candidate.");
+  assert(
+    payload?.candidate,
+    `Physics ask response did not include a candidate: ${JSON.stringify({
+      mode: payload?.mode,
+      intent: payload?.intent,
+      reply: payload?.reply,
+      topic: payload?.topic,
+    })}.`,
+  );
   assert(
     payload.candidate.roomId === "physics-foundations" &&
       payload.candidate.topicId === "topic-001",
@@ -505,17 +549,46 @@ function assertExpectedHealthcareRoute(payload, expectedSignals = []) {
   }
 }
 
-function assertExpectedUnsupportedReadOnlyShape(payload) {
+function assertExpectedPhysicsReadOnlyShape(payload, expectedIntent) {
   assertExpectedReadOnlyShape(payload);
   assert(
-    payload.reply ===
-      "Civic Logos found a likely topic, but read-only ledger summaries for that topic are not built yet.",
-    `Unexpected unsupported read-only reply: ${payload.reply}.`,
+    payload.intent === expectedIntent,
+    `Expected physics read-only intent ${expectedIntent}, received ${payload.intent}.`,
   );
   assert(
     payload.topic.roomId === "physics-foundations" &&
       payload.topic.topicId === "topic-001",
-    `Expected likely physics topic, received ${payload.topic.roomId}/${payload.topic.topicId}.`,
+    `Expected physics read-only topic, received ${payload.topic.roomId}/${payload.topic.topicId}.`,
+  );
+  assert(
+    payload.reply.includes("Planck") ||
+      payload.reply.includes("quantum theory") ||
+      payload.reply.includes("general relativity") ||
+      payload.reply.includes("dimensional identities") ||
+      payload.reply.includes("definition"),
+    `Physics read-only answer did not include conservative physics framing: ${payload.reply}.`,
+  );
+  assert(
+    payload.topic.banner.includes("read-only") &&
+      payload.topic.banner.includes("Physics Foundations"),
+    `Unexpected physics read-only banner: ${payload.topic.banner}.`,
+  );
+}
+
+function assertExpectedHealthcareReadOnlyShape(payload, expectedIntent) {
+  assertExpectedReadOnlyShape(payload);
+  assert(
+    payload.intent === expectedIntent,
+    `Expected healthcare read-only intent ${expectedIntent}, received ${payload.intent}.`,
+  );
+  assert(
+    payload.topic.roomId === "healthcare" && payload.topic.topicId === "topic-001",
+    `Expected healthcare read-only topic, received ${payload.topic.roomId}/${payload.topic.topicId}.`,
+  );
+  assert(
+    payload.topic.banner.includes("read-only") &&
+      payload.topic.banner.includes("healthcare"),
+    `Unexpected healthcare read-only banner: ${payload.topic.banner}.`,
   );
 }
 
@@ -798,17 +871,110 @@ async function main() {
     assertLedgerUnchanged(afterReadOnlyLedger, baselineLedger, "Read-only /ask");
     await assertCandidateCount(baselineCandidateCount, "Read-only /ask");
 
-    const unsupportedReadOnlyPayload = await submitAsk(unsupportedReadOnlyPrompt);
-    assertExpectedUnsupportedReadOnlyShape(unsupportedReadOnlyPayload);
-    const afterUnsupportedReadOnlyLedger = ledgerSummary(await fetchLedger());
+    const physicsReadOnlyPayload = await submitAsk(physicsReadOnlyPrompt);
+    assertExpectedPhysicsReadOnlyShape(
+      physicsReadOnlyPayload,
+      "standard_baselines",
+    );
+    const afterPhysicsReadOnlyLedger = ledgerSummary(await fetchLedger());
     assertLedgerUnchanged(
-      afterUnsupportedReadOnlyLedger,
+      afterPhysicsReadOnlyLedger,
       baselineLedger,
-      "Unsupported topic read-only /ask",
+      "Physics standard-baseline read-only /ask",
     );
     await assertCandidateCount(
       baselineCandidateCount,
-      "Unsupported topic read-only /ask",
+      "Physics standard-baseline read-only /ask",
+    );
+
+    const physicsDefinitionReadOnlyPayload = await submitAsk(
+      physicsDefinitionReadOnlyPrompt,
+    );
+    assertExpectedPhysicsReadOnlyShape(
+      physicsDefinitionReadOnlyPayload,
+      "definition_vs_interpretation",
+    );
+    const afterPhysicsDefinitionReadOnlyLedger = ledgerSummary(await fetchLedger());
+    assertLedgerUnchanged(
+      afterPhysicsDefinitionReadOnlyLedger,
+      baselineLedger,
+      "Physics definition read-only /ask",
+    );
+    await assertCandidateCount(
+      baselineCandidateCount,
+      "Physics definition read-only /ask",
+    );
+
+    const physicsFollowUpJar = new CookieJar();
+    const contextualPhysicsReadOnlyPayload = await submitAskWithJar(
+      physicsPlanckReadOnlyPrompt,
+      physicsFollowUpJar,
+    );
+    assertExpectedPhysicsReadOnlyShape(
+      contextualPhysicsReadOnlyPayload,
+      "planck_identity_status",
+    );
+    const physicsFollowUpPayload = await submitAskWithJar(
+      "What remains unresolved?",
+      physicsFollowUpJar,
+    );
+    assertExpectedPhysicsReadOnlyShape(
+      physicsFollowUpPayload,
+      "unresolved_questions",
+    );
+    const physicsObjectionFollowUpPayload = await submitAskWithJar(
+      "What about the strongest objection?",
+      physicsFollowUpJar,
+    );
+    assertExpectedPhysicsReadOnlyShape(
+      physicsObjectionFollowUpPayload,
+      "strongest_objections",
+    );
+    const afterPhysicsFollowUpLedger = ledgerSummary(await fetchLedger());
+    assertLedgerUnchanged(
+      afterPhysicsFollowUpLedger,
+      baselineLedger,
+      "Physics contextual follow-up read-only /ask",
+    );
+    await assertCandidateCount(
+      baselineCandidateCount,
+      "Physics contextual follow-up read-only /ask",
+    );
+
+    const healthcareFollowUpJar = new CookieJar();
+    const contextualHealthcareReadOnlyPayload = await submitAskWithJar(
+      healthcareChangedReadOnlyPrompt,
+      healthcareFollowUpJar,
+    );
+    assertExpectedHealthcareReadOnlyShape(
+      contextualHealthcareReadOnlyPayload,
+      "what_changed",
+    );
+    const healthcareFollowUpPayload = await submitAskWithJar(
+      "What remains unresolved?",
+      healthcareFollowUpJar,
+    );
+    assertExpectedHealthcareReadOnlyShape(
+      healthcareFollowUpPayload,
+      "unresolved_questions",
+    );
+    const healthcareObjectionFollowUpPayload = await submitAskWithJar(
+      "What about the strongest objection?",
+      healthcareFollowUpJar,
+    );
+    assertExpectedHealthcareReadOnlyShape(
+      healthcareObjectionFollowUpPayload,
+      "strongest_objections",
+    );
+    const afterHealthcareFollowUpLedger = ledgerSummary(await fetchLedger());
+    assertLedgerUnchanged(
+      afterHealthcareFollowUpLedger,
+      baselineLedger,
+      "Healthcare contextual follow-up read-only /ask",
+    );
+    await assertCandidateCount(
+      baselineCandidateCount,
+      "Healthcare contextual follow-up read-only /ask",
     );
 
     const askPayload = await submitAsk(demoUtterance);
@@ -1267,6 +1433,75 @@ async function main() {
     const afterArchiveLedger = ledgerSummary(await fetchLedger());
     assertLedgerUnchanged(afterArchiveLedger, afterPromotionLedger, "Archive action");
 
+    const physicsToHealthcareJar = new CookieJar();
+    await submitAskWithJar(physicsPlanckReadOnlyPrompt, physicsToHealthcareJar);
+    const healthcareSwitchPayload = await submitAskWithJar(
+      demoUtterance,
+      physicsToHealthcareJar,
+    );
+    assertExpectedCandidateShape(healthcareSwitchPayload);
+    assert(
+      healthcareSwitchPayload.candidate.roomId === "healthcare",
+      `Expected healthcare switch candidate, received ${healthcareSwitchPayload.candidate.roomId}.`,
+    );
+    const afterHealthcareSwitchLedger = ledgerSummary(await fetchLedger());
+    assertLedgerUnchanged(
+      afterHealthcareSwitchLedger,
+      afterPromotionLedger,
+      "Physics session to healthcare candidate switch",
+    );
+    await assertCandidateCount(
+      baselineCandidateCount + 14,
+      "Physics session to healthcare candidate switch",
+    );
+
+    const healthcareToPhysicsJar = new CookieJar();
+    await submitAskWithJar(healthcareChangedReadOnlyPrompt, healthcareToPhysicsJar);
+    const physicsSwitchPayload = await submitAskWithJar(
+      planckUtterance,
+      healthcareToPhysicsJar,
+    );
+    assertExpectedPhysicsCandidateShape(physicsSwitchPayload);
+    assert(
+      physicsSwitchPayload.candidate.roomId === "physics-foundations",
+      `Expected physics switch candidate, received ${physicsSwitchPayload.candidate.roomId}.`,
+    );
+    const afterPhysicsSwitchLedger = ledgerSummary(await fetchLedger());
+    assertLedgerUnchanged(
+      afterPhysicsSwitchLedger,
+      afterPromotionLedger,
+      "Healthcare session to physics candidate switch",
+    );
+    await assertCandidateCount(
+      baselineCandidateCount + 15,
+      "Healthcare session to physics candidate switch",
+    );
+
+    const ambiguousContextJar = new CookieJar();
+    await submitAskWithJar(healthcareChangedReadOnlyPrompt, ambiguousContextJar);
+    const ambiguousWithContextPayload = await submitAskWithJar(
+      ambiguousUtterance,
+      ambiguousContextJar,
+    );
+    assertExpectedUnroutedCandidateShape(ambiguousWithContextPayload);
+    const afterAmbiguousContextLedger = ledgerSummary(await fetchLedger());
+    assertLedgerUnchanged(
+      afterAmbiguousContextLedger,
+      afterPromotionLedger,
+      "Ambiguous statement with session context",
+    );
+    await assertCandidateCount(
+      baselineCandidateCount + 16,
+      "Ambiguous statement with session context",
+    );
+
+    const afterSessionSafetyLedger = ledgerSummary(await fetchLedger());
+    assertLedgerUnchanged(
+      afterSessionSafetyLedger,
+      afterPromotionLedger,
+      "Session-context safety pass",
+    );
+
     console.log("Candidate flow checks passed.");
     console.log(
       JSON.stringify(
@@ -1274,11 +1509,14 @@ async function main() {
           askCandidateId: askPayload.candidate.id,
           physicsCandidateId: physicsPayload.candidate.id,
           unroutedCandidateId: ambiguousPayload.candidate.id,
+          healthcareSwitchCandidateId: healthcareSwitchPayload.candidate.id,
+          physicsSwitchCandidateId: physicsSwitchPayload.candidate.id,
+          ambiguousWithContextCandidateId: ambiguousWithContextPayload.candidate.id,
           promotedContributionId: promotedContribution.id,
           rejectedCandidateId: rejectPayload.candidate.id,
           archivedCandidateId: archivePayload.candidate.id,
-          visibleRecords: afterArchiveLedger.visibleRecords,
-          revisionEvents: afterArchiveLedger.revisionEvents,
+          visibleRecords: afterSessionSafetyLedger.visibleRecords,
+          revisionEvents: afterSessionSafetyLedger.revisionEvents,
         },
         null,
         2,

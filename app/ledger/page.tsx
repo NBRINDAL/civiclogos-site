@@ -183,6 +183,11 @@ export default function LedgerPage() {
             /ask does not change public counts, does not create RevisionEvents,
             and does not change synthesis.
           </p>
+          <p>
+            Physics Foundations read-only asks are now supported from the
+            existing public topic. They remain read-only unless the user
+            explicitly contributes a candidate.
+          </p>
           <div className={styles.heroActions}>
             <Link className={styles.primaryAction} href="/ask">
               Open `/ask`
