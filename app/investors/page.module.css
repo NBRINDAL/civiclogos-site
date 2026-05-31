@@ -55,10 +55,11 @@
 .boundaryCard,
 .whyNow,
 .card,
-.modelCard,
+.revenueCard,
 .fundingBand,
 .fundsCard,
 .milestoneCard,
+.founderBand,
 .ctaBand {
   border: 1px solid rgba(18, 33, 39, 0.12);
   border-radius: 30px;
@@ -103,8 +104,10 @@
 .boundaryCard h2,
 .whyNow h2,
 .card h2,
+.revenueCard h3,
 .sectionIntro h2,
 .fundingBand h2,
+.founderBand h2,
 .ctaBand h2 {
   color: var(--foreground);
   font-family: var(--font-serif), serif;
@@ -124,6 +127,7 @@
 .card h2,
 .sectionIntro h2,
 .fundingBand h2,
+.founderBand h2,
 .ctaBand h2 {
   font-size: clamp(1.9rem, 3.6vw, 3.2rem);
 }
@@ -138,14 +142,18 @@
 
 .boundaryCard p,
 .whyNow p,
+.card p,
+.revenueCard p,
 .sectionIntro p,
 .fundingBand p,
+.founderBand p,
 .ctaBand p {
   color: var(--muted);
   line-height: 1.72;
 }
 
 .heroActions,
+.founderLinks,
 .ctaActions {
   display: flex;
   flex-wrap: wrap;
@@ -154,7 +162,8 @@
 }
 
 .primaryAction,
-.secondaryAction {
+.secondaryAction,
+.routeCard {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -182,7 +191,8 @@
 }
 
 .primaryAction:hover,
-.secondaryAction:hover {
+.secondaryAction:hover,
+.routeCard:hover {
   transform: translateY(-2px);
 }
 
@@ -216,24 +226,37 @@
   gap: 10px;
 }
 
-.modelGrid {
+.revenueGrid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 14px;
 }
 
-.modelCard {
-  display: flex;
-  align-items: center;
-  min-height: 112px;
+.revenueCard {
+  display: grid;
+  gap: 10px;
+  align-content: start;
+  min-height: 198px;
   padding: 20px;
 }
 
-.modelCard strong,
+.revenueCard h3 {
+  font-size: 1.18rem;
+}
+
 .milestoneCard strong,
 .fundsCard strong {
   color: var(--foreground);
   line-height: 1.4;
+}
+
+.plainNote {
+  padding: 14px 16px;
+  border: 1px solid rgba(var(--brand-blue-rgb), 0.14);
+  border-radius: 18px;
+  background: rgba(244, 250, 255, 0.8);
+  color: var(--foreground) !important;
+  font-weight: 800;
 }
 
 .fundingBand {
@@ -284,6 +307,36 @@
     rgba(255, 251, 245, 0.84);
 }
 
+.founderBand {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 22px;
+  align-items: center;
+  padding: 30px;
+}
+
+.founderBand h2 {
+  margin-top: 10px;
+}
+
+.founderLinks {
+  justify-content: flex-end;
+  margin-top: 0;
+}
+
+.linkGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.routeCard {
+  min-height: 64px;
+  border: 1px solid rgba(18, 33, 39, 0.14);
+  background: rgba(255, 251, 245, 0.88);
+  color: var(--foreground);
+}
+
 .ctaBand h2 {
   margin-top: 10px;
 }
@@ -305,11 +358,13 @@
   .hero,
   .sectionGrid,
   .fundingBand,
+  .founderBand,
+  .linkGrid,
   .milestoneList {
     grid-template-columns: 1fr;
   }
 
-  .modelGrid {
+  .revenueGrid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
@@ -329,18 +384,21 @@
   .boundaryCard,
   .whyNow,
   .card,
+  .revenueCard,
   .fundingBand,
+  .founderBand,
   .ctaBand {
     border-radius: 24px;
     padding: 22px;
   }
 
-  .modelGrid {
+  .revenueGrid {
     grid-template-columns: 1fr;
   }
 
   .primaryAction,
-  .secondaryAction {
+  .secondaryAction,
+  .routeCard {
     width: 100%;
   }
 }

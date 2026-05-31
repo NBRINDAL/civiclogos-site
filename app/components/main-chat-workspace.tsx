@@ -63,6 +63,11 @@ const explorationLinks = [
     detail: "Read the longer manifesto, distinctions, and public launch framing.",
   },
   {
+    href: "/investors",
+    label: "Investor overview",
+    detail: "Read the concise business overview, funding target, and early revenue paths.",
+  },
+  {
     href: "/healthcare",
     label: "Healthcare room",
     detail: "View the wider room around the live card without creating a new room.",
