@@ -8,6 +8,7 @@ const publicRoutes = [
   "/demo",
   "/challenge",
   "/press",
+  "/investors",
   "/ledger",
   "/institutions",
   "/healthcare",

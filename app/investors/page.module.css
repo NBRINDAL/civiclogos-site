@@ -1,0 +1,346 @@
+.page {
+  position: relative;
+  min-height: 100vh;
+  padding: 24px;
+}
+
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background:
+    radial-gradient(circle at 14% 12%, rgba(var(--brand-blue-rgb), 0.14), transparent 30%),
+    radial-gradient(circle at 84% 10%, rgba(var(--brand-green-rgb), 0.12), transparent 26%),
+    radial-gradient(circle at 70% 86%, rgba(var(--brand-red-rgb), 0.1), transparent 28%),
+    linear-gradient(180deg, rgba(252, 249, 243, 0.97), rgba(241, 237, 228, 0.96));
+}
+
+.header,
+.main {
+  width: min(1120px, 100%);
+  margin: 0 auto;
+}
+
+.header {
+  display: grid;
+  gap: 28px;
+  padding: 16px 0 34px;
+}
+
+.nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.navLinks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  color: var(--muted);
+}
+
+.navLinks a {
+  text-decoration: none;
+}
+
+.hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1.16fr) minmax(300px, 0.84fr);
+  gap: 22px;
+}
+
+.heroCopy,
+.boundaryCard,
+.whyNow,
+.card,
+.modelCard,
+.fundingBand,
+.fundsCard,
+.milestoneCard,
+.ctaBand {
+  border: 1px solid rgba(18, 33, 39, 0.12);
+  border-radius: 30px;
+  background: rgba(255, 251, 245, 0.84);
+  box-shadow: 0 20px 44px rgba(18, 33, 39, 0.08);
+  backdrop-filter: blur(12px);
+}
+
+.heroCopy {
+  padding: clamp(32px, 5vw, 58px);
+}
+
+.boundaryCard {
+  display: grid;
+  align-content: center;
+  gap: 14px;
+  padding: 30px;
+  background:
+    linear-gradient(180deg, rgba(var(--brand-green-rgb), 0.1), rgba(255, 251, 245, 0.92)),
+    rgba(255, 251, 245, 0.84);
+}
+
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--signal);
+  font-size: 0.82rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.eyebrow::before {
+  content: "";
+  width: 28px;
+  height: 1px;
+  background: currentColor;
+}
+
+.heroCopy h1,
+.boundaryCard h2,
+.whyNow h2,
+.card h2,
+.sectionIntro h2,
+.fundingBand h2,
+.ctaBand h2 {
+  color: var(--foreground);
+  font-family: var(--font-serif), serif;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  line-height: 1.04;
+  text-wrap: balance;
+}
+
+.heroCopy h1 {
+  margin-top: 16px;
+  font-size: clamp(2.8rem, 5.8vw, 5.4rem);
+}
+
+.boundaryCard h2,
+.whyNow h2,
+.card h2,
+.sectionIntro h2,
+.fundingBand h2,
+.ctaBand h2 {
+  font-size: clamp(1.9rem, 3.6vw, 3.2rem);
+}
+
+.thesis {
+  margin-top: 20px;
+  color: var(--foreground);
+  font-size: clamp(1.08rem, 1.6vw, 1.25rem);
+  font-weight: 650;
+  line-height: 1.72;
+}
+
+.boundaryCard p,
+.whyNow p,
+.sectionIntro p,
+.fundingBand p,
+.ctaBand p {
+  color: var(--muted);
+  line-height: 1.72;
+}
+
+.heroActions,
+.ctaActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-top: 26px;
+}
+
+.primaryAction,
+.secondaryAction {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 50px;
+  padding: 0 18px;
+  border-radius: 999px;
+  font-weight: 800;
+  text-decoration: none;
+  transition:
+    transform 180ms ease,
+    border-color 180ms ease,
+    background 180ms ease;
+}
+
+.primaryAction {
+  border: 1px solid transparent;
+  background: var(--accent-dark);
+  color: #fff8ef;
+}
+
+.secondaryAction {
+  border: 1px solid rgba(18, 33, 39, 0.14);
+  background: rgba(255, 251, 245, 0.88);
+  color: var(--foreground);
+}
+
+.primaryAction:hover,
+.secondaryAction:hover {
+  transform: translateY(-2px);
+}
+
+.main {
+  display: grid;
+  gap: 28px;
+  padding-bottom: 72px;
+}
+
+.whyNow,
+.card {
+  display: grid;
+  gap: 16px;
+  padding: 30px;
+}
+
+.sectionGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 22px;
+}
+
+.section,
+.milestones {
+  display: grid;
+  gap: 18px;
+}
+
+.sectionIntro {
+  display: grid;
+  gap: 10px;
+}
+
+.modelGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.modelCard {
+  display: flex;
+  align-items: center;
+  min-height: 112px;
+  padding: 20px;
+}
+
+.modelCard strong,
+.milestoneCard strong,
+.fundsCard strong {
+  color: var(--foreground);
+  line-height: 1.4;
+}
+
+.fundingBand {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(280px, 0.72fr);
+  gap: 22px;
+  align-items: start;
+  padding: 30px;
+  background:
+    linear-gradient(120deg, rgba(var(--brand-blue-rgb), 0.1), rgba(255, 251, 245, 0.92)),
+    rgba(255, 251, 245, 0.84);
+}
+
+.fundsCard {
+  display: grid;
+  gap: 14px;
+  padding: 22px;
+  box-shadow: none;
+}
+
+.milestoneList {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.milestoneCard {
+  display: grid;
+  gap: 14px;
+  padding: 20px;
+}
+
+.milestoneCard span {
+  color: var(--signal);
+  font-size: 0.78rem;
+  font-weight: 900;
+  letter-spacing: 0.14em;
+}
+
+.ctaBand {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 22px;
+  padding: 32px;
+  background:
+    linear-gradient(120deg, rgba(var(--brand-green-rgb), 0.12), rgba(255, 251, 245, 0.92)),
+    rgba(255, 251, 245, 0.84);
+}
+
+.ctaBand h2 {
+  margin-top: 10px;
+}
+
+.bulletList {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding-left: 20px;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.bulletList li::marker {
+  color: var(--signal);
+}
+
+@media (max-width: 900px) {
+  .hero,
+  .sectionGrid,
+  .fundingBand,
+  .milestoneList {
+    grid-template-columns: 1fr;
+  }
+
+  .modelGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .ctaBand,
+  .nav {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 640px) {
+  .page {
+    padding: 16px;
+  }
+
+  .heroCopy,
+  .boundaryCard,
+  .whyNow,
+  .card,
+  .fundingBand,
+  .ctaBand {
+    border-radius: 24px;
+    padding: 22px;
+  }
+
+  .modelGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .primaryAction,
+  .secondaryAction {
+    width: 100%;
+  }
+}
